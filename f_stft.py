@@ -1,37 +1,65 @@
-# -*- coding: utf-8 -*-
-
 """
-This function computes the on-sided STFT of a signal 
+This function computes the one-sided STFT of a signal 
 
- Inputs:
-X: signal, column vector
+Inputs:
+X: signal, row vector
 L: length of the window
-win: window type, strignt (Rectangular, Hamming, Hanning, Blackman)
+win: window type, string ('Rectangular', 'Hamming', 'Hanning', 'Blackman')
 ovp: number of overlapping samples
-nfft: number of freq. samples per time step
+nfft: number of freq. samples in (-pi,pi]
 fs: sampling rate of the signal
-mkplot: binary input (1 for make plot)
+mkplot: binary input (1 for show plot)
+fmax(optional): maximum frequency shown on the spectrogram if mkplot is 1
 
 Outputs:
-S: short-time Fourier Transform (complex)
+S: 2D matrix containing the short-time Fourier transform of the signal (complex)
+P: 2D matrix containing the PSD of the signal
 F: frequency vector
 T: time vector
-P: PSD of the signal
 
-* Note: windowing and fft will be performed row-wise so that the code to run faster
+* Note: windowing and fft will be performed row-wise so that the code runs faster
+
+EXAMPLE:
+  fs=16000
+  t=np.mat(np.arange(fs+1)/float(fs))
+  x=np.cos(2*np.pi*440*t)
+  L=1024
+  win='Hanning'
+  ovp=0.5*L
+  nfft=1024
+  mkplot=1
+  fmax=1000
+  S,P,F,T = f_stft(x,L,win,ovp,nfft,fs,mkplot,fmax)
+ 
+Required packages:
+1. Numpy
+2. Scipy
+3. Matplotlib
+
 """
 
-def f_stft(X,L,win,ovp,nfft,fs,mkplot):
+def f_stft(*arg):
     
     import numpy as np 
     import matplotlib.pyplot as plt
     from scipy.fftpack import fft
     
-    # split data into blocks
+    if len(arg)==7 and arg[6]==0: 
+        X, L, win, ovp, nfft, fs, mkplot = arg[0:7]
+    elif len(arg)==7 and arg[6]==1: 
+        X, L, win, ovp, nfft, fs, mkplot = arg[0:7]
+        fmax = fs/2
+    elif len(arg)==8: 
+        X, L, win, ovp, nfft, fs, mkplot = arg[0:7]
+        fmax=arg[7]
+    
+    # split data into blocks (make sure X is a row vector)
+    if np.shape(X)[0]!=1:
+        raise ValueError('X must be a row vector')
+           
     Hop=int(L-ovp)
-    N=len(X)
-    Xz=np.zeros((1,N))
-    Xz[0,:]=X; X=Xz;
+    N=np.shape(X)[1]
+    
     
     # zero-pad the vector at the beginning and end to reduce the window tapering effect
     if np.mod(L,2)==0:
@@ -43,11 +71,11 @@ def f_stft(X,L,win,ovp,nfft,fs,mkplot):
     N=N+2*zp1
 
     # zero pad if N-L is not an integer multiple of Hop
-    rr=np.mod(N-L,Hop);
+    rr=np.mod(N-L,Hop)
     if rr!=0:
         zp2=Hop-rr
-        X=np.vstack([X,np.zeros((zp2,1))])
-        N=len(X)
+        X=np.hstack([X,np.zeros((1,zp2))])
+        N=np.shape(X)[1]
     else:
         zp2=0
 
@@ -72,7 +100,7 @@ def f_stft(X,L,win,ovp,nfft,fs,mkplot):
     P=np.zeros((NumBlock,Lf)); 
         
     for i in range(0,NumBlock):
-        Xw=W*X[0,(i*Hop):(i*Hop+L)]
+        Xw=np.multiply(W,X[0,(i*Hop):(i*Hop+L)])
         XX=fft(Xw,n=nfft)        
         XX_trun=XX[0,0:Lf]
        
@@ -90,15 +118,16 @@ def f_stft(X,L,win,ovp,nfft,fs,mkplot):
     P=P[:,m1:Ls2-m2]
     T=T[m1:Ls2-m2]
         
-    # plot if asked
+    # plot if specified
     if mkplot==1:
+        
+        TT=np.tile(T,(len(F),1))
+        FF=np.tile(F.T,(len(T),1)).T
         SP=10*np.log10(np.abs(P))
-        plt.figure(1)
-        plt.imshow(SP)
-        plt.gca().invert_yaxis()
+        plt.pcolormesh(TT,FF,SP)
         plt.xlabel('Time')
         plt.ylabel('Frequency')
-        plt.ylim(0,100)
+        plt.ylim(0,fmax)
         plt.show()
 
     return S,P,F,T    
