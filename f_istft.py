@@ -4,11 +4,13 @@ Overlap Adition method
 
 Inputs:
 X: one-sided STFT (spectrogram) of the signal x
-L: window length 
+L: window length (in # of samples)
 win(optional): window type, (string): 'Rectangular', 'Hamming', 'Hanning', 'Blackman'
    (default window type: Hamming)
 ovp: overlap between adjacent windows in STFT analysis
-nfft: number of freq. samples in (-pi,pi]
+nfft: min number of desired freq. samples in (-pi,pi]. MUST be >= L. *NOTE* If 
+this is not a power of 2, then it will automatically zero-pad up to the next power 
+of 2. IE if you put 257 here, it will pad up to 512.
 fs: sampling rate of the original signal x
 
 Outputs:
@@ -47,6 +49,9 @@ def f_istft(*arg):
         win='Hamming'
     elif len(arg)==6:
         X,L,win,ovp,nfft,fs = arg[0:6]
+        
+    if nfft<L:
+       raise ValueError('nfft must be greater or equal the window length (L)!')
     
     # Get spectrogram dimenstions and compute window hop size
     Nc=X.shape[1] # number of columns of X

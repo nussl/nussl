@@ -3,17 +3,19 @@ This function computes the one-sided STFT of a signal
 
 Inputs:
 X: signal, row vector
-L: length of the window
+L: length of one window (in # of samples)
 win: window type, string ('Rectangular', 'Hamming', 'Hanning', 'Blackman')
-ovp: number of overlapping samples
-nfft: number of freq. samples in (-pi,pi]
+ovp: number of overlapping samples between adjacent windows
+nfft: min number of desired freq. samples in (-pi,pi]. MUST be >= L. *NOTE* If 
+this is not a power of 2, then it will automatically zero-pad up to the next power 
+of 2. IE if you put 257 here, it will pad up to 512.
 fs: sampling rate of the signal
 mkplot: binary input (1 for show plot)
 fmax(optional): maximum frequency shown on the spectrogram if mkplot is 1
 
 Outputs:
-S: 2D matrix containing the short-time Fourier transform of the signal (complex)
-P: 2D matrix containing the PSD of the signal
+S: 2D numpy matrix containing the short-time Fourier transform of the signal (complex)
+P: 2D numpy matrix containing the PSD of the signal
 F: frequency vector
 T: time vector
 
@@ -56,6 +58,8 @@ def f_stft(*arg):
     # split data into blocks (make sure X is a row vector)
     if np.shape(X)[0]!=1:
         raise ValueError('X must be a row vector')
+    elif nfft<L:
+        raise ValueError('nfft must be greater or equal the window length (L)!')
            
     Hop=int(L-ovp)
     N=np.shape(X)[1]
@@ -127,6 +131,7 @@ def f_stft(*arg):
         plt.pcolormesh(TT,FF,SP)
         plt.xlabel('Time')
         plt.ylabel('Frequency')
+        plt.xlim(0,T[-1])
         plt.ylim(0,fmax)
         plt.show()
 
