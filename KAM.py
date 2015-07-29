@@ -23,29 +23,77 @@ from scikits.audiolab import wavread, play
 from f_stft import f_stft
 from f_istft import f_istft
 
-class Signal:   
+def kam(*arg):
+    """
+    The 'kam' function implements the kernel backfitting algorithm to extract 
+    J audio sources from I channel mixtures.
+    
+    Inputs: 
+    Inputfile: (strig) path of the audio file containing the I-channel mixture
+    KNhoods: Numpy array of length J - each element is a lambda function defining 
+             the proximity kernel for one audio source
+    KWeights: (optional) Numpy array of length J - each element gives the similarity measure 
+              over the corresponding neighbourhood provided by KNhoods. A similarity
+              measure can be either a lambda function (varying weights over neighbouring
+              points) or equal to 1 (equal weight over the entire neighbourhood).
+              Default: all weights are equal to 1 (binary kernels).
+    Numit: (optional) number of iterations of the backfitting algorithm - default: 1
+    
+    Outputs:
+    shat: a J-row Numpy matrix containing J time-domain estimates of sources        
+    """
+    
+    if len(arg)==2:
+        Inputfile,KNhoods=arg[0:2]
+        J=len(KNhoods)
+        KWeights=np.ones((1,J))
+        Numit=1
+    elif len(arg)==3:
+        Inputfile,KNhoods,KWeights=arg[0:3]
+        Numit=1
+    elif len(arg)==4:
+        Inputfile,KNhoods,KWeights,Numit=arg[0:4]
+        
+        
+    # load the audio mixture from the input path
+    Mixture=AudioSignal(Inputfile) 
+    x,tvec=[Mixture.x,Mixture.time]  # time-domain channel mixtures
+    X,Px,Fvec,Tvec=[Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec]  # stft and PSD of the channel mixtures
+    
+    # initialization
+    
+    
+    
+    
+    
+    return x,X,Px,Fvec,Tvec,tvec
+
+
+class AudioSignal:   
     """
     The class Signal defines the properties of the audio signal object and performs
     basic operations such as Wav loading and computing the STFT/iSTFT.
     
-    Read/write properties:
+    Read/write signal properties:
     - s: signal
+    - sigLen: signal length
+    
+    Read/write stft properties:
     - windowtype (e.g. 'Rectangular', 'Hamming', 'Hanning', 'Blackman')
     - windowlength (ms)
     - nfft (number of samples)
     - overlapRatio (in [0,1])
     - S: stft of the data
-    
+        
     Read-only properties:
     - fs: sampling frequency
     - enc: encoding of the audio file
-    - sigLen: signal length
     - numCh: number of channels
   
     EXAMPLES:
     -create a new signal object:     sig=Signal('sample_audio_file.wav')  
     -compute the spectrogram of the new signal object:   sigSpec,sigPow,F,T=sig.STFT()
-    -compute the inverse stft of a spectrogram object:   sigrec,tvec=sig.iSTFT()
+    -compute the inverse stft of a spectrogram:          sigrec,tvec=sig.iSTFT()
   
     """
     def __init__(self,*arg):
@@ -75,8 +123,10 @@ class Signal:
             return
         elif len(arg)==1:
             self.loadaudiofile(arg[0])
+            self.STFT()
         elif len(arg)==2:
              self.loadaudiosig(arg[0],arg[1])
+             self.STFT()
                 
    
     
@@ -88,15 +138,16 @@ class Signal:
         self.x,self.fs,self.enc = wavread(file_name)
         self.x=np.mat(self.x) # make sure the signal is of matrix format
         self.sigLen,self.numCh = np.shape(self.x)
-        
+        self.time=(1./self.fs)*np.arange(self.sigLen)
         
     def loadaudiosig(self,audiosig,fs):
         """
-        loads the audio signal in matrix format along with the sampling frequency
+        loads the audio signal in numpy matrix format along with the sampling frequency
         """
         self.x=np.mat(audiosig) # each column contains one channel mixture
         self.fs = fs
         self.sigLen,self.numCh=np.shape(self.x)
+        self.time=(1./self.fs)*np.arange(self.sigLen)
         
         
     def STFT(self):
@@ -156,76 +207,171 @@ class Signal:
          return self.x,self.time
 
 
-
-
-
-class Kernel:   
+class Kernel:
     """
-    The class Kernel defines the properties of the proximity kernel, which accounts for
-    features like periodicity, continuity, smoothness, stability over time or frequency,
-    self-similarity, etc.
+    The class Kernel defines the properties of the time-freq proximity kernel. The weight values of 
+    the proximity kernel over time-frequecy bins that are considered as neighbours are given
+    by a pre-defined or a user-defined function. The value of the proximity kernel is zero over
+    time-frequency bins outside the neighbourhood.
     
     Properties:
-    -kdim: 1 by 2 Numpy matrix containing kernel dimensions (number of rows and columns)
-    -kcenter: 1 by 2 Numpy matrix containing row and column numbers of the kernel center 
-             (distance is measured with respect to this central element)            
-    -knhood: kernel neighbourhood (group of elements that are considered closest to the central 
-             element in some measur space). the neighbourhood is defined by a 2-row Numpy matrix
-             where the first row contains the nerighbors row numbers and the second row the 
-             neighbours column numbers.the neighbourhood can have patterns s.a. horizontal, 
-             vertical, periodic, cross-like, etc. 
+    -kCenter: 1 by 2 Numpy matrix that contains the coordinates (frequency bin and time frame) of the 
+              center point, with respect to which the similarity/distance of other TF bins
+              is measured
+    -kNhood: logical lambda funcion which determines the set of neighbouring points to the central TF bin.
+    -kWfunc: lambda function defining the weight value at a time-frequency bin given its distance from 
+                  the central point. The weight values fall in the interval [0,1] with 1 indicating 
+                  zero-distance or perfect similarity. Default: all ones over the neighbourhood (binary)
+    EXAMPLE:
+    k=Kernel()
+    k.Center=np.mat('3,1')
+    k.Nhood=lambda newTFpt: (newTFpt[0,0]==k.Center[0,0]) and (np.abs(newTFpt[0,1]-k.Center[0,1])<5)             
+    k.Wfunc=lambda newTFpt: k.Center*newTFpt.T/(np.linalg.norm(k.Center)*np.linalg.norm(newTFpt))
+                  
     """
     
     def __init__(self,*arg):
                 
         # kernel properties
-        self.k=np.mat([])
-        self.kdim = np.mat('0,0') 
-        self.kcenter = np.mat('0,0')
-        self.knhood = np.mat([])
-        
+        self.Center=np.mat('0,0') # defautl: the kernel centers at the origin
+        self.Nhood=lambda newTFpt: (newTFpt==self.Center).all() # default: neighnourhood includes only the centeral bin      
+        self.Wfunc=lambda newTFpt: float(self.Nhood(newTFpt)) # default: binary kernel
         
         if len(arg)==0:
             return
         elif len(arg)==2:
-            self.loadkernel(arg[0],arg[1])
+             self.genkernel(arg[0],arg[1])
         elif len(arg)==3:
              self.genkernel(arg[0],arg[1],arg[2])
+
     
-    def loadkernel(self,kernel,center):
-        """
-        loads a pre-defined kernel
-        inputs:
-        kernel: Numpy 2D matrix containing kernel values
-        center: 1 by 2 Numpy matrix containing the row and column numbers of the central element
-        """
-        self.k=kernel
-        self.kdim=np.mat(np.shape(self.k))
-        self.kcenter=center
-        ktemp=self.k; 
-        ktemp[center[0,0],center[0,1]]=0
-        self.knhood=np.mat(np.nonzero(ktemp))
-        
-    
-    def genkernel(self,dim,center,nhood):
+    def genkernel(self,*arg):
         """
         generates the kernel object given the user-defined properties
         inputs:
-        dim: 1 by 2 Numpy matrix containing kernel dimenstions
-        center: 1 by 2 Numpy matrix containing  the row and column numbers of the central element
-        nhood: Numpu 2D matrix, first row contains the neighbours row numbers and the second
-               row the neighbours column numbers
+        Center: 1 by 2 Numpy matrix containing the coordinates of the kernel center
+        Nhood: logical lambda function which determines the set of neighbouring points to the central TF bin
+        KWfunc: lambda function defining the weight value at a time-frequency bin given its distance from 
+                  the central point. The weight values fall in the interval [0,1] with 1 indicating 
+                  zero-distance or perfect similarity. Binary kernel will be generated if no weight 
+                  function is specified (default: wight is one over the entire neighbourhood).
         """
-        self.k=np.mat(np.zeros((dim[0,0],dim[0,1])))
-        self.k[center[0,0],center[0,1]]=1
-        self.k[nhood[0,:],nhood[1,:]]=1
+         
+        if len(arg)==2:
+           self.Center,self.Nhood=arg[0:2]
+        elif len(arg)==3:
+           self.Center,self.Nhood,self.Wfunc=arg[0:3]
+           
+        
+    def sim(self,newTFpt):
+         """
+         Measures the similarity between a series of new time-freq points and the kernel central point
+         input:
+         newTFpt: N by 2 Numpy matrix containing the coordinates of new points in the TF domain. Each
+                  row contains the coordinates of a time-frequency bin.
+         """         
+         
+         N=np.shape(newTFpt)[0]
+         simVal=np.zeros((N,1))
+         for i in range(0,N):
+            simVal[i,:]=float(self.Nhood(newTFpt[i,:]))*self.Wfunc(newTFpt[i,:])
     
-    
-    def plotkernel(self):
-        """
-        plots the kernel matrix
-        """
-        plt.imshow(self.k,cmap='gray_r',interpolation='none')
+         return simVal
+             
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+#class Kernelmat:   
+#    """
+#    The class Kernelmat defines the properties of the proximity kernel, a matrix with values
+#    equal to one for elements that are considered neightbours and zero values elsewhere.
+#    The proximity kernel accounts for features like periodicity, continuity, smoothness, stability over time or frequency,
+#    self-similarity, etc.
+#    
+#    Properties:
+#    -kdim: 1 by 2 Numpy matrix containing kernel dimensions (number of rows and columns)
+#    -kcenter: 1 by 2 Numpy matrix containing row and column numbers of the kernel center 
+#             (distance is measured with respect to this central element)            
+#    -knhood: kernel neighbourhood (group of elements that are considered closest to the central 
+#             element in some measure space). The neighbourhood is defined by a 2-row Numpy matrix
+#             where the first row contains the nerighbors row numbers and the second row the 
+#             neighbours column numbers.the neighbourhood can have patterns s.a. horizontal, 
+#             vertical, periodic, cross-like, etc. 
+#    """
+#    
+#    def __init__(self,*arg):
+#                
+#        # kernel properties
+#        self.k=np.mat([])
+#        self.kdim = np.mat('0,0') 
+#        self.kcenter = np.mat('0,0')
+#        self.knhood = np.mat([])
+#        
+#        
+#        if len(arg)==0:
+#            return
+#        elif len(arg)==2:
+#            self.loadkernel(arg[0],arg[1])
+#        elif len(arg)==3:
+#             self.genkernel(arg[0],arg[1],arg[2])
+#        
+#    
+#    def loadkernel(self,kernel,center):
+#        """
+#        loads a pre-defined kernel
+#        inputs:
+#        kernel: Numpy 2D matrix containing kernel values
+#        center: 1 by 2 Numpy matrix containing the row and column numbers of the central element
+#        """
+#        self.k=kernel
+#        self.kdim=np.mat(np.shape(self.k))
+#        self.kcenter=center
+#        ktemp=self.k; 
+#        ktemp[center[0,0],center[0,1]]=0
+#        self.knhood=np.mat(np.nonzero(ktemp))
+#        
+#    
+#    def genkernel(self,dim,center,nhood):
+#        """
+#        generates the kernel object given the user-defined properties
+#        inputs:
+#        dim: 1 by 2 Numpy matrix containing kernel dimenstions
+#        center: 1 by 2 Numpy matrix containing  the row and column numbers of the central element
+#        nhood: Numpu 2D matrix, first row contains the neighbours row numbers and the second
+#               row the neighbours column numbers
+#        """
+#        self.k=np.mat(np.zeros((dim[0,0],dim[0,1])))
+#        self.k[center[0,0],center[0,1]]=1
+#        self.k[nhood[0,:],nhood[1,:]]=1
+#    
+#    
+#    def plotkernel(self):
+#        """
+#        plots the kernel matrix
+#        """
+#        plt.imshow(self.k,cmap='gray_r',interpolation='none')
 
         
         
