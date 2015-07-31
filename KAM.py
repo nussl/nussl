@@ -44,12 +44,12 @@ def kam(*arg):
     """
     
     if len(arg)==2:
-        Inputfile,KNhoods=arg[0:2]
-        J=len(KNhoods)
-        KWeights=np.ones((1,J))
+        Inputfile,KNhoods=arg[0:2]        
+        KWeights=np.ones((1,len(KNhoods)))
         Numit=1
     elif len(arg)==3:
         Inputfile,KNhoods,KWeights=arg[0:3]
+        J=len(KNhoods)
         Numit=1
     elif len(arg)==4:
         Inputfile,KNhoods,KWeights,Numit=arg[0:4]
@@ -57,16 +57,37 @@ def kam(*arg):
         
     # load the audio mixture from the input path
     Mixture=AudioSignal(Inputfile) 
-    x,tvec=[Mixture.x,Mixture.time]  # time-domain channel mixtures
-    X,Px,Fvec,Tvec=[Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec]  # stft and PSD of the channel mixtures
+    x,tvec=np.array([Mixture.x,Mixture.time])  # time-domain channel mixtures
+    X,Px,Fvec,Tvec=np.array([Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec])  # stft and PSD of the channel mixtures
     
     # initialization
+    # initialize the PSDs with average mixture PSD and the spatial covarince matricies
+    # with identity matrices
+    
+    I=Mixture.numCh # number of channel mixtures
+    J=np.size(KNhoods) # number of sources
+    LF=np.size(Fvec) # length of the frequency vector
+    LT=np.size(Tvec) # length of the timeframe vector
+   
+    fj=np.zeros((LF,LT,J))
+    fj[:,:,0]=np.mean(Px,axis=2)/J
+    for j in range(1,J):
+        fj[:,:,j]=fj[:,:,0]
+        
+    Rj=np.zeros((1,I,I,J))
+    for j in range(0,J):
+        Rj[0,:,:,j]=np.eye(I)
+    Rj=np.tile(Rj,(LF,1,1,1))    
+    
+    ### estimate sources from mixtures over Numit iterations
+    
+    S=np.zeros((LF,LT,J))
+    for i in range(0,Numit):
+      print(i)  
     
     
     
-    
-    
-    return x,X,Px,Fvec,Tvec,tvec
+    #return x,X,Px,Fvec,Tvec,tvec
 
 
 class AudioSignal:   
@@ -138,7 +159,7 @@ class AudioSignal:
         self.x,self.fs,self.enc = wavread(file_name)
         self.x=np.mat(self.x) # make sure the signal is of matrix format
         self.sigLen,self.numCh = np.shape(self.x)
-        self.time=(1./self.fs)*np.arange(self.sigLen)
+        self.time=np.mat((1./self.fs)*np.arange(self.sigLen))
         
     def loadaudiosig(self,audiosig,fs):
         """
@@ -147,7 +168,7 @@ class AudioSignal:
         self.x=np.mat(audiosig) # each column contains one channel mixture
         self.fs = fs
         self.sigLen,self.numCh=np.shape(self.x)
-        self.time=(1./self.fs)*np.arange(self.sigLen)
+        self.time=np.mat((1./self.fs)*np.arange(self.sigLen))
         
         
     def STFT(self):
@@ -215,66 +236,155 @@ class Kernel:
     time-frequency bins outside the neighbourhood.
     
     Properties:
-    -kCenter: 1 by 2 Numpy matrix that contains the coordinates (frequency bin and time frame) of the 
-              center point, with respect to which the similarity/distance of other TF bins
-              is measured
-    -kNhood: logical lambda funcion which determines the set of neighbouring points to the central TF bin.
-    -kWfunc: lambda function defining the weight value at a time-frequency bin given its distance from 
-                  the central point. The weight values fall in the interval [0,1] with 1 indicating 
-                  zero-distance or perfect similarity. Default: all ones over the neighbourhood (binary)
-    EXAMPLE:
-    k=Kernel()
-    k.Center=np.mat('3,1')
-    k.Nhood=lambda newTFpt: (newTFpt[0,0]==k.Center[0,0]) and (np.abs(newTFpt[0,1]-k.Center[0,1])<5)             
-    k.Wfunc=lambda newTFpt: k.Center*newTFpt.T/(np.linalg.norm(k.Center)*np.linalg.norm(newTFpt))
+    
+    -kType: (string) determines whether the kernel is one of the pre-defined kernel types 
+             or a user-defined lambda function. 
+             Predefined choices are: 'cross','horizontal','vertical','periodic'
+             To define a new kernel type, kType should be set to: 'userdef'
+             
+    -kParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any
+             of the pre-defined kernel type is selected, the parameter values should be provided 
+             through kParamVal. Parameters corresponding to the pre-defined kernels are:
+             Cross: (neighbourhood width along the freq. axis in # of freq. bins, neighbour width
+                     along the time axis in # of time frames)
+             Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
+             Horizontal: (neighbourhood width along the time axis in # of time frames)
+             Periodic: (period in # of time frames,neighbourhood width along the time axis 
+                        in # of frames)  
+             
+    -kNhood: logical lambda funcion which receives the coordinates of two time-frequency
+             bins and determines whether they are neighbours (outputs TRUE if neighbour).
+             
+    -kWfunc: lambda function which receives the coordinates of two time-frequency bins that are
+             considered neighbours by kNhood and computes the weight value at the second bin given 
+             its distance from the first bin. The weight values fall in the interval [0,1] with 
+             1 indicating zero-distance or equivalently perfect similarity. 
+             Default: all ones over the neighbourhood (binary kernel)
+    
+
+    
                   
     """
     
     def __init__(self,*arg):
                 
         # kernel properties
-        self.Center=np.mat('0,0') # defautl: the kernel centers at the origin
-        self.Nhood=lambda newTFpt: (newTFpt==self.Center).all() # default: neighnourhood includes only the centeral bin      
-        self.Wfunc=lambda newTFpt: float(self.Nhood(newTFpt)) # default: binary kernel
+        self.kType='' # default: no pre-defined kernel selected
+        self.kParamVal=np.mat([])      
+        self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords1==TFcoords2).all() # default: neighnourhood includes only the centeral bin      
+        self.kWfunc=lambda TFcoords1,TFcoords2: float(self.kNhood(TFcoords1,TFcoords2)) # default: binary kernel
         
+ 
         if len(arg)==0:
-            return
-        elif len(arg)==2:
-             self.genkernel(arg[0],arg[1])
-        elif len(arg)==3:
-             self.genkernel(arg[0],arg[1],arg[2])
+           return
+        elif (len(arg)==2):
+           self.genkernel(arg[0],arg[1]) 
+        elif len(arg)==3: 
+           self.genkernel(arg[0],arg[1],arg[2]) 
 
     
     def genkernel(self,*arg):
         """
         generates the kernel object given the user-defined properties
-        inputs:
-        Center: 1 by 2 Numpy matrix containing the coordinates of the kernel center
-        Nhood: logical lambda function which determines the set of neighbouring points to the central TF bin
-        KWfunc: lambda function defining the weight value at a time-frequency bin given its distance from 
-                  the central point. The weight values fall in the interval [0,1] with 1 indicating 
-                  zero-distance or perfect similarity. Binary kernel will be generated if no weight 
-                  function is specified (default: wight is one over the entire neighbourhood).
-        """
-         
-        if len(arg)==2:
-           self.Center,self.Nhood=arg[0:2]
-        elif len(arg)==3:
-           self.Center,self.Nhood,self.Wfunc=arg[0:3]
-           
         
-    def sim(self,newTFpt):
+        Inputs:
+        Type: (string) determines whether the kernel is one of the pre-defined kernel types 
+             or a user-defined lambda function. 
+             Predefined choices are: 'cross','horizontal','vertical','periodic'
+             To define a new kernel type, kType should be set to: 'userdef'
+             
+        ParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any
+             of the pre-defined kernel type is selected, the parameter values should be provided 
+             through kParamVal. Parameters corresponding to the pre-defined kernels are:
+             Cross: (neighbourhood width along the freq. axis in # of freq. bins, neighbour width
+                     along the time axis in # of time frames)
+             Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
+             Horizontal: (neighbourhood width along the time axis in # of time frames)
+             Periodic: (period in # of time frames,neighbourhood width along the time axis 
+                        in # of frames)  
+             
+        Nhood: logical lambda funcion which receives the coordinates of two time-frequency
+             bins and determines whether they are neighbours (outputs TRUE if neighbour).
+             
+        Wfunc: lambda function which receives the coordinates of two time-frequency bins that are
+             considered neighbours by kNhood and computes the weight value at the second bin given 
+             its distance from the first bin. The weight values fall in the interval [0,1] with 
+             1 indicating zero-distance or equivalently perfect similarity. 
+             Default: all ones over the neighbourhood (binary kernel)
+        """
+   
+        if len(arg)==0:
+            Type=self.kType
+            ParamVal=self.kParamVal
+            Nhood=self.kNhood
+            Wfunc=self.kWfunc
+        elif len(arg)==2:
+            Wfunc=self.kWfunc
+            if (arg[0] in ['cross','horizontal','vertical','periodic']):
+                Type=arg[0]
+                ParamVal=arg[1]
+            elif arg[0]=='userdef':    
+                Type=arg[0]
+                Nhood=arg[1]
+        elif len(arg)==3:
+            if (arg[0] in ['cross','horizontal','vertical','periodic']):
+                Type,ParamVal,Wfunc=arg[0:3]
+            elif arg[0]=='userdef':
+                Type,Nhood,Wfunc=arg[0:3]
+                
+                      
+        if Type=='cross':
+           Df=ParamVal[0,0]
+           Dt=ParamVal[0,1]
+           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords1[0,0]==TFcoords2[0,0] and np.abs(TFcoords1[0,1]-TFcoords2[0,1])<Df)\
+                         or (TFcoords1[0,1]==TFcoords2[0,1] and np.abs(TFcoords1[0,0]-TFcoords2[0,0])<Dt) 
+           self.kWfunc=Wfunc              
+        elif Type=='vertical':
+           Df=ParamVal[0,0]
+           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords2[0,1]==TFcoords1[0,1] and np.abs(TFcoords2[0,0]-TFcoords1[0,0])<Df) 
+           self.kWfunc=Wfunc  
+        elif Type=='horizontal':
+           Dt=ParamVal[0,0]
+           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords2[0,0]==TFcoords1[0,0] and np.abs(TFcoords2[0,1]-TFcoords1[0,1])<Dt) 
+           self.kWfunc=Wfunc  
+        elif Type=='periodic':
+           P=ParamVal[0,0]
+           Dt=ParamVal[0,1]
+           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords2[0,0]==TFcoords1[0,0] and np.abs(TFcoords2[0,1]-TFcoords1[0,1])<Dt\
+                         and np.mod(TFcoords2[0,1]-TFcoords1[0,1],P)==0 ) 
+           self.kWfunc=Wfunc  
+        elif Type=='userdef':
+           self.kNhood=Nhood
+           self.kWfunc=Wfunc
+
+
+        
+    def sim(self,TFcoords1,TFcoords2):
          """
-         Measures the similarity between a series of new time-freq points and the kernel central point
-         input:
-         newTFpt: N by 2 Numpy matrix containing the coordinates of new points in the TF domain. Each
-                  row contains the coordinates of a time-frequency bin.
+         Measures the similarity between a series of new time-freq points and the kernel central point.
+         
+         Inputs:
+         TFcoords1: N1 by 2 Numpy matrix containing coordinates of N1 time-frequency bins.
+                    Each row contains the coordinates of a single bin.
+         TFcoords2: N2 by 2 Numpy matrix containing coordinates of N2 time-frequency bins.
+         
+         Output:
+         simVal: N1 by N2 Numby matrix of similarity values. Similarity values fall in the interval [0,1].
+                 The value of the (i,j) element in simVal determines the amountof similarity (or closeness) 
+                 between the i-th time-frequency bin in TFcoords1 and j-th time-frequency bin in TFcoords2. 
          """         
          
-         N=np.shape(newTFpt)[0]
-         simVal=np.zeros((N,1))
-         for i in range(0,N):
-            simVal[i,:]=float(self.Nhood(newTFpt[i,:]))*self.Wfunc(newTFpt[i,:])
+         self.genkernel() # update the kernel with possibly altered properties
+         
+         N1=np.shape(TFcoords1)[0]
+         N2=np.shape(TFcoords2)[0]
+         
+         simVal=np.zeros((N1,N2))
+         for i in range(0,N1):
+             for j in range(0,N2):
+                Nhood_ij=self.kNhood(TFcoords1[i,:],TFcoords2[j,:])
+                Wfunc_ij=self.kWfunc(TFcoords1[i,:],TFcoords2[j,:])
+                simVal[i,j]=float(Nhood_ij*Wfunc_ij)
     
          return simVal
              
