@@ -29,14 +29,14 @@ def kam(*arg):
     J audio sources from I channel mixtures.
     
     Inputs: 
-    Inputfile: (strig) path of the audio file containing the I-channel mixture
+    Inputfile: (strig) path of the .wav file containing the I-channel audio mixture
     KNhoods: Numpy array of length J - each element is a lambda function defining 
              the proximity kernel for one audio source
     KWeights: (optional) Numpy array of length J - each element gives the similarity measure 
               over the corresponding neighbourhood provided by KNhoods. A similarity
               measure can be either a lambda function (varying weights over neighbouring
               points) or equal to 1 (equal weight over the entire neighbourhood).
-              Default: all weights are equal to 1 (binary kernels).
+              Default: all weights are equal to 1 (binary kernel).
     Numit: (optional) number of iterations of the backfitting algorithm - default: 1
     
     Outputs:
@@ -69,24 +69,55 @@ def kam(*arg):
     LF=np.size(Fvec) # length of the frequency vector
     LT=np.size(Tvec) # length of the timeframe vector
    
-    fj=np.zeros((LF,LT,J))
-    fj[:,:,0]=np.mean(Px,axis=2)/J
-    for j in range(1,J):
-        fj[:,:,j]=fj[:,:,0]
+    X=np.reshape(X.T,(LF*LT,I))  # reshape the STFT tensor into I vectors 
+    MeanPSD=np.mean(Px,axis=2)/(I*J)
+    MeanPSD=np.reshape(MeanPSD.T,(LF*LT,1)) # reshape the mean PSD matrix into a vector
         
-    Rj=np.zeros((1,I,I,J))
+    fj=np.zeros((LF*LT,I*I,J))
     for j in range(0,J):
-        Rj[0,:,:,j]=np.eye(I)
-    Rj=np.tile(Rj,(LF,1,1,1))    
+       fj[:,:,j]=np.tile(MeanPSD,(1,I*I))  # initialize by mean PSD
+    
+           
+    Rj=1j*np.zeros((1,I*I,J))
+    for j in range(0,J):
+        Rj[0,:,j]=np.reshape(np.eye(I),(1,I*I))
+    Rj=np.tile(Rj,(LF*LT,1,1))   
     
     ### estimate sources from mixtures over Numit iterations
     
-    S=np.zeros((LF,LT,J))
-    for i in range(0,Numit):
-      print(i)  
-    
-    
-    
+    S=1j*np.zeros((LF*LT,I,J))
+    for n in range(0,Numit):
+      
+      # compute the inverse term: [sum_j' f_j' R_j']^-1
+        SumFR=np.sum(fj*Rj,axis=2)
+        SumFR.shape=(LF*LT,I,I)
+        InvSumFR=np.linalg.inv(SumFR)
+        InvSumFR=np.reshape(InvSumFR,(LF*LT,I*I))
+        
+        
+        for j in range(0,J):
+          FRinvsum=fj[:,:,j]*Rj[:,:,j]*InvSumFR
+          Stemp=1j*np.zeros((LF*LT,I))
+          for i in range(0,I):
+              FRtemp=FRinvsum[:,i*I:i*I+2]
+              Stemp[:,i]=np.sum(FRtemp*X,axis=1)
+          S[:,:,j]=Stemp
+          
+          Cj=np.repeat(Stemp,I,axis=1)*np.tile(Stemp,(1,I))
+          
+          Cj_reshape=np.reshape(Cj,(LF*LT,I,I))     
+          Cj_trace=np.mat(np.matrix.trace(Cj_reshape.T)).T
+          MeanCj=Cj/np.tile(Cj_trace,(1,I*I))
+          MeanCj_reshape=np.reshape(np.array(MeanCj),(LF,LT,I*I),order='F') 
+          Rj[:,:,j]=np.tile(np.sum(MeanCj_reshape,axis=1),(LT,1))
+          
+          Rj_reshape=np.reshape(Rj[:,:,j],(LF*LT,I,I))
+          InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
+          InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
+          zi=np.matrix.trace(InvRjCj.T)/I          
+          
+          
+          
     #return x,X,Px,Fvec,Tvec,tvec
 
 
@@ -261,9 +292,18 @@ class Kernel:
              1 indicating zero-distance or equivalently perfect similarity. 
              Default: all ones over the neighbourhood (binary kernel)
     
-
+    EXAMPLE: 
     
-                  
+    FF,TT=np.meshgrid(np.arange(5),np.arange(7))
+    TFcoords1=np.mat('2,3')
+    TFcoords2=np.mat(np.zeros((35,2)))
+    TFcoords2[:,0]=np.mat(np.asarray(FF.T).reshape(-1)).T
+    TFcoords2[:,1]=np.mat(np.asarray(TT.T).reshape(-1)).T
+
+    W=lambda TFcoords1,TFcoords2: np.exp(-(TFcoords1-TFcoords2)*(TFcoords1-TFcoords2).T)
+    k_cross=Kernel('cross',np.mat([3,2]),W)
+    simVal_cross=np.reshape(k_cross.sim(TFcoords1,TFcoords2),(5,7))
+                      
     """
     
     def __init__(self,*arg):
@@ -403,89 +443,7 @@ class Kernel:
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-#class Kernelmat:   
-#    """
-#    The class Kernelmat defines the properties of the proximity kernel, a matrix with values
-#    equal to one for elements that are considered neightbours and zero values elsewhere.
-#    The proximity kernel accounts for features like periodicity, continuity, smoothness, stability over time or frequency,
-#    self-similarity, etc.
-#    
-#    Properties:
-#    -kdim: 1 by 2 Numpy matrix containing kernel dimensions (number of rows and columns)
-#    -kcenter: 1 by 2 Numpy matrix containing row and column numbers of the kernel center 
-#             (distance is measured with respect to this central element)            
-#    -knhood: kernel neighbourhood (group of elements that are considered closest to the central 
-#             element in some measure space). The neighbourhood is defined by a 2-row Numpy matrix
-#             where the first row contains the nerighbors row numbers and the second row the 
-#             neighbours column numbers.the neighbourhood can have patterns s.a. horizontal, 
-#             vertical, periodic, cross-like, etc. 
-#    """
-#    
-#    def __init__(self,*arg):
-#                
-#        # kernel properties
-#        self.k=np.mat([])
-#        self.kdim = np.mat('0,0') 
-#        self.kcenter = np.mat('0,0')
-#        self.knhood = np.mat([])
-#        
-#        
-#        if len(arg)==0:
-#            return
-#        elif len(arg)==2:
-#            self.loadkernel(arg[0],arg[1])
-#        elif len(arg)==3:
-#             self.genkernel(arg[0],arg[1],arg[2])
-#        
-#    
-#    def loadkernel(self,kernel,center):
-#        """
-#        loads a pre-defined kernel
-#        inputs:
-#        kernel: Numpy 2D matrix containing kernel values
-#        center: 1 by 2 Numpy matrix containing the row and column numbers of the central element
-#        """
-#        self.k=kernel
-#        self.kdim=np.mat(np.shape(self.k))
-#        self.kcenter=center
-#        ktemp=self.k; 
-#        ktemp[center[0,0],center[0,1]]=0
-#        self.knhood=np.mat(np.nonzero(ktemp))
-#        
-#    
-#    def genkernel(self,dim,center,nhood):
-#        """
-#        generates the kernel object given the user-defined properties
-#        inputs:
-#        dim: 1 by 2 Numpy matrix containing kernel dimenstions
-#        center: 1 by 2 Numpy matrix containing  the row and column numbers of the central element
-#        nhood: Numpu 2D matrix, first row contains the neighbours row numbers and the second
-#               row the neighbours column numbers
-#        """
-#        self.k=np.mat(np.zeros((dim[0,0],dim[0,1])))
-#        self.k[center[0,0],center[0,1]]=1
-#        self.k[nhood[0,:],nhood[1,:]]=1
-#    
-#    
-#    def plotkernel(self):
-#        """
-#        plots the kernel matrix
-#        """
-#        plt.imshow(self.k,cmap='gray_r',interpolation='none')
-
-        
-        
-        
+   
         
         
         
