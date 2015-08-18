@@ -1,10 +1,13 @@
 """
-This module implements the Kernel Additive Modeling (KAM) algorithm for source
-separation. 
+This module implements the Kernel Additive Modeling (KAM) algorithm and its light 
+version (KAML) for source separation. 
 
-Reference:
+References:
 [1] Liutkus, Antoine, et al. "Kernel additive models for source separation." 
     Signal Processing, IEEE Transactions on 62.16 (2014): 4298-4310.
+[2] Liutkus, Antoine, Derry Fitzgerald, and Zafar Rafii. "Scalable audio 
+    separation with light kernel additive modelling." IEEE International 
+    Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.    
     
 Required packages:
 1. Numpy
@@ -30,13 +33,21 @@ def kam(*arg):
     
     Inputs: 
     Inputfile: (strig) path of the .wav file containing the I-channel audio mixture
-    KNhoods: Numpy array of length J - each element is a lambda function defining 
-             the proximity kernel for one audio source
-    KWeights: (optional) Numpy array of length J - each element gives the similarity measure 
-              over the corresponding neighbourhood provided by KNhoods. A similarity
-              measure can be either a lambda function (varying weights over neighbouring
-              points) or equal to 1 (equal weight over the entire neighbourhood).
-              Default: all weights are equal to 1 (binary kernel).
+    SourceKernels: a list containg J sub-lists, each of which contains properties of 
+                   one of source kernels. Kernel properties are:
+                   -kernel type: (string) determines whether the kernel is one of the 
+                                 pre-defined kernel types or a user-defined lambda function. 
+                                 Choices are: 'cross','horizontal','vertical','periodic','userdef'
+                   -kparams (for pre-defined kernels): a Numpy matrix containing the numerical 
+                             values of the kernel parameters.
+                   -knhood (for user-defined kernels): logical lambda function which defines 
+                            receives the coordinates of two time-frequency bins and determines
+                            whether they are neighbours (outputs TRUE if neighbour).
+                   -kwfunc (optional): lambda function which receives the coordinates of two 
+                            neighbouring time-frequency bins and computes the weight value at
+                            the second bin given its distance from the first bin. The weight
+                            values fall in the interval [0,1]. Default: all ones over the 
+                            neighbourhood (binary kernel).
     Numit: (optional) number of iterations of the backfitting algorithm - default: 1
     
     Outputs:
@@ -44,30 +55,33 @@ def kam(*arg):
     """
     
     if len(arg)==2:
-        Inputfile,KNhoods=arg[0:2]        
-        KWeights=np.ones((1,len(KNhoods)))
+        Inputfile,SourceKernels=arg[0:2]
         Numit=1
     elif len(arg)==3:
-        Inputfile,KNhoods,KWeights=arg[0:3]
-        J=len(KNhoods)
-        Numit=1
-    elif len(arg)==4:
-        Inputfile,KNhoods,KWeights,Numit=arg[0:4]
-        
+        Inputfile,SourceKernels,Numit=arg[0:3]
+    
         
     # load the audio mixture from the input path
     Mixture=AudioSignal(Inputfile) 
     x,tvec=np.array([Mixture.x,Mixture.time])  # time-domain channel mixtures
     X,Px,Fvec,Tvec=np.array([Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec])  # stft and PSD of the channel mixtures
     
-    # initialization
+    # Step (2): initialization
     # initialize the PSDs with average mixture PSD and the spatial covarince matricies
     # with identity matrices
     
     I=Mixture.numCh # number of channel mixtures
-    J=np.size(KNhoods) # number of sources
+    J=len(SourceKernels) # number of sources
     LF=np.size(Fvec) # length of the frequency vector
     LT=np.size(Tvec) # length of the timeframe vector
+    
+    F_ind=np.arange(LF) # frequency bin indices
+    T_ind=np.arange(LT) # time frame indices
+    Fmesh,Tmesh=np.meshgrid(F_ind,T_ind) # grid of time-freq indices for the median filtering step
+    TFcoords=np.mat(np.zeros((LF*LT,2),dtype=int)) # all time-freq index combinations
+    TFcoords[:,0]=np.mat(np.asarray(Fmesh.T).reshape(-1)).T 
+    TFcoords[:,1]=np.mat(np.asarray(Tmesh.T).reshape(-1)).T
+    
    
     X=np.reshape(X.T,(LF*LT,I))  # reshape the STFT tensor into I vectors 
     MeanPSD=np.mean(Px,axis=2)/(I*J)
@@ -88,38 +102,66 @@ def kam(*arg):
     S=1j*np.zeros((LF*LT,I,J))
     for n in range(0,Numit):
       
+      # Step (3):
       # compute the inverse term: [sum_j' f_j' R_j']^-1
         SumFR=np.sum(fj*Rj,axis=2)
         SumFR.shape=(LF*LT,I,I)
-        InvSumFR=np.linalg.inv(SumFR)
-        InvSumFR=np.reshape(InvSumFR,(LF*LT,I*I))
+        InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
         
-        
-        for j in range(0,J):
-          FRinvsum=fj[:,:,j]*Rj[:,:,j]*InvSumFR
+        # compute sources, update PSDs and covariance matrices 
+        for ns in range(0,J):
+          FRinvsum=fj[:,:,ns]*Rj[:,:,ns]*InvSumFR
           Stemp=1j*np.zeros((LF*LT,I))
-          for i in range(0,I):
-              FRtemp=FRinvsum[:,i*I:i*I+2]
-              Stemp[:,i]=np.sum(FRtemp*X,axis=1)
-          S[:,:,j]=Stemp
+          for nch in range(0,I):
+              FRtemp=FRinvsum[:,nch*I:nch*I+2]
+              Stemp[:,nch]=np.sum(FRtemp*X,axis=1)
+          S[:,:,ns]=Stemp
           
-          Cj=np.repeat(Stemp,I,axis=1)*np.tile(Stemp,(1,I))
+          # Step (4-a):
+          Cj=np.repeat(Stemp,I,axis=1)*np.tile(np.conj(Stemp),(1,I))
           
+          # Step (4-b):
           Cj_reshape=np.reshape(Cj,(LF*LT,I,I))     
           Cj_trace=np.mat(np.matrix.trace(Cj_reshape.T)).T
           MeanCj=Cj/np.tile(Cj_trace,(1,I*I))
           MeanCj_reshape=np.reshape(np.array(MeanCj),(LF,LT,I*I),order='F') 
-          Rj[:,:,j]=np.tile(np.sum(MeanCj_reshape,axis=1),(LT,1))
+          Rj[:,:,ns]=np.tile(np.sum(MeanCj_reshape,axis=1),(LT,1))
           
-          Rj_reshape=np.reshape(Rj[:,:,j],(LF*LT,I,I))
+          # Step (4-c):
+          # Note: the summation over 't' at step 4-c in the 2014 paper is a typo!
+          #       the correct formulation of zj is: 
+          #       zj=(1/I)*tr(inv(Rj(w)Cj(w,t)
+          Rj_reshape=np.reshape(Rj[:,:,ns],(LF*LT,I,I))
           InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
           InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
-          zi=np.matrix.trace(InvRjCj.T)/I          
+          zj=np.matrix.trace(InvRjCj.T)/I   
           
+          # Step (4-d):
+          # Extract the source kernel type and properties:
+          SKj=SourceKernels[ns]
+          if len(SKj)<2:
+              raise Exception('The information required for generating source kernels is insufficient.'\
+                               ' Each sub-list in SourceKernels must contain at least two elements.') 
+          elif len(SKj)==2:
+              Kj=Kernel(SKj[0],SKj[1])
+          elif len(SKj)==3:
+              Kj=Kernel(SKj[0],SKj[1],SKj[2])
+              
+          import time    
           
+          start_time = time.clock()    
+          aa=Kj.kNhood(TFcoords[0:1,:],TFcoords)
+          print time.clock() - start_time, "seconds"
           
-    #return x,X,Px,Fvec,Tvec,tvec
-
+          bb=Kj.kWfunc(TFcoords[0:1,:],TFcoords)
+          
+          start_time = time.clock() 
+          cc=Kj.sim(TFcoords[0:1000,:],TFcoords)
+          print time.clock() - start_time, "seconds"
+          
+          dd=np.reshape(aa,(LF,LT))
+          
+ 
 
 class AudioSignal:   
     """
@@ -282,6 +324,9 @@ class Kernel:
              Horizontal: (neighbourhood width along the time axis in # of time frames)
              Periodic: (period in # of time frames,neighbourhood width along the time axis 
                         in # of frames)  
+             Note: neighbourhood width is measured in only one direction, e.g. only to the
+                   right of a time-freq bin in the case of a horizontal kernel, so the whole
+                   length of the neighbourhood would be twice the specified width.
              
     -kNhood: logical lambda funcion which receives the coordinates of two time-frequency
              bins and determines whether they are neighbours (outputs TRUE if neighbour).
@@ -317,6 +362,8 @@ class Kernel:
  
         if len(arg)==0:
            return
+        elif len(arg)==1:
+            self.genkernel(arg[0])
         elif (len(arg)==2):
            self.genkernel(arg[0],arg[1]) 
         elif len(arg)==3: 
@@ -358,8 +405,16 @@ class Kernel:
             ParamVal=self.kParamVal
             Nhood=self.kNhood
             Wfunc=self.kWfunc
-        elif len(arg)==2:
+        elif len(arg)==1:
+            Type=arg[0]
+            ParamVal=self.kParamVal
+            Nhood=self.kNhood
             Wfunc=self.kWfunc
+            if Type!='userdef':
+               print('Warning: kernel parameter values are not specified.')
+            elif Type=='userdef':
+               print('Warning: kernel neighbourhood is not defined.')
+        elif len(arg)==2:
             if (arg[0] in ['cross','horizontal','vertical','periodic']):
                 Type=arg[0]
                 ParamVal=arg[1]
@@ -372,32 +427,46 @@ class Kernel:
             elif arg[0]=='userdef':
                 Type,Nhood,Wfunc=arg[0:3]
                 
-                      
-        if Type=='cross':
-           Df=ParamVal[0,0]
-           Dt=ParamVal[0,1]
-           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords1[0,0]==TFcoords2[0,0] and np.abs(TFcoords1[0,1]-TFcoords2[0,1])<Df)\
-                         or (TFcoords1[0,1]==TFcoords2[0,1] and np.abs(TFcoords1[0,0]-TFcoords2[0,0])<Dt) 
-           self.kWfunc=Wfunc              
-        elif Type=='vertical':
-           Df=ParamVal[0,0]
-           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords2[0,1]==TFcoords1[0,1] and np.abs(TFcoords2[0,0]-TFcoords1[0,0])<Df) 
-           self.kWfunc=Wfunc  
-        elif Type=='horizontal':
-           Dt=ParamVal[0,0]
-           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords2[0,0]==TFcoords1[0,0] and np.abs(TFcoords2[0,1]-TFcoords1[0,1])<Dt) 
-           self.kWfunc=Wfunc  
-        elif Type=='periodic':
-           P=ParamVal[0,0]
-           Dt=ParamVal[0,1]
-           self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords2[0,0]==TFcoords1[0,0] and np.abs(TFcoords2[0,1]-TFcoords1[0,1])<Dt\
-                         and np.mod(TFcoords2[0,1]-TFcoords1[0,1],P)==0 ) 
-           self.kWfunc=Wfunc  
-        elif Type=='userdef':
-           self.kNhood=Nhood
-           self.kWfunc=Wfunc
-
-
+        self.kType=Type
+        self.kParamVal=ParamVal
+        
+        if len(arg)>1:
+            if Type=='cross':
+               Df=ParamVal[0,0]
+               Dt=ParamVal[0,1]                           
+               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                            (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
+                            np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                            (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df)))
+                          
+            elif Type=='vertical':
+               Df=ParamVal[0,0]               
+               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                            (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df))
+                              
+            elif Type=='horizontal':
+               Dt=ParamVal[0,0]               
+               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                            (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt))
+                                     
+            elif Type=='periodic':
+               P=ParamVal[0,0]
+               Dt=ParamVal[0,1]
+               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                            (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
+                            (np.mod(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)),P)==0))         
+                            
+            elif Type=='userdef':
+               self.kNhood=Nhood
+               
+  
+        if len(arg)==2:
+             self.kWfunc=lambda TFcoords1,TFcoords2: self.kNhood(TFcoords1,TFcoords2).astype(np.float)
+        elif len(arg)==3:
+            self.kWfunc=Wfunc
+            
+            
+            
         
     def sim(self,TFcoords1,TFcoords2):
          """
@@ -420,12 +489,17 @@ class Kernel:
          N2=np.shape(TFcoords2)[0]
          
          simVal=np.zeros((N1,N2))
-         for i in range(0,N1):
-             for j in range(0,N2):
-                Nhood_ij=self.kNhood(TFcoords1[i,:],TFcoords2[j,:])
-                Wfunc_ij=self.kWfunc(TFcoords1[i,:],TFcoords2[j,:])
-                simVal[i,j]=float(Nhood_ij*Wfunc_ij)
-    
+         
+         Nhood_vec=self.kNhood(TFcoords1,TFcoords2)
+         Wfunc_vec=self.kWfunc(TFcoords1,TFcoords2)
+         simVal=np.multiply(Nhood_vec,Wfunc_vec).astype(np.float)
+  
+#         for i in range(0,N1):
+#                Nhood_i=self.kNhood(TFcoords1[i,:],TFcoords2)
+#                Wfunc_i=self.kWfunc(TFcoords1[i,:],TFcoords2)
+#                simVal[i,:]=np.multiply(Nhood_i,Wfunc_i).astype(np.float)
+                
+   
          return simVal
              
         
