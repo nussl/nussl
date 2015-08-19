@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 from scikits.audiolab import wavread, play
 from f_stft import f_stft
 from f_istft import f_istft
+import time    
 
 def kam(*arg):
     """
@@ -32,7 +33,9 @@ def kam(*arg):
     J audio sources from I channel mixtures.
     
     Inputs: 
-    Inputfile: (strig) path of the .wav file containing the I-channel audio mixture
+    Inputfile: list of length 2. The first element is a string indicating the path of the .wav 
+               file containing the I-channel audio mixture. The second element is the length
+               of the mixture (in seconds) to be extracted and analyzed.
     SourceKernels: a list containg J sub-lists, each of which contains properties of 
                    one of source kernels. Kernel properties are:
                    -kernel type: (string) determines whether the kernel is one of the 
@@ -51,7 +54,7 @@ def kam(*arg):
     Numit: (optional) number of iterations of the backfitting algorithm - default: 1
     
     Outputs:
-    shat: a J-row Numpy matrix containing J time-domain estimates of sources        
+    shat: a J by I by Ls Numpy matrix containing J time-domain source images on I channels        
     """
     
     if len(arg)==2:
@@ -62,7 +65,7 @@ def kam(*arg):
     
         
     # load the audio mixture from the input path
-    Mixture=AudioSignal(Inputfile) 
+    Mixture=AudioSignal(Inputfile[0],Inputfile[1])
     x,tvec=np.array([Mixture.x,Mixture.time])  # time-domain channel mixtures
     X,Px,Fvec,Tvec=np.array([Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec])  # stft and PSD of the channel mixtures
     
@@ -134,7 +137,8 @@ def kam(*arg):
           Rj_reshape=np.reshape(Rj[:,:,ns],(LF*LT,I,I))
           InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
           InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
-          zj=np.matrix.trace(InvRjCj.T)/I   
+          zj=np.real(np.matrix.trace(InvRjCj.T)/I) 
+          zj=np.mat(zj) 
           
           # Step (4-d):
           # Extract the source kernel type and properties:
@@ -146,20 +150,33 @@ def kam(*arg):
               Kj=Kernel(SKj[0],SKj[1])
           elif len(SKj)==3:
               Kj=Kernel(SKj[0],SKj[1],SKj[2])
+           
+          start_time = time.clock()
+                           
+          for ft in range(0,LF*LT):
+              simTemp=Kj.sim(TFcoords[ft],TFcoords)
+              NhoodTemp=np.nonzero(simTemp)
+              zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
+              fj[ft,:,ns]=np.median(np.array(zjNhood))
               
-          import time    
-          
-          start_time = time.clock()    
-          aa=Kj.kNhood(TFcoords[0:1,:],TFcoords)
-          print time.clock() - start_time, "seconds"
-          
-          bb=Kj.kWfunc(TFcoords[0:1,:],TFcoords)
-          
-          start_time = time.clock() 
-          cc=Kj.sim(TFcoords[0:1000,:],TFcoords)
-          print time.clock() - start_time, "seconds"
-          
-          dd=np.reshape(aa,(LF,LT))
+          print time.clock() - start_time, "seconds"    
+    
+    
+    # Reshape the spectrograms
+    Shat=1j*np.zeros((LF,LT,I,J)) # estimated source STFTs
+    for ns in range(0,J):
+        for nch in range(0,I):
+            Shat[:,:,nch,ns]=np.reshape(S[:,nch,ns],(LT,LF)).T
+            
+    # Compute the inverse STFT of the estimated sources
+    shat=np.zeros((x.shape[0],I,J))
+    sigTemp=AudioSignal()
+    sigTemp.numCh=I
+    for ns in range(0,J):
+        sigTemp.X=Shat[:,:,:,ns]
+        shat[:,:,ns]=sigTemp.iSTFT()[0][0:x.shape[0]]
+    
+    return shat,fj,Rj          
           
  
 
@@ -170,7 +187,7 @@ class AudioSignal:
     
     Read/write signal properties:
     - s: signal
-    - sigLen: signal length
+    - sigLen: signal length (in number of samples)
     
     Read/write stft properties:
     - windowtype (e.g. 'Rectangular', 'Hamming', 'Hanning', 'Blackman')
@@ -216,23 +233,43 @@ class AudioSignal:
         if len(arg)==0:
             return
         elif len(arg)==1:
-            self.loadaudiofile(arg[0])
-            self.STFT()
+            self.loadaudiofile(arg[0])            
         elif len(arg)==2:
-             self.loadaudiosig(arg[0],arg[1])
-             self.STFT()
+            if type(arg[0])==str:
+               self.loadaudiofile(arg[0],arg[1])
+            else:
+               self.loadaudiosig(arg[0],arg[1])
+             
+        self.STFT()
                 
    
     
-    def loadaudiofile(self,file_name):
+    def loadaudiofile(self,*arg):
         """
         loads the audio signal from a .wav file
-        input: file_name is a string argument indicating the name of the .wav file
+        inputs: 
+        file_name is a string argument indicating the name of the .wav file
+        siglen (in seconds): optional input indicating the length of the signal to be extracted
         """
-        self.x,self.fs,self.enc = wavread(file_name)
-        self.x=np.mat(self.x) # make sure the signal is of matrix format
-        self.sigLen,self.numCh = np.shape(self.x)
+        
+        if len(arg)==1:
+           file_name=arg[0]
+           siglen='full length'
+        elif len(arg)==2:
+           file_name,siglen=arg[0:2]
+        
+        x,self.fs,self.enc = wavread(file_name)
+        self.numCh=np.shape(x)[1]
+        if siglen=='full length':
+           self.x=np.mat(x) # make sure the signal is of matrix format
+           self.sigLen= np.shape(x)[0]           
+        else:
+           self.sigLen=int(np.floor(siglen*self.fs))
+           self.x=np.mat(x[0:self.sigLen,:])
+           
         self.time=np.mat((1./self.fs)*np.arange(self.sigLen))
+        
+        
         
     def loadaudiosig(self,audiosig,fs):
         """
