@@ -33,9 +33,14 @@ def kam(*arg):
     J audio sources from I channel mixtures.
     
     Inputs: 
-    Inputfile: list of length 2. The first element is a string indicating the path of the .wav 
-               file containing the I-channel audio mixture. The second element is the length
-               of the mixture (in seconds) to be extracted and analyzed.
+    Inputfile: list of length 2. It can contain either:
+               - A string indicating the path of the .wav file containing the I-channel 
+                 audio mixture as the first element and the length of the mixture (in seconds)
+                 as the second element.
+               OR
+               - An I-column Numpy matrix containing samples of the time-domain mixture as 
+                 the first element and the sampling rate as the second element.
+          
     SourceKernels: a list containg J sub-lists, each of which contains properties of 
                    one of source kernels. Kernel properties are:
                    -kernel type: (string) determines whether the kernel is one of the 
@@ -54,7 +59,7 @@ def kam(*arg):
     Numit: (optional) number of iterations of the backfitting algorithm - default: 1
     
     Outputs:
-    shat: a J by I by Ls Numpy matrix containing J time-domain source images on I channels        
+    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels        
     """
     
     if len(arg)==2:
@@ -64,14 +69,11 @@ def kam(*arg):
         Inputfile,SourceKernels,Numit=arg[0:3]
     
         
-    # load the audio mixture from the input path
+    # Step (1): 
+    # Load the audio mixture from the input path
     Mixture=AudioSignal(Inputfile[0],Inputfile[1])
     x,tvec=np.array([Mixture.x,Mixture.time])  # time-domain channel mixtures
     X,Px,Fvec,Tvec=np.array([Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec])  # stft and PSD of the channel mixtures
-    
-    # Step (2): initialization
-    # initialize the PSDs with average mixture PSD and the spatial covarince matricies
-    # with identity matrices
     
     I=Mixture.numCh # number of channel mixtures
     J=len(SourceKernels) # number of sources
@@ -83,8 +85,24 @@ def kam(*arg):
     Fmesh,Tmesh=np.meshgrid(F_ind,T_ind) # grid of time-freq indices for the median filtering step
     TFcoords=np.mat(np.zeros((LF*LT,2),dtype=int)) # all time-freq index combinations
     TFcoords[:,0]=np.mat(np.asarray(Fmesh.T).reshape(-1)).T 
-    TFcoords[:,1]=np.mat(np.asarray(Tmesh.T).reshape(-1)).T
+    TFcoords[:,1]=np.mat(np.asarray(Tmesh.T).reshape(-1)).T    
     
+    # Generate source kernels:
+    Kj=[]
+    for ns in range(0,J):
+          SKj=SourceKernels[ns]
+          if len(SKj)<2:
+              raise Exception('The information required for generating source kernels is insufficient.'\
+                               ' Each sub-list in SourceKernels must contain at least two elements.') 
+          elif len(SKj)==2:
+              Kj.append(Kernel(SKj[0],SKj[1]))
+          elif len(SKj)==3:
+              Kj.append(Kernel(SKj[0],SKj[1],SKj[2]))    
+    
+    
+    # Step (2): initialization
+    # Initialize the PSDs with average mixture PSD and the spatial covarince matricies
+    # with identity matrices
    
     X=np.reshape(X.T,(LF*LT,I))  # reshape the STFT tensor into I vectors 
     MeanPSD=np.mean(Px,axis=2)/(I*J)
@@ -100,7 +118,9 @@ def kam(*arg):
         Rj[0,:,j]=np.reshape(np.eye(I),(1,I*I))
     Rj=np.tile(Rj,(LF*LT,1,1))   
     
-    ### estimate sources from mixtures over Numit iterations
+    ### Kernel Backfitting ###
+    
+    start_time = time.clock()
     
     S=1j*np.zeros((LF*LT,I,J))
     for n in range(0,Numit):
@@ -141,26 +161,19 @@ def kam(*arg):
           zj=np.mat(zj) 
           
           # Step (4-d):
-          # Extract the source kernel type and properties:
-          SKj=SourceKernels[ns]
-          if len(SKj)<2:
-              raise Exception('The information required for generating source kernels is insufficient.'\
-                               ' Each sub-list in SourceKernels must contain at least two elements.') 
-          elif len(SKj)==2:
-              Kj=Kernel(SKj[0],SKj[1])
-          elif len(SKj)==3:
-              Kj=Kernel(SKj[0],SKj[1],SKj[2])
-           
-          start_time = time.clock()
-                           
+          # Median filter the estimated PSDs  
+
+          start_time = time.clock()               
           for ft in range(0,LF*LT):
-              simTemp=Kj.sim(TFcoords[ft],TFcoords)
+              simTemp=Kj[ns].sim(TFcoords[ft,:],TFcoords)
               NhoodTemp=np.nonzero(simTemp)
               zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
               fj[ft,:,ns]=np.median(np.array(zjNhood))
               
-          print time.clock() - start_time, "seconds"    
+          print time.clock() - start_time, "seconds" 
+            
     
+    print time.clock() - start_time, "seconds"    
     
     # Reshape the spectrograms
     Shat=1j*np.zeros((LF,LT,I,J)) # estimated source STFTs
@@ -239,7 +252,8 @@ class AudioSignal:
                self.loadaudiofile(arg[0],arg[1])
             else:
                self.loadaudiosig(arg[0],arg[1])
-             
+        elif len(arg)==3:
+            self.loadaudiofile(arg[0],arg[1],arg[2])
         self.STFT()
                 
    
@@ -249,7 +263,10 @@ class AudioSignal:
         loads the audio signal from a .wav file
         inputs: 
         file_name is a string argument indicating the name of the .wav file
-        siglen (in seconds): optional input indicating the length of the signal to be extracted
+        siglen (in seconds): optional input indicating the length of the signal to be extracted. 
+                             Default: full length of the signal
+        sigstart (in seconds): optional input indicating the starting point of the section to be 
+                               extracted. Default: 0 seconds       
         """
         
         if len(arg)==1:
@@ -257,6 +274,9 @@ class AudioSignal:
            siglen='full length'
         elif len(arg)==2:
            file_name,siglen=arg[0:2]
+           sigstart=0
+        elif len(arg)==3:
+           file_name,siglen,sigstart=arg[0:3]
         
         x,self.fs,self.enc = wavread(file_name)
         self.numCh=np.shape(x)[1]
@@ -265,7 +285,8 @@ class AudioSignal:
            self.sigLen= np.shape(x)[0]           
         else:
            self.sigLen=int(np.floor(siglen*self.fs))
-           self.x=np.mat(x[0:self.sigLen,:])
+           startpt=int(np.floor(sigstart*self.fs))
+           self.x=np.mat(x[startpt:startpt+self.sigLen,:])
            
         self.time=np.mat((1./self.fs)*np.arange(self.sigLen))
         
@@ -280,7 +301,13 @@ class AudioSignal:
         self.sigLen,self.numCh=np.shape(self.x)
         self.time=np.mat((1./self.fs)*np.arange(self.sigLen))
         
-        
+    def playaudio(self):
+        """
+        plays the audio signal
+        """
+        play(self.x[:,0].T,self.fs)
+
+    
     def STFT(self):
         """
         computes the STFT of the audio signal and returns:
@@ -522,21 +549,10 @@ class Kernel:
          
          self.genkernel() # update the kernel with possibly altered properties
          
-         N1=np.shape(TFcoords1)[0]
-         N2=np.shape(TFcoords2)[0]
-         
-         simVal=np.zeros((N1,N2))
-         
          Nhood_vec=self.kNhood(TFcoords1,TFcoords2)
          Wfunc_vec=self.kWfunc(TFcoords1,TFcoords2)
-         simVal=np.multiply(Nhood_vec,Wfunc_vec).astype(np.float)
-  
-#         for i in range(0,N1):
-#                Nhood_i=self.kNhood(TFcoords1[i,:],TFcoords2)
-#                Wfunc_i=self.kWfunc(TFcoords1[i,:],TFcoords2)
-#                simVal[i,:]=np.multiply(Nhood_i,Wfunc_i).astype(np.float)
-                
-   
+         simVal=np.multiply(Nhood_vec,Wfunc_vec).astype(np.float) 
+
          return simVal
              
         
