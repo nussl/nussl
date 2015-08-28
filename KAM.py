@@ -35,8 +35,10 @@ def kam(*arg):
     Inputs: 
     Inputfile: list of length 2. It can contain either:
                - A string indicating the path of the .wav file containing the I-channel 
-                 audio mixture as the first element and the length of the mixture (in seconds)
-                 as the second element.
+                 audio mixture as the first element. The second (optional) element indicates
+                 the length of the portion of the signal to be extracted in seconds(defult is 
+                 the full lengths of the siganl) The third (optional) element indicates the 
+                 starting point of the portion of the signal to be extracted (default is 0 sec).
                OR
                - An I-column Numpy matrix containing samples of the time-domain mixture as 
                  the first element and the sampling rate as the second element.
@@ -71,7 +73,11 @@ def kam(*arg):
         
     # Step (1): 
     # Load the audio mixture from the input path
-    Mixture=AudioSignal(Inputfile[0],Inputfile[1])
+    if len(Inputfile)==2:
+        Mixture=AudioSignal(Inputfile[0],Inputfile[1])
+    elif len(Inputfile)==3:
+        Mixture=AudioSignal(Inputfile[0],Inputfile[1],Inputfile[2])
+        
     x,tvec=np.array([Mixture.x,Mixture.time])  # time-domain channel mixtures
     X,Px,Fvec,Tvec=np.array([Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec])  # stft and PSD of the channel mixtures
     
@@ -82,11 +88,12 @@ def kam(*arg):
     
     F_ind=np.arange(LF) # frequency bin indices
     T_ind=np.arange(LT) # time frame indices
-    Fmesh,Tmesh=np.meshgrid(F_ind,T_ind) # grid of time-freq indices for the median filtering step
+    Tmesh,Fmesh=np.meshgrid(T_ind,F_ind) # grid of time-freq indices for the median filtering step
     TFcoords=np.mat(np.zeros((LF*LT,2),dtype=int)) # all time-freq index combinations
     TFcoords[:,0]=np.mat(np.asarray(Fmesh.T).reshape(-1)).T 
-    TFcoords[:,1]=np.mat(np.asarray(Tmesh.T).reshape(-1)).T    
-    
+    TFcoords[:,1]=np.mat(np.asarray(Tmesh.T).reshape(-1)).T   
+ 
+       
     # Generate source kernels:
     Kj=[]
     for ns in range(0,J):
@@ -105,7 +112,8 @@ def kam(*arg):
     # with identity matrices
    
     X=np.reshape(X.T,(LF*LT,I))  # reshape the STFT tensor into I vectors 
-    MeanPSD=np.mean(Px,axis=2)/(I*J)
+    if I>1: MeanPSD=np.mean(Px,axis=2)/(I*J)
+    else: MeanPSD=Px/(J) 
     MeanPSD=np.reshape(MeanPSD.T,(LF*LT,1)) # reshape the mean PSD matrix into a vector
         
     fj=np.zeros((LF*LT,I*I,J))
@@ -120,7 +128,7 @@ def kam(*arg):
     
     ### Kernel Backfitting ###
     
-    start_time = time.clock()
+    #start_time = time.clock()
     
     S=1j*np.zeros((LF*LT,I,J))
     for n in range(0,Numit):
@@ -163,23 +171,29 @@ def kam(*arg):
           # Step (4-d):
           # Median filter the estimated PSDs  
 
-          start_time = time.clock()               
+          #start_time = time.clock()               
           for ft in range(0,LF*LT):
               simTemp=Kj[ns].sim(TFcoords[ft,:],TFcoords)
               NhoodTemp=np.nonzero(simTemp)
               zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
               fj[ft,:,ns]=np.median(np.array(zjNhood))
               
-          print time.clock() - start_time, "seconds" 
+          #print time.clock() - start_time, "seconds" 
             
     
-    print time.clock() - start_time, "seconds"    
+    #print time.clock() - start_time, "seconds"   
+    
+    # Reshape the PSDs
+    fhat=np.zeros((LF,LT,J))
+    for ns in range(0,J):
+      fhat[:,:,ns]=np.reshape(fj[:,0,ns],(LT,LF)).T  
     
     # Reshape the spectrograms
-    Shat=1j*np.zeros((LF,LT,I,J)) # estimated source STFTs
+    Shat=1j*np.zeros((LF,LT,I,J)) # estimated source STFTs    
     for ns in range(0,J):
         for nch in range(0,I):
             Shat[:,:,nch,ns]=np.reshape(S[:,nch,ns],(LT,LF)).T
+            
             
     # Compute the inverse STFT of the estimated sources
     shat=np.zeros((x.shape[0],I,J))
@@ -189,7 +203,7 @@ def kam(*arg):
         sigTemp.X=Shat[:,:,:,ns]
         shat[:,:,ns]=sigTemp.iSTFT()[0][0:x.shape[0]]
     
-    return shat,fj,Rj          
+    return shat,fhat     
           
  
 
@@ -236,11 +250,11 @@ class AudioSignal:
         self.Fvec=np.mat([]) # freq. vector
         self.Tvec=np.mat([]) # time vector
         self.windowtype = 'Hamming'
-        self.windowlength = int(0.06*self.fs)
+        self.windowlength = 1024 #int(0.06*self.fs)
         self.nfft = self.windowlength
         self.overlapRatio = 0.5
         self.overlapSamp=int(np.ceil(self.overlapRatio*self.windowlength))
-        self.makeplot = 1
+        self.makeplot = 0
         self.fmaxplot=self.fs/2
         
         if len(arg)==0:
@@ -279,6 +293,7 @@ class AudioSignal:
            file_name,siglen,sigstart=arg[0:3]
         
         x,self.fs,self.enc = wavread(file_name)
+        if x.ndim<2: x=np.expand_dims(x,axis=1)
         self.numCh=np.shape(x)[1]
         if siglen=='full length':
            self.x=np.mat(x) # make sure the signal is of matrix format
@@ -317,9 +332,9 @@ class AudioSignal:
         self.Tvec: vector of time frames
         """
         
-        for i in range(0,self.numCh):   
+        for i in range(0,self.numCh):  
             Xtemp,Ptemp,Ftemp,Ttemp = f_stft(self.x[:,i].T,self.windowlength,self.windowtype,
-                       self.overlapSamp,self.nfft,self.fs,0)
+                       self.overlapSamp,self.fs,nfft=self.nfft,mkplot=0)
                        
             if np.size(self.X) ==0:
                 self.X=Xtemp
@@ -331,9 +346,9 @@ class AudioSignal:
                 self.P=np.dstack([self.P,Ptemp])
         
         if self.makeplot==1:
-            plt.figure()
-            f_stft(self.x[:,i].T,self.windowlength,self.windowtype,
-                       np.ceil(self.overlapRatio*self.windowlength),self.nfft,self.fs,self.makeplot,self.fmaxplot)
+            f_stft(self.x[:,0].T,self.windowlength,self.windowtype,
+                       np.ceil(self.overlapRatio*self.windowlength),self.fs,nfft=self.nfft,
+                       mkplot=self.makeplot,fmax=self.fmaxplot)
             plt.show()
             
         return self.X,self.P,self.Fvec,self.Tvec
@@ -353,8 +368,7 @@ class AudioSignal:
          else:         
              self.x=np.mat([])
              for i in range(0,self.numCh):
-                 x_temp,t_temp=f_istft(self.X[:,:,i],self.windowlength,self.windowtype,self.overlapSamp,
-                                self.nfft,self.fs)
+                 x_temp,t_temp=f_istft(self.X[:,:,i],self.windowlength,self.windowtype,self.overlapSamp,self.fs)
              
                  if np.size(self.x)==0:
                      self.x=np.mat(x_temp).T
