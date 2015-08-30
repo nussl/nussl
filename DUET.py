@@ -74,20 +74,17 @@ def duet(*arg):
     L=sparam.winlen; win=sparam.wintype; ovp=sparam.overlap; nfft=sparam.numfreq; fs=sparam.sampfreq;
     a_min=adparam.amin; a_max=adparam.amax; a_num=adparam.anum;
     d_min=adparam.dmin; d_max=adparam.dmax; d_num=adparam.dnum;
-    
-    #L,win,ovp,nfft,fs = sparam[0:5]
-    #a_min,a_max,a_num,d_min,d_max,d_num = adparam[0:6]
 
     thr,N,mindist=Pr[0:3]
     
     # Compute the STFT of the two channel mixtures
-    X1,P1,F,T = f_stft(x[0,:],L,win,ovp,nfft,fs,0)
-    X2,P2,F,T = f_stft(x[1,:],L,win,ovp,nfft,fs,0)
+    X1,P1,F,T = f_stft(x[0,:],L,win,ovp,fs,nfft,0)
+    X2,P2,F,T = f_stft(x[1,:],L,win,ovp,fs,nfft,0)
     # remove dc component to avoid dividing by zero freq. in the delay estimation
     X1=X1[1::,:]; X2=X2[1::,:]; 
     Lf=len(F); Lt=len(T);
     
-    # Compute the freq. matrix for later usein phase calculations
+    # Compute the freq. matrix for later use in phase calculations
     wmat=np.array(np.tile(np.mat(F[1::]).T,(1,Lt)))*(2*np.pi/fs)
     
     # Calculate the symmetric attenuation (alpha) and delay (delta) for each 
@@ -115,7 +112,6 @@ def duet(*arg):
     H=np.histogram2d(alpha_vec, delta_vec, bins=np.array([a_num[0],d_num[0]]), 
                      range=np.array([[a_min,a_max],[d_min,d_max]]), normed=False, weights=tfw_vec)
 
-    # plot the 2D histogram
     hist=H[0]/H[0].max()   
     agrid=H[1]
     dgrid=H[2]
@@ -123,13 +119,14 @@ def duet(*arg):
     # smooth the histogram - local average 3-by-3 neightboring bins 
     hist=twoDsmooth(hist,3)
     
-    # normalize the histogram
+    # normalize and plot the histogram
     hist=hist/hist.max()
     
     if plothist=='y':
         # plot the histogram in 2D and 3D spaces
         AA=np.tile(agrid[1::],(d_num,1)).T
         DD=np.tile(dgrid[1::].T,(a_num,1))
+        fig = plt.figure()
         plt.pcolormesh(AA,DD,hist)
         plt.xlabel(r'$\alpha$',fontsize=16)
         plt.ylabel(r'$\delta$',fontsize=16)
@@ -176,9 +173,9 @@ def duet(*arg):
     xhat=np.zeros((N,Lx))
     for i in range(0,N):
         mask=(bestind==i)
-        Xm=np.vstack([np.zeros((1,Lt)),(X1+atnpeak[i]*np.exp(-1j*wmat*deltapeak[i])*X2)
+        Xm=np.vstack([np.zeros((1,Lt)),(X1+atnpeak[i]*np.exp(1j*wmat*deltapeak[i])*X2)
         /(1+atnpeak[i]**2)*mask])
-        xi=f_istft(Xm,L,win,ovp,nfft,fs)
+        xi=f_istft(Xm,L,win,ovp,fs)
         
         xhat[i,:]=np.array(xi)[0,0:Lx]
         # add back to the separated signal a portion of the mixture to eliminate
