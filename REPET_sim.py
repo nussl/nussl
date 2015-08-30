@@ -81,9 +81,9 @@ def repet_sim(*arg):
     
     # compute the spectrograms of all channels
     M,N = np.shape(x)
-    X=f_stft(np.mat(x[0,:]),L,win,ovp,nfft,fs,0)[0]
+    X=f_stft(np.mat(x[0,:]),L,win,ovp,fs,nfft,0)[0]
     for i in range(1,M):
-         Sx= f_stft(np.mat(x[i,:]),L,win,ovp,nfft,fs,0)[0]
+         Sx= f_stft(np.mat(x[i,:]),L,win,ovp,fs,nfft,0)[0]
          X=np.dstack([X,Sx])
     V=np.abs(X)  
     if M==1: 
@@ -94,6 +94,7 @@ def repet_sim(*arg):
     S=sim_mat(Vavg)
     
     # plot the similarity matrix 
+    plt.figure()
     plt.pcolormesh(S)
     plt.axis('tight')
     plt.title('Similarity Matrix')
@@ -107,7 +108,7 @@ def repet_sim(*arg):
         RepMask=rep_mask(V[:,:,i],S)
         RepMask[1:fc,:]=1  #high-pass filter the foreground # ????? why does it dismiss DC
         XMi=RepMask*X[:,:,i]
-        yi=f_istft(XMi,L,win,ovp,nfft,fs)[0]
+        yi=f_istft(XMi,L,win,ovp,fs)[0]
         y[i,:]=yi[0:N]    
     
     return y
@@ -131,9 +132,20 @@ def sim_mat(X):
         Xi=X[i,:]
         rowNorm=np.sqrt(np.dot(Xi,Xi))
         X[i,:]=Xi/(rowNorm+1e-16)
+        
+#    EuDist=np.zeros((Lt,Lt))    
+#    for i in range(0,Lt):
+#        Xi=X[i,:]
+#        for j in range(0,Lt):
+#            Xj=X[j,:]
+#            if i==j:
+#              EuDist[i,j]=1
+#            else:
+#              EuDist[i,j]=np.sqrt(np.sum((Xi-Xj)**2))
+            
     
     # compute the similarity matrix    
-    S=np.dot(X,X.T)    
+    S=(np.dot(X,X.T))#/(EuDist)  
     return S
     
     
@@ -169,51 +181,98 @@ def sim_ind(S,simparam):
     return I
     
     
-def find_peaks(data,min_thr,min_dist,max_num):
+#def find_peaks(data,min_thr,min_dist,max_num):
+#    """
+#    The 'find_peaks' function receives a row vector array of positive numerical 
+#    values (in [0,1]) and finds the peak values and corresponding indices.
+#    
+#    Inputs: 
+#    data: row vector of numerical values (in [0,1])
+#    min_thr: minimum threshold (in [0,1]) on data values
+#    min_dist: minimum distance (in # of time elements) between peaks
+#    max_num: maximum number of peaks
+#    
+#    Output:
+#    Pi: peaks indices
+#    """
+#    
+#    Pi=np.zeros((1,max_num))
+#    
+#    data = data * (data>=min_thr)
+#    if np.size(np.nonzero(data))<max_num:
+#       raise ValueError('not enough number of peaks! change parameters.')    
+#    else:      
+#        i=0
+#        Pi[0,i]=np.argmax(data)
+#        data[Pi[0,i]]=0
+#        while i<max_num-1:
+#            i=i+1
+#            itemp=np.argmax(data)
+#            
+#            ind_dist=np.abs(Pi[0,0:i]-itemp)
+#            if np.sum(ind_dist<min_dist)==0:
+#                Pi[0,i]=itemp
+#                data[itemp]=0
+#            else:
+#                i=i-1
+#                data[itemp]=0
+#                
+#            if np.sum(data)==0:
+#                raise ValueError('not enough number of peaks! change parameters.')  
+#                break
+#                        
+#    Pi=np.sort(Pi)          
+#     
+#    return Pi
+    
+    
+def find_peaks(*arg):
     """
-    The find_peaks function receives a row vector array of positive numerical 
+    The 'find_peaks' function receives a row vector array of positive numerical 
     values (in [0,1]) and finds the peak values and corresponding indices.
     
     Inputs: 
-    data: row vector of numerical values
-    min_thr: minimum threshold (in [0,1]) on data values
-    min_dist: minimum distance (in # of time elements) between peaks
-    max_num: maximum number of peaks
+    data: row vector of real values (in [0,1])
+    min_thr: (optional) minimum threshold (in [0,1]) on data values - default=0.5
+    min_dist:(optiotnal) minimum distance (in # of time elements) between peaks 
+             default: 25% of the vector length
+    max_num: (optional) maximum number of peaks - default: 1
     
     Output:
     Pi: peaks indices
-    """
+    """   
     
-    Pi=np.zeros((1,max_num))
+    data=arg[0]
+    # make sure data is a Numpy matrix
+    data=np.mat(data)
     
-    data = data * (data>=min_thr)
+    lenData=np.shape(data)[1]
+    if len(arg)==1:
+        min_thr=0.5; min_dist=np.floor(lenData/4); max_num=1
+    elif len(arg)==2:
+        min_thr=arg[1]; min_dist=np.floor(lenData/4); max_num=1
+    elif len(arg)==3:
+        min_thr,min_dist=arg[1:3]; max_num=1
+    elif len(arg)==4:
+        min_thr,min_dist,max_num=arg[1:4];
+ 
+    Pi=np.zeros((1,max_num),int)
+     
+    data = np.multiply(data,(data>=min_thr))
     if np.size(np.nonzero(data))<max_num:
        raise ValueError('not enough number of peaks! change parameters.')    
     else:      
         i=0
-        Pi[0,i]=np.argmax(data)
-        data[Pi[0,i]]=0
-        while i<max_num-1:
-            i=i+1
-            itemp=np.argmax(data)
-            
-            ind_dist=np.abs(Pi[0,0:i]-itemp)
-            if np.sum(ind_dist<min_dist)==0:
-                Pi[0,i]=itemp
-                data[itemp]=0
-            else:
-                i=i-1
-                data[itemp]=0
-                
+        while i<max_num:
+            Pi[0,i]=np.argmax(data)
+            data[0,Pi[0,i]-min_dist-1:Pi[0,i]+min_dist+1]=0
+            i=i+1             
             if np.sum(data)==0:
-                raise ValueError('not enough number of peaks! change parameters.')  
                 break
                         
     Pi=np.sort(Pi)          
      
     return Pi
-    
-    
     
     
 def rep_mask(V,I):

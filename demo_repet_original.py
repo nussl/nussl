@@ -7,11 +7,16 @@ from scikits.audiolab import play
 from f_stft import f_stft
 from REPET_org import repet
 
+# close all figure windows
+plt.close('all')
+
 # load the audio file
-x,fs,enc = wavread('Sample1.wav'); 
+#x,fs,enc = wavread('Sample1.wav');
+x,fs,enc = wavread('mix4.wav')
+ 
 x=np.mat(x)
 t=np.mat(np.arange(np.shape(x)[1])/float(fs))
-#play(x,fs)
+play(x,fs)
 
 # generate and plot the spectrogram of the mixture
 L=2048;
@@ -23,12 +28,10 @@ fmax=5000;
 
 plt.figure(1)
 plt.title('Mixture');
-Sm = f_stft(np.mat(x),L,win,ovp,nfft,fs,mkplot,fmax); 
-plt.show()
+Sm = f_stft(np.mat(x),L,win,ovp,fs,nfft,mkplot,fmax); 
 
 # separation
 #per=np.array([0.8,8])
-plt.figure(2)
 y_org = repet(np.mat(x),fs)
 
 # play and plot the background and foreground
@@ -47,15 +50,15 @@ plt.show()
 plt.figure(4)
 plt.subplot(2,1,1)
 plt.title('Background Spectrogram');
-Sb = f_stft(np.mat(y_org),L,win,ovp,nfft,fs,mkplot,fmax); 
+Sb = f_stft(np.mat(y_org),L,win,ovp,fs,nfft,mkplot,fmax); 
 plt.show()
 plt.subplot(2,1,2)
 plt.title('Foreground Spectrogram');
-Sf = f_stft(np.mat(x-y_org),L,win,ovp,nfft,fs,mkplot,fmax); 
+Sf = f_stft(np.mat(x-y_org),L,win,ovp,fs,nfft,mkplot,fmax); 
 plt.show()
 
-#play(y_org,fs)   # background
-#play(x-y_org,fs)  # foreground
+play(y_org,fs)   # background
+play(x-y_org,fs)  # foreground
 
 # check whether the separated spectrograms add up to the original spectrogram
 Spec_diff=np.abs(Sm[0] - (Sb[0]+Sf[0]))

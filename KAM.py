@@ -58,17 +58,39 @@ def kam(*arg):
                             the second bin given its distance from the first bin. The weight
                             values fall in the interval [0,1]. Default: all ones over the 
                             neighbourhood (binary kernel).
-    Numit: (optional) number of iterations of the backfitting algorithm - default: 1
     
+    Numit: (optional) number of iterations of the backfitting algorithm - default: 1     
+                   
+    SpecParam: (optional) structured containing spectrogram parameters including:
+                         - windowtype (default is Hamming)
+                         - windowlength (default is 60 ms)
+                         - overlapSamp in [0,windowlength] (default is widowlength/2)
+                         - nfft (default is windowlength)
+                         - makeplot in {0,1} (default is 0)
+                         - fmaxplot in Hz (default is fs/2)
+                         example: 
+                         SpecParam=np.zeros(1,dtype=[('windowtype','|S1'),
+                                                      ('windowlength',int),
+                                                      ('overlapSamp',int),
+                                                      ('nfft',int),
+                                                      ('makeplot',int),
+                                                      ('fmaxplot',float)])
+                         SpecParam['windowlength']=1024                             
+        
     Outputs:
-    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels        
+    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
+    fhat: a LF by LT by J Numpy array containing J power spectral dencities      
     """
     
     if len(arg)==2:
         Inputfile,SourceKernels=arg[0:2]
         Numit=1
+        SpecParam=np.array([])
     elif len(arg)==3:
         Inputfile,SourceKernels,Numit=arg[0:3]
+        SpecParam=np.array([])
+    elif len(arg)==4:
+        Inputfile,SourceKernels,Numit,SpecParam=arg[0:4]
     
         
     # Step (1): 
@@ -77,9 +99,17 @@ def kam(*arg):
         Mixture=AudioSignal(Inputfile[0],Inputfile[1])
     elif len(Inputfile)==3:
         Mixture=AudioSignal(Inputfile[0],Inputfile[1],Inputfile[2])
-        
+    
+    if len(SpecParam)!=0:
+        for i in range(0,len(SpecParam.dtype)):
+            nameTemp=SpecParam.dtype.names[i]
+            valTemp=SpecParam[0][i]
+            valTemp=str(valTemp)
+            exec('Mixture.'+nameTemp+'='+valTemp)
+          
+                
     x,tvec=np.array([Mixture.x,Mixture.time])  # time-domain channel mixtures
-    X,Px,Fvec,Tvec=np.array([Mixture.X,Mixture.P,Mixture.Fvec,Mixture.Tvec])  # stft and PSD of the channel mixtures
+    X,Px,Fvec,Tvec=Mixture.STFT()  # stft and PSD of the channel mixtures
     
     I=Mixture.numCh # number of channel mixtures
     J=len(SourceKernels) # number of sources
@@ -137,6 +167,7 @@ def kam(*arg):
       # compute the inverse term: [sum_j' f_j' R_j']^-1
         SumFR=np.sum(fj*Rj,axis=2)
         SumFR.shape=(LF*LT,I,I)
+        #SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   
         InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
         
         # compute sources, update PSDs and covariance matrices 
@@ -163,6 +194,7 @@ def kam(*arg):
           #       the correct formulation of zj is: 
           #       zj=(1/I)*tr(inv(Rj(w)Cj(w,t)
           Rj_reshape=np.reshape(Rj[:,:,ns],(LF*LT,I,I))
+          #Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I)  
           InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
           InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
           zj=np.real(np.matrix.trace(InvRjCj.T)/I) 
@@ -198,6 +230,9 @@ def kam(*arg):
     # Compute the inverse STFT of the estimated sources
     shat=np.zeros((x.shape[0],I,J))
     sigTemp=AudioSignal()
+    sigTemp.windowtype=Mixture.windowtype
+    sigTemp.windowlength=Mixture.windowlength
+    sigTemp.overlapSamp=Mixture.overlapSamp
     sigTemp.numCh=I
     for ns in range(0,J):
         sigTemp.X=Shat[:,:,:,ns]
@@ -250,7 +285,7 @@ class AudioSignal:
         self.Fvec=np.mat([]) # freq. vector
         self.Tvec=np.mat([]) # time vector
         self.windowtype = 'Hamming'
-        self.windowlength = 1024 #int(0.06*self.fs)
+        self.windowlength = int(0.06*self.fs)
         self.nfft = self.windowlength
         self.overlapRatio = 0.5
         self.overlapSamp=int(np.ceil(self.overlapRatio*self.windowlength))
@@ -268,7 +303,7 @@ class AudioSignal:
                self.loadaudiosig(arg[0],arg[1])
         elif len(arg)==3:
             self.loadaudiofile(arg[0],arg[1],arg[2])
-        self.STFT()
+        #self.STFT() # is the spectorgram is required to be computate at start up
                 
    
     
@@ -506,34 +541,41 @@ class Kernel:
                 Type,Nhood,Wfunc=arg[0:3]
                 
         self.kType=Type
-        self.kParamVal=ParamVal
         
         if len(arg)>1:
             if Type=='cross':
+                
                Df=ParamVal[0,0]
                Dt=ParamVal[0,1]                           
                self.kNhood=lambda TFcoords1,TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
                             (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
                             np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
                             (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df)))
-                          
+               self.kParamVal=ParamVal
+               
             elif Type=='vertical':
+                
                Df=ParamVal[0,0]               
                self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
                             (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df))
-                              
+               self.kParamVal=ParamVal
+               
             elif Type=='horizontal':
+                
                Dt=ParamVal[0,0]               
                self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
                             (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt))
-                                     
+               self.kParamVal=ParamVal
+                      
             elif Type=='periodic':
+                
                P=ParamVal[0,0]
                Dt=ParamVal[0,1]
                self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
                             (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
                             (np.mod(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)),P)==0))         
-                            
+               self.kParamVal=ParamVal
+               
             elif Type=='userdef':
                self.kNhood=Nhood
                
