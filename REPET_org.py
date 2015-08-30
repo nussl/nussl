@@ -78,9 +78,9 @@ def repet(*arg):
      
     # compute the spectrograms of all channels
     M,N = np.shape(x)
-    X=f_stft(np.mat(x[0,:]),L,win,ovp,nfft,fs,0)[0]
+    X=f_stft(np.mat(x[0,:]),L,win,ovp,fs,nfft,0)[0]
     for i in range(1,M):
-         Sx= f_stft(np.mat(x[i,:]),L,win,ovp,nfft,fs,0)[0]
+         Sx= f_stft(np.mat(x[i,:]),L,win,ovp,fs,nfft,0)[0]
          X=np.dstack([X,Sx])
     V=np.abs(X)  
     if M==1: 
@@ -105,9 +105,9 @@ def repet(*arg):
     y=np.zeros((M,N))
     for i in range(0,M):
         RepMask=rep_mask(V[:,:,i],p)
-        RepMask[1:fc,:]=1  #high-pass filter the foreground # ????? why does it dismiss DC
+        RepMask[1:fc,:]=1  #high-pass filter the foreground 
         XMi=RepMask*X[:,:,i]
-        yi=f_istft(XMi,L,win,ovp,nfft,fs)[0]
+        yi=f_istft(XMi,L,win,ovp,fs)[0]
         y[i,:]=yi[0:N]
         
     return y

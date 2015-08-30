@@ -7,24 +7,19 @@ from scikits.audiolab import play
 from f_stft import f_stft
 from DUET_v2 import duet_v2
 
-
-plt.close("all") 
-
-#for i in range(0,len(dir())):
-#    del dir()[i]
+# close all the figure windows
+plt.close('all') 
 
 # load the audio file
 #x,fs,enc = wavread('dev1_female3_inst_mix.wav');  #speech,inst.
 #x,fs,enc = wavread('dev1_female3_synthconv_130ms_5cm_mix.wav');  #speech,conv.
-
 x,fs,enc = wavread('dev1_nodrums_inst_mix.wav');  #music,inst
 
 x=np.mat(x).T
 t=np.mat(np.arange(np.shape(x)[1])/float(fs))
-#play(x[0,:],fs)
 
 # generate and plot the spectrogram of the mixture
-L=4*1024;
+L=4096;
 win='Hamming'
 ovp=0.5*L
 nfft=L
@@ -34,8 +29,8 @@ fmax=fs/2
 plt.figure(1)
 plt.subplot(1,2,1)
 plt.title('Mixture');
-S,P,F,T = f_stft(x[0,:],L,win,ovp,nfft,fs,mkplot,fmax); 
-plt.show()
+S,P,F,T = f_stft(x[0,:],L,win,ovp,fs,nfft,mkplot,fmax); 
+
 
 # compute and plot the 2D histogram of mixing parameters
 a_min=-3; a_max=3; a_num=100;
@@ -51,8 +46,8 @@ N=np.shape(xhat)[0]
 # plot the mask in the same figure as the spectrogram
 plt.figure(1)
 plt.subplot(1,2,2)
-TT=np.tile(T,(len(F),1))
-FF=np.tile(F.T,(len(T),1)).T
+TT=np.tile(T,(len(F[1:]),1))
+FF=np.tile(F[1:].T,(len(T),1)).T
 plt.pcolormesh(TT,FF,TFmask)
 plt.xlabel('Time')
 plt.ylabel('Frequency')
@@ -64,8 +59,8 @@ plt.show()
 
 # play the separated sources
 
-#for i in range(0,N):
-#  play(xhat[i,:],fs)
+for i in range(0,N):
+  play(xhat[i,:],fs)
  
 
 
