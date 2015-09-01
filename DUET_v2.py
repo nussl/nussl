@@ -24,6 +24,7 @@ import numpy as np
 from f_stft import f_stft
 from f_istft import f_istft
 import matplotlib.pyplot as plt
+plt.interactive('True')
 from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
