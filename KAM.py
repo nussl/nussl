@@ -22,26 +22,28 @@ Required modules:
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scikits.audiolab import wavread, play
+plt.interactive('True')
+from scipy.io.wavfile import read,write
 from f_stft import f_stft
 from f_istft import f_istft
 import time    
 
-def kam(*arg):
+def kam(Inputfile,SourceKernels,Numit=1,SpecParam=np.array([])):
     """
     The 'kam' function implements the kernel backfitting algorithm to extract 
     J audio sources from I channel mixtures.
     
     Inputs: 
-    Inputfile: list of length 2. It can contain either:
-               - A string indicating the path of the .wav file containing the I-channel 
-                 audio mixture as the first element. The second (optional) element indicates
-                 the length of the portion of the signal to be extracted in seconds(defult is 
-                 the full lengths of the siganl) The third (optional) element indicates the 
-                 starting point of the portion of the signal to be extracted (default is 0 sec).
+    Inputfile: (list) It can contain either:                 
+               - Up to 3 elements: A string indicating the path of the .wav file containing 
+                 the I-channel audio mixture as the first element. The second (optional) 
+                 element indicates the length of the portion of the signal to be extracted 
+                 in seconds(defult is the full lengths of the siganl) The third (optional) 
+                 element indicates the starting point of the portion of the signal to be 
+                 extracted (default is 0 sec).
                OR
-               - An I-column Numpy matrix containing samples of the time-domain mixture as 
-                 the first element and the sampling rate as the second element.
+               - 2 elements: An I-column Numpy matrix containing samples of the time-domain 
+                 mixture as the first element and the sampling rate as the second element.
           
     SourceKernels: a list containg J sub-lists, each of which contains properties of 
                    one of source kernels. Kernel properties are:
@@ -81,24 +83,13 @@ def kam(*arg):
     shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
     fhat: a LF by LT by J Numpy array containing J power spectral dencities      
     """
-    
-    if len(arg)==2:
-        Inputfile,SourceKernels=arg[0:2]
-        Numit=1
-        SpecParam=np.array([])
-    elif len(arg)==3:
-        Inputfile,SourceKernels,Numit=arg[0:3]
-        SpecParam=np.array([])
-    elif len(arg)==4:
-        Inputfile,SourceKernels,Numit,SpecParam=arg[0:4]
-    
-        
+            
     # Step (1): 
     # Load the audio mixture from the input path
     if len(Inputfile)==2:
-        Mixture=AudioSignal(Inputfile[0],Inputfile[1])
+        Mixture=AudioSignal(audiosig=Inputfile[0],fs=Inputfile[1])
     elif len(Inputfile)==3:
-        Mixture=AudioSignal(Inputfile[0],Inputfile[1],Inputfile[2])
+        Mixture=AudioSignal(file_name=Inputfile[0],siglen=Inputfile[1],sigstart=Inputfile[2])
     
     if len(SpecParam)!=0:
         for i in range(0,len(SpecParam.dtype)):
@@ -130,13 +121,17 @@ def kam(*arg):
           SKj=SourceKernels[ns]
           if len(SKj)<2:
               raise Exception('The information required for generating source kernels is insufficient.'\
-                               ' Each sub-list in SourceKernels must contain at least two elements.') 
-          elif len(SKj)==2:
-              Kj.append(Kernel(SKj[0],SKj[1]))
-          elif len(SKj)==3:
-              Kj.append(Kernel(SKj[0],SKj[1],SKj[2]))    
-    
-    
+                               ' Each sub-list in SourceKernels must contain at least two elements.')
+          KTYPE=SKj[0]  
+          if KTYPE!='userdef' and len(SKj)==2:
+             Kj.append(Kernel(Type=SKj[0],ParamVal=SKj[1]))
+          elif KTYPE!='userdef' and len(SKj)==3:
+             Kj.append(Kernel(Type=SKj[0],ParamVal=SKj[1]),Wfunc=SKj[2])
+          elif KTYPE=='userdef' and len(SKj)==2:
+             Kj.append(Kernel(Type=SKj[0],Nhood=SKj[1]))
+          elif KTYPE=='userdef' and len(SKj)==3:
+             Kj.append(Kernel(Type=SKj[0],Nhood=SKj[1]),Wfunc=SKj[2])
+                  
     # Step (2): initialization
     # Initialize the PSDs with average mixture PSD and the spatial covarince matricies
     # with identity matrices
@@ -241,6 +236,7 @@ def kam(*arg):
     return shat,fhat     
           
  
+         
 
 class AudioSignal:   
     """
@@ -248,7 +244,7 @@ class AudioSignal:
     basic operations such as Wav loading and computing the STFT/iSTFT.
     
     Read/write signal properties:
-    - s: signal
+    - x: signal
     - sigLen: signal length (in number of samples)
     
     Read/write stft properties:
@@ -256,7 +252,7 @@ class AudioSignal:
     - windowlength (ms)
     - nfft (number of samples)
     - overlapRatio (in [0,1])
-    - S: stft of the data
+    - X: stft of the data
         
     Read-only properties:
     - fs: sampling frequency
@@ -269,11 +265,22 @@ class AudioSignal:
     -compute the inverse stft of a spectrogram:          sigrec,tvec=sig.iSTFT()
   
     """
-    def __init__(self,*arg):
+    
+    def __init__(self,file_name='',siglen='full length',sigstart=0,audiosig=np.mat([]),fs=44100):
+        """
+        inputs: 
+        file_name is a string argument indicating the name of the .wav file
+        siglen (in seconds): optional input indicating the length of the signal to be extracted. 
+                             Default: full length of the signal
+        sigstart (in seconds): optional input indicating the starting point of the section to be 
+                               extracted. Default: 0 seconds
+        audiosig: Numpy matrix containing a time series
+        fs: sampling rate                       
+        """
                 
         # signal properties
-        self.x=np.mat([])
-        self.fs = 44100
+        self.x=audiosig
+        self.fs = fs
         self.time=np.mat([])
         self.enc='pcm16'
         self.sigLen=0
@@ -292,42 +299,22 @@ class AudioSignal:
         self.makeplot = 0
         self.fmaxplot=self.fs/2
         
-        if len(arg)==0:
-            return
-        elif len(arg)==1:
-            self.loadaudiofile(arg[0])            
-        elif len(arg)==2:
-            if type(arg[0])==str:
-               self.loadaudiofile(arg[0],arg[1])
-            else:
-               self.loadaudiosig(arg[0],arg[1])
-        elif len(arg)==3:
-            self.loadaudiofile(arg[0],arg[1],arg[2])
+        
+        if file_name!='':
+           self.loadaudiofile(file_name,siglen,sigstart)
+        elif np.size(audiosig)!=0:
+            self.loadaudiosig(audiosig,fs)
         #self.STFT() # is the spectorgram is required to be computate at start up
                 
    
     
-    def loadaudiofile(self,*arg):
+    def loadaudiofile(self,file_name,siglen,sigstart):
         """
         loads the audio signal from a .wav file
-        inputs: 
-        file_name is a string argument indicating the name of the .wav file
-        siglen (in seconds): optional input indicating the length of the signal to be extracted. 
-                             Default: full length of the signal
-        sigstart (in seconds): optional input indicating the starting point of the section to be 
-                               extracted. Default: 0 seconds       
+        
         """
         
-        if len(arg)==1:
-           file_name=arg[0]
-           siglen='full length'
-        elif len(arg)==2:
-           file_name,siglen=arg[0:2]
-           sigstart=0
-        elif len(arg)==3:
-           file_name,siglen,sigstart=arg[0:3]
-        
-        x,self.fs,self.enc = wavread(file_name)
+        self.fs,x = read(file_name)
         if x.ndim<2: x=np.expand_dims(x,axis=1)
         self.numCh=np.shape(x)[1]
         if siglen=='full length':
@@ -340,8 +327,7 @@ class AudioSignal:
            
         self.time=np.mat((1./self.fs)*np.arange(self.sigLen))
         
-        
-        
+   
     def loadaudiosig(self,audiosig,fs):
         """
         loads the audio signal in numpy matrix format along with the sampling frequency
@@ -349,13 +335,14 @@ class AudioSignal:
         self.x=np.mat(audiosig) # each column contains one channel mixture
         self.fs = fs
         self.sigLen,self.numCh=np.shape(self.x)
-        self.time=np.mat((1./self.fs)*np.arange(self.sigLen))
-        
-    def playaudio(self):
+        self.time=np.mat((1./self.fs)*np.arange(self.sigLen))     
+
+    
+    def writeaudiofile(self,file_name):
         """
-        plays the audio signal
+        records the audio signal in a .wav file
         """
-        play(self.x[:,0].T,self.fs)
+        write(file_name,self.fs,self.x)
 
     
     def STFT(self):
@@ -464,29 +451,9 @@ class Kernel:
                       
     """
     
-    def __init__(self,*arg):
-                
-        # kernel properties
-        self.kType='' # default: no pre-defined kernel selected
-        self.kParamVal=np.mat([])      
-        self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords1==TFcoords2).all() # default: neighnourhood includes only the centeral bin      
-        self.kWfunc=lambda TFcoords1,TFcoords2: float(self.kNhood(TFcoords1,TFcoords2)) # default: binary kernel
+    def __init__(self,Type='',ParamVal=np.mat([]),Nhood=None,Wfunc=None):
         
- 
-        if len(arg)==0:
-           return
-        elif len(arg)==1:
-            self.genkernel(arg[0])
-        elif (len(arg)==2):
-           self.genkernel(arg[0],arg[1]) 
-        elif len(arg)==3: 
-           self.genkernel(arg[0],arg[1],arg[2]) 
-
-    
-    def genkernel(self,*arg):
         """
-        generates the kernel object given the user-defined properties
-        
         Inputs:
         Type: (string) determines whether the kernel is one of the pre-defined kernel types 
              or a user-defined lambda function. 
@@ -512,81 +479,71 @@ class Kernel:
              1 indicating zero-distance or equivalently perfect similarity. 
              Default: all ones over the neighbourhood (binary kernel)
         """
-   
-        if len(arg)==0:
-            Type=self.kType
-            ParamVal=self.kParamVal
-            Nhood=self.kNhood
-            Wfunc=self.kWfunc
-        elif len(arg)==1:
-            Type=arg[0]
-            ParamVal=self.kParamVal
-            Nhood=self.kNhood
-            Wfunc=self.kWfunc
-            if Type!='userdef':
-               print('Warning: kernel parameter values are not specified.')
-            elif Type=='userdef':
-               print('Warning: kernel neighbourhood is not defined.')
-        elif len(arg)==2:
-            if (arg[0] in ['cross','horizontal','vertical','periodic']):
-                Type=arg[0]
-                ParamVal=arg[1]
-            elif arg[0]=='userdef':    
-                Type=arg[0]
-                Nhood=arg[1]
-        elif len(arg)==3:
-            if (arg[0] in ['cross','horizontal','vertical','periodic']):
-                Type,ParamVal,Wfunc=arg[0:3]
-            elif arg[0]=='userdef':
-                Type,Nhood,Wfunc=arg[0:3]
                 
-        self.kType=Type
+        if Type=='userdef' and (Nhood is None):    
+            raise ValueError('Kernel type is userdef but the kernel neighbourhood is not defined.')
+                
+        # kernel properties
+        self.kType=Type # default: no pre-defined kernel selected
+        self.kParamVal=ParamVal 
+        self.kNhood=Nhood
+        self.kWfunc=Wfunc
         
-        if len(arg)>1:
-            if Type=='cross':
-                
-               Df=ParamVal[0,0]
-               Dt=ParamVal[0,1]                           
-               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
-                            (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
-                            np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
-                            (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df)))
-               self.kParamVal=ParamVal
-               
-            elif Type=='vertical':
-                
-               Df=ParamVal[0,0]               
-               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
-                            (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df))
-               self.kParamVal=ParamVal
-               
-            elif Type=='horizontal':
-                
-               Dt=ParamVal[0,0]               
-               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
-                            (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt))
-               self.kParamVal=ParamVal
-                      
-            elif Type=='periodic':
-                
-               P=ParamVal[0,0]
-               Dt=ParamVal[0,1]
-               self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
-                            (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
-                            (np.mod(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)),P)==0))         
-               self.kParamVal=ParamVal
-               
-            elif Type=='userdef':
-               self.kNhood=Nhood
-               
-  
-        if len(arg)==2:
-             self.kWfunc=lambda TFcoords1,TFcoords2: self.kNhood(TFcoords1,TFcoords2).astype(np.float)
-        elif len(arg)==3:
-            self.kWfunc=Wfunc
+        if self.kNhood is None:
+             self.kNhood=lambda TFcoords1,TFcoords2: (TFcoords1==TFcoords2).all() # default: neighnourhood includes only the centeral bin      
+        if self.kWfunc is None:
+             self.kWfunc=lambda TFcoords1,TFcoords2: self.kNhood(TFcoords1,TFcoords2) # default: binary kernel
+        
+        if Type in ['cross','vertical','horizontal','periodic']:
+            self.gen_predef_kernel()
             
+
+    
+    def gen_predef_kernel(self):
+        """
+        generates the pre-defined kernel object given the parameters
+        """
+        
+        Type=self.kType
+        ParamVal=self.kParamVal
+        
+        if np.size(ParamVal)==0:
+            raise ValueError('Kernel parameter values are not specified.')    
+                              
+        if Type=='cross':
             
+           Df=ParamVal[0,0]
+           Dt=ParamVal[0,1]                           
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
+                        np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df)))
+           self.kParamVal=ParamVal
+           
+        elif Type=='vertical':
             
+           Df=ParamVal[0,0]               
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df))
+           self.kParamVal=ParamVal
+           
+        elif Type=='horizontal':
+            
+           Dt=ParamVal[0,0]               
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt))
+           self.kParamVal=ParamVal
+                  
+        elif Type=='periodic':
+            
+           P=ParamVal[0,0]
+           Dt=ParamVal[0,1]
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
+                        (np.mod(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)),P)==0))         
+           self.kParamVal=ParamVal
+           
+               
         
     def sim(self,TFcoords1,TFcoords2):
          """
@@ -603,8 +560,10 @@ class Kernel:
                  between the i-th time-frequency bin in TFcoords1 and j-th time-frequency bin in TFcoords2. 
          """         
          
-         self.genkernel() # update the kernel with possibly altered properties
-         
+         # update the kernel properties if changed to predefined
+         if self.kType in ['cross','vertical','horizontal','periodic']:
+            self.gen_predef_kernel()      
+                             
          Nhood_vec=self.kNhood(TFcoords1,TFcoords2)
          Wfunc_vec=self.kWfunc(TFcoords1,TFcoords2)
          simVal=np.multiply(Nhood_vec,Wfunc_vec).astype(np.float) 

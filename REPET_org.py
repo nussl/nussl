@@ -33,16 +33,23 @@ from scipy.fftpack import ifft
 from f_stft import f_stft
 from f_istft import f_istft
 import matplotlib.pyplot as plt
+plt.interactive('True')
 
-def repet(*arg):
+def repet(x,fs,specparam=None,per=None):
     """
     The repet function implements the main algorithm.
     
     Inputs:
     x: audio mixture (M by N) containing M channels and N time samples
     fs: sampling frequency of the audio signal
-    per: (optional) if includes two elements determines the range of repeating 
-         period, if only one elements determines the exact value of repeating period
+    specparam (optional): list containing STFT parameters including in order the window length, 
+                          window type, overlap in # of samples, and # of fft points.
+                          default: window length: 40 mv
+                                   window type: Hamming
+                                   overlap: window length/2
+                                   nfft: window length
+    per (optional): if includes two elements determines the range of repeating 
+         period, if only one element determines the exact value of repeating period
          in seconds - default: [0.8,min(8,(length(x)/fs)/3)])
          
     Output:
@@ -59,19 +66,16 @@ def repet(*arg):
             .wav files
     """
      
-    # use the default range of repeating period if not specified
-    if len(arg)<3: 
-        x,fs = arg[0:2]
-        per = np.array([0.8,np.array([8,np.shape(x)[1]/3]).min()])       
-    elif len(arg)==3:
-        x,fs,per = arg[0:3]
-        
-    # STFT parameters
-    L=int(2**(np.ceil(np.log2(0.04*fs)))) # analysis window of length 40 ms
-    win='Hamming'
-    ovp=L/2
-    nfft=L
-      
+    # use the default range of repeating period and default STFT parameter values if not specified
+    if specparam is None:
+       winlength=int(2**(np.ceil(np.log2(0.04*fs))))
+       specparam = [winlength,'Hamming',winlength/2,winlength]
+    if per is None:
+       per = np.array([0.8,np.array([8,np.shape(x)[1]/3]).min()])   
+     
+    # STFT parameters      
+    L,win,ovp,nfft=specparam 
+    
     # HPF parameters
     fc=100   # cutoff freqneyc (in Hz) of the high pass filter 
     fc=np.ceil(float(fc)*(nfft-1)/fs) # cutoff freq. (in # of freq. bins)

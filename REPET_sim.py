@@ -29,21 +29,26 @@ Required modules:
 """
 
 import numpy as np 
-import matplotlib.pyplot as plt
 from f_stft import f_stft
 from f_istft import f_istft
-from scipy import signal
-import time
-import sys
+import matplotlib.pyplot as plt
+plt.interactive('True')
 
-def repet_sim(*arg):
+
+def repet_sim(x,fs,specparam=None,par=None):
     """
     The repet_sim function implements the main algorithm.
     
     Inputs:
     x: audio mixture (M by N) containing M channels and N time samples
     fs: sampling frequency of the audio signal
-    par: (optional) similarity parameters (3 values) (default: [0,1,100])
+    specparam (optional): list containing STFT parameters including in order the window length, 
+                          window type, overlap in # of samples, and # of fft points.
+                          default: window length: 40 mv
+                                   window type: Hamming
+                                   overlap: window length/2
+                                   nfft: window length
+    par: (optional) Numpy array containing similarity parameters (3 values) (default: [0,1,100])
           -- par[0]: minimum threshold (in [0,1]) for the similarity measure 
               within repeating frames
           -- par[1]: minimum distance (in seconds) between repeating frames
@@ -62,18 +67,15 @@ def repet_sim(*arg):
     * Note: the 'scikits.audiolab' package is required for reading and writing 
             .wav files
     """    
-    # use the default similarity parameters if not specified
-    if len(arg)<3: 
-        x,fs = arg[0:2]
-        par = np.array([0,1,100])       
-    elif len(arg)==3:
-        x,fs,par = arg[0:3]
-    
+    # use the default range of repeating period and default STFT parameter values if not specified
+    if specparam is None:
+       winlength=int(2**(np.ceil(np.log2(0.04*fs))))
+       specparam = [winlength,'Hamming',winlength/2,winlength]
+    if par is None:
+       par = par = np.array([0,1,100])    
+       
     # STFT parameters
-    L=int(2**(np.ceil(np.log2(0.04*fs)))) # analysis window of length 40 ms
-    win='Hamming'
-    ovp=L/2
-    nfft=L
+    L,win,ovp,nfft=specparam 
     
     # HPF parameters
     fc=100   # cutoff freqneyc (in Hz) of the high pass filter 
@@ -106,7 +108,7 @@ def repet_sim(*arg):
     y=np.zeros((M,N))
     for i in range(0,M):
         RepMask=rep_mask(V[:,:,i],S)
-        RepMask[1:fc,:]=1  #high-pass filter the foreground # ????? why does it dismiss DC
+        RepMask[1:fc,:]=1  #high-pass filter the foreground 
         XMi=RepMask*X[:,:,i]
         yi=f_istft(XMi,L,win,ovp,fs)[0]
         y[i,:]=yi[0:N]    
@@ -133,19 +135,8 @@ def sim_mat(X):
         rowNorm=np.sqrt(np.dot(Xi,Xi))
         X[i,:]=Xi/(rowNorm+1e-16)
         
-#    EuDist=np.zeros((Lt,Lt))    
-#    for i in range(0,Lt):
-#        Xi=X[i,:]
-#        for j in range(0,Lt):
-#            Xj=X[j,:]
-#            if i==j:
-#              EuDist[i,j]=1
-#            else:
-#              EuDist[i,j]=np.sqrt(np.sum((Xi-Xj)**2))
-            
-    
     # compute the similarity matrix    
-    S=(np.dot(X,X.T))#/(EuDist)  
+    S=(np.dot(X,X.T))
     return S
     
     
@@ -172,61 +163,12 @@ def sim_ind(S,simparam):
     for i in range(0,Lt):
        pind=find_peaks(S[i,:],simparam[0],simparam[1],simparam[2])
        I[i,:]=pind
-       
-#       time.sleep(1)
-#       Progress=100*i/float(Lt-1)
-#       sys.stdout.write("\r%d%%" % Progress)
-#       sys.stdout.flush()
-    
+
     return I
     
+      
     
-#def find_peaks(data,min_thr,min_dist,max_num):
-#    """
-#    The 'find_peaks' function receives a row vector array of positive numerical 
-#    values (in [0,1]) and finds the peak values and corresponding indices.
-#    
-#    Inputs: 
-#    data: row vector of numerical values (in [0,1])
-#    min_thr: minimum threshold (in [0,1]) on data values
-#    min_dist: minimum distance (in # of time elements) between peaks
-#    max_num: maximum number of peaks
-#    
-#    Output:
-#    Pi: peaks indices
-#    """
-#    
-#    Pi=np.zeros((1,max_num))
-#    
-#    data = data * (data>=min_thr)
-#    if np.size(np.nonzero(data))<max_num:
-#       raise ValueError('not enough number of peaks! change parameters.')    
-#    else:      
-#        i=0
-#        Pi[0,i]=np.argmax(data)
-#        data[Pi[0,i]]=0
-#        while i<max_num-1:
-#            i=i+1
-#            itemp=np.argmax(data)
-#            
-#            ind_dist=np.abs(Pi[0,0:i]-itemp)
-#            if np.sum(ind_dist<min_dist)==0:
-#                Pi[0,i]=itemp
-#                data[itemp]=0
-#            else:
-#                i=i-1
-#                data[itemp]=0
-#                
-#            if np.sum(data)==0:
-#                raise ValueError('not enough number of peaks! change parameters.')  
-#                break
-#                        
-#    Pi=np.sort(Pi)          
-#     
-#    return Pi
-    
-    
-def find_peaks(*arg):
+def find_peaks(data,min_thr=0.5,min_dist=None,max_num=1):
     """
     The 'find_peaks' function receives a row vector array of positive numerical 
     values (in [0,1]) and finds the peak values and corresponding indices.
@@ -242,19 +184,12 @@ def find_peaks(*arg):
     Pi: peaks indices
     """   
     
-    data=arg[0]
     # make sure data is a Numpy matrix
     data=np.mat(data)
     
     lenData=np.shape(data)[1]
-    if len(arg)==1:
-        min_thr=0.5; min_dist=np.floor(lenData/4); max_num=1
-    elif len(arg)==2:
-        min_thr=arg[1]; min_dist=np.floor(lenData/4); max_num=1
-    elif len(arg)==3:
-        min_thr,min_dist=arg[1:3]; max_num=1
-    elif len(arg)==4:
-        min_thr,min_dist,max_num=arg[1:4];
+    if min_dist is None:
+        min_dist=np.floor(lenData/4)
  
     Pi=np.zeros((1,max_num),int)
      
@@ -294,11 +229,7 @@ def rep_mask(V,I):
          pind=I[i,:]
          W[i,:]=np.median(V.T[pind.astype(int),:],axis=0)
          
-#         time.sleep(1)
-#         Progress=100*i/float(Lt-1)
-#         sys.stdout.write("\r%d%%" % Progress)
-#         sys.stdout.flush()
-     
+
     W=W.T
     Wrow=np.reshape(W,(1,Lf*Lt))   
     Vrow=np.reshape(V,(1,Lf*Lt))
