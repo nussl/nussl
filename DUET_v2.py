@@ -25,10 +25,10 @@ from f_stft import f_stft
 from f_istft import f_istft
 import matplotlib.pyplot as plt
 plt.interactive('True')
-from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
+from mpl_toolkits.mplot3d import axes3d
 
-def duet_v2(*arg):
+def duet_v2(x,sparam,adparam,plothist='y'):
     """
     The 'duet_v2' function extracts N sources from a given stereo audio mixture 
     (N sources captured via 2 sensors). It differs from the 'duet' function in that
@@ -67,24 +67,18 @@ def duet_v2(*arg):
             that only the source number 2 is active at coordinates (f0,t0).
     """
     # Extract the parameters from inputs
-    if len(arg)<5: 
-        x,sparam,adparam = arg[0:3]
-        plothist = 'y'    
-    elif len(arg)==5:
-        x,sparam,adparam,plothist = arg[0:4]
-    
     sparam = sparam.view(np.recarray)
     adparam = adparam.view(np.recarray)
-    L=sparam.winlen; win=sparam.wintype; ovp=sparam.overlap; nfft=sparam.numfreq; fs=sparam.sampfreq;
-    a_min=adparam.amin; a_max=adparam.amax; a_num=adparam.anum;
-    d_min=adparam.dmin; d_max=adparam.dmax; d_num=adparam.dnum;
+    L=sparam.winlen; win=sparam.wintype; ovp=sparam.overlap; nfft=sparam.numfreq; fs=sparam.sampfreq
+    a_min=adparam.amin; a_max=adparam.amax; a_num=adparam.anum
+    d_min=adparam.dmin; d_max=adparam.dmax; d_num=adparam.dnum
         
     # Compute the STFT of the two channel mixtures
     X1,P1,F,T = f_stft(x[0,:],L,win,ovp,fs,nfft,0)
     X2,P2,F,T = f_stft(x[1,:],L,win,ovp,fs,nfft,0)
     # remove dc component to avoid dividing by zero freq. in the delay estimation
-    X1=X1[1::,:]; X2=X2[1::,:]; 
-    Lf=len(F); Lt=len(T);
+    X1=X1[1::,:]; X2=X2[1::,:] 
+    Lf=len(F); Lt=len(T)
     
     # Compute the freq. matrix for later usein phase calculations
     wmat=np.array(np.tile(np.mat(F[1::]).T,(1,Lt)))*(2*np.pi/fs)

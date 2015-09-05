@@ -1,9 +1,9 @@
 # In this demo the original REPET-SIM algorithm is tested
 
+from scipy.io.wavfile import read,write
 import matplotlib.pyplot as plt
+plt.interactive('True')
 import numpy as np
-from scikits.audiolab import wavread
-from scikits.audiolab import play
 from f_stft import f_stft
 from REPET_sim import repet_sim
 
@@ -11,12 +11,15 @@ from REPET_sim import repet_sim
 plt.close('all')
 
 # load the audio file
-x,fs,enc = wavread('Sample1.wav');
-#x,fs,enc = wavread('mix4.wav')
+fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav');
+#fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav')
+ 
+# scale to -1.0 to 1.0
+convert_16_bit = float(2**15)
+x = x / (convert_16_bit + 1.0) 
  
 x=np.mat(x)
 t=np.mat(np.arange(np.shape(x)[1])/float(fs))
-play(x,fs)
 
 # generate and plot the spectrogram of the mixture
 L=2048;
@@ -33,7 +36,7 @@ plt.show()
 
 # separation
 par=np.array([0,0.01,10]); 
-y_sim = repet_sim(np.mat(x),fs,par)
+y_sim = repet_sim(np.mat(x),fs,par=par)
 
 # play and plot the background and foreground
 plt.figure(3)
@@ -58,11 +61,10 @@ plt.title('Foreground Spectrogram');
 Sf=f_stft(np.mat(x-y_sim),L,win,ovp,fs,nfft,mkplot,fmax); 
 plt.show()
 
-play(y_sim,fs)   # background
-play(x-y_sim,fs)  # foreground
-
 # check whether the separated spectrograms add up to the original spectrogram
 Spec_diff=np.abs(Sm[0] - (Sb[0]+Sf[0]))
 
-if Spec_diff.max()<1e-10:
-    print('Background and foreground add up to the origianl mixture.')
+# record the separated background and foreground in .wav files
+filePath='/Users/fpishdadian/SourceSeparation/Audio Samples/Output/'
+write(filePath+'repetSimBackground.wav',fs,y_sim.T)
+write(filePath+'repetSimForeground.wav',fs,(x-y_sim).T)

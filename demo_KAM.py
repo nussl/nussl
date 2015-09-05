@@ -1,10 +1,13 @@
 # In this demo the KAM algorithm is tested
 
 import matplotlib.pyplot as plt
+plt.interactive('True')
 import numpy as np
 from KAM import AudioSignal,kam 
-from scikits.audiolab import play,wavwrite
 import time    
+
+# close all the figure windows
+plt.close('all')
 
 ### Example (1): Test with a very simple scenario
 ###              The mixture includes a single frequency sinusoid (a horizontal line
@@ -23,7 +26,7 @@ x3=(x1+x2).T
 
 # spectrogram
 WL=1024 
-sig=AudioSignal(x3,fs)
+sig=AudioSignal(audiosig=x3,fs=fs)
 sig.makeplot=1
 sig.fmaxplot=fs/2
 sig.windowlength=WL
@@ -56,12 +59,12 @@ start_time = time.clock()
 shat,fhat=kam(Inputfile,SourceKernels,Numit,SpecParam)[0:2]
 print time.clock() - start_time, "seconds"   
 
-# play the separated sources
-ss1=shat[:,0,0]
-play(ss1,fs)
+# record separated sources in .wav files
+ss1=AudioSignal(audiosig=shat[:,:,0],fs=fs)
+ss1.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kamOutSource1.wav')
 
-ss2=shat[:,0,1]
-play(ss2,fs)
+ss2=AudioSignal(audiosig=shat[:,:,1],fs=fs)
+ss2.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kamOutSource2.wav')
 
 # plot the separated time-domain signals and corresponding power spectral dencities
 plt.figure(2)
@@ -101,7 +104,7 @@ plt.ylim(sig.Fvec[0],5000)
 WinL=4096 # 93 ms window
 Ovp=WinL/2 # 50% overlap  
 
-src1=AudioSignal('src1.wav',3)
+src1=AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/src1.wav')
 fs=src1.fs
 src1.windowlength=WinL
 src1.overlapSamp=Ovp
@@ -109,7 +112,7 @@ src1.nfft=WinL
 src1.makeplot=1
 src1.fmaxplot=1000
 
-src2=AudioSignal('src2.wav',3)
+src2=AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/src2.wav')
 src2.windowlength=WinL
 src2.overlapSamp=Ovp
 src2.nfft=WinL
@@ -126,7 +129,7 @@ plt.title('Flute')
 
 
 # generate spectrograms of the mixture
-mix1=AudioSignal('mix4.wav')
+mix1=AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav',3)
 mix1.windowlength=WinL
 mix1.overlapSamp=Ovp
 mix1.nfft=WinL
@@ -139,7 +142,7 @@ plt.title('Mixture')
 
 
 # inputs of the 'kam' function
-FileName='mix4.wav'
+FileName='/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav'
 BlockLen=1.5 # length of each block of signal in seconds
 AnalysisLen=3 # total length of the signal to be analyzed
 NB=int(np.floor(AnalysisLen/BlockLen)) # total number of blocks 
@@ -174,13 +177,11 @@ for numblock in range(1,NB):
 print time.clock() - start_time, "seconds"   
 
 # play the separated sources
-ss1=shat[:,0,0]
-play(ss1,fs)
-wavwrite(ss1,'Source1_1.5s.wav',fs)
+ss1=AudioSignal(audiosig=shat[:,:,0],fs=fs)
+ss1.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kamOutSource1.wav')
 
-ss2=shat[:,0,1]
-play(ss2,fs)
-wavwrite(ss2,'Source2_1.5s.wav',fs)
+ss2=AudioSignal(audiosig=shat[:,:,1],fs=fs)
+ss2.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kamOutSource2.wav')
 
 # plot the separated time-domain signals and corresponding power spectral dencities
 ts=np.mat(np.arange(shat.shape[0])/float(fs))
