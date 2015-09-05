@@ -40,16 +40,17 @@ Required packages:
 3. Matplotlib
 
 """
+import numpy as np 
+import matplotlib.pyplot as plt
+plt.interactive('True')
+from scipy.fftpack import fft
+
 
 def f_stft(X,L,win,ovp,fs,nfft=None,mkplot=0,fmax=None):
-    
-    import numpy as np 
-    import matplotlib.pyplot as plt
-    from scipy.fftpack import fft
-    
-    if nfft==None:
+            
+    if nfft is None:
         nfft=nfft=int(2**np.ceil(np.log2(L)))
-    if mkplot==1 and fmax==None :
+    if mkplot==1 and fmax is None :
         fmax=fs/2
         
     
@@ -97,8 +98,8 @@ def f_stft(X,L,win,ovp,fs,nfft=None,mkplot=0,fmax=None):
     Lf=len(F)    
     
     # Take the fft of each block
-    S=1j*np.zeros((NumBlock,Lf));  # row: time, col: freq. to increase speed
-    P=np.zeros((NumBlock,Lf)); 
+    S=1j*np.zeros((NumBlock,Lf))  # row: time, col: freq. to increase speed
+    P=np.zeros((NumBlock,Lf)) 
         
     for i in range(0,NumBlock):
         Xw=np.multiply(W,X[0,(i*Hop):(i*Hop+L)])
@@ -107,7 +108,7 @@ def f_stft(X,L,win,ovp,fs,nfft=None,mkplot=0,fmax=None):
        
         S[i,:]=XX_trun
         P[i,:]=(1/float(fs))*((abs(S[i,:])**2)/float(Wnorm2))
-    S=S.T;  P=P.T; # row: freq col: time to get conventional spectrogram orientation 
+    S=S.T;  P=P.T # row: freq col: time to get conventional spectrogram orientation 
         
     Th=float(Hop)/float(fs)
     T=np.arange(0,(NumBlock)*Th,Th)

@@ -35,11 +35,12 @@ Required packages:
 
 """
 
+import numpy as np 
+from scipy.fftpack import ifft
+
 def f_istft(X,L,win,ovp,fs):
    
-    import numpy as np 
-    from scipy.fftpack import ifft
-
+    
     # Get spectrogram dimenstions and compute window hop size
     Nc=X.shape[1] # number of columns of X
     Hop=int(L-ovp)

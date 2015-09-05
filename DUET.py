@@ -24,10 +24,11 @@ import numpy as np
 from f_stft import f_stft
 from f_istft import f_istft
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
+plt.interactive('True')
 from scipy import signal
+from mpl_toolkits.mplot3d import axes3d
 
-def duet(*arg):
+def duet(x,sparam,adparam,Pr,plothist='y'):
     """
     The 'duet' function extracts N sources from a given stereo audio mixture 
     (N sources captured via 2 sensors)
@@ -63,17 +64,11 @@ def duet(*arg):
           corresponding to N sources   
     """
     # Extract the parameters from inputs
-    if len(arg)<5: 
-        x,sparam,adparam,Pr = arg[0:4]
-        plothist = 'y'    
-    elif len(arg)==5:
-        x,sparam,adparam,Pr,plothist = arg[0:5]
-    
     sparam = sparam.view(np.recarray)
     adparam = adparam.view(np.recarray)
-    L=sparam.winlen; win=sparam.wintype; ovp=sparam.overlap; nfft=sparam.numfreq; fs=sparam.sampfreq;
-    a_min=adparam.amin; a_max=adparam.amax; a_num=adparam.anum;
-    d_min=adparam.dmin; d_max=adparam.dmax; d_num=adparam.dnum;
+    L=sparam.winlen; win=sparam.wintype; ovp=sparam.overlap; nfft=sparam.numfreq; fs=sparam.sampfreq
+    a_min=adparam.amin; a_max=adparam.amax; a_num=adparam.anum
+    d_min=adparam.dmin; d_max=adparam.dmax; d_num=adparam.dnum
 
     thr,N,mindist=Pr[0:3]
     
@@ -81,8 +76,8 @@ def duet(*arg):
     X1,P1,F,T = f_stft(x[0,:],L,win,ovp,fs,nfft,0)
     X2,P2,F,T = f_stft(x[1,:],L,win,ovp,fs,nfft,0)
     # remove dc component to avoid dividing by zero freq. in the delay estimation
-    X1=X1[1::,:]; X2=X2[1::,:]; 
-    Lf=len(F); Lt=len(T);
+    X1=X1[1::,:]; X2=X2[1::,:] 
+    Lf=len(F); Lt=len(T)
     
     # Compute the freq. matrix for later use in phase calculations
     wmat=np.array(np.tile(np.mat(F[1::]).T,(1,Lt)))*(2*np.pi/fs)
@@ -95,7 +90,7 @@ def duet(*arg):
     delta = -np.imag(np.log(R21))/(2*np.pi*wmat) # relative delay    
     
     # calculate the weighted histogram
-    p=1; q=0;
+    p=1; q=0
     tfw = (np.abs(X1)*np.abs(X2))**p * (np.abs(wmat))**q #time-freq weights
     
     # only consider time-freq. points yielding estimates in bounds
@@ -235,7 +230,7 @@ def twoDsmooth(Mat,Kernel):
     
     
     
-def find_peaks2(*arg):
+def find_peaks2(data,min_thr=0.5,min_dist=None,max_num=1):
     """
     The 'find_peaks2d' function receives a matrix of positive numerical 
     values (in [0,1]) and finds the peak values and corresponding indices.
@@ -251,22 +246,13 @@ def find_peaks2(*arg):
     Pi: a two-row Numpy matrix containing peaks indices
     """
     
-    data=arg[0];
     # make sure data is a Numpy matrix
     data=np.mat(data)    
     
-    Rdata,Cdata=np.shape(data)   
-    if len(arg)==1:
-         min_thr=0.5; min_dist=np.array([np.floor(Rdata/4),np.floor(Cdata/4)]); 
-         max_num=1
-    elif len(arg)==2:
-         min_thr=arg[1]; min_dist=np.array([np.floor(Rdata/4),np.floor(Cdata/4)]); 
-         max_num=1
-    elif len(arg)==3:
-         min_thr,min_dist=arg[1:3]; max_num=1
-    elif len(arg)==4:
-         min_thr,min_dist,max_num=arg[1:4];
-    
+    Rdata,Cdata=np.shape(data)  
+    if min_dist is None:   
+       min_dist=np.array([np.floor(Rdata/4),np.floor(Cdata/4)])
+        
     Pi=np.zeros((2,max_num),int)
     Rmd,Cmd=min_dist.astype(int)
     
@@ -288,7 +274,7 @@ def find_peaks2(*arg):
     return Pi
     
     
-def find_peaks(*arg):
+def find_peaks(data,min_thr=0.5,min_dist=None,max_num=1):
     """
     The 'find_peaks' function receives a row vector array of positive numerical 
     values (in [0,1]) and finds the peak values and corresponding indices.
@@ -304,20 +290,13 @@ def find_peaks(*arg):
     Pi: peaks indices
     """   
     
-    data=arg[0]
     # make sure data is a Numpy matrix
     data=np.mat(data)
     
     lenData=np.shape(data)[1]
-    if len(arg)==1:
-        min_thr=0.5; min_dist=np.floor(lenData/4); max_num=1
-    elif len(arg)==2:
-        min_thr=arg[1]; min_dist=np.floor(lenData/4); max_num=1
-    elif len(arg)==3:
-        min_thr,min_dist=arg[1:3]; max_num=1
-    elif len(arg)==4:
-        min_thr,min_dist,max_num=arg[1:4];
- 
+    if min_dist is None:
+        min_dist=np.floor(lenData/4)
+     
     Pi=np.zeros((1,max_num),int)
      
     data = np.multiply(data,(data>=min_thr))
