@@ -23,12 +23,13 @@ Required modules:
 import numpy as np
 import matplotlib.pyplot as plt
 plt.interactive('True')
+import scipy
 from scipy.io.wavfile import read,write
 from f_stft import f_stft
 from f_istft import f_istft
 import time    
 
-def kam(Inputfile,SourceKernels,Numit=1,SpecParam=np.array([])):
+def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([])):
     """
     The 'kam' function implements the kernel backfitting algorithm to extract 
     J audio sources from I channel mixtures.
@@ -63,7 +64,7 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParam=np.array([])):
     
     Numit: (optional) number of iterations of the backfitting algorithm - default: 1     
                    
-    SpecParam: (optional) structured containing spectrogram parameters including:
+    SpecParams: (optional) structured containing spectrogram parameters including:
                          - windowtype (default is Hamming)
                          - windowlength (default is 60 ms)
                          - overlapSamp in [0,windowlength] (default is widowlength/2)
@@ -71,13 +72,13 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParam=np.array([])):
                          - makeplot in {0,1} (default is 0)
                          - fmaxplot in Hz (default is fs/2)
                          example: 
-                         SpecParam=np.zeros(1,dtype=[('windowtype','|S1'),
+                         SpecParams=np.zeros(1,dtype=[('windowtype','|S1'),
                                                       ('windowlength',int),
                                                       ('overlapSamp',int),
                                                       ('nfft',int),
                                                       ('makeplot',int),
                                                       ('fmaxplot',float)])
-                         SpecParam['windowlength']=1024                             
+                         SpecParams['windowlength']=1024                             
         
     Outputs:
     shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
@@ -91,10 +92,10 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParam=np.array([])):
     elif len(Inputfile)==3:
         Mixture=AudioSignal(file_name=Inputfile[0],siglen=Inputfile[1],sigstart=Inputfile[2])
     
-    if len(SpecParam)!=0:
-        for i in range(0,len(SpecParam.dtype)):
-            nameTemp=SpecParam.dtype.names[i]
-            valTemp=SpecParam[0][i]
+    if len(SpecParams)!=0:
+        for i in range(0,len(SpecParams.dtype)):
+            nameTemp=SpecParams.dtype.names[i]
+            valTemp=SpecParams[0][i]
             valTemp=str(valTemp)
             exec('Mixture.'+nameTemp+'='+valTemp)
           
@@ -237,7 +238,203 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParam=np.array([])):
           
  
          
-
+def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=np.array([])):
+    """
+    The 'kaml' function implements a computationally less expensive version of the 
+    kernel backfitting algorithm. The KBF algorithm extracts J audio sources from 
+    I channel mixtures.
+    
+    Inputs: 
+    Inputfile: (list) It can contain either:                 
+               - Up to 3 elements: A string indicating the path of the .wav file containing 
+                 the I-channel audio mixture as the first element. The second (optional) 
+                 element indicates the length of the portion of the signal to be extracted 
+                 in seconds(defult is the full lengths of the siganl) The third (optional) 
+                 element indicates the starting point of the portion of the signal to be 
+                 extracted (default is 0 sec).
+               OR
+               - 2 elements: An I-column Numpy matrix containing samples of the time-domain 
+                 mixture as the first element and the sampling rate as the second element.
+          
+    SourceKernels: a list containg J sub-lists, each of which contains properties of 
+                   one of source kernels. Kernel properties are:
+                   -kernel type: (string) determines whether the kernel is one of the 
+                                 pre-defined kernel types or a user-defined lambda function. 
+                                 Choices are: 'cross','horizontal','vertical','periodic','userdef'
+                   -kparams (for pre-defined kernels): a Numpy matrix containing the numerical 
+                             values of the kernel parameters.
+                   -knhood (for user-defined kernels): logical lambda function which defines 
+                            receives the coordinates of two time-frequency bins and determines
+                            whether they are neighbours (outputs TRUE if neighbour).
+                   -kwfunc (optional): lambda function which receives the coordinates of two 
+                            neighbouring time-frequency bins and computes the weight value at
+                            the second bin given its distance from the first bin. The weight
+                            values fall in the interval [0,1]. Default: all ones over the 
+                            neighbourhood (binary kernel).
+                          
+    AlgParams: Numpy array of length 2, containing algorithm parameters. The first element is
+               the number of components or equivalently the rank of the mixture PSD, K, (default: 10),
+               and the second element the compression exponent gamma (default: 1).                      
+    
+    Numit: (optional) number of iterations of the backfitting algorithm - default: 1     
+                   
+    SpecParams: (optional) structured containing spectrogram parameters including:
+                         - windowtype (default is Hamming)
+                         - windowlength (default is 60 ms)
+                         - overlapSamp in [0,windowlength] (default is widowlength/2)
+                         - nfft (default is windowlength)
+                         - makeplot in {0,1} (default is 0)
+                         - fmaxplot in Hz (default is fs/2)
+                         example: 
+                         SpecParams=np.zeros(1,dtype=[('windowtype','|S1'),
+                                                      ('windowlength',int),
+                                                      ('overlapSamp',int),
+                                                      ('nfft',int),
+                                                      ('makeplot',int),
+                                                      ('fmaxplot',float)])
+                         SpecParams['windowlength']=1024                             
+    
+     
+        
+    Outputs:
+    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
+    fhat: a LF by LT by J Numpy array containing J power spectral dencities      
+    """
+    
+    # Step (1): 
+    # Load the audio mixture from the input path
+    if len(Inputfile)==2:
+        Mixture=AudioSignal(audiosig=Inputfile[0],fs=Inputfile[1])
+    elif len(Inputfile)==3:
+        Mixture=AudioSignal(file_name=Inputfile[0],siglen=Inputfile[1],sigstart=Inputfile[2])
+        
+    K,gamma=AlgParams    
+    
+    if len(SpecParams)!=0:
+        for i in range(0,len(SpecParams.dtype)):
+            nameTemp=SpecParams.dtype.names[i]
+            valTemp=SpecParams[0][i]
+            valTemp=str(valTemp)
+            exec('Mixture.'+nameTemp+'='+valTemp)
+     
+       
+    x,tvec=np.array([Mixture.x,Mixture.time])  # time-domain channel mixtures
+    X,Px,Fvec,Tvec=Mixture.STFT()  # stft and PSD of the channel mixtures
+    
+    I=Mixture.numCh # number of channel mixtures
+    J=len(SourceKernels) # number of sources
+    LF=np.size(Fvec) # length of the frequency vector
+    LT=np.size(Tvec) # length of the timeframe vector
+    
+    F_ind=np.arange(LF) # frequency bin indices
+    T_ind=np.arange(LT) # time frame indices
+    Tmesh,Fmesh=np.meshgrid(T_ind,F_ind) # grid of time-freq indices for the median filtering step
+    TFcoords=np.mat(np.zeros((LF*LT,2),dtype=int)) # all time-freq index combinations
+    TFcoords[:,0]=np.mat(np.asarray(Fmesh.T).reshape(-1)).T 
+    TFcoords[:,1]=np.mat(np.asarray(Tmesh.T).reshape(-1)).T   
+ 
+    # Generate source kernels:
+    Kj=[]
+    for ns in range(0,J):
+          SKj=SourceKernels[ns]
+          if len(SKj)<2:
+              raise Exception('The information required for generating source kernels is insufficient.'\
+                               ' Each sub-list in SourceKernels must contain at least two elements.')
+          KTYPE=SKj[0]  
+          if KTYPE!='userdef' and len(SKj)==2:
+             Kj.append(Kernel(Type=SKj[0],ParamVal=SKj[1]))
+          elif KTYPE!='userdef' and len(SKj)==3:
+             Kj.append(Kernel(Type=SKj[0],ParamVal=SKj[1]),Wfunc=SKj[2])
+          elif KTYPE=='userdef' and len(SKj)==2:
+             Kj.append(Kernel(Type=SKj[0],Nhood=SKj[1]))
+          elif KTYPE=='userdef' and len(SKj)==3:
+             Kj.append(Kernel(Type=SKj[0],Nhood=SKj[1]),Wfunc=SKj[2])
+             
+             
+    # Step (2): initialization
+    # Initialize the PSDs with average mixture PSD and the spatial covarince matricies
+    # with identity matrices
+   
+    X=np.reshape(X.T,(LF*LT,I))  # reshape the STFT tensor into I vectors 
+    if I>1: MeanPSD=np.mean(Px,axis=2)/(I*J)
+    else: MeanPSD=Px/(J) 
+    
+    U,V=randSVD(MeanPSD**gamma,K,'compact')[0:3:2] # compute the compact form of randomized SVD 
+    
+    K=U.shape[1]  # update the number of components in case the rank of the mixture PSD turns out
+                  # to be less than the input value for K
+    
+    
+    
+    ########################################################################    
+    
+    
+    
+    MeanPSD=np.reshape(MeanPSD.T,(LF*LT,1)) # reshape the mean PSD matrix into a vector
+        
+    fj=np.zeros((LF*LT,I*I,J))
+    for j in range(0,J):
+       fj[:,:,j]=np.tile(MeanPSD,(1,I*I))  # initialize by mean PSD
+    
+           
+    Rj=1j*np.zeros((1,I*I,J))
+    for j in range(0,J):
+        Rj[0,:,j]=np.reshape(np.eye(I),(1,I*I))
+    Rj=np.tile(Rj,(LF*LT,1,1))   
+                  
+    
+    return
+    
+def randSVD(A,K,mode='normal'):
+    """
+    The function randSVD implements the randomized computation of truncated SVD
+    of K components over a m by n matrix A.
+    Inputs:
+    A: Numpy array (m by n) 
+    K: number of components
+    mode: one of three cases
+         - 'normal' (default): S is a K by K diagonal matrix
+         - 'diagonal': S is the K by 1 vector containing the singular values
+         - 'compact': U and V are both multiplied by sqrt(S), and S is set to 1.
+     
+    Outputs: 
+    U: Numpy array (m by K) containing basis vectors in C^m
+    S: Numpy array (K by K) containing singular values
+    V: Numpy array (n by K) containing basis vectors in C^n
+    """
+    
+    m,n=np.shape(A) 
+    #  Step 1: generate a random nx2K Gassian iid matrix Omega
+    Omega=np.random.randn(n,np.min([2*K,n]))
+    # Step 2: form Y=A*Omega
+    Y=np.dot(A,Omega)
+    # Step 3: compute an orthonormal basis Q for the range of Y
+    Q=scipy.linalg.orth(Y)
+    # Step 4: form B=Q.T*A
+    B=np.dot(np.conj(Q.T),A)
+    # Step 5: compute svd of B
+    Utilde,S,V=np.linalg.svd(B,full_matrices=False)
+    # Step 6: form U=Q*Utilde
+    U=np.dot(Q,Utilde)
+    # Step 7: update the # of components and matrix sizes
+    K=np.min(np.array([K,np.shape(U)[1]]))
+    U=U[:,0:K]
+    S=np.diag(S[0:K])
+    V=V.T[:,0:K]
+    
+    if mode=='diagonal':
+        S=np.diag(S)
+    elif mode=='compact':
+        sqrtS=np.diag(np.sqrt(np.diag(S)))
+        U=np.dot(U,sqrtS)
+        V=np.dot(V,sqrtS)
+        S=np.eye(K)
+                
+    return U,S,V    
+    
+     
+    
+    
 class AudioSignal:   
     """
     The class Signal defines the properties of the audio signal object and performs
