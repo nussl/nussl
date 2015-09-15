@@ -93,9 +93,9 @@ def repet(x,fs,specparam=None,per=None):
     
     # estimate the repeating period
     per=np.ceil((per*fs+L/ovp-1)/ovp)
-    if len(per)==1:
+    if np.size(per)==1:
          p=per;
-    elif len(per)==2:
+    elif np.size(per)==2:
          b=beat_spec(np.mean(V**2,axis=2))
          plt.figure()
          plt.plot(b)
@@ -133,7 +133,7 @@ def beat_spec(X):
     Lf,Lt=np.shape(X)
     X=np.hstack([X,np.zeros((Lf,Lt))])
     Sx=np.abs(fft(X,axis=1)**2) # fft over columns (take the fft of each row at a time)
-    Rx=ifft(Sx,axis=1)[:,0:Lt] # ifft over columns 
+    Rx=np.real(ifft(Sx,axis=1)[:,0:Lt]) # ifft over columns 
     NormFactor=np.tile(np.arange(1,Lt+1)[::-1],(Lf,1)) # normalization factor
     Rx=Rx/NormFactor
     
@@ -178,7 +178,7 @@ def rep_mask(V,p):
     W=np.hstack([V,float('nan')*np.zeros((Lf,r*p-Lt))])
     W=np.reshape(W.T,(r,Lf*p))
     W1=np.median(W[0:r,0:Lf*(Lt-(r-1)*p)],axis=0)
-    W2=np.median(W[0:r,Lf*(Lt-(r-1)*p):Lf*p],axis=0)
+    W2=np.median(W[0:r-1,Lf*(Lt-(r-1)*p):Lf*p],axis=0)
     W=np.hstack([W1,W2])
     W=np.reshape(np.tile(W,(r,1)),(r*p,Lf)).T
     W=W[:,0:Lt]
