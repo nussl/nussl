@@ -23,13 +23,14 @@ Required modules:
 import numpy as np
 import matplotlib.pyplot as plt
 plt.interactive('True')
+import scipy.ndimage.filters
 import scipy
 from scipy.io.wavfile import read,write
 from f_stft import f_stft
 from f_istft import f_istft
 import time    
 
-def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([])):
+def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([]),FullKernel=False):
     """
     The 'kam' function implements the kernel backfitting algorithm to extract 
     J audio sources from I channel mixtures.
@@ -78,7 +79,17 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([])):
                                                       ('nfft',int),
                                                       ('makeplot',int),
                                                       ('fmaxplot',float)])
-                         SpecParams['windowlength']=1024                             
+                         SpecParams['windowlength']=1024   
+
+    FullKernel: (optional) binary input which determines the method used for median filtering.
+               If the kernel has a limited support and the same shape over all time-freq. bins,
+               then instead of the full kernel method a sliding window can be used in the median 
+               filtering stage in order to make the algorithm run faster (linear computational
+               complexity). The default value is False.
+               A True value means implementing the case where the similarity measure is 
+               computed for all possible combinations of TF bins, resulting in quadratic 
+               computational complexity, and hence longer running time. 
+                                        
         
     Outputs:
     shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
@@ -161,7 +172,7 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([])):
       
       # Step (3):
       # compute the inverse term: [sum_j' f_j' R_j']^-1
-        SumFR=np.sum(fj*Rj,axis=2)
+        SumFR=np.sum(fj*Rj,axis=2)   ###  !!!!!!!!!! careful about memory storage!
         SumFR.shape=(LF*LT,I,I)
         #SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   
         InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
@@ -197,18 +208,32 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([])):
           zj=np.mat(zj) 
           
           # Step (4-d):
-          # Median filter the estimated PSDs  
+          # Median filter the estimated PSDs 
+          
+          #start_time = time.clock()    
+          Ktemp=Kj[ns]  # Kernel corresponding to the source #j
+          
+          if FullKernel==False:  # kernel defined as a sliding window (faster method)
+              centerF=(LF-np.mod(LF,2))/2  # middle freq. bin
+              centerT=(LT-np.mod(LT,2))/2  # middle time frame
+              centerTF=np.mat([centerF,centerT]) # middle time-freq. bin
+              KWin=Ktemp.sim(centerTF,TFcoords) # sliding kernel window
+              KWin_reshape=np.reshape(KWin,(LT,LF)).T          
+              NZ=np.nonzero(KWin_reshape) # range of element numbers of central nonzero elements
+              KWin_shrink=KWin_reshape[NZ[0].min():NZ[0].max()+1,NZ[1].min():NZ[1].max()+1] # extract the central nonzero part
+              ZMed=scipy.ndimage.filters.median_filter(np.reshape(zj,(LT,LF)).T,footprint=KWin_shrink) # median filter
+              fj[:,:,ns]=np.reshape(ZMed.T,(LF*LT,1))
 
-          #start_time = time.clock()               
-          for ft in range(0,LF*LT):
-              simTemp=Kj[ns].sim(TFcoords[ft,:],TFcoords)
-              NhoodTemp=np.nonzero(simTemp)
-              zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
-              fj[ft,:,ns]=np.median(np.array(zjNhood))
+          elif FullKernel==True:  # full kernel method (more general but slower approach)                     
+              for ft in range(0,LF*LT):
+                  simTemp=Ktemp.sim(TFcoords[ft,:],TFcoords)
+                  NhoodTemp=np.nonzero(simTemp)
+                  zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
+                  fj[ft,:,ns]=np.median(np.array(zjNhood))
               
           #print time.clock() - start_time, "seconds" 
-            
-    
+          
+   
     #print time.clock() - start_time, "seconds"   
     
     # Reshape the PSDs
@@ -359,28 +384,133 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
     if I>1: MeanPSD=np.mean(Px,axis=2)/(I*J)
     else: MeanPSD=Px/(J) 
     
-    U,V=randSVD(MeanPSD**gamma,K,'compact')[0:3:2] # compute the compact form of randomized SVD 
+    U=[];  V=[]
+    Utemp,Vtemp=randSVD(MeanPSD**gamma,K,'compact')[0:3:2] # compute the compact form of randomized SVD 
+    del MeanPSD
+          
+    K=Utemp.shape[1]  # update the number of components in case the rank of the mixture PSD turns out
+                  # to be less than the input value or the default value for K
     
-    K=U.shape[1]  # update the number of components in case the rank of the mixture PSD turns out
-                  # to be less than the input value for K
-    
-    
-    
-    ########################################################################    
-    
-    
-    
+    for j in range(0,J):
+       U.append(Utemp); V.append(Vtemp)    
+       
+       
     MeanPSD=np.reshape(MeanPSD.T,(LF*LT,1)) # reshape the mean PSD matrix into a vector
-        
+   
     fj=np.zeros((LF*LT,I*I,J))
     for j in range(0,J):
        fj[:,:,j]=np.tile(MeanPSD,(1,I*I))  # initialize by mean PSD
-    
-           
+       
+             
     Rj=1j*np.zeros((1,I*I,J))
     for j in range(0,J):
         Rj[0,:,j]=np.reshape(np.eye(I),(1,I*I))
-    Rj=np.tile(Rj,(LF*LT,1,1))   
+    Rj=np.tile(Rj,(LF*LT,1,1))  
+    
+    ### Kernel Backfitting ###
+    for n in range(0,Numit):
+        
+      # Step (3-a):
+      # compute the inverse term: [sum_j' (pgamma_j')^(1/gamma) R_j']^-1
+        SumPR=np.zeros((LF*LT,I*I),dtype='single')
+        for j in range(0,J):
+            Pj_gamma=np.dot(U[j],np.conj(V[j].T))**(1/gamma)
+            Pj_reshape=np.reshape(Pj_gamma.T,(LF*LT,1))
+            Pj_tile=np.tile(Pj_reshape,(1,I*I))
+            SumPR=SumPR+Pj_tile*Rj[:,:,j]
+        SumPR=SumPR+1e-16*np.random.randn()    
+        
+        SumFR=np.sum(fj*Rj,axis=2)   ###  !!!!!!!!!! careful about memory storage!
+        SumFR.shape=(LF*LT,I,I)
+        #SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   
+        InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
+        
+    
+    ########################################################################    
+
+ 
+    
+    
+    
+    #start_time = time.clock()
+    
+    S=1j*np.zeros((LF*LT,I,J))
+    for n in range(0,Numit):
+      
+      # Step (3):
+      # compute the inverse term: [sum_j' f_j' R_j']^-1
+        SumFR=np.sum(fj*Rj,axis=2)   ###  !!!!!!!!!! careful about memory storage!
+        SumFR.shape=(LF*LT,I,I)
+        #SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   
+        InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
+        
+        # compute sources, update PSDs and covariance matrices 
+        for ns in range(0,J):
+          FRinvsum=fj[:,:,ns]*Rj[:,:,ns]*InvSumFR
+          Stemp=1j*np.zeros((LF*LT,I))
+          for nch in range(0,I):
+              FRtemp=FRinvsum[:,nch*I:nch*I+2]
+              Stemp[:,nch]=np.sum(FRtemp*X,axis=1)
+          S[:,:,ns]=Stemp
+          
+          # Step (4-a):
+          Cj=np.repeat(Stemp,I,axis=1)*np.tile(np.conj(Stemp),(1,I))
+          
+          # Step (4-b):
+          Cj_reshape=np.reshape(Cj,(LF*LT,I,I))     
+          Cj_trace=np.mat(np.matrix.trace(Cj_reshape.T)).T
+          MeanCj=Cj/np.tile(Cj_trace,(1,I*I))
+          MeanCj_reshape=np.reshape(np.array(MeanCj),(LF,LT,I*I),order='F') 
+          Rj[:,:,ns]=np.tile(np.sum(MeanCj_reshape,axis=1),(LT,1))
+          
+          # Step (4-c):
+          # Note: the summation over 't' at step 4-c in the 2014 paper is a typo!
+          #       the correct formulation of zj is: 
+          #       zj=(1/I)*tr(inv(Rj(w)Cj(w,t)
+          Rj_reshape=np.reshape(Rj[:,:,ns],(LF*LT,I,I))
+          #Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I)  
+          InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
+          InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
+          zj=np.real(np.matrix.trace(InvRjCj.T)/I) 
+          zj=np.mat(zj) 
+          
+          # Step (4-d):
+          # Median filter the estimated PSDs  
+
+          #start_time = time.clock()               
+          for ft in range(0,LF*LT):
+              simTemp=Kj[ns].sim(TFcoords[ft,:],TFcoords)
+              NhoodTemp=np.nonzero(simTemp)
+              zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
+              fj[ft,:,ns]=np.median(np.array(zjNhood))
+              
+          #print time.clock() - start_time, "seconds" 
+            
+    
+    #print time.clock() - start_time, "seconds"   
+    
+    # Reshape the PSDs
+    fhat=np.zeros((LF,LT,J))
+    for ns in range(0,J):
+      fhat[:,:,ns]=np.reshape(fj[:,0,ns],(LT,LF)).T  
+    
+    # Reshape the spectrograms
+    Shat=1j*np.zeros((LF,LT,I,J)) # estimated source STFTs    
+    for ns in range(0,J):
+        for nch in range(0,I):
+            Shat[:,:,nch,ns]=np.reshape(S[:,nch,ns],(LT,LF)).T
+            
+            
+    # Compute the inverse STFT of the estimated sources
+    shat=np.zeros((x.shape[0],I,J))
+    sigTemp=AudioSignal()
+    sigTemp.windowtype=Mixture.windowtype
+    sigTemp.windowlength=Mixture.windowlength
+    sigTemp.overlapSamp=Mixture.overlapSamp
+    sigTemp.numCh=I
+    for ns in range(0,J):
+        sigTemp.X=Shat[:,:,:,ns]
+        shat[:,:,ns]=sigTemp.iSTFT()[0][0:x.shape[0]] 
                   
     
     return
@@ -619,8 +749,8 @@ class Kernel:
                      along the time axis in # of time frames)
              Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
              Horizontal: (neighbourhood width along the time axis in # of time frames)
-             Periodic: (period in # of time frames,neighbourhood width along the time axis 
-                        in # of frames)  
+             Periodic: (period in # of time frames,# of periods along the time axis) 
+                        
              Note: neighbourhood width is measured in only one direction, e.g. only to the
                    right of a time-freq bin in the case of a horizontal kernel, so the whole
                    length of the neighbourhood would be twice the specified width.
@@ -664,8 +794,7 @@ class Kernel:
                      along the time axis in # of time frames)
              Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
              Horizontal: (neighbourhood width along the time axis in # of time frames)
-             Periodic: (period in # of time frames,neighbourhood width along the time axis 
-                        in # of frames)  
+             Periodic: (period in # of time frames,# of periods along the time axis)  
              
         Nhood: logical lambda funcion which receives the coordinates of two time-frequency
              bins and determines whether they are neighbours (outputs TRUE if neighbour).
@@ -734,7 +863,7 @@ class Kernel:
         elif Type=='periodic':
             
            P=ParamVal[0,0]
-           Dt=ParamVal[0,1]
+           Dt=ParamVal[0,1]*P+1
            self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
                         (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
                         (np.mod(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)),P)==0))         
@@ -763,7 +892,7 @@ class Kernel:
                              
          Nhood_vec=self.kNhood(TFcoords1,TFcoords2)
          Wfunc_vec=self.kWfunc(TFcoords1,TFcoords2)
-         simVal=np.multiply(Nhood_vec,Wfunc_vec).astype(np.float) 
+         simVal=np.multiply(Nhood_vec,Wfunc_vec).astype(np.float32) 
 
          return simVal
              
