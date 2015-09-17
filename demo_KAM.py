@@ -48,15 +48,15 @@ FF=np.tile(sig.Fvec.T,(len(sig.Tvec),1)).T
 # inputs of the 'kam' function 
 Inputfile=[x3,fs]
 SourceKernels=[['horizontal',np.mat('10')],['vertical',np.mat('10')]] # 100ms horizontal and 387Hz vertical
-SpecParam=np.zeros(1,dtype=[('windowlength',int),('overlapSamp',int),('nfft',int)])
-SpecParam['windowlength']=WL
-SpecParam['overlapSamp']=int(WL/2)    
-SpecParam['nfft']=WL
+SpecParams=np.zeros(1,dtype=[('windowlength',int),('overlapSamp',int),('nfft',int)])
+SpecParams['windowlength']=WL
+SpecParams['overlapSamp']=int(WL/2)    
+SpecParams['nfft']=WL
 Numit=2    
 
 # call the kam function and record the running time
 start_time = time.clock()
-shat,fhat=kam(Inputfile,SourceKernels,Numit,SpecParam)[0:2]
+shat,fhat=kam(Inputfile,SourceKernels,Numit,SpecParams)[0:2]
 print time.clock() - start_time, "seconds"   
 
 # record separated sources in .wav files
@@ -129,7 +129,7 @@ plt.title('Flute')
 
 
 # generate spectrograms of the mixture
-mix1=AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav',3)
+mix1=AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav',10)
 mix1.windowlength=WinL
 mix1.overlapSamp=Ovp
 mix1.nfft=WinL
@@ -143,8 +143,8 @@ plt.title('Mixture')
 
 # inputs of the 'kam' function
 FileName='/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav'
-BlockLen=1.5 # length of each block of signal in seconds
-AnalysisLen=3 # total length of the signal to be analyzed
+BlockLen=10 # length of each block of signal in seconds
+AnalysisLen=10 # total length of the signal to be analyzed
 NB=int(np.floor(AnalysisLen/BlockLen)) # total number of blocks 
 
 Inputfile=[FileName,BlockLen,0]
@@ -158,20 +158,20 @@ Nhood=lambda TFcoords1,TFcoords2: np.logical_and((np.abs(np.tile(TFcoords1[:,0],
                             (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt))
 
 SourceKernels=[['periodic',np.mat([11,34])],['userdef',Nhood]]
-SpecParam=np.zeros(1,dtype=[('windowlength',int),('overlapSamp',int),('nfft',int)])
-SpecParam['windowlength']=WinL
-SpecParam['overlapSamp']=Ovp
-SpecParam['nfft']=WinL
+SpecParams=np.zeros(1,dtype=[('windowlength',int),('overlapSamp',int),('nfft',int)])
+SpecParams['windowlength']=WinL
+SpecParams['overlapSamp']=Ovp
+SpecParams['nfft']=WinL
 Numit=5
 
 # call the kam function and record the running time
 start_time = time.clock()
-shat,fhat=kam(Inputfile,SourceKernels,Numit,SpecParam)[0:2]
+shat,fhat=kam(Inputfile,SourceKernels,Numit,SpecParams)[0:2]
 print time.clock() - start_time, "seconds"   
 
 for numblock in range(1,NB):
    Inputfile=[FileName,BlockLen,BlockLen*numblock]
-   shat_temp,fhat_temp=kam(Inputfile,SourceKernels,Numit,SpecParam)[0:2]
+   shat_temp,fhat_temp=kam(Inputfile,SourceKernels,Numit,SpecParams)[0:2]
    shat=np.append(shat,shat_temp,axis=0)  
    fhat=np.append(fhat,fhat_temp,axis=1)    
 print time.clock() - start_time, "seconds"   
