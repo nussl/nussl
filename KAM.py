@@ -174,7 +174,7 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([]),FullKernel=False
       # compute the inverse term: [sum_j' f_j' R_j']^-1
         SumFR=np.sum(fj*Rj,axis=2)   ###  !!!!!!!!!! careful about memory storage!
         SumFR.shape=(LF*LT,I,I)
-        #SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   
+        SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   # to avoid singularity issues
         InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
         
         # compute sources, update PSDs and covariance matrices 
@@ -263,7 +263,7 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([]),FullKernel=False
           
  
          
-def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=np.array([])):
+def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=np.array([]),FullKernel=False):
     """
     The 'kaml' function implements a computationally less expensive version of the 
     kernel backfitting algorithm. The KBF algorithm extracts J audio sources from 
@@ -319,7 +319,14 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
                                                       ('fmaxplot',float)])
                          SpecParams['windowlength']=1024                             
     
-     
+    FullKernel: (optional) binary input which determines the method used for median filtering.
+               If the kernel has a limited support and the same shape over all time-freq. bins,
+               then instead of the full kernel method a sliding window can be used in the median 
+               filtering stage in order to make the algorithm run faster (linear computational
+               complexity). The default value is False.
+               A True value means implementing the case where the similarity measure is 
+               computed for all possible combinations of TF bins, resulting in quadratic 
+               computational complexity, and hence longer running time.  
         
     Outputs:
     shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
@@ -333,7 +340,7 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
     elif len(Inputfile)==3:
         Mixture=AudioSignal(file_name=Inputfile[0],siglen=Inputfile[1],sigstart=Inputfile[2])
         
-    K,gamma=AlgParams    
+    numcomp,gamma=AlgParams    
     
     if len(SpecParams)!=0:
         for i in range(0,len(SpecParams.dtype)):
@@ -385,21 +392,14 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
     else: MeanPSD=Px/(J) 
     
     U=[];  V=[]
-    Utemp,Vtemp=randSVD(MeanPSD**gamma,K,'compact')[0:3:2] # compute the compact form of randomized SVD 
+    Utemp,Vtemp=randSVD(MeanPSD**gamma,numcomp,'compact')[0:3:2] # compute the compact form of randomized SVD 
     del MeanPSD
           
-    K=Utemp.shape[1]  # update the number of components in case the rank of the mixture PSD turns out
+    numcomp=Utemp.shape[1]  # update the number of components in case the rank of the mixture PSD turns out
                   # to be less than the input value or the default value for K
     
-    for j in range(0,J):
+    for ns in range(0,J):
        U.append(Utemp); V.append(Vtemp)    
-       
-       
-    MeanPSD=np.reshape(MeanPSD.T,(LF*LT,1)) # reshape the mean PSD matrix into a vector
-   
-    fj=np.zeros((LF*LT,I*I,J))
-    for j in range(0,J):
-       fj[:,:,j]=np.tile(MeanPSD,(1,I*I))  # initialize by mean PSD
        
              
     Rj=1j*np.zeros((1,I*I,J))
@@ -408,94 +408,98 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
     Rj=np.tile(Rj,(LF*LT,1,1))  
     
     ### Kernel Backfitting ###
+    S=1j*np.zeros((LF*LT,I,J))
     for n in range(0,Numit):
         
       # Step (3-a):
       # compute the inverse term: [sum_j' (pgamma_j')^(1/gamma) R_j']^-1
         SumPR=np.zeros((LF*LT,I*I),dtype='single')
-        for j in range(0,J):
-            Pj_gamma=np.dot(U[j],np.conj(V[j].T))**(1/gamma)
+        for ns in range(0,J):
+            Pj_gamma=np.dot(U[ns],np.conj(V[ns].T))**(1/gamma)
             Pj_reshape=np.reshape(Pj_gamma.T,(LF*LT,1))
             Pj_tile=np.tile(Pj_reshape,(1,I*I))
-            SumPR=SumPR+Pj_tile*Rj[:,:,j]
-        SumPR=SumPR+1e-16*np.random.randn()    
-        
-        SumFR=np.sum(fj*Rj,axis=2)   ###  !!!!!!!!!! careful about memory storage!
-        SumFR.shape=(LF*LT,I,I)
-        #SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   
-        InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
-        
-    
-    ########################################################################    
-
- 
-    
-    
-    
-    #start_time = time.clock()
-    
-    S=1j*np.zeros((LF*LT,I,J))
-    for n in range(0,Numit):
-      
-      # Step (3):
-      # compute the inverse term: [sum_j' f_j' R_j']^-1
-        SumFR=np.sum(fj*Rj,axis=2)   ###  !!!!!!!!!! careful about memory storage!
-        SumFR.shape=(LF*LT,I,I)
-        #SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   
-        InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
+            SumPR=SumPR+Pj_tile*Rj[:,:,ns]
+            del Pj_gamma,Pj_reshape,Pj_tile
+        SumPR.shape=(LF*LT,I,I)    
+        SumPR=SumPR+1e-16*np.random.randn(LF*LT,I,I) 
+        InvSumPR=np.reshape(np.linalg.inv(SumPR),(LF*LT,I*I))
+        del SumPR
         
         # compute sources, update PSDs and covariance matrices 
         for ns in range(0,J):
-          FRinvsum=fj[:,:,ns]*Rj[:,:,ns]*InvSumFR
+          Pj_gamma=np.dot(U[ns],np.conj(V[ns].T))**(1/gamma)  
+          Pj_reshape=np.reshape(Pj_gamma.T,(LF*LT,1))
+          Pj_tile=np.tile(Pj_reshape,(1,I*I))  
+          PRinvsum=Pj_tile*Rj[:,:,ns]*InvSumPR
+          del Pj_gamma,Pj_reshape,Pj_tile        
+          
           Stemp=1j*np.zeros((LF*LT,I))
           for nch in range(0,I):
-              FRtemp=FRinvsum[:,nch*I:nch*I+2]
-              Stemp[:,nch]=np.sum(FRtemp*X,axis=1)
+              PRtemp=PRinvsum[:,nch*I:nch*I+2]
+              Stemp[:,nch]=np.sum(PRtemp*X,axis=1)
+          del PRinvsum,PRtemp          
           S[:,:,ns]=Stemp
           
-          # Step (4-a):
+          # Step (3-b):
           Cj=np.repeat(Stemp,I,axis=1)*np.tile(np.conj(Stemp),(1,I))
-          
-          # Step (4-b):
+        
+          # Step (3-c):
           Cj_reshape=np.reshape(Cj,(LF*LT,I,I))     
           Cj_trace=np.mat(np.matrix.trace(Cj_reshape.T)).T
           MeanCj=Cj/np.tile(Cj_trace,(1,I*I))
           MeanCj_reshape=np.reshape(np.array(MeanCj),(LF,LT,I*I),order='F') 
           Rj[:,:,ns]=np.tile(np.sum(MeanCj_reshape,axis=1),(LT,1))
           
-          # Step (4-c):
-          # Note: the summation over 't' at step 4-c in the 2014 paper is a typo!
-          #       the correct formulation of zj is: 
-          #       zj=(1/I)*tr(inv(Rj(w)Cj(w,t)
+          # Step (3-d):
           Rj_reshape=np.reshape(Rj[:,:,ns],(LF*LT,I,I))
-          #Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I)  
+          Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I)  
           InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
           InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
           zj=np.real(np.matrix.trace(InvRjCj.T)/I) 
           zj=np.mat(zj) 
           
-          # Step (4-d):
+          # Step (3-e):
           # Median filter the estimated PSDs  
-
-          #start_time = time.clock()               
-          for ft in range(0,LF*LT):
-              simTemp=Kj[ns].sim(TFcoords[ft,:],TFcoords)
-              NhoodTemp=np.nonzero(simTemp)
-              zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
-              fj[ft,:,ns]=np.median(np.array(zjNhood))
+          
+          #start_time = time.clock()    
+          Ktemp=Kj[ns]  # Kernel corresponding to the source #j
+          
+          if FullKernel==False:  # kernel defined as a sliding window (faster method)
+              centerF=(LF-np.mod(LF,2))/2  # middle freq. bin
+              centerT=(LT-np.mod(LT,2))/2  # middle time frame
+              centerTF=np.mat([centerF,centerT]) # middle time-freq. bin
+              KWin=Ktemp.sim(centerTF,TFcoords) # sliding kernel window
+              KWin_reshape=np.reshape(KWin,(LT,LF)).T          
+              NZ=np.nonzero(KWin_reshape) # range of element numbers of central nonzero elements
+              KWin_shrink=KWin_reshape[NZ[0].min():NZ[0].max()+1,NZ[1].min():NZ[1].max()+1] # extract the central nonzero part
+              ZMed=scipy.ndimage.filters.median_filter(np.reshape(zj,(LT,LF)).T,footprint=KWin_shrink) # median filter
+              U[ns],V[ns]=randSVD(ZMed**(1/gamma),numcomp,'compact')[0:3:2]
+              
+          elif FullKernel==True:  # full kernel method (more general but slower approach)   
+              ZMed=np.zeros((LF*LT,1),dtype='single')      
+              for ft in range(0,LF*LT):
+                  simTemp=Ktemp.sim(TFcoords[ft,:],TFcoords)
+                  NhoodTemp=np.nonzero(simTemp)
+                  zjNhood=np.multiply(zj[NhoodTemp],simTemp[NhoodTemp])
+                  ZMed[ft,0]=np.median(np.array(zjNhood))
+              ZMed=np.reshape(ZMed,(LT,LF)).T    
+              U[ns],V[ns]=randSVD(ZMed**(1/gamma),numcomp,'compact')[0:3:2]
               
           #print time.clock() - start_time, "seconds" 
-            
-    
+          
     #print time.clock() - start_time, "seconds"   
     
+    
+    #######################################################################
+    #####?????????? first example second source not decomposed corectly!
+    
     # Reshape the PSDs
-    fhat=np.zeros((LF,LT,J))
+    phat=np.zeros((LF,LT,J),dtype='single')
     for ns in range(0,J):
-      fhat[:,:,ns]=np.reshape(fj[:,0,ns],(LT,LF)).T  
+      phat[:,:,ns]=np.dot(U[ns],np.conj(V[ns].T))**(1/gamma)
     
     # Reshape the spectrograms
-    Shat=1j*np.zeros((LF,LT,I,J)) # estimated source STFTs    
+    Shat=1j*np.zeros((LF,LT,I,J),dtype='single') # estimated source STFTs    
     for ns in range(0,J):
         for nch in range(0,I):
             Shat[:,:,nch,ns]=np.reshape(S[:,nch,ns],(LT,LF)).T
@@ -510,11 +514,12 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
     sigTemp.numCh=I
     for ns in range(0,J):
         sigTemp.X=Shat[:,:,:,ns]
-        shat[:,:,ns]=sigTemp.iSTFT()[0][0:x.shape[0]] 
-                  
+        shat[:,:,ns]=sigTemp.iSTFT()[0][0:x.shape[0]]      
     
-    return
     
+    return shat,phat  
+ 
+   
 def randSVD(A,K,mode='normal'):
     """
     The function randSVD implements the randomized computation of truncated SVD
