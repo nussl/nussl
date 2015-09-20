@@ -175,7 +175,19 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([]),FullKernel=False
         SumFR=np.sum(fj*Rj,axis=2)   ###  !!!!!!!!!! careful about memory storage!
         SumFR.shape=(LF*LT,I,I)
         SumFR=SumFR+1e-16*np.random.randn(LF*LT,I,I)   # to avoid singularity issues
-        InvSumFR=np.reshape(np.linalg.inv(SumFR),(LF*LT,I*I))
+        
+        InvSumFR=np.zeros((LF*LT,I,I),dtype='single')
+        if I==1: 
+            InvSumFR=1/SumFR
+        elif I==2:       
+            InvDet=1/(SumFR[:,0,0]*SumFR[1,1]-SumFR[0,1]*SumFR[1,0])
+            InvSumFR[:,0,0]=InvDet*SumFR[:,1,1]
+            InvSumFR[:,0,1]=-InvDet*SumFR[:,0,1]
+            InvSumFR[:,1,0]=-InvDet*SumFR[:,1,0]
+            InvSumFR[:,1,1]=InvDet*SumFR[:,0,0]
+        else:            
+            InvSumFR=np.linalg.inv(SumFR)
+        InvSumFR.shape=(LF*LT,I*I)            
         
         # compute sources, update PSDs and covariance matrices 
         for ns in range(0,J):
@@ -201,8 +213,21 @@ def kam(Inputfile,SourceKernels,Numit=1,SpecParams=np.array([]),FullKernel=False
           #       the correct formulation of zj is: 
           #       zj=(1/I)*tr(inv(Rj(w)Cj(w,t)
           Rj_reshape=np.reshape(Rj[:,:,ns],(LF*LT,I,I))
-          #Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I)  
-          InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
+          Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I)  
+          
+          InvRj=np.zeros((LF*LT,I,I),dtype='single')          
+          if I==1: 
+              InvRj=1/Rj_reshape
+          elif I==2:
+              InvDetR=1/(Rj_reshape[:,0,0]*Rj_reshape[1,1]-Rj_reshape[0,1]*Rj_reshape[1,0])
+              InvRj[:,0,0]=InvDetR*Rj_reshape[:,1,1]
+              InvRj[:,0,1]=-InvDetR*Rj_reshape[:,0,1]
+              InvRj[:,1,0]=-InvDetR*Rj_reshape[:,1,0]
+              InvRj[:,1,1]=InvDetR*Rj_reshape[:,0,0]
+          else:
+              InvRj=np.linalg.inv(Rj_reshape)
+          InvRj.shape=(LF*LT,I*I)            
+          
           InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
           zj=np.real(np.matrix.trace(InvRjCj.T)/I) 
           zj=np.mat(zj) 
@@ -400,7 +425,7 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
     
     for ns in range(0,J):
        U.append(Utemp); V.append(Vtemp)    
-       
+    del Utemp,Vtemp   
              
     Rj=1j*np.zeros((1,I*I,J))
     for j in range(0,J):
@@ -415,19 +440,31 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
       # compute the inverse term: [sum_j' (pgamma_j')^(1/gamma) R_j']^-1
         SumPR=np.zeros((LF*LT,I*I),dtype='single')
         for ns in range(0,J):
-            Pj_gamma=np.dot(U[ns],np.conj(V[ns].T))**(1/gamma)
+            Pj_gamma=np.abs(np.dot(U[ns],np.conj(V[ns].T))**(1/gamma))
             Pj_reshape=np.reshape(Pj_gamma.T,(LF*LT,1))
             Pj_tile=np.tile(Pj_reshape,(1,I*I))
             SumPR=SumPR+Pj_tile*Rj[:,:,ns]
             del Pj_gamma,Pj_reshape,Pj_tile
         SumPR.shape=(LF*LT,I,I)    
         SumPR=SumPR+1e-16*np.random.randn(LF*LT,I,I) 
-        InvSumPR=np.reshape(np.linalg.inv(SumPR),(LF*LT,I*I))
+        
+        InvSumPR=np.zeros((LF*LT,I,I),dtype='single')
+        if I==1: 
+            InvSumPR=1/SumPR
+        elif I==2:       
+            InvDet=1/(SumPR[:,0,0]*SumPR[1,1]-SumPR[0,1]*SumPR[1,0])
+            InvSumPR[:,0,0]=InvDet*SumPR[:,1,1]
+            InvSumPR[:,0,1]=-InvDet*SumPR[:,0,1]
+            InvSumPR[:,1,0]=-InvDet*SumPR[:,1,0]
+            InvSumPR[:,1,1]=InvDet*SumPR[:,0,0]
+        else:            
+            InvSumPR=np.linalg.inv(SumPR)
+        InvSumPR.shape=(LF*LT,I*I)    
         del SumPR
         
         # compute sources, update PSDs and covariance matrices 
         for ns in range(0,J):
-          Pj_gamma=np.dot(U[ns],np.conj(V[ns].T))**(1/gamma)  
+          Pj_gamma=np.abs(np.dot(U[ns],np.conj(V[ns].T))**(1/gamma))  
           Pj_reshape=np.reshape(Pj_gamma.T,(LF*LT,1))
           Pj_tile=np.tile(Pj_reshape,(1,I*I))  
           PRinvsum=Pj_tile*Rj[:,:,ns]*InvSumPR
@@ -452,8 +489,21 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
           
           # Step (3-d):
           Rj_reshape=np.reshape(Rj[:,:,ns],(LF*LT,I,I))
-          Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I)  
-          InvRj=np.reshape(np.linalg.inv(Rj_reshape),(LF*LT,I*I))
+          Rj_reshape=Rj_reshape+1e-16*np.random.randn(LF*LT,I,I) 
+          
+          InvRj=np.zeros((LF*LT,I,I),dtype='single')          
+          if I==1: 
+              InvRj=1/Rj_reshape
+          elif I==2:
+              InvDetR=1/(Rj_reshape[:,0,0]*Rj_reshape[1,1]-Rj_reshape[0,1]*Rj_reshape[1,0])
+              InvRj[:,0,0]=InvDetR*Rj_reshape[:,1,1]
+              InvRj[:,0,1]=-InvDetR*Rj_reshape[:,0,1]
+              InvRj[:,1,0]=-InvDetR*Rj_reshape[:,1,0]
+              InvRj[:,1,1]=InvDetR*Rj_reshape[:,0,0]
+          else:
+              InvRj=np.linalg.inv(Rj_reshape)
+          InvRj.shape=(LF*LT,I*I)              
+              
           InvRjCj=np.reshape(InvRj*Cj,(LF*LT,I,I))
           zj=np.real(np.matrix.trace(InvRjCj.T)/I) 
           zj=np.mat(zj) 
@@ -474,6 +524,7 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
               KWin_shrink=KWin_reshape[NZ[0].min():NZ[0].max()+1,NZ[1].min():NZ[1].max()+1] # extract the central nonzero part
               ZMed=scipy.ndimage.filters.median_filter(np.reshape(zj,(LT,LF)).T,footprint=KWin_shrink) # median filter
               U[ns],V[ns]=randSVD(ZMed**(1/gamma),numcomp,'compact')[0:3:2]
+              del ZMed,zj
               
           elif FullKernel==True:  # full kernel method (more general but slower approach)   
               ZMed=np.zeros((LF*LT,1),dtype='single')      
@@ -484,19 +535,17 @@ def kaml(Inputfile,SourceKernels,AlgParams=np.array([10,1]),Numit=1,SpecParams=n
                   ZMed[ft,0]=np.median(np.array(zjNhood))
               ZMed=np.reshape(ZMed,(LT,LF)).T    
               U[ns],V[ns]=randSVD(ZMed**(1/gamma),numcomp,'compact')[0:3:2]
+              del ZMed,zj
               
           #print time.clock() - start_time, "seconds" 
           
     #print time.clock() - start_time, "seconds"   
     
     
-    #######################################################################
-    #####?????????? first example second source not decomposed corectly!
-    
     # Reshape the PSDs
-    phat=np.zeros((LF,LT,J),dtype='single')
+    phat=np.zeros((LF,LT,J))
     for ns in range(0,J):
-      phat[:,:,ns]=np.dot(U[ns],np.conj(V[ns].T))**(1/gamma)
+      phat[:,:,ns]=np.abs(np.dot(U[ns],np.conj(V[ns].T))**(1/gamma))
     
     # Reshape the spectrograms
     Shat=1j*np.zeros((LF,LT,I,J),dtype='single') # estimated source STFTs    
@@ -647,6 +696,11 @@ class AudioSignal:
         """
         
         self.fs,x = read(file_name)
+        
+        # scale to -1.0 to 1.0
+        convert_16_bit = float(2**15)
+        x = x / (convert_16_bit + 1.0)        
+        
         if x.ndim<2: x=np.expand_dims(x,axis=1)
         self.numCh=np.shape(x)[1]
         if siglen=='full length':
@@ -789,7 +843,7 @@ class Kernel:
         Inputs:
         Type: (string) determines whether the kernel is one of the pre-defined kernel types 
              or a user-defined lambda function. 
-             Predefined choices are: 'cross','horizontal','vertical','periodic'
+             Predefined choices are: 'cross','horizontal','vertical','periodic','harmonic'
              To define a new kernel type, kType should be set to: 'userdef'
              
         ParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any
@@ -799,7 +853,8 @@ class Kernel:
                      along the time axis in # of time frames)
              Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
              Horizontal: (neighbourhood width along the time axis in # of time frames)
-             Periodic: (period in # of time frames,# of periods along the time axis)  
+             Periodic: (period in # of time frames,# of periods along the time axis) 
+             Harmonic: (period in # of freq. bins, # of periods along the freq. axis)
              
         Nhood: logical lambda funcion which receives the coordinates of two time-frequency
              bins and determines whether they are neighbours (outputs TRUE if neighbour).
@@ -825,7 +880,7 @@ class Kernel:
         if self.kWfunc is None:
              self.kWfunc=lambda TFcoords1,TFcoords2: self.kNhood(TFcoords1,TFcoords2) # default: binary kernel
         
-        if Type in ['cross','vertical','horizontal','periodic']:
+        if Type in ['cross','vertical','horizontal','periodic','harmonic']:
             self.gen_predef_kernel()
             
 
@@ -874,6 +929,14 @@ class Kernel:
                         (np.mod(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)),P)==0))         
            self.kParamVal=ParamVal
            
+        elif Type=='harmonic':
+            
+           P=ParamVal[0,0]
+           Df=ParamVal[0,1]*P+1 
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df)),\
+                        (np.mod(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)),P)==0))         
+           self.kParamVal=ParamVal
                
         
     def sim(self,TFcoords1,TFcoords2):
