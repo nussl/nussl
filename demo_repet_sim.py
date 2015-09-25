@@ -11,7 +11,9 @@ from REPET_sim import repet_sim
 plt.close('all')
 
 # load the audio file
-fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav');
+fileName = '/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav'
+#fs,x = read()
+myAudioFile =  AudioSignal(fileName)
 #fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav')
  
 # scale to -1.0 to 1.0
