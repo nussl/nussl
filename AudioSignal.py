@@ -30,10 +30,10 @@ class AudioSignal:
   
     """
     
-    def __init__(self, fileName = None, timeSeries = None, signalStartingPosition = 0, signalLength = 0, sampleRate = Constants.DEFAULT_SAMPLERATE):
+    def __init__(self, inputFileName = None, timeSeries = None, signalStartingPosition = 0, signalLength = 0, sampleRate = Constants.DEFAULT_SAMPLERATE):
         """
         inputs: 
-        fileName is a string argument indicating the name of the .wav file
+        inputFileName is a string indicating a path to a .wav file
         signalLength (in seconds): optional input indicating the length of the signal to be extracted. 
                              Default: full length of the signal
         signalStartingPosition (in seconds): optional input indicating the starting point of the section to be 
@@ -42,26 +42,24 @@ class AudioSignal:
         SampleRate: sampling rate                       
         """
 
-        if (fileName is None) == (timeSeries is None): # XOR them
-            raise e
+        self.FileName = inputFileName
+        self.AudioData = None
+        self.Time = np.mat([])
+        self.SignalLength = signalLength
+        self.nChannels = 0
 
-        self.FileName = fileName
+        if (inputFileName is None) != (timeSeries is None): # XOR them
+            pass
 
-        if fileName is not None:
-            self.LoadAudioFromFile(fileName, signalLength, signalStartingPosition)
-        else:
+        if inputFileName is not None:
+            self.LoadAudioFromFile(self.FileName, self.SignalLength, signalStartingPosition)
+        elif timeSeries is not None:
             self.LoadAudioFromArray(timeSeries, sampleRate)
         
-        # signal properties
-         #np.mat([]) 
-        
-        self.Time = np.mat([])
-        self.SignalLength = 0
-        self.nChannels = 0
               
         # STFT properties
-        self.X = np.mat([]) # complex spectrogram
-        self.P = np.mat([]) # power spectrogram
+        self.ComplexSpectrogramData = np.mat([]) # complex spectrogram
+        self.PowerSpectrumData = np.mat([]) # power spectrogram
         self.Fvec = np.mat([]) # freq. vector
         self.Tvec = np.mat([]) # time vector
         self.windowType = WindowType.DEFAULT
@@ -78,18 +76,24 @@ class AudioSignal:
                 
    
     
-    def LoadAudioFromFile(self, fileName = self.FileName, signalStartingPosition = 0, signalLength = 0):
+    def LoadAudioFromFile(self, inputFileName = self.FileName, signalStartingPosition = 0, signalLength = 0):
         """
         Loads an audio signal from a .wav file
-        signalLength of 0 means read the whole file
+        signalLength (in seconds): optional input indicating the length of the signal to be extracted. 
+            signalLength of 0 means read the whole file
+            Default: full length of the signal
+        signalStartingPosition (in seconds): optional input indicating the starting point of the section to be 
+            extracted.
+            Default: 0 seconds
         
         """
-        if fileName is None:
+        if inputFileName is None:
             raise e
 
         try:
-            self.SampleRate,audioInput = read(fileName)
+            self.SampleRate, audioInput = read(inputFileName)
         except Exception, e:
+            print "Cannot read from file, {file}".format(format=inputFileName)
             raise e
         
         # scale to -1.0 to 1.0
@@ -112,45 +116,55 @@ class AudioSignal:
         self.Time = np.mat( (1./self.SampleRate) * np.arange(self.SignalLength) ) 
         
    
-    def LoadAudioFromArray(self, signal, sampleRate):
+    def LoadAudioFromArray(self, signal, sampleRate = self.SampleRate):
         """
         Loads an audio signal in numpy matrix format along with the sampling frequency
 
         """
+        self.FileName = None
         self.AudioData = np.mat(signal) # each column contains one channel mixture
         self.SampleRate = sampleRate
         self.SignalLength, self.nChannels = np.shape(self.x)
-        self.time = np.mat( (1./self.SampleRate) * np.arange(self.signalLength) )     
+        self.time = np.mat( (1./self.SampleRate) * np.arange(self.signalLength) )    
 
     
-    def WriteAudioFile(self, fileName):
+    def WriteAudioFile(self, outputFileName, sampleRate = self.SampleRate):
         """
         records the audio signal in a .wav file
         """
-        write(fileName, self.SampleRate, self.AudioData)
+        if self.AudioData is None:
+            raise e
+
+        try:
+            write(outputFileName, sampleRate, self.AudioData)
+        except Exception, e:
+            print "Cannot write to file, %s" % inputFileName
+            raise e
 
     
     def STFT(self):
         """
         computes the STFT of the audio signal and returns:
-        self.X: complex stft
-        self.P: power spectrogram
+        self.ComplexSpectrogramData: complex stft
+        self.PowerSpectrumData: power spectrogram
         self.Fvec: frequency vector
         self.Tvec: vector of time frames
         """
-        
+        if self.AudioData is None:
+            raise e
+
         for i in range(0, self.numCh):  
             Xtemp, Ptemp, Ftemp, Ttemp = f_stft(self.x[:,i].T, self.windowlength, self.windowtype, \
                                                 self.overlapSamp, self.SampleRate, nfft=self.nfft, mkplot=0)
                        
-            if np.size(self.X) == 0:
-                self.X = Xtemp
-                self.P = Ptemp
+            if np.size(self.ComplexSpectrogramData) == 0:
+                self.ComplexSpectrogramData = Xtemp
+                self.PowerSpectrumData = Ptemp
                 self.Fvec = Ftemp
                 self.Tvec = Ttemp
             else:
-                self.X = np.dstack([self.X, Xtemp]) 
-                self.P = np.dstack([self.P, Ptemp])
+                self.ComplexSpectrogramData = np.dstack([self.ComplexSpectrogramData, Xtemp]) 
+                self.PowerSpectrumData = np.dstack([self.PowerSpectrumData, Ptemp])
         
         if self.makeplot is True:
             f_stft(self.x[:,0].T, self.windowlength, self.windowtype,
@@ -158,7 +172,7 @@ class AudioSignal:
                        mkplot=self.makeplot, fmax=self.fmaxplot)
             plt.show()
             
-        return self.X, self.P, self.Fvec, self.Tvec
+        return self.ComplexSpectrogramData, self.PowerSpectrumData, self.Fvec, self.Tvec
             
     
     def iSTFT(self):
@@ -167,15 +181,17 @@ class AudioSignal:
         self.x: time-domain signal       
         self.time: time vector 
         """
+        if self.AudioData is None:
+            raise e
          
-        if np.size(self.X) == 0: 
+        if np.size(self.ComplexSpectrogramData) == 0: 
             print("Empty spectrogrm matrix!")
             self.x = np.mat([])
             self.time = np.mat([])
         else:          
             self.x = np.mat([])
             for i in range(0, self.numCh):
-                x_temp, t_temp = f_istft(self.X[:,:,i], self.windowlength, self.windowtype, self.overlapSamp, self.SampleRate)
+                x_temp, t_temp = f_istft(self.ComplexSpectrogramData[:,:,i], self.windowlength, self.windowtype, self.overlapSamp, self.SampleRate)
              
                 if np.size(self.x) == 0:
                     self.x = np.mat(x_temp).T
@@ -184,3 +200,17 @@ class AudioSignal:
                     self.x = np.hstack([self.x, np.mat(x_temp).T])
                      
             return self.x, self.time
+
+    class __sample:
+
+        def __init__(self):
+
+
+
+
+
+
+
+
+
+
