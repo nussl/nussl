@@ -36,7 +36,16 @@ plt.interactive('True')
 
 class RepetSim(SeparationBase):
 
-    def repet_sim(x,fs,specparam=None,par=None):
+    def __init__(self,  windowAttributes = None, sampleRate = None, audioSignal = None,
+        similarityThreshold = 0, similarityDistance = 1, similarityMaxRepititions = 100):
+        super(RepetSim, self).__init__(windowAttributes = windowAttributes, sampleRate = sampleRate, audioSignal = audioSignal)
+        self.SimilarityThreshold = similarityThreshold
+        self.SimilarityDistance = similarityDistance
+        self.SimilarityMaxRepititions = similarityMaxRepititions
+
+
+
+    def Run(x,fs,specparam=None,par=None):
         """
         The repet_sim function implements the main algorithm.
         
@@ -68,23 +77,22 @@ class RepetSim(SeparationBase):
         * Note: the 'scikits.audiolab' package is required for reading and writing 
                 .wav files
         """    
-        # use the default range of repeating period and default STFT parameter values if not specified
-        if specparam is None:
-           winlength=int(2**(np.ceil(np.log2(0.04*fs))))
-           specparam = [winlength,'Hamming',winlength/2,winlength]
         if par is None:
-           par = par = np.array([0,1,100])    
+           par = np.array([0,1,100])    
            
         # STFT parameters
-        L,win,ovp,nfft=specparam 
+        L,win,ovp,nfft = self.WindowAttributes.WindowLength, self.WindowAttributes.WindowType, self.WindowAttributes.WindowOverlap, self.WindowAttributes.Nfft 
+
+
         
         # HPF parameters
-        fc=100   # cutoff freqneyc (in Hz) of the high pass filter 
-        fc=np.ceil(float(fc)*(nfft-1)/fs) # cutoff freq. (in # of freq. bins)
+        fc = 100   # cutoff freqneyc (in Hz) of the high pass filter 
+        fc = np.ceil( float(fc)*(self.WindowAttributes.Nfft - 1) / self.SampleRate ) # cutoff freq. (in # of freq. bins)
         
         # compute the spectrograms of all channels
-        M,N = np.shape(x)
-        X=f_stft(np.mat(x[0,:]),L,win,ovp,fs,nfft,0)[0]
+        M, N = np.shape(x)
+        X = f_stft( np.mat(x[0,:]), self.WindowAttributes.WindowLength, self.WindowAttributes.WindowType, 
+            ovp,fs,nfft,0)[0]
         for i in range(1,M):
              Sx= f_stft(np.mat(x[i,:]),L,win,ovp,fs,nfft,0)[0]
              X=np.dstack([X,Sx])
@@ -102,7 +110,7 @@ class RepetSim(SeparationBase):
         plt.axis('tight')
         plt.title('Similarity Matrix')
         
-        par[1]=np.round(par[1]*fs/ovp)
+        self.SimilarityDistance = np.round(self.SimilarityDistance * fs/ovp)
         S = sim_ind(S,par)
         
         # separate the mixture background by masking
