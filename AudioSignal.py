@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.io.wavfile import read,write
-import WindowType, Constants
+from WindowType import WindowType
+import Constants
+import f_istft, f_stft
 
 class AudioSignal:   
     """
@@ -30,7 +32,8 @@ class AudioSignal:
   
     """
     
-    def __init__(self, inputFileName = None, timeSeries = None, signalStartingPosition = 0, signalLength = 0, sampleRate = Constants.DEFAULT_SAMPLERATE):
+    def __init__(self, inputFileName = None, timeSeries = None, signalStartingPosition = 0, signalLength = 0,
+                 sampleRate = Constants.DEFAULT_SAMPLERATE):
         """
         inputs: 
         inputFileName is a string indicating a path to a .wav file
@@ -70,13 +73,11 @@ class AudioSignal:
         self.shouldMakePlot = False
         self.FrequencyMaxPlot = self.SampleRate/2
         
-        
-        
-        #self.STFT() # is the spectrogram is required to be computate at start up
+        #self.STFT() # is the spectrogram is required to be computed at start up
                 
    
     
-    def LoadAudioFromFile(self, inputFileName = self.FileName, signalStartingPosition = 0, signalLength = 0):
+    def LoadAudioFromFile(self, inputFileName = None, signalStartingPosition = 0, signalLength = 0):
         """
         Loads an audio signal from a .wav file
         signalLength (in seconds): optional input indicating the length of the signal to be extracted. 
@@ -88,18 +89,18 @@ class AudioSignal:
         
         """
         if inputFileName is None:
-            raise e
+            raise Exception("Cannot load audio from file because there is no file to open from!")
 
         try:
             self.SampleRate, audioInput = read(inputFileName)
         except Exception, e:
-            print "Cannot read from file, {file}".format(format=inputFileName)
+            print "Cannot read from file, {file}".format(file = inputFileName)
             raise e
-        
+
         # scale to -1.0 to 1.0
         audioInput /= float(2**15) + 1.0       
         
-        if x.ndim < 2: 
+        if audioInput.ndim < 2:
             audioInput = np.expand_dims(audioInput,axis=1)
 
         self.nChannels = np.shape(audioInput)[1]
@@ -111,12 +112,12 @@ class AudioSignal:
         else:
            self.SignalLength = int(signalLength * self.SampleRate)
            startPos = int(signalStartingPosition * self.SampleRate)
-           self.AudioData = np.mat( x[startPos: startPos+self.SignalLength, : ] )
+           self.AudioData = np.mat( audioInput[startPos: startPos+self.SignalLength, : ] )
         
         self.Time = np.mat( (1./self.SampleRate) * np.arange(self.SignalLength) ) 
         
    
-    def LoadAudioFromArray(self, signal, sampleRate = self.SampleRate):
+    def LoadAudioFromArray(self, signal, sampleRate = Constants.DEFAULT_SAMPLERATE):
         """
         Loads an audio signal in numpy matrix format along with the sampling frequency
 
@@ -125,21 +126,24 @@ class AudioSignal:
         self.AudioData = np.mat(signal) # each column contains one channel mixture
         self.SampleRate = sampleRate
         self.SignalLength, self.nChannels = np.shape(self.x)
-        self.time = np.mat( (1./self.SampleRate) * np.arange(self.signalLength) )    
+        self.time = np.mat( (1./self.SampleRate) * np.arange(self.SignalLength) )
 
     
-    def WriteAudioFile(self, outputFileName, sampleRate = self.SampleRate):
+    def WriteAudioFile(self, outputFileName, sampleRate = Constants.DEFAULT_SAMPLERATE):
         """
         records the audio signal in a .wav file
         """
         if self.AudioData is None:
-            raise e
+            raise Exception("Cannot write audio file because there is no audio data.")
 
         try:
             write(outputFileName, sampleRate, self.AudioData)
         except Exception, e:
-            print "Cannot write to file, %s" % inputFileName
+            print "Cannot write to file, {file}.".format(file = outputFileName)
             raise e
+        else:
+            print "Successfully wrote {file}.".format(file = outputFileName)
+
 
     
     def STFT(self):
@@ -151,9 +155,9 @@ class AudioSignal:
         self.Tvec: vector of time frames
         """
         if self.AudioData is None:
-            raise e
+            raise Exception("No audio data to make STFT from.")
 
-        for i in range(0, self.numCh):  
+        for i in range(0, self.nChannels):
             Xtemp, Ptemp, Ftemp, Ttemp = f_stft(self.x[:,i].T, self.windowlength, self.windowtype, \
                                                 self.overlapSamp, self.SampleRate, nfft=self.nfft, mkplot=0)
                        
@@ -166,11 +170,11 @@ class AudioSignal:
                 self.ComplexSpectrogramData = np.dstack([self.ComplexSpectrogramData, Xtemp]) 
                 self.PowerSpectrumData = np.dstack([self.PowerSpectrumData, Ptemp])
         
-        if self.makeplot is True:
+        if self.shouldMakePlot:
             f_stft(self.x[:,0].T, self.windowlength, self.windowtype,
                        np.ceil(self.overlapRatio*self.windowlength), self.SampleRate, nfft=self.nfft,
-                       mkplot=self.makeplot, fmax=self.fmaxplot)
-            plt.show()
+                       mkplot=self.shouldMakePlot, fmax=self.fmaxplot)
+            #plt.show()
             
         return self.ComplexSpectrogramData, self.PowerSpectrumData, self.Fvec, self.Tvec
             
@@ -190,8 +194,9 @@ class AudioSignal:
             self.time = np.mat([])
         else:          
             self.x = np.mat([])
-            for i in range(0, self.numCh):
-                x_temp, t_temp = f_istft(self.ComplexSpectrogramData[:,:,i], self.windowlength, self.windowtype, self.overlapSamp, self.SampleRate)
+            for i in range(0, self.nChannels):
+                x_temp, t_temp = f_istft(self.ComplexSpectrogramData[:,:,i], self.windowlength, self.windowtype,
+                                         self.overlapSamp, self.SampleRate)
              
                 if np.size(self.x) == 0:
                     self.x = np.mat(x_temp).T
@@ -202,9 +207,8 @@ class AudioSignal:
             return self.x, self.time
 
     class __sample:
-
         def __init__(self):
-
+            pass
 
 
 

@@ -167,7 +167,7 @@ def rep_period(b,r):     ####### is not working as it should!!
     
 def rep_mask(V,p):
     """
-    The rep_mask function computes the soft mask for the repeating part using
+    The ComputeRepeatingMask function computes the soft mask for the repeating part using
     the magnitude spectrogram and the repeating period
     
     Inputs:
