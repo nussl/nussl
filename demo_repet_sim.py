@@ -33,7 +33,7 @@ fmax=5000;
 
 plt.figure(1)
 plt.title('Mixture');
-Sm=f_stft(np.mat(x),L,win,ovp,fs,nfft,mkplot,fmax); 
+Sm=f_stft(np.mat(x),L,win,ovp,fs,nfft,mkplot,fmax)
 plt.show()
 
 # separation
@@ -56,11 +56,11 @@ plt.show()
 plt.figure(4)
 plt.subplot(2,1,1)
 plt.title('Background Spectrogram');
-Sb=f_stft(np.mat(y_sim),L,win,ovp,fs,nfft,mkplot,fmax); 
+Sb=f_stft(np.mat(y_sim),L,win,ovp,fs,nfft,mkplot,fmax)
 plt.show()
 plt.subplot(2,1,2)
 plt.title('Foreground Spectrogram');
-Sf=f_stft(np.mat(x-y_sim),L,win,ovp,fs,nfft,mkplot,fmax); 
+Sf=f_stft(np.mat(x-y_sim),L,win,ovp,fs,nfft,mkplot,fmax)
 plt.show()
 
 # check whether the separated spectrograms add up to the original spectrogram

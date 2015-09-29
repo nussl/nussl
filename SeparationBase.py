@@ -1,30 +1,30 @@
-import numpy as np
-import WindowType, WindowAttributes
+import WindowAttributes
 import Constants
 import AudioSignal
 
-class SeparationBase:
-	'''Base class for separation algorithms'''
 
-	def __init__(self, windowAttributes = None, sampleRate = None, audioSignal = None):
+class SeparationBase(object):
+    '''Base class for separation algorithms'''
 
-		if sampleRate is not None:
-			self.SampleRate = sampleRate
-		else:
-			self.SampleRate = Constants.DEFAULT_SAMPLERATE
+    def __init__(self, windowAttributes=None, sampleRate=None, audioSignal=None):
 
-		if windowAttributes is not None:
-			self.WindowAttributes = audioSignal
-		else:
-			self.WindowAttributes = WindowAttributes(SampleRate)
+        if sampleRate is not None:
+            self.SampleRate = sampleRate
+        else:
+            self.SampleRate = Constants.DEFAULT_SAMPLERATE
 
-		if audioSignal is not None:
-			self.Mixture = audioSignal
-		else:
-			self.Mixture = AudioSignal()
+        if windowAttributes is not None:
+            self.WindowAttributes = windowAttributes
+        else:
+            self.WindowAttributes = WindowAttributes.WindowAttributes(self.SampleRate)
 
-	def Plot():
-		pass
+        if audioSignal is not None:
+            self.Mixture = audioSignal
+        else:
+            self.Mixture = AudioSignal.AudioSignal()
 
-	def Run():
-		pass
+    def Plot(self):
+        pass
+
+    def Run(self):
+        pass

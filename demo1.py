@@ -1,10 +1,15 @@
-import AudioSignal, REPET_sim
+import AudioSignal, REPET_sim, pprint
+#import time
 
 def main():
-	myFile = 'Input/mix.wav'
-	myAudioFile = AudioSignal(myFile)
-	repet = RepetSim(audioSignal=myAudioFile)
-	
+    print "starting"
+    myFile = 'Input/mix1.wav'
+    myAudioFile = AudioSignal.AudioSignal(myFile)
+    repet = REPET_sim.RepetSim(audioSignal=myAudioFile)
+    stems = repet.Run()
+    pprint.pprint(stems)
+    print "done"
+
 
 if __name__ == '__main__':
-	main()
+    main()
