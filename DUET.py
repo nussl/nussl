@@ -276,7 +276,7 @@ def find_peaks2(data,min_thr=0.5,min_dist=None,max_num=1):
     
 def find_peaks(data,min_thr=0.5,min_dist=None,max_num=1):
     """
-    The 'find_peaks' function receives a row vector array of positive numerical 
+    The 'FindPeaks' function receives a row vector array of positive numerical
     values (in [0,1]) and finds the peak values and corresponding indices.
     
     Inputs: 
