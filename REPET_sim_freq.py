@@ -70,7 +70,7 @@ def repet_sim(x,fs,specparam=None,par=None):
     # use the default range of repeating period and default STFT parameter values if not specified
     if specparam is None:
        winlength=int(2**(np.ceil(np.log2(0.04*fs))))
-       specparam = [winlength,'Hamming',winlength/2,winlength]
+       specparam = [winlength,'Hamming',3*winlength/4,winlength]
     if par is None:
        par = np.array([0,1,100])    
        
@@ -93,7 +93,7 @@ def repet_sim(x,fs,specparam=None,par=None):
         V=V[:,:,np.newaxis]
         
     Vavg=np.mean(V,axis=2)    
-    S=sim_mat(Vavg)
+    S=sim_mat(Vavg.T)
     
     # plot the similarity matrix 
     plt.figure()
@@ -101,14 +101,15 @@ def repet_sim(x,fs,specparam=None,par=None):
     plt.axis('tight')
     plt.title('Similarity Matrix')
     
-    par[1]=np.round(par[1]*fs/ovp)
+    par[1]=np.round(par[1]*(float(nfft)/fs))
     S = sim_ind(S,par)
     
+        
     # separate the mixture background by masking
     y=np.zeros((M,N))
     for i in range(0,M):
-        RepMask=rep_mask(V[:,:,i],S)
-        RepMask[1:fc,:]=1  #high-pass filter the foreground 
+        RepMask=rep_mask(V[:,:,i].T,S).T
+        #RepMask[1:fc,:]=1  #high-pass filter the foreground 
         XMi=RepMask*X[:,:,i]
         yi=f_istft(XMi,L,win,ovp,fs)[0]
         y[i,:]=yi[0:N]    
@@ -159,10 +160,18 @@ def sim_ind(S,simparam):
     
     Lt=np.shape(S)[0]
     I=np.zeros((Lt,simparam[2]))
+    II=np.zeros((Lt,Lt))
     
     for i in range(0,Lt):
+        
        pind=find_peaks(S[i,:],simparam[0],simparam[1],simparam[2])
        I[i,:]=pind
+       II[i,pind]=1
+       
+    plt.figure()
+    plt.pcolormesh(II)
+    plt.axis('tight')
+    plt.title('Similarity Indices')   
 
     return I
     

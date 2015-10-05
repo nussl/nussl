@@ -5,14 +5,15 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import numpy as np
 from f_stft import f_stft
-from REPET_sim import repet_sim
+from REPET_sim_freq import repet_sim
 
 
 # close all figure windows
 plt.close('all')
 
 # load the audio file
-fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav');
+fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/piano_mix2.wav')
+#fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav');
 #fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav')
  
 # scale to -1.0 to 1.0
@@ -23,9 +24,9 @@ x=np.mat(x)
 t=np.mat(np.arange(np.shape(x)[1])/float(fs))
 
 # generate and plot the spectrogram of the mixture
-L=2048;
+L=2*2048;
 win='Hamming'
-ovp=0.5*L
+ovp=0.75*L
 nfft=L
 mkplot=1
 fmax=5000;
@@ -36,7 +37,7 @@ Sm=f_stft(np.mat(x),L,win,ovp,fs,nfft,mkplot,fmax);
 plt.show()
 
 # separation
-par=np.array([0,0.1,10]); 
+par=np.array([0.1,20,5]); 
 y_sim = repet_sim(np.mat(x),fs,par=par)
 
 # play and plot the background and foreground
