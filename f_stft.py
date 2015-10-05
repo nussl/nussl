@@ -131,6 +131,7 @@ def f_stft(X,L,win,ovp,fs,nfft=None,mkplot=0,fmax=None):
         plt.ylabel('Frequency')
         plt.xlim(T[0],T[-1])
         plt.ylim(F[0],fmax)
+        plt.colorbar()
         plt.show()
 
     return S,P,F,T    

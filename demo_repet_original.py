@@ -12,8 +12,11 @@ import time
 plt.close('all')
 
 # load the audio file
+#fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/repetOrgBackgroundF.wav')
+
+fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/piano_mix2.wav')
 #fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav')
-fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav')
+#fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav')
 
 # scale to -1.0 to 1.0
 convert_16_bit = float(2**15)
@@ -39,16 +42,20 @@ start_time = time.clock()
 y_org = repet(np.mat(x),fs)
 print time.clock() - start_time, "seconds"   
 
+# normalize output signals
+bg=y_org/np.abs(y_org).max()
+fg=(x-y_org)/np.abs((x-y_org)).max()
+
 # plot the background and foreground
 plt.figure(3)
 plt.subplot(2,1,1)
 plt.title('Background time-domain signal')
-plt.plot(t.T,y_org.T)
+plt.plot(t.T,bg.T)
 plt.axis('tight')
 plt.show()
 plt.subplot(2,1,2)
 plt.title('Foreground time-domain signal')
-plt.plot(t.T,(x-y_org).T)
+plt.plot(t.T,fg.T)
 plt.axis('tight')
 plt.show()
 
@@ -67,9 +74,9 @@ Spec_diff=np.abs(Sm[0] - (Sb[0]+Sf[0]))
 
 if Spec_diff.max()<1e-10:
     print('Background and foreground add up to the origianl mixture.')
-
+    
 # record the separated background and foreground in .wav files
 filePath='/Users/fpishdadian/SourceSeparation/Audio Samples/Output/'
-write(filePath+'repetOrgBackground.wav',fs,y_org.T)
-write(filePath+'repetOrgForeground.wav',fs,(x-y_org).T)
+write(filePath+'repetOrgBackground.wav',fs,bg.T)
+write(filePath+'repetOrgForeground.wav',fs,fg.T)
 

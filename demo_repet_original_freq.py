@@ -12,7 +12,9 @@ import time
 plt.close('all')
 
 # load the audio file
-fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/piano_mix2.wav')
+fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/repetOrgBackground.wav')
+
+#fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/piano_mix2.wav')
 #fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav')
 #fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav')
 
@@ -29,7 +31,7 @@ win='Hamming'
 ovp=0.75*L
 nfft=L
 mkplot=1
-fmax=fs/2 #5000
+fmax=5000
 
 plt.figure(1)
 plt.title('Mixture')
@@ -39,18 +41,22 @@ Sm = f_stft(np.mat(x),L,win,ovp,fs,nfft,mkplot,fmax)
 per=np.array([100,fs/(3.*2.)])  #24*(float(fs)/nfft)
 start_time = time.clock()
 y_org = repet(np.mat(x),fs,per=per)
-print time.clock() - start_time, "seconds"   
+print time.clock() - start_time, "seconds"  
+
+# normalize output signals
+bg=y_org/np.abs(y_org).max()
+fg=(x-y_org)/np.abs((x-y_org)).max()
 
 # plot the background and foreground
 plt.figure(4)
 plt.subplot(2,1,1)
 plt.title('Background time-domain signal')
-plt.plot(t.T,y_org.T)
+plt.plot(t.T,bg.T)
 plt.axis('tight')
 plt.show()
 plt.subplot(2,1,2)
 plt.title('Foreground time-domain signal')
-plt.plot(t.T,(x-y_org).T)
+plt.plot(t.T,fg.T)
 plt.axis('tight')
 plt.show()
 
@@ -72,6 +78,6 @@ if Spec_diff.max()<1e-10:
 
 # record the separated background and foreground in .wav files
 filePath='/Users/fpishdadian/SourceSeparation/Audio Samples/Output/'
-write(filePath+'repetOrgBackground.wav',fs,y_org.T)
-write(filePath+'repetOrgForeground.wav',fs,(x-y_org).T)
+write(filePath+'repetOrgBackgroundF.wav',fs,bg.T)
+write(filePath+'repetOrgForegroundF.wav',fs,fg.T)
 
