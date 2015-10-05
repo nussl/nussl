@@ -46,7 +46,7 @@ def f_istft(X,L,win,ovp,fs):
     Hop=int(L-ovp)
     
     # Form the full spectrogram (-pi,pi]
-    Xext=X[-2:0:-1,:];
+    Xext=X[-2:0:-1,:]
     X_inv_conj=Xext.conj()
     X=np.vstack([X,X_inv_conj])
     

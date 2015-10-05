@@ -147,7 +147,7 @@ def beat_spec(X):
     
     return b
     
-def rep_period(b,r):     ####### is not working as it should!!
+def rep_period(b,r):     
     """
     The rep_period fucntion computes the repeating period of the sound signal
     using the beat spectrum calculated from the spectrogram.
@@ -160,7 +160,7 @@ def rep_period(b,r):     ####### is not working as it should!!
     """
     b=b[1:]  # discard the first element of b (lag 0)
     b=b[r[0]-1:r[1]]
-    p=int(np.argmax(b)+r[0])  ######## not sure about this part 
+    p=int(np.argmax(b)+r[0])  
 
     return p 
     

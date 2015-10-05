@@ -728,6 +728,7 @@ class AudioSignal:
         """
         records the audio signal in a .wav file
         """
+        self.x=self.x/(self.x).max()
         write(file_name,self.fs,self.x)
 
     
@@ -930,7 +931,7 @@ class Kernel:
            self.kParamVal=ParamVal
            
         elif Type=='harmonic':
-            
+                        
            P=ParamVal[0,0]
            Df=ParamVal[0,1]*P+1 
            self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
