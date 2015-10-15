@@ -25,12 +25,66 @@ Required modules:
 """
 
 import numpy as np 
-from scipy.fftpack import fft
-from scipy.fftpack import ifft
 from f_stft import f_stft
 from f_istft import f_istft
 import matplotlib.pyplot as plt
 plt.interactive('True')
+
+def rpca_ss(x,fs,specparam=None):
+    """
+    The function rpca_ss uses the RPCA method to decompose the power spectral 
+    density of a mixture into its background (assumed to be low-rank) and 
+    foreground (assumed to be sparse). A binary mask is formed using the results
+    of RPCA and applied to the mixture to perform background/foreground separation.
+    
+    x: M by N numpy array containing M channel mixtures, each of length N time 
+       samples
+    fs: sampling frequency of the audio signal
+    specparam(optional): list containing STFT parameters including in order, 
+                         the window length, window type, overlap in # of samples, 
+                         and # of fft points.
+                         default: window length: 40 ms
+                         window type: Hamming
+                         overlap: window length/2 (50%)
+                         nfft: window length (no zero padding)
+                         
+    Output:
+    y_f: M by N numpy array containing the foreground (sparse component), M 
+         source images, each of length N time samples
+    y_b: M by N numpy array containing the background (repeating/low-rak component),
+         M source images, each of length N time samples    
+         
+    EXAMPLE:
+     
+    """
+    
+    # use the default range of repeating period and default STFT parameter values 
+    # if not specified
+    if specparam is None:
+       winlength=int(2**(np.ceil(np.log2(0.04*fs)))) # next power 2 of 40ms*fs
+       specparam = [winlength,'Hamming',winlength/2,winlength]
+   
+   # STFT parameters      
+    L,win,ovp,nfft=specparam 
+    
+    # compute the spectrograms of all channels
+    M,N = np.shape(x)
+    X=f_stft(np.array(x[0,:],ndmin=2),L,win,ovp,fs,nfft,0)[0]
+    for i in range(1,M):
+         Sx = f_stft(np.mat(x[i,:]),L,win,ovp,fs,nfft,0)[0]
+         X=np.dstack([X,Sx])
+    V=np.abs(X)  
+    if M==1: 
+        X=X[:,:,np.newaxis]
+        V=V[:,:,np.newaxis]
+        
+    # compute the masks (using rpca)    
+    
+    Bmask=np.zeros((V.shape)) 
+    Fmask=np.zeros((V.shape))
+        
+    
+    return
 
 
 def rpca(M,delta=1e-7):
