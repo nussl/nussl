@@ -26,5 +26,8 @@ class SeparationBase(object):
     def Plot(self):
         pass
 
-    def Run(self):
+    def Run(self, *args, **kwargs):
         pass
+
+    def __call__(self, *args, **kwargs):
+        self.Run(*args, **kwargs)
