@@ -30,7 +30,7 @@ from f_istft import f_istft
 import matplotlib.pyplot as plt
 plt.interactive('True')
 
-def rpca_ss(x,fs,specparam=None):
+def rpca_ss(x,fs,specparam=None,mask=False,maskgain=0):
     """
     The function rpca_ss uses the RPCA method to decompose the power spectral 
     density of a mixture into its background (assumed to be low-rank) and 
@@ -47,7 +47,14 @@ def rpca_ss(x,fs,specparam=None):
                          window type: Hamming
                          overlap: window length/2 (50%)
                          nfft: window length (no zero padding)
-                         
+    mask (optional): determines whether the output of RPCA is used directly as
+                     separated sources (False), or it is used to create a mask
+                     for separating the sources (True). Default is False                     
+    maskgain (optional): a constant number which defines a kind of threshold
+                         for computing the binary mask given low-rank and sparse
+                         matrices (Mb(m,n) = 1 if |S(m,n)|>gain*|L(m,n)|).
+                         Default is 1.
+                    
     Output:
     y_f: M by N numpy array containing the foreground (sparse component), M 
          source images, each of length N time samples
@@ -65,26 +72,64 @@ def rpca_ss(x,fs,specparam=None):
        specparam = [winlength,'Hamming',winlength/2,winlength]
    
    # STFT parameters      
-    L,win,ovp,nfft=specparam 
+    winL,win,ovp,nfft=specparam 
     
     # compute the spectrograms of all channels
     M,N = np.shape(x)
-    X=f_stft(np.array(x[0,:],ndmin=2),L,win,ovp,fs,nfft,0)[0]
+    X=f_stft(np.array(x[0,:],ndmin=2),winL,win,ovp,fs,nfft,0)[0]
     for i in range(1,M):
-         Sx = f_stft(np.mat(x[i,:]),L,win,ovp,fs,nfft,0)[0]
+         Sx = f_stft(np.mat(x[i,:]),winL,win,ovp,fs,nfft,0)[0]
          X=np.dstack([X,Sx])
-    V=np.abs(X)  
+         
+    MagX=np.abs(X)  # magnitude spectrogram
+    PhX=np.angle(X) # phase of the spectrogram
     if M==1: 
         X=X[:,:,np.newaxis]
-        V=V[:,:,np.newaxis]
-        
-    # compute the masks (using rpca)    
+        MagX=MagX[:,:,np.newaxis]
+        PhX=PhX[:,:,np.newaxis]
     
-    Bmask=np.zeros((V.shape)) 
-    Fmask=np.zeros((V.shape))
-        
+    # decompose the magnitude spectrogram 
+    L=1j*np.zeros((MagX.shape))
+    S=1j*np.zeros((MagX.shape))
+    for i in range(0,M):
+        Li,Si = rpca(MagX[:,:,i],delta=1e-6)[0:2] # decompose the magnitude spectrogram
+        L[:,:,i]=Li*np.exp(1j*PhX[:,:,i]) # append the phase of X to low-rank part
+        S[:,:,i]=Si*np.exp(1j*PhX[:,:,i]) # append the phase of X to sparse part
     
-    return
+    
+    # compute the masks (using rpca) if specified    
+    
+    if mask==True:
+        Mask=np.zeros((MagX.shape))     
+        for i in range(0,M):
+            Li=L[:,:,i]
+            Si=S[:,:,i]
+            
+            MaskTemp=np.zeros((Li.shape))
+            M_region=np.abs(Si)>maskgain*np.abs(Li) # find bins for which |Si|>gain*|Li|      
+            MaskTemp[M_region]=1  # set the mask gain over the found region to one       
+            Mask[:,:,i]=MaskTemp 
+        
+    # compute the separated sources
+       
+    yF=np.zeros((M,N)) # separated foreground
+    yB=np.zeros((M,N)) # separated background   
+    for i in range(0,M):    
+       if mask == True:  
+         XF=X[:,:,i]*Mask[:,:,i]
+         XB=X[:,:,i]*(1-Mask[:,:,i])
+       elif mask == False:
+         XF=S[:,:,i]
+         XB=L[:,:,i]
+       
+       yFi=f_istft(XF,winL,win,ovp,fs)[0]
+       yF[i,:]=yFi[0:N]       
+       
+       yBi=f_istft(XB,winL,win,ovp,fs)[0]
+       yB[i,:]=yBi[0:N] 
+    
+    
+    return yF,yB
 
 
 def rpca(M,delta=1e-7):
