@@ -28,7 +28,7 @@ Required modules:
 """
 
 import numpy as np
-from f_stft import f_stft
+from FftUtils import f_stft
 from f_istft import f_istft
 # import matplotlib.pyplot as plt
 import SeparationBase, Constants

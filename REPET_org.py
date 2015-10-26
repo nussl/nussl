@@ -27,15 +27,17 @@ Required modules:
 1. f_stft
 2. f_istft
 """
-import numpy as np 
+import numpy as np
 from scipy.fftpack import fft
 from scipy.fftpack import ifft
-from f_stft import f_stft
+from FftUtils import f_stft
 from f_istft import f_istft
 import matplotlib.pyplot as plt
+
 plt.interactive('True')
 
-def repet(x,fs,specparam=None,per=None):
+
+def repet(x, fs, specparam=None, per=None):
     """
     The repet function implements the main algorithm.
     
@@ -65,58 +67,58 @@ def repet(x,fs,specparam=None,per=None):
     * Note: the 'scikits.audiolab' package is required for reading and writing 
             .wav files
     """
-     
+
     # use the default range of repeating period and default STFT parameter values if not specified
     if specparam is None:
-       winlength=int(2**(np.ceil(np.log2(0.04*fs))))
-       specparam = [winlength,'Hamming',winlength/2,winlength]
+        winlength = int(2 ** (np.ceil(np.log2(0.04 * fs))))
+        specparam = [winlength, 'Hamming', winlength / 2, winlength]
     if per is None:
-       per = np.array([0.8,np.array([8,np.shape(x)[1]/3]).min()])   
-     
-    # STFT parameters      
-    L,win,ovp,nfft=specparam 
-    
+        per = np.array([0.8, np.array([8, np.shape(x)[1] / 3]).min()])
+
+        # STFT parameters
+    L, win, ovp, nfft = specparam
+
     # HPF parameters
-    fc=100   # cutoff freqneyc (in Hz) of the high pass filter 
-    fc=np.ceil(float(fc)*(nfft-1)/fs) # cutoff freq. (in # of freq. bins)
-     
+    fc = 100  # cutoff freqneyc (in Hz) of the high pass filter
+    fc = np.ceil(float(fc) * (nfft - 1) / fs)  # cutoff freq. (in # of freq. bins)
+
     # compute the spectrograms of all channels
-    M,N = np.shape(x)
-    X=f_stft(np.mat(x[0,:]),L,win,ovp,fs,nfft,0)[0]
-    for i in range(1,M):
-         Sx= f_stft(np.mat(x[i,:]),L,win,ovp,fs,nfft,0)[0]
-         X=np.dstack([X,Sx])
-    V=np.abs(X)  
-    if M==1: 
-        X=X[:,:,np.newaxis]
-        V=V[:,:,np.newaxis]
-    
+    M, N = np.shape(x)
+    X = f_stft(np.mat(x[0, :]), L, win, ovp, fs, nfft, 0)[0]
+    for i in range(1, M):
+        Sx = f_stft(np.mat(x[i, :]), L, win, ovp, fs, nfft, 0)[0]
+        X = np.dstack([X, Sx])
+    V = np.abs(X)
+    if M == 1:
+        X = X[:, :, np.newaxis]
+        V = V[:, :, np.newaxis]
+
     # estimate the repeating period
-    per=np.ceil((per*fs+L/ovp-1)/ovp)
-    if np.size(per)==1:
-         p=per;
-    elif np.size(per)==2:
-         b=beat_spec(np.mean(V**2,axis=2))
-         plt.figure()
-         plt.plot(b)
-         plt.title('Beat Spectrum')
-         plt.grid('on')
-         plt.axis('tight')
-         plt.show()
-         p=rep_period(b,per)
-    
+    per = np.ceil((per * fs + L / ovp - 1) / ovp)
+    if np.size(per) == 1:
+        p = per;
+    elif np.size(per) == 2:
+        b = beat_spec(np.mean(V ** 2, axis=2))
+        plt.figure()
+        plt.plot(b)
+        plt.title('Beat Spectrum')
+        plt.grid('on')
+        plt.axis('tight')
+        plt.show()
+        p = rep_period(b, per)
+
     # separate the mixture background by masking
-    y=np.zeros((M,N))
-    for i in range(0,M):
-        RepMask=rep_mask(V[:,:,i],p)
-        RepMask[1:fc,:]=1  #high-pass filter the foreground 
-        XMi=RepMask*X[:,:,i]
-        yi=f_istft(XMi,L,win,ovp,fs)[0]
-        y[i,:]=yi[0:N]
-        
+    y = np.zeros((M, N))
+    for i in range(0, M):
+        RepMask = rep_mask(V[:, :, i], p)
+        RepMask[1:fc, :] = 1  # high-pass filter the foreground
+        XMi = RepMask * X[:, :, i]
+        yi = f_istft(XMi, L, win, ovp, fs)[0]
+        y[i, :] = yi[0:N]
+
     return y
-    
-    
+
+
 def beat_spec(X):
     """
     The beat_spec functin computes the beat spectrum, which is the average (over freq.s)
@@ -130,19 +132,20 @@ def beat_spec(X):
     b: beat spectrum
     """
     # compute the rwo-wise autocorrelation of the input spectrogram
-    Lf,Lt=np.shape(X)
-    X=np.hstack([X,np.zeros((Lf,Lt))])
-    Sx=np.abs(fft(X,axis=1)**2) # fft over columns (take the fft of each row at a time)
-    Rx=np.real(ifft(Sx,axis=1)[:,0:Lt]) # ifft over columns 
-    NormFactor=np.tile(np.arange(1,Lt+1)[::-1],(Lf,1)) # normalization factor
-    Rx=Rx/NormFactor
-    
+    Lf, Lt = np.shape(X)
+    X = np.hstack([X, np.zeros((Lf, Lt))])
+    Sx = np.abs(fft(X, axis=1) ** 2)  # fft over columns (take the fft of each row at a time)
+    Rx = np.real(ifft(Sx, axis=1)[:, 0:Lt])  # ifft over columns
+    NormFactor = np.tile(np.arange(1, Lt + 1)[::-1], (Lf, 1))  # normalization factor
+    Rx = Rx / NormFactor
+
     # compute the beat spectrum
-    b=np.mean(Rx,axis=0) # average over frequencies
-    
+    b = np.mean(Rx, axis=0)  # average over frequencies
+
     return b
-    
-def rep_period(b,r):
+
+
+def rep_period(b, r):
     """
     The rep_period fucntion computes the repeating period of the sound signal
     using the beat spectrum calculated from the spectrogram.
@@ -153,14 +156,14 @@ def rep_period(b,r):
     Ouput:
     p: repeating period 
     """
-    b=b[1:]  # discard the first element of b (lag 0)
-    b=b[r[0]-1:r[1]]
-    p=np.argmax(b)+r[0]  ######## not sure about this part 
+    b = b[1:]  # discard the first element of b (lag 0)
+    b = b[r[0] - 1:r[1]]
+    p = np.argmax(b) + r[0]  ######## not sure about this part
 
-    return p 
-    
-    
-def rep_mask(V,p):
+    return p
+
+
+def rep_mask(V, p):
     """
     The ComputeRepeatingMask function computes the soft mask for the repeating part using
     the magnitude spectrogram and the repeating period
@@ -173,24 +176,20 @@ def rep_mask(V,p):
        elements of M take on values in [0,1]
     """
 
-    [Lf,Lt]=np.shape(V)
-    r=np.ceil(float(Lt)/p)
-    W=np.hstack([V,float('nan')*np.zeros((Lf,r*p-Lt))])
-    W=np.reshape(W.T,(r,Lf*p))
-    W1=np.median(W[0:r,0:Lf*(Lt-(r-1)*p)],axis=0)
-    W2=np.median(W[0:r-1,Lf*(Lt-(r-1)*p):Lf*p],axis=0)
-    W=np.hstack([W1,W2])
-    W=np.reshape(np.tile(W,(r,1)),(r*p,Lf)).T
-    W=W[:,0:Lt]
-    
-    Wrow=np.reshape(W,(1,Lf*Lt))
-    Vrow=np.reshape(V,(1,Lf*Lt))
-    W=np.min(np.vstack([Wrow,Vrow]),axis=0)
-    W=np.reshape(W,(Lf,Lt))
-    M=(W+1e-16)/(V+1e-16)
-    
-    return M
-    
+    [Lf, Lt] = np.shape(V)
+    r = np.ceil(float(Lt) / p)
+    W = np.hstack([V, float('nan') * np.zeros((Lf, r * p - Lt))])
+    W = np.reshape(W.T, (r, Lf * p))
+    W1 = np.median(W[0:r, 0:Lf * (Lt - (r - 1) * p)], axis=0)
+    W2 = np.median(W[0:r - 1, Lf * (Lt - (r - 1) * p):Lf * p], axis=0)
+    W = np.hstack([W1, W2])
+    W = np.reshape(np.tile(W, (r, 1)), (r * p, Lf)).T
+    W = W[:, 0:Lt]
 
-    
-    
+    Wrow = np.reshape(W, (1, Lf * Lt))
+    Vrow = np.reshape(V, (1, Lf * Lt))
+    W = np.min(np.vstack([Wrow, Vrow]), axis=0)
+    W = np.reshape(W, (Lf, Lt))
+    M = (W + 1e-16) / (V + 1e-16)
+
+    return M
