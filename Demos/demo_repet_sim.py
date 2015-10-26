@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 plt.interactive('True')
 import numpy as np
-from f_stft import f_stft
+from FftUtils import f_stft
 from REPET_sim import repet_sim
 
 # close all figure windows

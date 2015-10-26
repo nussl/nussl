@@ -1,8 +1,8 @@
+from __future__ import division
 import numpy as np
 import scipy.io.wavfile as wav
 from WindowType import WindowType
-import Constants
-import f_istft, f_stft
+import f_istft, FftUtils, Constants
 
 
 class AudioSignal:
@@ -34,7 +34,7 @@ class AudioSignal:
     """
 
     def __init__(self, inputFileName=None, timeSeries=None, signalStartingPosition=0, signalLength=0,
-                 sampleRate=Constants.DEFAULT_SAMPLERATE):
+                 sampleRate=Constants.DEFAULT_SAMPLERATE, stft=None):
         """
         inputs: 
         inputFileName is a string indicating a path to a .wav file
@@ -48,9 +48,9 @@ class AudioSignal:
 
         self.FileName = inputFileName
         self.AudioData = None
-        self.Time = np.mat([])
+        self.Time = np.array([])
         self.SignalLength = signalLength
-        self.nChannels = 0
+        self.nChannels = 1
         self.SampleRate = sampleRate
 
         if (inputFileName is None) != (timeSeries is None):  # XOR them
@@ -62,10 +62,10 @@ class AudioSignal:
             self.LoadAudioFromArray(timeSeries, sampleRate)
 
         # STFT properties
-        self.ComplexSpectrogramData = np.mat([])  # complex spectrogram
-        self.PowerSpectrumData = np.mat([])  # power spectrogram
-        self.Fvec = np.mat([])  # freq. vector
-        self.Tvec = np.mat([])  # time vector
+        self.ComplexSpectrogramData = np.array([]) if stft is None else stft  # complex spectrogram
+        self.PowerSpectrumData = np.array([])  # power spectrogram
+        self.Fvec = np.array([])  # freq. vector
+        self.Tvec = np.array([])  # time vector
         self.windowType = WindowType.DEFAULT
         self.windowLength = int(0.06 * self.SampleRate)
         self.nfft = self.windowLength
@@ -97,7 +97,7 @@ class AudioSignal:
             raise e
 
         # scale to -1.0 to 1.0
-        audioInput /= float(2 ** 15) + 1.0
+        np.divide(audioInput, float(2 ** 15) + 1.0)
 
         if audioInput.ndim < 2:
             audioInput = np.expand_dims(audioInput, axis=1)
@@ -106,14 +106,17 @@ class AudioSignal:
 
         # the logic here needs work
         if signalLength == 0:
-            self.AudioData = np.mat(audioInput)  # make sure the signal is of matrix format
+            self.AudioData = np.array(audioInput)  # make sure the signal is of matrix format
             self.SignalLength = np.shape(audioInput)[0]
         else:
             self.SignalLength = int(signalLength * self.SampleRate)
             startPos = int(signalStartingPosition * self.SampleRate)
-            self.AudioData = np.mat(audioInput[startPos: startPos + self.SignalLength, :])
+            self.AudioData = np.array(audioInput[startPos: startPos + self.SignalLength, :])
 
-        self.Time = np.mat((1. / self.SampleRate) * np.arange(self.SignalLength))
+        self.Time = np.array((1. / self.SampleRate) * np.arange(self.SignalLength))
+
+    def NormalizeSingal(self):
+        pass
 
     def LoadAudioFromArray(self, signal, sampleRate=Constants.DEFAULT_SAMPLERATE):
         """
@@ -121,11 +124,16 @@ class AudioSignal:
 
         """
         self.FileName = None
-        self.AudioData = np.mat(signal)  # each column contains one channel mixture
+        self.AudioData = np.array(signal)  # each column contains one channel mixture
         self.SampleRate = sampleRate
-        self.SignalLength, self.nChannels = np.shape(self.x)
-        self.time = np.mat((1. / self.SampleRate) * np.arange(self.SignalLength))
+        if len(self.AudioData.shape) > 1:
+            self.SignalLength, self.nChannels = np.shape(self.AudioData)
+        else:
+            self.SignalLength, = self.AudioData.shape
+            self.nChannels = 1
+        self.time = np.array((1. / self.SampleRate) * np.arange(self.SignalLength))
 
+    # TODO: verbose toggle
     def WriteAudioFile(self, outputFileName, sampleRate=Constants.DEFAULT_SAMPLERATE):
         """
         records the audio signal in a .wav file
@@ -153,8 +161,8 @@ class AudioSignal:
             raise Exception("No audio data to make STFT from.")
 
         for i in range(0, self.nChannels):
-            Xtemp, Ptemp, Ftemp, Ttemp = f_stft.f_stft(self.AudioData[:, i].T, self.windowLength, self.windowType, \
-                                                       self.overlapSamp, self.SampleRate, nfft=self.nfft, mkplot=0)
+            Xtemp, Ptemp, Ftemp, Ttemp = FftUtils.f_stft(self.AudioData[:, i].T, self.windowLength, self.windowType,
+                                                         self.overlapSamp, self.SampleRate, nFfts=self.nfft, mkplot=0)
 
             if np.size(self.ComplexSpectrogramData) == 0:
                 self.ComplexSpectrogramData = Xtemp
@@ -166,9 +174,9 @@ class AudioSignal:
                 self.PowerSpectrumData = np.dstack([self.PowerSpectrumData, Ptemp])
 
         if self.shouldMakePlot:
-            f_stft.f_stft(self.AudioData[:, 0].T, self.windowLength, self.windowType,
-                          np.ceil(self.overlapRatio * self.windowLength), self.SampleRate, nfft=self.nfft,
-                          mkplot=self.shouldMakePlot, fmax=self.FrequencyMaxPlot)
+            FftUtils.f_stft(self.AudioData[:, 0].T, self.windowLength, self.windowType,
+                            np.ceil(self.overlapRatio * self.windowLength), self.SampleRate, nFfts=self.nfft,
+                            mkplot=self.shouldMakePlot, fmax=self.FrequencyMaxPlot)
             # plt.show()
 
         return self.ComplexSpectrogramData, self.PowerSpectrumData, self.Fvec, self.Tvec
@@ -176,30 +184,43 @@ class AudioSignal:
     def iSTFT(self):
         """
         computes the inverse STFT and returns:
-        self.x: time-domain signal       
+        self.AudioData: time-domain signal       
         self.time: time vector 
         """
-        if self.AudioData is None:
-            raise e
+        if self.ComplexSpectrogramData.size == 0:
+            raise Exception('Cannot do inverse STFT without STFT data!')
 
-        if np.size(self.ComplexSpectrogramData) == 0:
-            print("Empty spectrogrm matrix!")
-            self.x = np.mat([])
-            self.time = np.mat([])
+        self.AudioData = np.array([])
+        for i in range(0, self.nChannels):
+            x_temp, t_temp = FftUtils.f_istft(self.ComplexSpectrogramData, self.windowLength,
+                                              self.windowType,
+                                              self.overlapSamp, self.SampleRate)
+
+            if np.size(self.AudioData) == 0:
+                self.AudioData = np.array(x_temp).T
+                self.time = np.array(t_temp).T
+            else:
+                self.AudioData = np.hstack([self.AudioData, np.array(x_temp).T])
+
+        return self.AudioData, self.time
+
+    # TODO: Some kinks to work out here
+    def __add__(self, other):
+        if self.nChannels != other.nChannels:
+            raise Exception('Cannot add two signals that have a different number of channels!')
+
+        # for ch in range(self.nChannels):
+        # TODO: make this work for multiple channels
+        if self.AudioData.size > other.AudioData.size:
+            combined = np.copy(self.AudioData)
+            combined[0: other.AudioData.size] += other.AudioData
         else:
-            self.x = np.mat([])
-            for i in range(0, self.nChannels):
-                x_temp, t_temp = f_istft.f_istft(self.ComplexSpectrogramData[:, :, i], self.windowlength,
-                                                 self.windowtype,
-                                                 self.overlapSamp, self.SampleRate)
+            combined = np.copy(other.AudioData)
+            combined[0: self.AudioData.size] += self.AudioData
 
-                if np.size(self.x) == 0:
-                    self.x = np.mat(x_temp).T
-                    self.time = np.mat(t_temp).T
-                else:
-                    self.x = np.hstack([self.x, np.mat(x_temp).T])
+        return AudioSignal(timeSeries=combined)
 
-            return self.x, self.time
+    # TODO: += operator
 
     class __sample:
         def __init__(self):
