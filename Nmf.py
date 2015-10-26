@@ -36,19 +36,21 @@ class Nmf(SeparationBase.SeparationBase):
         self.nBases = nBases
 
         if activationMatrix is None and templateVectors is None:
-            self.templateVectors = np.zeros((stft.shape[0], nBases)) # W, in literature
-            self.activationMatrix = np.zeros((nBases, stft.shape[1])) # H, in literature
-            random.seed(1)
+            self.templateVectors = np.zeros((stft.shape[0], nBases))  # W, in literature
+            self.activationMatrix = np.zeros((nBases, stft.shape[1]))  # H, in literature
             self.RandomizeInputMatrices()
+        elif activationMatrix is not None and templateVectors is not None:
+            self.templateVectors = templateVectors
+            self.activationMatrix = activationMatrix
         else:
-            raise NotImplementedError('Cannot do this yet!')
+            raise Exception('Must provide both activation matrix and template vectors or nothing at all!')
 
         self.distanceMeasure = DistanceType.DEFAULT
         self.updateType = DistanceType.DEFAULT
 
-        self.shouldUseEpsilon = True # Replace this with something more general
+        self.shouldUseEpsilon = False  # Replace this with something more general
         self.epsilonEuclideanType = True
-        self.stoppingEpsilon = 1e-5
+        self.stoppingEpsilon = 1e10
         self.maxNumIterations = 20
 
         self.userUpdateActivation = activationUpdateFn
@@ -75,51 +77,45 @@ class Nmf(SeparationBase.SeparationBase):
         nIterations = 0
         while not shouldStop:
 
-            # Update activation matrix
-            if self.distanceMeasure == DistanceType.Euclidean:
-                self.activationMatrix = self._updateActivationEuclidean()
-
-            elif self.distanceMeasure == DistanceType.Divergence:
-                self.activationMatrix = self._updateActivationDivergent()
-
-            else:
-                self.activationMatrix = self.userUpdateActivation()
-
-            # Update template vectors
-            if self.distanceMeasure == DistanceType.Euclidean:
-                self.templateVectors = self._updateTemplateEuclidean()
-
-            elif self.distanceMeasure == DistanceType.Divergence:
-                self.templateVectors = self._updateTemplateDivergence()
-
-            else:
-                self.templateVectors = self.userUpdateTemplate()
+            self.Update()
 
             # Stopping conditions
             nIterations += 1
             if self.shouldUseEpsilon:
                 if self.epsilonEuclideanType:
-                    print self._euclideanDistance()
                     shouldStop = self._euclideanDistance() <= self.stoppingEpsilon
                 else:
                     shouldStop = self._divergence() <= self.stoppingEpsilon
             else:
                 shouldStop = nIterations >= self.maxNumIterations
+                # print 'distance =', self._euclideanDistance()
 
         return self.activationMatrix, self.templateVectors
 
-    def RandomizeInputMatrices(self, shouldNormalize=False):
-        self._randomizeMatrix(self.activationMatrix, shouldNormalize)
-        self._randomizeMatrix(self.templateVectors, shouldNormalize)
+    def Update(self):
+        """
+        Computes a single update using the update function specified.
+        :return: nothing
+        """
+        # Update activation matrix
+        if self.distanceMeasure == DistanceType.Euclidean:
+            self.activationMatrix = self._updateActivationEuclidean()
 
-    def _randomizeMatrix(self, M, shouldNormalize=False):
-        for i, row in enumerate(M):
-            for j, col in enumerate(row):
-                M[i][j] = random.random()
+        elif self.distanceMeasure == DistanceType.Divergence:
+            self.activationMatrix = self._updateActivationDivergent()
 
-                if not shouldNormalize:
-                    M[i][j] *= Constants.DEFAULT_MAX_VAL
-        return M
+        else:
+            self.activationMatrix = self.userUpdateActivation()
+
+        # Update template vectors
+        if self.distanceMeasure == DistanceType.Euclidean:
+            self.templateVectors = self._updateTemplateEuclidean()
+
+        elif self.distanceMeasure == DistanceType.Divergence:
+            self.templateVectors = self._updateTemplateDivergence()
+
+        else:
+            self.templateVectors = self.userUpdateTemplate()
 
     def _updateActivationEuclidean(self):
         # make a new matrix to store results
@@ -163,7 +159,7 @@ class Nmf(SeparationBase.SeparationBase):
             result = sum((self.templateVectors[i][a] * self.stft[i][mu])
                          / np.dot(self.templateVectors, self.activationMatrix)[i][mu]
                          for i in range(self.templateVectors.shape[0]))
-            result /= sum(self.templateVectors[k][mu] for k in range(self.templateVectors.shape[0]))
+            result /= sum(self.templateVectors[k][a] for k in range(self.templateVectors.shape[0]))
             result *= self.activationMatrix[indices]
             activationCopy[indices] = result
 
@@ -210,10 +206,36 @@ class Nmf(SeparationBase.SeparationBase):
             for index, val in np.ndenumerate(mixture))
 
     def MakeAudioSignals(self):
+        signals = []
+        for stft in self.RecombineCalculatedMatrices():
+            signal = AudioSignal.AudioSignal(stft=stft)
+            signal.iSTFT()
+            signals.append(signal)
+        return signals
+
+    def RecombineCalculatedMatrices(self):
+        newMatrices = []
         for n in range(self.nBases):
-            source = np.dot(self.activationMatrix[n,], self.templateVectors[:,n])
-            signal = AudioSignal.AudioSignal(timeSeries=source)
-            yield signal
+            matrix = np.empty_like(self.activationMatrix)
+            matrix[n,] = self.activationMatrix[n,]
+            newStft = np.dot(self.templateVectors, matrix)
+            # matrix = np.array([self.activationMatrix[n, i] * self.templateVectors[:, n]
+            #                    for i in range(len(self.activationMatrix[n,]))]).T
+            newMatrices.append(newStft)
+        return newMatrices
+
+    def RandomizeInputMatrices(self, shouldNormalize=False):
+        self._randomizeMatrix(self.activationMatrix, shouldNormalize)
+        self._randomizeMatrix(self.templateVectors, shouldNormalize)
+
+    def _randomizeMatrix(self, M, shouldNormalize=False):
+        for i, row in enumerate(M):
+            for j, col in enumerate(row):
+                M[i][j] = random.random()
+
+                if not shouldNormalize:
+                    M[i][j] *= Constants.DEFAULT_MAX_VAL
+        return M
 
 
 class DistanceType:
