@@ -28,7 +28,7 @@ ts=(1/float(fs))*np.arange(Ls)
 
 Sources=np.vstack([s1[0:Ls],s2[0:Ls],s3[0:Ls]])
 
-N=1 # number of sources
+N=3 # number of sources
 Sn=Sources[0:N,:]
 
 # specify the locations of the sources and mics and room parameters
@@ -44,14 +44,21 @@ MicPos=np.array([0.025,-0.025])
 MCenter=np.tile(Center,(M,1)) 
 Pm=np.array([MCenter[:,0],MCenter[:,1]+MicPos,MCenter[:,2]]).T # mic coordinates
 
-numvir=0
-refcoeff=0
+numvir=1
+refcoeff=1
 RoomParams=np.array([numvir,refcoeff])
 RoomDim=np.array([5,4,3])
 
 mixparam=[Ps,Pm,RoomParams,RoomDim]
 
 Mixtures,SourceIMS,H=mkmixture(Sn,mixparam,fs,rsch=True)
+
+hh=H[0][0]
+th=(1./fs)*np.arange(hh.shape[1])
+th.shape=hh.shape
+plt.figure(2)
+plt.plot(th.T,hh.T)
+plt.xlabel('time(s)')
 
      
 OutputPath='/Users/fpishdadian/SourceSeparation/Audio Samples/Output/'
