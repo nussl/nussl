@@ -13,7 +13,7 @@ plt.close('all')
 
 # load the audio file
 #fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample2.wav')
-fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/piano_mix2.wav')
+fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix5.wav')
 x=np.array(x,ndmin=2)
 
 # scale to -1.0 to 1.0
@@ -25,18 +25,21 @@ t=np.mat(np.arange(np.shape(x)[1])/float(fs))
 # generate and plot the spectrogram of the mixture   
 L=2048
 win='Hamming'
-ovp=0.5*L
+ovp=0.75*L
 nfft=L
 mkplot=1
-fmax=5000
+fmax=fs/2
 
 plt.figure(1)
 plt.title('Mixture')
 Sm = f_stft(np.mat(x),L,win,ovp,fs,nfft,mkplot,fmax) 
 
+# spactrogram parameters
+specparam = [L,'Hamming',ovp,nfft]
+
 # separation
 start_time = time.clock()
-y_f,y_b = rpca_ss(x,fs,mask=True,maskgain=0)
+y_f,y_b = rpca_ss(x,fs,specparam,mask=True,maskgain=1)
 print time.clock() - start_time, "seconds"  
 
 

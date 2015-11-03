@@ -92,7 +92,7 @@ def rpca_ss(x,fs,specparam=None,mask=False,maskgain=0):
     L=1j*np.zeros((MagX.shape))
     S=1j*np.zeros((MagX.shape))
     for i in range(0,M):
-        Li,Si = rpca(MagX[:,:,i],delta=1e-6)[0:2] # decompose the magnitude spectrogram
+        Li,Si = rpca(MagX[:,:,i])[0:2] # decompose the magnitude spectrogram
         L[:,:,i]=Li*np.exp(1j*PhX[:,:,i]) # append the phase of X to low-rank part
         S[:,:,i]=Si*np.exp(1j*PhX[:,:,i]) # append the phase of X to sparse part
     
@@ -132,7 +132,7 @@ def rpca_ss(x,fs,specparam=None,mask=False,maskgain=0):
     return yF,yB
 
 
-def rpca(M,delta=1e-7):
+def rpca(M,delta=1e-7,maxit=100):
     """
     The function rpca implements the Robust Principle Component Analysis (RPCA) 
     method to decompose a matrix into its low rank and sparse components. 
@@ -143,6 +143,7 @@ def rpca(M,delta=1e-7):
     Inputs:
     M: Numpy n by m array containing the original matrix elements
     delta: stopping criterion
+    maxit: maximum number of iterations
     
     Outputs:
     L: Numpy n by m array containing the elements of the low rank part
@@ -150,28 +151,57 @@ def rpca(M,delta=1e-7):
     
     """
     
-    # compute the dimensions of the input matrix, M, and initialize the low-rank 
-    # matrix,L, sparse matrix,S, and the matrix of residuals, Y
-    n,m=np.shape(M)
-    L=np.zeros((n,m))
-    S=np.zeros((n,m))
-    Y=np.zeros((n,m))
+    # compute the dimensions of the input matrix, M
+    n,m=np.shape(M)    
     
     # compute the (rule of thumb) velues of the lagrange multiplyer and the 
     # svd-threshold 
     Lambda = 1/np.sqrt(np.max([n,m]))
-    mu = (n*m)/(4. * np.linalg.norm(M,ord=1))        
-               
-    # initialize the error value (loop condition)
-    Etemp = np.linalg.norm(M - L - S,ord='fro') / np.linalg.norm(M,ord='fro')
-    Error=np.array([Etemp],ndmin=2)
+    #mu = (n*m)/(4. * np.linalg.norm(M,ord=1)) 
+        
+    # initialize the low-rank matrix,L, sparse matrix,S, and the matrix of 
+    # residuals, Y
     
-    while Etemp>delta:
+    L=np.zeros((n,m))
+    S=np.zeros((n,m))
+    #Y=np.zeros((n,m))
+    
+    norm_two= np.linalg.svd(M, full_matrices=False,compute_uv=False)[0] 
+    norm_inf=np.abs(M).max()/Lambda
+    dual_norm=np.max([norm_two,norm_inf])
+    Y=M/dual_norm
+    
+    # tunable parameters #########################
+    mu=1.25/norm_two
+    print(mu)
+    mu_bar=mu*1e7
+    rho=1.5
+              
+    # initialize the error value (loop condition)
+    Etemp=1           
+    #Etemp = np.linalg.norm(M - L - S,ord='fro') / np.linalg.norm(M,ord='fro')
+    Error=np.array([],ndmin=2)
+    
+    converged=False
+    It=0
+    while converged==False: 
+        It=It+1
+        
         L = svd_thr(M - S + Y/mu,1/mu)
         S = shrink(M - L + Y/mu, Lambda/mu)
         Y = Y + mu*(M - L - S)
+        
+        mu=np.min([mu*rho,mu_bar])        ######################## 
+        print(mu)
+        
         Etemp = np.linalg.norm(M - L - S,ord='fro') / np.linalg.norm(M,ord='fro')
         Error=np.hstack([Error,np.array(Etemp,ndmin=2)])
+        
+        if Etemp<delta:
+            converged=True
+        if converged==False and It>=maxit:
+            print('Maximum iteration reached')
+            converged=True
     
     return L,S,Error
     
@@ -203,7 +233,7 @@ def svd_thr(X,tau):
     value decomposition. 
     
     Inputs: 
-    X: Numpu n by m array
+    X: Numpy n by m array
     tau: shrinkage parameter 
     
     Output: 
@@ -211,11 +241,33 @@ def svd_thr(X,tau):
            thresholded singular values
     """    
     
-    U,sigma,V = np.linalg.svd(X, full_matrices=False)
+    U,sigma,V = np.linalg.svd(X, full_matrices=False) # truncated svd
     S_tau = shrink(sigma,tau)
     D_tau = np.dot(U, np.dot(np.diag(S_tau), V))
         
     return D_tau
+    
+    
+def rd_svd(X,k):
+    """
+    The function rd_svd computes the matrix composed of a few largest components
+    of the input matrix.
+    
+    Inputs:
+    X: Numpy n by m array
+    k: number of largest signular values to be selected
+   
+    Output:
+    Xrd: reduced rank matrix composed of k largest components    
+    """
+    
+    U,sigma,V = np.linalg.svd(X, full_matrices=False) # truncated svd
+    S_rd=sigma[0:k]
+    U_rd=U[:,0:k]
+    V_rd=V[0:k,:]
+    X_rd=np.dot(U_rd,np.dot(np.diag(S_rd),V_rd))
+    
+    return X_rd   
     
     
     
