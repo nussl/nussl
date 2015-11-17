@@ -1,6 +1,8 @@
 import SeparationBase, AudioSignal
 import random, Constants, math
 import numpy as np
+import theano
+import theano.tensor as T
 
 
 class Nmf(SeparationBase.SeparationBase):
@@ -55,6 +57,12 @@ class Nmf(SeparationBase.SeparationBase):
 
         self.userUpdateActivation = activationUpdateFn
         self.userUpdateTemplate = templateUpdateFn
+
+        # Theano dot is WAYYY faster than np.dot
+        a = T.matrix()
+        b = T.matrix()
+        d = T.dot(a, b)
+        self.tDot = theano.function([a, b], d)
 
     def Run(self):
         """
@@ -123,11 +131,14 @@ class Nmf(SeparationBase.SeparationBase):
 
         # store in memory so we don't have to do n*m calculations.
         templateT = self.templateVectors.T
+        temp_T_stft = self.tDot(templateT, self.stft)
+        temp_T_temp = self.tDot(templateT, self.templateVectors)
+        temp_T_temp_act = self.tDot(temp_T_temp, self.activationMatrix)
 
         # Eq. 4, H update from [1]
         for indices, val in np.ndenumerate(self.activationMatrix):
-            result = np.dot(templateT, self.stft)[indices]
-            result /= np.dot(np.dot(templateT, self.templateVectors), self.activationMatrix)[indices]
+            result = temp_T_stft[indices]
+            result /= temp_T_temp_act[indices]
             result *= self.activationMatrix[indices]
             activationCopy[indices] = result
 
@@ -139,11 +150,14 @@ class Nmf(SeparationBase.SeparationBase):
 
         # store in memory so we don't have to do n*m calculations.
         activationT = self.activationMatrix.T
+        temp_act = self.tDot(self.templateVectors, self.activationMatrix)
+        stft_act_T = self.tDot(self.stft, activationT)
+        temp_act_act = self.tDot(temp_act, activationT)
 
         # Eq. 4, W update from [1]
         for indices, val in np.ndenumerate(self.templateVectors):
-            result = np.dot(self.stft, activationT)[indices]
-            result /= np.dot(np.dot(self.templateVectors, self.activationMatrix), activationT)[indices]
+            result = stft_act_T[indices]
+            result /= temp_act_act[indices]
             result *= self.templateVectors[indices]
             templateCopy[indices] = result
 
@@ -153,11 +167,12 @@ class Nmf(SeparationBase.SeparationBase):
         # make a new matrix to store results
         activationCopy = np.empty_like(self.activationMatrix)
 
+        dot = self.tDot(self.templateVectors, self.activationMatrix)
+
         # Eq. 5, H update from [1]
         for indices, val in np.ndenumerate(self.activationMatrix):
             (a, mu) = indices
-            result = sum((self.templateVectors[i][a] * self.stft[i][mu])
-                         / np.dot(self.templateVectors, self.activationMatrix)[i][mu]
+            result = sum((self.templateVectors[i][a] * self.stft[i][mu]) / dot[i][mu]
                          for i in range(self.templateVectors.shape[0]))
             result /= sum(self.templateVectors[k][a] for k in range(self.templateVectors.shape[0]))
             result *= self.activationMatrix[indices]
@@ -169,11 +184,12 @@ class Nmf(SeparationBase.SeparationBase):
         # make a new matrix to store results
         templateCopy = np.empty_like(self.templateVectors)
 
+        dot = self.tDot(self.templateVectors, self.activationMatrix)
+
         # Eq. 5, W update from [1]
         for indices, val in np.ndenumerate(self.templateVectors):
             (i, a) = indices
-            result = sum((self.activationMatrix[a][mu] * self.stft[i][mu])
-                         / np.dot(self.templateVectors, self.activationMatrix)[i][mu]
+            result = sum((self.activationMatrix[a][mu] * self.stft[i][mu]) / dot[i][mu]
                          for mu in range(self.activationMatrix.shape[1]))
             result /= sum(self.activationMatrix[a][nu] for nu in range(self.activationMatrix.shape[1]))
             result *= self.templateVectors[indices]
@@ -183,7 +199,7 @@ class Nmf(SeparationBase.SeparationBase):
 
     def _euclideanDistance(self):
         try:
-            mixture = np.dot(self.templateVectors, self.activationMatrix)
+            mixture = self.tDot(self.templateVectors, self.activationMatrix)
         except:
             print self.activationMatrix.shape, self.templateVectors.shape
             return
@@ -195,7 +211,7 @@ class Nmf(SeparationBase.SeparationBase):
         return sum((self.stft[index] - val) ** 2 for index, val in np.ndenumerate(mixture))
 
     def _divergence(self):
-        mixture = np.dot(self.activationMatrix, self.templateVectors)
+        mixture = self.tDot(self.activationMatrix, self.templateVectors)
 
         if mixture.shape != self.stft.shape:
             raise Exception('Something went wrong! Recombining the activation matrix '
@@ -218,7 +234,7 @@ class Nmf(SeparationBase.SeparationBase):
         for n in range(self.nBases):
             matrix = np.empty_like(self.activationMatrix)
             matrix[n,] = self.activationMatrix[n,]
-            newStft = np.dot(self.templateVectors, matrix)
+            newStft = self.tDot(self.templateVectors, matrix)
             # matrix = np.array([self.activationMatrix[n, i] * self.templateVectors[:, n]
             #                    for i in range(len(self.activationMatrix[n,]))]).T
             newMatrices.append(newStft)
