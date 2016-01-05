@@ -10,10 +10,10 @@ import time
 # close all the figure windows
 plt.close('all')
 
-### Example (1): Test with a very simple scenario
-###              The mixture includes a single frequency sinusoid (a horizontal line
-###              in the TF domian) and two very short pulses (two vertical lines in 
-###              the TF domain)
+# Example (1): Test with a very simple scenario
+#              The mixture includes a single frequency sinusoid (a horizontal line
+#              in the TF domain) and two very short pulses (two vertical lines in
+#              the TF domain)
 
 # time signal
 fs = 44100  # sampling rate
@@ -66,7 +66,7 @@ ss1.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kam
 ss2 = AudioSignal(audiosig=shat[:, :, 1], fs=fs)
 ss2.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kamOutSource2.wav')
 
-# plot the separated time-domain signals and corresponding power spectral dencities
+# plot the separated time-domain signals and corresponding power spectral densities
 plt.figure(2)
 plt.subplot(2, 2, 1)
 plt.plot(ts.T, shat[:, :, 0])
@@ -96,9 +96,9 @@ plt.ylim(sig.Fvec[0], 5000)
 
 
 
-### Example (2): Test with a mixture of music and speech
-###              The mixture is composed of flute, kick drum and female voice
-### Note: the second examples takes much longer to run than the first example
+# Example (2): Test with a mixture of music and speech
+#              The mixture is composed of flute, kick drum and female voice
+# Note: the second examples takes much longer to run than the first example
 
 # generate spectrograms of the separate sources 
 WinL = 4096  # 93 ms window
@@ -116,8 +116,8 @@ src2 = AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/src2
 src2.windowlength = WinL
 src2.overlapSamp = Ovp
 src2.nfft = WinL
-src2.makeplot = 1;
-src2.fmaxplot = 2000;
+src2.makeplot = 1
+src2.fmaxplot = 2000
 
 plt.figure(3)
 plt.subplot(211)
@@ -133,8 +133,8 @@ mix1 = AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4
 mix1.windowlength = WinL
 mix1.overlapSamp = Ovp
 mix1.nfft = WinL
-mix1.makeplot = 1;
-mix1.fmaxplot = 5000;
+mix1.makeplot = 1
+mix1.fmaxplot = 5000
 
 plt.figure(4)
 mix1.STFT()
@@ -153,8 +153,9 @@ Inputfile = [FileName, BlockLen, 0]
 # ['horizontal',np.mat([3])]
 
 # define a horizontal kernel with Df>1
-Df = 3;
-Dt = 20;
+Df = 3
+Dt = 20
+# TODO: use def (make this a function instead of a HUUUUGE lambda)
 Nhood = lambda TFcoords1, TFcoords2: np.logical_and((np.abs(
     np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0])) - np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))) < Df), \
                                                     (np.abs(np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0])) - np.tile(

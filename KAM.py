@@ -26,11 +26,7 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import scipy.ndimage.filters
 import scipy
-from scipy.io.wavfile import read, write
-from FftUtils import f_stft
-from f_istft import f_istft
 from AudioSignal import AudioSignal
-import time
 
 
 def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=False):
@@ -134,7 +130,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
     for ns in range(0, J):
         SKj = SourceKernels[ns]
         if len(SKj) < 2:
-            raise Exception('The information required for generating source kernels is insufficient.' \
+            raise Exception('The information required for generating source kernels is insufficient.'
                             ' Each sub-list in SourceKernels must contain at least two elements.')
         KTYPE = SKj[0]
         if KTYPE != 'userdef' and len(SKj) == 2:
@@ -177,7 +173,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
         # compute the inverse term: [sum_j' f_j' R_j']^-1
         SumFR = np.sum(fj * Rj, axis=2)  ###  !!!!!!!!!! careful about memory storage!
         SumFR.shape = (LF * LT, I, I)
-        SumFR = SumFR + 1e-16 * np.random.randn(LF * LT, I, I)  # to avoid singularity issues
+        SumFR += 1e-16 * np.random.randn(LF * LT, I, I)  # to avoid singularity issues
 
         InvSumFR = np.zeros((LF * LT, I, I), dtype='single')
         if I == 1:
@@ -216,7 +212,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             #       the correct formulation of zj is:
             #       zj=(1/I)*tr(inv(Rj(w)Cj(w,t)
             Rj_reshape = np.reshape(Rj[:, :, ns], (LF * LT, I, I))
-            Rj_reshape = Rj_reshape + 1e-16 * np.random.randn(LF * LT, I, I)
+            Rj_reshape += 1e-16 * np.random.randn(LF * LT, I, I)
 
             InvRj = np.zeros((LF * LT, I, I), dtype='single')
             if I == 1:
@@ -241,7 +237,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             # start_time = time.clock()
             Ktemp = Kj[ns]  # Kernel corresponding to the source #j
 
-            if FullKernel == False:  # kernel defined as a sliding window (faster method)
+            if not FullKernel:  # kernel defined as a sliding window (faster method)
                 centerF = (LF - np.mod(LF, 2)) / 2  # middle freq. bin
                 centerT = (LT - np.mod(LT, 2)) / 2  # middle time frame
                 centerTF = np.mat([centerF, centerT])  # middle time-freq. bin
@@ -254,7 +250,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
                                                            footprint=KWin_shrink)  # median filter
                 fj[:, :, ns] = np.reshape(ZMed.T, (LF * LT, 1))
 
-            elif FullKernel == True:  # full kernel method (more general but slower approach)
+            else:  # full kernel method (more general but slower approach)
                 for ft in range(0, LF * LT):
                     simTemp = Ktemp.sim(TFcoords[ft, :], TFcoords)
                     NhoodTemp = np.nonzero(simTemp)
@@ -430,7 +426,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     # to be less than the input value or the default value for K
 
     for ns in range(0, J):
-        U.append(Utemp);
+        U.append(Utemp)
         V.append(Vtemp)
     del Utemp, Vtemp
 
@@ -453,7 +449,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             SumPR = SumPR + Pj_tile * Rj[:, :, ns]
             del Pj_gamma, Pj_reshape, Pj_tile
         SumPR.shape = (LF * LT, I, I)
-        SumPR = SumPR + 1e-16 * np.random.randn(LF * LT, I, I)
+        SumPR += 1e-16 * np.random.randn(LF * LT, I, I)
 
         InvSumPR = np.zeros((LF * LT, I, I), dtype='single')
         if I == 1:
@@ -496,7 +492,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
 
             # Step (3-d):
             Rj_reshape = np.reshape(Rj[:, :, ns], (LF * LT, I, I))
-            Rj_reshape = Rj_reshape + 1e-16 * np.random.randn(LF * LT, I, I)
+            Rj_reshape += 1e-16 * np.random.randn(LF * LT, I, I)
 
             InvRj = np.zeros((LF * LT, I, I), dtype='single')
             if I == 1:
@@ -521,7 +517,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             # start_time = time.clock()
             Ktemp = Kj[ns]  # Kernel corresponding to the source #j
 
-            if FullKernel == False:  # kernel defined as a sliding window (faster method)
+            if not FullKernel:  # kernel defined as a sliding window (faster method)
                 centerF = (LF - np.mod(LF, 2)) / 2  # middle freq. bin
                 centerT = (LT - np.mod(LT, 2)) / 2  # middle time frame
                 centerTF = np.mat([centerF, centerT])  # middle time-freq. bin
@@ -535,7 +531,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
                 U[ns], V[ns] = randSVD(ZMed ** (1 / gamma), numcomp, 'compact')[0:3:2]
                 del ZMed, zj
 
-            elif FullKernel == True:  # full kernel method (more general but slower approach)
+            else:  # full kernel method (more general but slower approach)
                 ZMed = np.zeros((LF * LT, 1), dtype='single')
                 for ft in range(0, LF * LT):
                     simTemp = Ktemp.sim(TFcoords[ft, :], TFcoords)
@@ -715,7 +711,7 @@ class Kernel:
 
         if self.kNhood is None:
             self.kNhood = lambda TFcoords1, TFcoords2: (
-            TFcoords1 == TFcoords2).all()  # default: neighnourhood includes only the centeral bin
+                TFcoords1 == TFcoords2).all()  # default: neighnourhood includes only the centeral bin
         if self.kWfunc is None:
             self.kWfunc = lambda TFcoords1, TFcoords2: self.kNhood(TFcoords1, TFcoords2)  # default: binary kernel
 
@@ -738,18 +734,22 @@ class Kernel:
             Df = ParamVal[0, 0]
             Dt = ParamVal[0, 1]
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:, 0], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))), \
+                1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))),
                                                                                     (np.abs(np.tile(TFcoords1[:, 1], (
-                                                                                    1, TFcoords2.shape[0])) - np.tile(
+                                                                                        1,
+                                                                                        TFcoords2.shape[0])) - np.tile(
                                                                                         TFcoords2[:, 1].T, (
-                                                                                        TFcoords1.shape[0], 1))) < Dt)), \
+                                                                                            TFcoords1.shape[0],
+                                                                                            1))) < Dt)),
                                                                      np.logical_and((np.tile(TFcoords1[:, 1], (
-                                                                     1, TFcoords2.shape[0])) == np.tile(
-                                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))), \
+                                                                         1, TFcoords2.shape[0])) == np.tile(
+                                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))),
                                                                                     (np.abs(np.tile(TFcoords1[:, 0], (
-                                                                                    1, TFcoords2.shape[0])) - np.tile(
+                                                                                        1,
+                                                                                        TFcoords2.shape[0])) - np.tile(
                                                                                         TFcoords2[:, 0].T, (
-                                                                                        TFcoords1.shape[0], 1))) < Df)))
+                                                                                            TFcoords1.shape[0],
+                                                                                            1))) < Df)))
             self.kParamVal = ParamVal
 
         elif Type == 'vertical':
@@ -759,7 +759,7 @@ class Kernel:
                                                                                (1, TFcoords2.shape[0])) == np.tile(
                 TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))), \
                                                                       (np.abs(np.tile(TFcoords1[:, 0], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
+                                                                          1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 0].T,
                                                                           (TFcoords1.shape[0], 1))) < Df))
             self.kParamVal = ParamVal
@@ -771,7 +771,7 @@ class Kernel:
                                                                                (1, TFcoords2.shape[0])) == np.tile(
                 TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))), \
                                                                       (np.abs(np.tile(TFcoords1[:, 1], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
+                                                                          1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 1].T,
                                                                           (TFcoords1.shape[0], 1))) < Dt))
             self.kParamVal = ParamVal
@@ -781,14 +781,15 @@ class Kernel:
             P = ParamVal[0, 0]
             Dt = ParamVal[0, 1] * P + 1
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:, 0], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))), \
+                1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))), \
                                                                                      (np.abs(np.tile(TFcoords1[:, 1], (
-                                                                                     1, TFcoords2.shape[0])) - np.tile(
+                                                                                         1,
+                                                                                         TFcoords2.shape[0])) - np.tile(
                                                                                          TFcoords2[:, 1].T, (
-                                                                                         TFcoords1.shape[0],
-                                                                                         1))) < Dt)), \
+                                                                                             TFcoords1.shape[0],
+                                                                                             1))) < Dt)), \
                                                                       (np.mod(np.tile(TFcoords1[:, 1], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
+                                                                          1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 1].T, (TFcoords1.shape[0], 1)),
                                                                               P) == 0))
             self.kParamVal = ParamVal
@@ -798,14 +799,15 @@ class Kernel:
             P = ParamVal[0, 0]
             Df = ParamVal[0, 1] * P + 1
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:, 1], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))), \
+                1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))), \
                                                                                      (np.abs(np.tile(TFcoords1[:, 0], (
-                                                                                     1, TFcoords2.shape[0])) - np.tile(
+                                                                                         1,
+                                                                                         TFcoords2.shape[0])) - np.tile(
                                                                                          TFcoords2[:, 0].T, (
-                                                                                         TFcoords1.shape[0],
-                                                                                         1))) < Df)), \
+                                                                                             TFcoords1.shape[0],
+                                                                                             1))) < Df)), \
                                                                       (np.mod(np.tile(TFcoords1[:, 0], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
+                                                                          1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 0].T, (TFcoords1.shape[0], 1)),
                                                                               P) == 0))
             self.kParamVal = ParamVal
