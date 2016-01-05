@@ -1,4 +1,4 @@
-import DUET
+import Duet
 import AudioSignal
 import WindowAttributes
 from WindowType import WindowType
@@ -16,7 +16,7 @@ def main():
     win.WindowOverlap = 0.5 * win.WindowLength
 
     # Set up DUET algorithm and run
-    duet = DUET.Duet(signal, aMin=-3, aMax=3, aNum=50, dMin=-3, dMax=3, dNum=50, threshold=0.2, aMinDistance=5,
+    duet = Duet.Duet(signal, aMin=-3, aMax=3, aNum=50, dMin=-3, dMax=3, dNum=50, threshold=0.2, aMinDistance=5,
                      dMinDistance=5, nSources=3, windowAttributes=win)
     duet.Run()
     duet.Plot('../Output/2d.png')
