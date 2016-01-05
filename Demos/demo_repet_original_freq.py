@@ -12,6 +12,8 @@ import time
 # close all figure windows
 plt.close('all')
 
+raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
+
 # load the audio file
 fs, x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/piano_mix2.wav')
 # fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav')
@@ -34,7 +36,7 @@ fmax = fs / 2  # 5000
 
 plt.figure(1)
 plt.title('Mixture')
-Sm = f_stft(np.mat(x), L, win, ovp, fs, nfft, mkplot, fmax)
+Sm = f_stft(np.mat(x), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs, mkplot=mkplot)
 
 # separation
 per = np.array([100, fs / (3. * 2.)])  # 24*(float(fs)/nfft)
@@ -58,18 +60,20 @@ plt.show()
 plt.figure(5)
 plt.subplot(2, 1, 1)
 plt.title('Background Spectrogram')
-Sb = f_stft(np.mat(y_org), L, win, ovp, fs, nfft, mkplot, fmax)
+Sb = f_stft(np.mat(y_org), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
+            mkplot=mkplot)
 plt.show()
 plt.subplot(2, 1, 2)
 plt.title('Foreground Spectrogram')
-Sf = f_stft(np.mat(x - y_org), L, win, ovp, fs, nfft, mkplot, fmax)
+Sf = f_stft(np.mat(x - y_org), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
+            mkplot=mkplot)
 plt.show()
 
 # check whether the separated spectrograms add up to the original spectrogram
 Spec_diff = np.abs(Sm[0] - (Sb[0] + Sf[0]))
 
 if Spec_diff.max() < 1e-10:
-    print('Background and foreground add up to the origianl mixture.')
+    print('Background and foreground add up to the original mixture.')
 
 # record the separated background and foreground in .wav files
 filePath = '/Users/fpishdadian/SourceSeparation/Audio Samples/Output/'

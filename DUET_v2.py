@@ -21,8 +21,7 @@ Required modules:
 """
 
 import numpy as np
-from FftUtils import f_stft
-from f_istft import f_istft
+import FftUtils
 import matplotlib.pyplot as plt
 
 plt.interactive('True')
@@ -68,6 +67,8 @@ def duet_v2(x, sparam, adparam, plothist='y'):
             time frequency place is assign to a source number, e.g. if TFmask(f0,t0)=2 means
             that only the source number 2 is active at coordinates (f0,t0).
     """
+    raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
+
     # Extract the parameters from inputs
     sparam = sparam.view(np.recarray)
     adparam = adparam.view(np.recarray)
@@ -79,13 +80,13 @@ def duet_v2(x, sparam, adparam, plothist='y'):
     a_min = adparam.amin;
     a_max = adparam.amax;
     a_num = adparam.anum
-    d_min = adparam.dmin;
-    d_max = adparam.dmax;
+    d_min = adparam.dmin
+    d_max = adparam.dmax
     d_num = adparam.dnum
 
     # Compute the STFT of the two channel mixtures
-    X1, P1, F, T = f_stft(x[0, :], L, win, ovp, fs, nfft, 0)
-    X2, P2, F, T = f_stft(x[1, :], L, win, ovp, fs, nfft, 0)
+    X1, P1, F, T = FftUtils.f_stft(x[0, :], nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)
+    X2, P2, F, T = FftUtils.f_stft(x[1, :], nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)
     # remove dc component to avoid dividing by zero freq. in the delay estimation
     X1 = X1[1::, :];
     X2 = X2[1::, :]
@@ -189,7 +190,7 @@ def duet_v2(x, sparam, adparam, plothist='y'):
         mask = (bestind == i)
         Xm = np.vstack([np.zeros((1, Lt)), (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2)
                         / (1 + atnpeak[i] ** 2) * mask])
-        xi = f_istft(Xm, L, win, ovp, fs)
+        xi = FftUtils.f_istft(Xm, L, win, ovp, fs)
 
         xhat[i, :] = np.array(xi)[0, 0:Lx]
         # add back to the separated signal a portion of the mixture to eliminate

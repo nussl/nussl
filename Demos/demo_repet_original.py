@@ -12,9 +12,11 @@ import time
 # close all figure windows
 plt.close('all')
 
+raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
+
 # load the audio file
 # fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav')
-fs, x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav')
+fs, x = read('../Input/mix4.wav')
 
 # scale to -1.0 to 1.0
 convert_16_bit = float(2 ** 15)
@@ -31,9 +33,9 @@ nfft = L
 mkplot = 1
 fmax = 5000
 
-plt.figure(1)
-plt.title('Mixture')
-Sm = f_stft(np.mat(x), L, win, ovp, fs, nfft, mkplot, fmax)
+# plt.figure(1)
+# plt.title('Mixture')
+Sm = f_stft(np.mat(x), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs, mkplot=mkplot)
 
 # separation
 start_time = time.clock()
@@ -41,35 +43,37 @@ y_org = repet(np.mat(x), fs)
 print time.clock() - start_time, "seconds"
 
 # plot the background and foreground
-plt.figure(3)
-plt.subplot(2, 1, 1)
-plt.title('Background time-domain signal')
-plt.plot(t.T, y_org.T)
-plt.axis('tight')
-plt.show()
-plt.subplot(2, 1, 2)
-plt.title('Foreground time-domain signal')
-plt.plot(t.T, (x - y_org).T)
-plt.axis('tight')
-plt.show()
+# plt.figure(3)
+# plt.subplot(2, 1, 1)
+# plt.title('Background time-domain signal')
+# plt.plot(t.T, y_org.T)
+# plt.axis('tight')
+# plt.show()
+# plt.subplot(2, 1, 2)
+# plt.title('Foreground time-domain signal')
+# plt.plot(t.T, (x - y_org).T)
+# plt.axis('tight')
+# plt.show()
 
-plt.figure(4)
-plt.subplot(2, 1, 1)
-plt.title('Background Spectrogram')
-Sb = f_stft(np.mat(y_org), L, win, ovp, fs, nfft, mkplot, fmax)
-plt.show()
-plt.subplot(2, 1, 2)
-plt.title('Foreground Spectrogram')
-Sf = f_stft(np.mat(x - y_org), L, win, ovp, fs, nfft, mkplot, fmax)
-plt.show()
+# plt.figure(4)
+# plt.subplot(2, 1, 1)
+# plt.title('Background Spectrogram')
+Sb = f_stft(np.mat(y_org), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
+            mkplot=mkplot)
+# plt.show()
+# plt.subplot(2, 1, 2)
+# plt.title('Foreground Spectrogram')
+Sf = f_stft(np.mat(x - y_org), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
+            mkplot=mkplot)
+# plt.show()
 
 # check whether the separated spectrograms add up to the original spectrogram
 Spec_diff = np.abs(Sm[0] - (Sb[0] + Sf[0]))
 
 if Spec_diff.max() < 1e-10:
-    print('Background and foreground add up to the origianl mixture.')
+    print('Background and foreground add up to the original mixture.')
 
 # record the separated background and foreground in .wav files
-filePath = '/Users/fpishdadian/SourceSeparation/Audio Samples/Output/'
+filePath = '../Output/'
 write(filePath + 'repetOrgBackground.wav', fs, y_org.T)
 write(filePath + 'repetOrgForeground.wav', fs, (x - y_org).T)

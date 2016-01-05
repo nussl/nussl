@@ -1,25 +1,19 @@
-import AudioSignal, REPET_sim, pprint, SeparationBase, WindowType, FftUtils
-from WindowType import WindowType
+import AudioSignal
+import Repet
 
 
 # import time
 
 def main():
-    #    print "starting"
-    #myFile = 'Input/mix1.wav'
-    #myAudioFile = AudioSignal.AudioSignal(myFile)
-    #myAudioFile.windowType = WindowType.BLACKMAN
-    #repet = REPET_sim.RepetSim(audioSignal=myAudioFile)
-    #stems = repet.Run()
+    print "starting"
+    myFile = 'Input/K0149.wav'
+    myAudioFile = AudioSignal.AudioSignal(myFile)
+    repet = Repet.Repet(audioSignal=myAudioFile)
+    # FftUtils.PlotStft(myAudioFile)
+    stems = repet()
 
-    wt = [WindowType.RECTANGULAR, WindowType.HAMMING, WindowType.HANNING, WindowType.BLACKMAN, WindowType.DEFAULT]
-    for win in wt:
-        w = FftUtils.MakeWindow(win, 100)
-        print win, w
-
-
-#    pprint.pprint(stems)
-#    print "done"
+    # for stem in stems:
+    #    stem.Write
 
 
 if __name__ == '__main__':

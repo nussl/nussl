@@ -6,9 +6,11 @@ plt.interactive('True')
 import scipy.fftpack as spfft
 
 
-def f_stft(signal, winLength, windowType, winOverlap, sampleRate, nFfts=None, mkplot=0, fmax=None):
+def f_stft(signal, nFfts=None, fmax=None, windowAttributes=None, winLength=None, windowType=None, winOverlap=None,
+           sampleRate=None, mkplot=0):
     """
     This function computes the one-sided STFT of a signal
+    :param windowAttributes: WindowAttributes object that contains all info about windowing
     :param signal: signal, row vector
     :param winLength: length of one window (in # of samples)
     :param windowType: window type, WindowType object
@@ -34,6 +36,15 @@ def f_stft(signal, winLength, windowType, winOverlap, sampleRate, nFfts=None, mk
     * Note: windowing and fft will be performed row-wise so that the code runs faster
 
     """
+    if windowAttributes is None:
+        if all(i is None for i in [winLength, windowType, winOverlap, nFfts]):
+            raise Exception('Cannot do STFT! winLength, windowType, winOverlap, nFfts are all required!')
+    else:
+        winLength = windowAttributes.WindowLength
+        windowType = windowAttributes.WindowType
+        winOverlap = windowAttributes.WindowOverlap
+        nFfts = int(2 ** np.ceil(np.log2(winLength)))
+
     if nFfts is None:
         nFfts = int(2 ** np.ceil(np.log2(winLength)))
     if mkplot == 1 and fmax is None:
@@ -57,7 +68,7 @@ def f_stft(signal, winLength, windowType, winOverlap, sampleRate, nFfts=None, mk
         zp1 = (winLength - 1) / 2
 
     signal = np.hstack([np.zeros((1, zp1)), signal, np.zeros((1, zp1))])
-    N = N + 2 * zp1
+    N += 2 * zp1
 
     # zero pad if N-2*zp1 is not an integer multiple of Hop
     rr = np.mod(N - 2 * zp1, Hop)
@@ -70,21 +81,21 @@ def f_stft(signal, winLength, windowType, winOverlap, sampleRate, nFfts=None, mk
 
     NumBlock = int(((N - winLength) / Hop) + 1)
 
-    W = MakeWindow(windowType, winLength)
-    Wnorm2 = np.dot(W, W.T)
+    window = MakeWindow(windowType, winLength)
+    Wnorm2 = np.dot(window, window.T)
 
     # Generate freq. vector
-    F = (sampleRate / 2) * np.linspace(0, 1, num=nFfts / 2 + 1)
-    Lf = len(F)
+    Freq = (sampleRate / 2) * np.linspace(0, 1, num=nFfts / 2 + 1) # Frequency Bins?
+    lenFreq = len(Freq)
 
     # Take the fft of each block
-    S = 1j * np.zeros((NumBlock, Lf))  # row: time, col: freq. to increase speed
-    P = np.zeros((NumBlock, Lf))
+    S = 1j * np.zeros((NumBlock, lenFreq))  # row: time, col: freq. to increase speed
+    P = np.zeros((NumBlock, lenFreq))
 
     for i in range(0, NumBlock):
-        Xw = np.multiply(W, signal[0, (i * Hop):(i * Hop + winLength)])
+        Xw = np.multiply(window, signal[0, (i * Hop):(i * Hop + winLength)])
         XX = spfft.fft(Xw, n=nFfts)
-        XX_trun = XX[0, 0:Lf]
+        XX_trun = XX[0, 0:lenFreq]
 
         S[i, :] = XX_trun
         P[i, :] = (1 / float(sampleRate)) * ((abs(S[i, :]) ** 2) / float(Wnorm2))
@@ -101,19 +112,27 @@ def f_stft(signal, winLength, windowType, winOverlap, sampleRate, nFfts=None, mk
     P = P[:, m1:Ls2 - m2]
     T = T[m1:Ls2 - m2]
 
-    # plot if specified
-    if mkplot == 1:
-        TT = np.tile(T, (len(F), 1))
-        FF = np.tile(F.T, (len(T), 1)).T
-        SP = 10 * np.log10(np.abs(P))
-        plt.pcolormesh(TT, FF, SP)
-        plt.xlabel('Time')
-        plt.ylabel('Frequency')
-        plt.xlim(T[0], T[-1])
-        plt.ylim(F[0], fmax)
+    return S, P, Freq, T
+
+    # TODO: don't window
+
+def PlotStft(signal, fileName, nFfts=None, fmax=None, windowAttributes=None, winLength=None, windowType=None, winOverlap=None,
+           sampleRate=None, showInteractivePlot=False):
+    (S, P, F, Time) = f_stft(signal, nFfts=nFfts, fmax=fmax, windowAttributes=windowAttributes, winLength=winLength,
+                     windowType=windowType, winOverlap=winOverlap, sampleRate=sampleRate)
+    TT = np.tile(Time, (len(F), 1))
+    FF = np.tile(F.T, (len(Time), 1)).T
+    SP = 10 * np.log10(np.abs(P))
+    plt.pcolormesh(TT, FF, SP)
+    plt.xlabel('Time')
+    plt.ylabel('Frequency')
+    plt.xlim(Time[0], Time[-1])
+    plt.ylim(F[0], fmax)
+    plt.savefig(fileName)
+
+    if showInteractivePlot:
         plt.show()
 
-    return S, P, F, T
 
 
 def f_istft(stft, winLength, windowType, winOverlap, sampleRate):
@@ -147,6 +166,7 @@ def f_istft(stft, winLength, windowType, winOverlap, sampleRate):
     for h in range(0, Nc):
         yh = np.real(spfft.ifft(stft[:, h]))
         hh = int(h * Hop)
+        yh = yh.reshape(y[0, hh:hh + winLength].shape)
         y[0, hh:hh + winLength] = y[0, hh:hh + winLength] + yh[0:winLength]
 
     c = sum(W) / Hop
