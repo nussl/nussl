@@ -1,17 +1,22 @@
-import AudioSignal, random, time
+import random
+import time
+
 import numpy as np
-import Nmf as NmfNU
-import nimfa, pprint
+
 import matplotlib.pylab as plt
 
+import AudioSignal
+import Nmf as NmfNU
+import nimfa
 
-random.seed(1)
+
+# random.seed(1)
 
 
 def main():
-    simpleExample()
-    #audioExample()
-    #sineExample()
+    # simpleExample()
+    audioExample()
+    # sineExample()
 
 
 def simpleExample():
@@ -24,7 +29,7 @@ def simpleExample():
     print '-' * 60
 
     # Make two simple matrices
-    n = 48
+    n = 10
     a = np.arange(n ** 2).reshape((n, n))
     b = 2 * a + 3
 
@@ -36,7 +41,7 @@ def simpleExample():
     nmf = NmfNU.Nmf(mixture, nBases)
     nmf.shouldUseEpsilon = False
     nmf.maxNumIterations = 3000
-    nmf.distanceMeasure = NmfNU.DistanceType.Divergence
+    nmf.distanceMeasure = NmfNU.DistanceType.Euclidean
 
     # Run NU NMF
     start = time.time()
@@ -143,34 +148,45 @@ def audioExample():
 
 
 def sineExample():
-    nSamples = 44100 # 1 second per each frequency
+    # Make signals
+    nSamples = 44100  # 1 second per each frequency
 
-    sin1 = np.sin(np.linspace(0, 100*2*np.pi, nSamples))
-    sin2 = np.sin(np.linspace(0, 200*2*np.pi, nSamples))
-    sin3 = np.sin(np.linspace(0, 300*2*np.pi, nSamples))
+    sin1 = np.sin(np.linspace(0, 100 * 2 * np.pi, nSamples))  # Freq = 100 Hz
+    sin2 = np.sin(np.linspace(0, 200 * 2 * np.pi, nSamples))  # Freq = 200 Hz
+    sin3 = np.sin(np.linspace(0, 300 * 2 * np.pi, nSamples))  # Freq = 300 Hz
 
     sines = np.concatenate((sin1, sin2, sin3))
 
-
+    # load into AudioSignal object and get STFT
     signal = AudioSignal.AudioSignal(timeSeries=sines)
     _, stft, _, _ = signal.STFT()
 
+    # Start NMF and time it
     start = time.time()
     nmf = NmfNU.Nmf(stft, 3)
-    # nmf.distanceMeasure = NmfNU.DistanceType.Divergence
-    A, B = nmf.Run()
+    activation, dictionary = nmf.Run()
     print '{0:.3f}'.format(time.time() - start), 'sec'
 
-    plt.plot(A.T)
-    plt.title(str(time.time()))
+    # Plot results
+    plt.imshow(activation, interpolation='none', aspect='auto')
+    ax = plt.axes()
+    ya = ax.get_yaxis()
+    ya.set_major_locator(plt.MaxNLocator(integer=True))
+    xa = ax.get_xaxis()
+    xa.set_major_locator(plt.MaxNLocator(integer=True))
+    plt.title('Activation Matrix (H)')
     plt.savefig('../Output/A.png')
     plt.close()
 
-    plt.plot(B)
-    plt.xlim([0,25])
-    plt.title(str(time.time()))
+    plt.imshow(dictionary, interpolation='none', aspect='auto')
+    ax = plt.axes()
+    ya = ax.get_yaxis()
+    ya.set_major_locator(plt.MaxNLocator(integer=True))
+    xa = ax.get_xaxis()
+    xa.set_major_locator(plt.MaxNLocator(integer=True))
+    plt.ylim([0, 20])
+    plt.title('Template dictionary (W)')
     plt.savefig('../Output/B.png')
-
 
 
 if __name__ == '__main__':

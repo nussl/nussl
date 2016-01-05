@@ -28,10 +28,8 @@ Required modules:
 2. f_istft
 """
 import numpy as np
-from scipy.fftpack import fft
-from scipy.fftpack import ifft
-from FftUtils import f_stft
-from f_istft import f_istft
+import scipy.fftpack as scifft
+import FftUtils
 import matplotlib.pyplot as plt
 
 plt.interactive('True')
@@ -67,6 +65,7 @@ def repet(x, fs, specparam=None, per=None):
     * Note: the 'scikits.audiolab' package is required for reading and writing 
             .wav files
     """
+    raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
 
     # use the default range of repeating period and default STFT parameter values if not specified
     if specparam is None:
@@ -84,9 +83,9 @@ def repet(x, fs, specparam=None, per=None):
 
     # compute the spectrograms of all channels
     M, N = np.shape(x)
-    X = f_stft(np.mat(x[0, :]), L, win, ovp, fs, nfft, 0)[0]
+    X = FftUtils.f_stft(np.mat(x[0, :]), nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)[0]
     for i in range(1, M):
-        Sx = f_stft(np.mat(x[i, :]), L, win, ovp, fs, nfft, 0)[0]
+        Sx = FftUtils.f_stft(np.mat(x[i, :]), nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)[0]
         X = np.dstack([X, Sx])
     V = np.abs(X)
     if M == 1:
@@ -113,7 +112,7 @@ def repet(x, fs, specparam=None, per=None):
         RepMask = rep_mask(V[:, :, i], p)
         RepMask[1:fc, :] = 1  # high-pass filter the foreground
         XMi = RepMask * X[:, :, i]
-        yi = f_istft(XMi, L, win, ovp, fs)[0]
+        yi = FftUtils.f_istft(XMi, L, win, ovp, fs)[0]
         y[i, :] = yi[0:N]
 
     return y
@@ -121,7 +120,7 @@ def repet(x, fs, specparam=None, per=None):
 
 def beat_spec(X):
     """
-    The beat_spec functin computes the beat spectrum, which is the average (over freq.s)
+    The ComputeBeatSpectrum function computes the beat spectrum, which is the average (over freq.s)
     of the autocorrelation matrix of a one-sided spectrogram. The autocorrelation
     matrix is computed by taking the autocorrelation of each row of the spectrogram
     and dismissing the symmetric half.
@@ -131,11 +130,11 @@ def beat_spec(X):
     Output:
     b: beat spectrum
     """
-    # compute the rwo-wise autocorrelation of the input spectrogram
+    # compute the row-wise autocorrelation of the input spectrogram
     Lf, Lt = np.shape(X)
     X = np.hstack([X, np.zeros((Lf, Lt))])
-    Sx = np.abs(fft(X, axis=1) ** 2)  # fft over columns (take the fft of each row at a time)
-    Rx = np.real(ifft(Sx, axis=1)[:, 0:Lt])  # ifft over columns
+    Sx = np.abs(scifft.fft(X, axis=1) ** 2)  # fft over columns (take the fft of each row at a time)
+    Rx = np.real(scifft.ifft(Sx, axis=1)[:, 0:Lt])  # ifft over columns
     NormFactor = np.tile(np.arange(1, Lt + 1)[::-1], (Lf, 1))  # normalization factor
     Rx = Rx / NormFactor
 
@@ -147,13 +146,13 @@ def beat_spec(X):
 
 def rep_period(b, r):
     """
-    The rep_period fucntion computes the repeating period of the sound signal
+    The FindRepeatingPeriod function computes the repeating period of the sound signal
     using the beat spectrum calculated from the spectrogram.
     
     Inputs:
-    b: beat specrum 
+    b: beat spectrum
     r: array of length 2 including minimum and maximum possible period values
-    Ouput:
+    Output:
     p: repeating period 
     """
     b = b[1:]  # discard the first element of b (lag 0)
@@ -165,7 +164,7 @@ def rep_period(b, r):
 
 def rep_mask(V, p):
     """
-    The ComputeRepeatingMask function computes the soft mask for the repeating part using
+    The ComputeRepeatingMaskSim function computes the soft mask for the repeating part using
     the magnitude spectrogram and the repeating period
     
     Inputs:

@@ -6,10 +6,12 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import numpy as np
 from FftUtils import f_stft
-from REPET_sim import repet_sim
+from Repet import repet_sim
 
 # close all figure windows
 plt.close('all')
+
+raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
 
 # load the audio file
 fileName = '/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample1.wav'
@@ -25,20 +27,20 @@ x = np.mat(x)
 t = np.mat(np.arange(np.shape(x)[1]) / float(fs))
 
 # generate and plot the spectrogram of the mixture
-L = 2048;
+L = 2048
 win = 'Hamming'
 ovp = 0.5 * L
 nfft = L
 mkplot = 1
-fmax = 5000;
+fmax = 5000
 
 plt.figure(1)
-plt.title('Mixture');
-Sm = f_stft(np.mat(x), L, win, ovp, fs, nfft, mkplot, fmax)
+plt.title('Mixture')
+Sm = f_stft(np.mat(x), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs, mkplot=mkplot)
 plt.show()
 
 # separation
-par = np.array([0, 0.01, 10]);
+par = np.array([0, 0.01, 10])
 y_sim = repet_sim(np.mat(x), fs, par=par)
 
 # play and plot the background and foreground
@@ -56,12 +58,14 @@ plt.show()
 
 plt.figure(4)
 plt.subplot(2, 1, 1)
-plt.title('Background Spectrogram');
-Sb = f_stft(np.mat(y_sim), L, win, ovp, fs, nfft, mkplot, fmax)
+plt.title('Background Spectrogram')
+Sb = f_stft(np.mat(y_sim), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
+            mkplot=mkplot)
 plt.show()
 plt.subplot(2, 1, 2)
-plt.title('Foreground Spectrogram');
-Sf = f_stft(np.mat(x - y_sim), L, win, ovp, fs, nfft, mkplot, fmax)
+plt.title('Foreground Spectrogram')
+Sf = f_stft(np.mat(x - y_sim), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
+            mkplot=mkplot)
 plt.show()
 
 # check whether the separated spectrograms add up to the original spectrogram
