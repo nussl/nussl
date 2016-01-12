@@ -2,12 +2,16 @@ import Duet
 import AudioSignal
 import WindowAttributes
 from WindowType import WindowType
+import os
 
 
 def main():
     # Load input file
     inputFileName = '../Input/dev1_female3_inst_mix.wav'
-    signal = AudioSignal.AudioSignal(inputFileName=inputFileName)
+    signal = AudioSignal.AudioSignal(pathToInputFile=inputFileName)
+
+    if not os.path.exists('../Output/'):
+        os.mkdir('../Output')
 
     # set up FFT window attributes
     win = WindowAttributes.WindowAttributes(signal.SampleRate)
