@@ -25,7 +25,7 @@ def simpleExample():
     print '-' * 60
 
     # Make two simple matrices
-    n = 10
+    n = 4
     a = np.arange(n ** 2).reshape((n, n))
     b = 2 * a + 3
 
@@ -46,7 +46,6 @@ def simpleExample():
 
     print 'original mixture =\n', mixture
     print 'my mixture =\n', np.dot(nmf.templateVectors, nmf.activationMatrix)
-    print 'nimfa mixture =\n', np.dot(W, H)
 
     print '    ', '-' * 10, 'NU NMF ', '-' * 10
     signals = nmf.RecombineCalculatedMatrices()
