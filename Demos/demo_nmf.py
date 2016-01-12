@@ -5,14 +5,14 @@ import numpy as np
 
 import matplotlib.pylab as plt
 
-from .. import AudioSignal
-from .. import Nmf as NmfNU
+import AudioSignal
+import Nmf as NmfNU
 
 
 def main():
     # simpleExample()
-    audioExample()
-    # sineExample()
+    # audioExample()
+    sineExample()
 
 
 def simpleExample():
