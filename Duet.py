@@ -40,7 +40,7 @@ class Duet(SeparationBase.SeparationBase):
         self.hist = None
 
     def __str__(self):
-        return 'DUET'
+        return 'Duet'
 
     def Run(self):
         """

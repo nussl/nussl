@@ -5,12 +5,8 @@ import numpy as np
 
 import matplotlib.pylab as plt
 
-import AudioSignal
-import Nmf as NmfNU
-import nimfa
-
-
-# random.seed(1)
+from .. import AudioSignal
+from .. import Nmf as NmfNU
 
 
 def main():
@@ -48,18 +44,6 @@ def simpleExample():
     nmf.Run()
     print '{0:.3f}'.format(time.time() - start), 'seconds for NUSSL'
 
-    # Set up and run nimfa NMF
-    nmf2 = nimfa.Nmf(mixture, update='divergence', rank=2, max_iter=nmf.maxNumIterations)
-    start = time.time()
-    nmf2_fit = nmf2()
-    print '{0:.3f}'.format(time.time() - start), 'seconds for nimfa'
-
-    # Get matrices from nimfa
-    H = nmf2_fit.coef()
-    W = nmf2_fit.basis()
-
-    print '   ', '-' * 10, 'MIXTURES', '-' * 10
-
     print 'original mixture =\n', mixture
     print 'my mixture =\n', np.dot(nmf.templateVectors, nmf.activationMatrix)
     print 'nimfa mixture =\n', np.dot(W, H)
@@ -68,10 +52,6 @@ def simpleExample():
     signals = nmf.RecombineCalculatedMatrices()
     for sig in signals:
         print sig
-
-    print '    ', '-' * 10, 'NIMFA ', '-' * 10
-    print H
-    print W
 
 
 def audioExample():
@@ -127,11 +107,6 @@ def audioExample():
     start = time.time()
     nmf.Run()
     print '{0:.3f}'.format(time.time() - start), 'seconds for NUSSL'
-
-    nmf2 = nimfa.Nmf(stft, rank=numNotes, max_iter=nmf.maxNumIterations)
-    start = time.time()
-    nmf2()
-    print '{0:.3f}'.format(time.time() - start), 'seconds for nimfa'
 
     # Make output files
     outFileNameBase = '../Output/NMFoutput_'

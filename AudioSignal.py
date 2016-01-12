@@ -1,6 +1,7 @@
 from __future__ import division
 
 import numpy as np
+import os.path
 import scipy.io.wavfile as wav
 
 from WindowType import WindowType
@@ -8,7 +9,7 @@ import FftUtils
 import Constants
 
 
-class AudioSignal:
+class AudioSignal(object):
     """
     The class Signal defines the properties of the audio signal object and performs
     basic operations such as Wav loading and computing the STFT/iSTFT.
@@ -36,11 +37,11 @@ class AudioSignal:
   
     """
 
-    def __init__(self, inputFileName=None, timeSeries=None, signalStartingPosition=0, signalLength=0,
+    def __init__(self, pathToInputFile=None, timeSeries=None, signalStartingPosition=0, signalLength=0,
                  sampleRate=Constants.DEFAULT_SAMPLE_RATE, stft=None):
         """
         inputs: 
-        inputFileName is a string indicating a path to a .wav file
+        pathToInputFile is a string indicating a path to a .wav file
         signalLength (in seconds): optional input indicating the length of the signal to be extracted. 
                              Default: full length of the signal
         signalStartingPosition (in seconds): optional input indicating the starting point of the section to be 
@@ -49,18 +50,18 @@ class AudioSignal:
         SampleRate: sampling rate                       
         """
 
-        self.FileName = inputFileName
-        self.AudioData = None
+        self.PathToInputFile = pathToInputFile
+        self._audioData = None
         self.time = np.array([])
-        self.SignalLength = signalLength
-        self.nChannels = 1
+        #self.SignalLength = signalLength
+        #self.nChannels = 1
         self.SampleRate = sampleRate
 
-        if (inputFileName is None) != (timeSeries is None):  # XOR them
-            pass
+        if (pathToInputFile is not None) and (timeSeries is not None):
+            raise Exception('Cannot initialize AudioSignal object with a path AND an array!')
 
-        if inputFileName is not None:
-            self.LoadAudioFromFile(self.FileName, self.SignalLength, signalStartingPosition)
+        if pathToInputFile is not None:
+            self.LoadAudioFromFile(self.PathToInputFile, signalLength, signalStartingPosition)
         elif timeSeries is not None:
             self.LoadAudioFromArray(timeSeries, sampleRate)
 
@@ -76,12 +77,49 @@ class AudioSignal:
         self.nfft = self.windowLength
         self.overlapRatio = 0.5
         self.overlapSamp = int(np.ceil(self.overlapRatio * self.windowLength))
-        self.shouldMakePlot = False
         self.FrequencyMaxPlot = self.SampleRate / 2
 
-        # self.STFT() # is the spectrogram is required to be computed at start up
+    ##################################################
+    # Properties
+    ##################################################
 
-    def LoadAudioFromFile(self, inputFileName=None, signalStartingPosition=0, signalLength=0):
+    # Constants for accessing _audioData np.array indices
+    LEN = 1
+    CHAN = 0
+
+    @property
+    def SignalLength(self):
+        return self._audioData.shape[self.LEN]
+
+    @property
+    def nChannels(self):
+        return self._audioData.shape[self.CHAN]
+
+    @property
+    def AudioData(self):
+        return self._audioData
+
+    @AudioData.setter
+    def AudioData(self, value):
+        assert (type(value) == np.ndarray)
+
+        self._audioData = value
+
+        if self._audioData.ndim < 2:
+            self._audioData = np.expand_dims(self._audioData, axis=self.CHAN)
+
+    @property
+    def FileName(self):
+        if self.PathToInputFile is not None:
+            return os.path.split(self.PathToInputFile)[1]
+        return None
+
+
+    ##################################################
+    # I/O
+    ##################################################
+
+    def LoadAudioFromFile(self, inputFileName, signalStartingPosition=0, signalLength=0):
         """
         Loads an audio signal from a .wav file
         signalLength (in seconds): optional input indicating the length of the signal to be extracted. 
@@ -92,56 +130,34 @@ class AudioSignal:
             Default: 0 seconds
         
         """
-        if inputFileName is None:
-            raise Exception("Cannot load audio from file because there is no file to open from!")
-
         try:
             self.SampleRate, audioInput = wav.read(inputFileName)
         except Exception, e:
             print "Cannot read from file, {file}".format(file=inputFileName)
             raise e
 
+        audioInput = audioInput.T
+
         # Change from fixed point to floating point
         audioInput = audioInput.astype('float') / (np.iinfo(audioInput.dtype).max + 1.0)
 
-        if audioInput.ndim < 2:
-            audioInput = np.expand_dims(audioInput, axis=1)
-
-        self.nChannels = audioInput.shape[1]
-
         # TODO: the logic here needs work
         if signalLength == 0:
-            self.AudioData = np.array(audioInput)  # make sure the signal is of matrix format
-            self.SignalLength = audioInput.shape[0]
+            self.AudioData = np.array(audioInput)
         else:
-            self.SignalLength = int(signalLength * self.SampleRate)
             startPos = int(signalStartingPosition * self.SampleRate)
             self.AudioData = np.array(audioInput[startPos: startPos + self.SignalLength, :])
 
         self.time = np.array((1. / self.SampleRate) * np.arange(self.SignalLength))
 
-    def PeakNormalize(self, bitDepth=16):
-        bitDepth -= 1
-        maxVal = 1.0
-        maxSignal = np.max(np.abs(self.AudioData))
-        if maxSignal > maxVal:
-            self.AudioData = np.divide(self.AudioData, maxSignal)
-
     def LoadAudioFromArray(self, signal, sampleRate=Constants.DEFAULT_SAMPLE_RATE):
         """
-        Loads an audio signal in numpy matrix format along with the sampling frequency
+        Loads an audio signal in numpy matrix format along with the sampling rate
 
         """
-        self.FileName = None
-        self.AudioData = np.array(signal)  # each column contains one channel mixture
+        self.PathToInputFile = None
+        self.AudioData = np.array(signal)
         self.SampleRate = sampleRate
-
-        if self.AudioData.ndim > 1:
-            self.SignalLength, self.nChannels = np.shape(self.AudioData)
-        else:
-            self.SignalLength, = self.AudioData.shape
-            self.AudioData = np.expand_dims(self.AudioData, axis=1)
-            self.nChannels = 1
 
         self.time = np.array((1. / self.SampleRate) * np.arange(self.SignalLength))
 
@@ -159,12 +175,16 @@ class AudioSignal:
             if sampleRate is None:
                 sampleRate = self.SampleRate
 
-            wav.write(outputFileName, sampleRate, self.AudioData)
+            wav.write(outputFileName, sampleRate, self.AudioData.T)
         except Exception, e:
             print "Cannot write to file, {file}.".format(file=outputFileName)
             raise e
         if verbose:
             print "Successfully wrote {file}.".format(file=outputFileName)
+
+    ##################################################
+    #               STFT Utilities
+    ##################################################
 
     def STFT(self):
         """
@@ -222,17 +242,20 @@ class AudioSignal:
 
         return self.AudioData, self.time
 
-    # Utilities
+    ##################################################
+    #                  Utilities
+    ##################################################
 
     def concat(self, other):
+        """
+
+        :param other:
+        :return:
+        """
         if self.nChannels != other.nChannels:
             raise Exception('Cannot concat two signals that have a different number of channels!')
 
         self.AudioData = np.concatenate((self.AudioData, other.AudioData))
-
-    # @staticmethod
-    # def concat(first, second):
-    #     return first.concat(second) fdf
 
     def getChannel(self, n):
         """
@@ -240,9 +263,23 @@ class AudioSignal:
         :param n: index of channel to get 1-based.
         :return: n-th channel.
         """
-        return self.AudioData[:, n - 1]
+        return self.AudioData[n - 1,]
 
-    # Operator overloading
+    def PeakNormalize(self, bitDepth=16):
+        """
+        Normalizes the whole audio file to the max value.
+        :param bitDepth: Max value (in bits) to normalize to. Default is 16 bits.
+        :return:
+        """
+        bitDepth -= 1
+        maxVal = 1.0
+        maxSignal = np.max(np.abs(self.AudioData))
+        if maxSignal > maxVal:
+            self.AudioData = np.divide(self.AudioData, maxSignal)
+
+    ##################################################
+    #              Operator overloading
+    ##################################################
 
     def __add__(self, other):
         if self.nChannels != other.nChannels:

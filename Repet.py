@@ -124,14 +124,14 @@ class Repet(SeparationBase.SeparationBase):
             raise NotImplementedError('How did you get into this state????')
 
         # separate the mixture background by masking
-        M, N = self.Mixture.AudioData.shape
+        N, M = self.Mixture.AudioData.shape
         self.bkgd = np.zeros_like(self.Mixture.AudioData)
         for i in range(N):
             RepMask = mask(self.RealSpectrum[:, :, i], S)
             RepMask[1:self.HighPassCutoff, :] = 1  # high-pass filter the foreground
             XMi = RepMask * self.ComplexSpectrum[:, :, i]
             yi = FftUtils.f_istft(XMi, win_len, win_type, win_ovp, self.SampleRate)[0]
-            self.bkgd[:, i] = yi[0:M]
+            self.bkgd[i,] = yi[0:M]
 
         # self.bkgd = self.bkgd.T
         self.bkgd = AudioSignal.AudioSignal(timeSeries=self.bkgd)
@@ -145,13 +145,13 @@ class Repet(SeparationBase.SeparationBase):
         self.ComplexSpectrum = FftUtils.f_stft(self.Mixture.getChannel(1), windowAttributes=self.WindowAttributes,
                                                sampleRate=self.SampleRate)[0]
 
-        for i in range(1, M):
+        for i in range(1, N):
             Sx = FftUtils.f_stft(self.Mixture.getChannel(i), windowAttributes=self.WindowAttributes,
                                  sampleRate=self.SampleRate)[0]
             self.ComplexSpectrum = np.dstack([self.ComplexSpectrum, Sx])
 
         self.RealSpectrum = np.abs(self.ComplexSpectrum)
-        if M == 1:
+        if N == 1:
             self.ComplexSpectrum = self.ComplexSpectrum[:, :, np.newaxis]
             self.RealSpectrum = self.RealSpectrum[:, :, np.newaxis]
 
