@@ -26,8 +26,11 @@ Documentation
 
 Full documentation is available here (<-- add link)
 
-Authors
+Contributors
 -------
-Corey Grief ![website](http://music.cs.northwestern.edu/)
-Ethan Manilow ![website](www.ethanmanilow.com)
-Fatemah Pishdadian ![website](http://music.cs.northwestern.edu/)
+Corey Grief ![website](http://music.cs.northwestern.edu/),
+Ethan Manilow ![website](www.ethanmanilow.com),
+Fatemah Pishdadian ![website](http://music.cs.northwestern.edu/),
+
+Contact
+-------
