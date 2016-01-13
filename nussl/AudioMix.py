@@ -13,29 +13,29 @@ from scipy.fftpack import fft,ifft
 import matplotlib.pyplot as plt
 
 
-def mkmixture(sn,mixparam,fs,rsch=False):
+def mkmixture(sn, mixparam, fs, rsch=False):
     """"
     The function mkmixture synthesizes an M-channel convolutive mixture of N sources
     
-    Inputs:
-    sn: Numpy N by Ls array. Each row contains a single channel time-domain source signal.
-    mixparam: list containing locations of sources/mics and room parameters
-              - Ps: Numpy N by 3 array containing source locations (x,y,z coordinates)
-              - Pm: Numpy M by 3 array containing mic locations (x,y,z, coordinates)
-              - RoomParams: Numpy 1 by 2 array containing room characteristics
-                            - number of virtual sources
-                            - reflection coefficients in (-1,1)
-              - RoomDim: Numpy 1 by 3 array containing room dimensions              
-                            
-    fs: sampling rate (in Hz)
-    rsch: logical argument indicating whether the room schematic should be generated 
-          or not. Default is False.
+    Parameters:
+        sn: Numpy N by Ls array. Each row contains a single channel time-domain source signal.
+        mixparam: list containing locations of sources/mics and room parameters
+                  - Ps: Numpy N by 3 array containing source locations (x,y,z coordinates)
+                  - Pm: Numpy M by 3 array containing mic locations (x,y,z, coordinates)
+                  - RoomParams: Numpy 1 by 2 array containing room characteristics
+                                - number of virtual sources
+                                - reflection coefficients in (-1,1)
+                  - RoomDim: Numpy 1 by 3 array containing room dimensions
+
+        fs: sampling rate (in Hz)
+        rsch: logical argument indicating whether the room schematic should be generated or not. Default is False.
           
-    Output:
-    Mixtures: Numpy M by Lx array. Each row contains a single channel time-domain mixture 
-    SourceIMS: Numpy N by M by Lx array containing time-domain samples of source images     
-    H: M by N list containing impulse responses of M*N accoustic channels between sources 
-         and mics        
+    Returns:
+        Mixtures, a Numpy M by Lx array. Each row contains a single channel time-domain mixture
+
+        SourceIMS, a Numpy N by M by Lx array containing time-domain samples of source images
+
+        H, a M by N list containing impulse responses of M*N accoustic channels between sources and mics
     """
     
     # find the number of sources and signal lengths
@@ -98,22 +98,21 @@ def mkmixture(sn,mixparam,fs,rsch=False):
     return Mixtures,SourceIMS,H
     
 
-
-def fastconv(x,h):
+def fastconv(x, h):
     """
-    The function fastconv performs fast convolution (in freq. domain rather than in 
-    time domain). The original MATLAB implementation can be found on the Mathworks 
-    File Exchange at:
+    The function fastconv performs fast convolution (in freq. domain rather than in time domain). The original MATLAB
+    implementation can be found on the Mathworks File Exchange at:
     http://www.mathworks.com/matlabcentral/fileexchange/5110-fast-convolution
     
-    Inputs:
-    x: Numpy row vector containing samples of the time-domain signal x[n]
-    h: Numpy row vector containing samples of the time-domain signal h[n]
-       which here is considered to be the impulse response of a channel
+    Parameters:
+        x: Numpy row vector containing samples of the time-domain signal x[n]
+        h: Numpy row vector containing samples of the time-domain signal h[n] which here is considered to be the impulse
+         response of a channel
 
-    Output:
-    y: Numpy row vector containing samples of the time-domain signal y[n], 
-       the output of the channel h to an input signal x    
+    Returns:
+        y, a Numpy row vector containing samples of the time-domain signal y[n], the output of the
+        channel h to an input signal x
+
     """
     
     Ly=x.shape[1]+h.shape[1]-1 
@@ -130,8 +129,7 @@ def fastconv(x,h):
     return y
 
 
-
-def rir(Rdim,Mcoords,Scoords,Numvs,Rcoef,fs):
+def rir(Rdim, Mcoords, Scoords, Numvs, Rcoef, fs):
     """
     The function 'rir' computes the room impulse response given the recording setup 
     and the room features, using the mirror image method, 
@@ -140,29 +138,29 @@ def rir(Rdim,Mcoords,Scoords,Numvs,Rcoef,fs):
     Mathworks File Exchange at: 
     http://www.mathworks.com/matlabcentral/fileexchange/5116-room-impulse-response-generator
     
-    Reference:
-    McGovern, Stephen G. "Fast image method for impulse response calculations of box-shaped rooms." 
-    Applied Acoustics 70.1 (2009): 182-189.
+    References:
+        McGovern, Stephen G. "Fast image method for impulse response calculations of box-shaped rooms."
+        Applied Acoustics 70.1 (2009): 182-189.
     
-    Inputs:
-    Rdim: Numpy array containing the dimensions of the room (in meter)
-    Mcoords: Numpy 1 by 3 array containing the x,y,z coordinates of the microphone (in meter)
-    Scoords: Numpy 1 by 3 array containing the x,y,z coordinates of the sound source (in meter)
-    Numvs: number of virtual sources will be (2*Numvs+1)**3
-    Rcoef: reflection coefficinet for the walls, taking on a value in (-1,1)
-    fs: sampling rate
+    Parameters:
+        Rdim: Numpy array containing the dimensions of the room (in meter)
+        Mcoords: Numpy 1 by 3 array containing the x,y,z coordinates of the microphone (in meter)
+        Scoords: Numpy 1 by 3 array containing the x,y,z coordinates of the sound source (in meter)
+        Numvs: number of virtual sources will be (2*Numvs+1)**3
+        Rcoef: reflection coefficinet for the walls, taking on a value in (-1,1)
+        fs: sampling rate
     
-    Output:
-    h: Numpy 1 by Lh array containing the room impulse response
+    Returns:
+        h, a Numpy 1 by Lh array containing the room impulse response
 
     Example:
-    Rdim=np.array([20,19,21])
-    Mcoords=np.array([19,18,1.6])
-    Scoords=np.array([5,2,1])
-    Numvs=1
-    Rcoef=0.3
-    fs=44100
-    h = rir(Rdim,Mcoords,Scoords,Numvs,Rcoef,fs)   
+        Rdim=np.array([20,19,21])
+        Mcoords=np.array([19,18,1.6])
+        Scoords=np.array([5,2,1])
+        Numvs=1
+        Rcoef=0.3
+        fs=44100
+        h = rir(Rdim,Mcoords,Scoords,Numvs,Rcoef,fs)
      
     """
     
@@ -189,5 +187,4 @@ def rir(Rdim,Mcoords,Scoords,Numvs,Rcoef,fs):
     h[0,time[:,0]-1]=E.T
        
     return h
-    
-    
+
