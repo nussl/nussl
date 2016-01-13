@@ -161,7 +161,7 @@ Nhood = lambda TFcoords1, TFcoords2: np.logical_and((np.abs(
                                                     (np.abs(np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0])) - np.tile(
                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))) < Dt))
 
-SourceKernels = [['periodic', np.mat([11, 34])], ['userdef', Nhood]]
+SourceKernels = [['periodic', np.mat([11, 3])], ['userdef', Nhood]]
 SpecParams = np.zeros(1, dtype=[('windowlength', int), ('overlapSamp', int), ('nfft', int)])
 SpecParams['windowlength'] = WinL
 SpecParams['overlapSamp'] = Ovp
@@ -180,7 +180,7 @@ for numblock in range(1, NB):
     fhat = np.append(fhat, fhat_temp, axis=1)
 print time.clock() - start_time, "seconds"
 
-# play the separated sources
+# write the separated sources
 ss1 = AudioSignal(audiosig=shat[:, :, 0], fs=fs)
 ss1.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kamOutSource1.wav')
 
