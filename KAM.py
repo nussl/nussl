@@ -610,6 +610,7 @@ def randSVD(A, K, mode='normal'):
     S = np.diag(S[0:K])
     V = V.T[:, 0:K]
 
+<<<<<<< HEAD
     if mode == 'diagonal':
         S = np.diag(S)
     elif mode == 'compact':
@@ -617,6 +618,15 @@ def randSVD(A, K, mode='normal'):
         U = np.dot(U, sqrtS)
         V = np.dot(V, sqrtS)
         S = np.eye(K)
+=======
+    
+    def writeaudiofile(self,file_name):
+        """
+        records the audio signal in a .wav file
+        """
+        self.x=self.x/(self.x).max()
+        write(file_name,self.fs,self.x)
+>>>>>>> 082da17232d9b223e78ad90dcd145f0c49a8a4b0
 
     return U, S, V
 
@@ -722,6 +732,7 @@ class Kernel:
         """
         generates the pre-defined kernel object given the parameters
         """
+<<<<<<< HEAD
 
         Type = self.kType
         ParamVal = self.kParamVal
@@ -836,3 +847,106 @@ class Kernel:
         simVal = np.multiply(Nhood_vec, Wfunc_vec).astype(np.float32)
 
         return simVal
+=======
+        
+        Type=self.kType
+        ParamVal=self.kParamVal
+        
+        if np.size(ParamVal)==0:
+            raise ValueError('Kernel parameter values are not specified.')    
+                              
+        if Type=='cross':
+            
+           Df=ParamVal[0,0]
+           Dt=ParamVal[0,1]                           
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
+                        np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df)))
+           self.kParamVal=ParamVal
+           
+        elif Type=='vertical':
+            
+           Df=ParamVal[0,0]               
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df))
+           self.kParamVal=ParamVal
+           
+        elif Type=='horizontal':
+            
+           Dt=ParamVal[0,0]               
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt))
+           self.kParamVal=ParamVal
+                  
+        elif Type=='periodic':
+            
+           P=ParamVal[0,0]
+           Dt=ParamVal[0,1]*P+1
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)))<Dt)),\
+                        (np.mod(np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1)),P)==0))         
+           self.kParamVal=ParamVal
+           
+        elif Type=='harmonic':
+                        
+           P=ParamVal[0,0]
+           Df=ParamVal[0,1]*P+1 
+           self.kNhood=lambda TFcoords1,TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:,1],(1,TFcoords2.shape[0]))==np.tile(TFcoords2[:,1].T,(TFcoords1.shape[0],1))),\
+                        (np.abs(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)))<Df)),\
+                        (np.mod(np.tile(TFcoords1[:,0],(1,TFcoords2.shape[0]))-np.tile(TFcoords2[:,0].T,(TFcoords1.shape[0],1)),P)==0))         
+           self.kParamVal=ParamVal
+               
+        
+    def sim(self,TFcoords1,TFcoords2):
+         """
+         Measures the similarity between a series of new time-freq points and the kernel central point.
+         
+         Inputs:
+         TFcoords1: N1 by 2 Numpy matrix containing coordinates of N1 time-frequency bins.
+                    Each row contains the coordinates of a single bin.
+         TFcoords2: N2 by 2 Numpy matrix containing coordinates of N2 time-frequency bins.
+         
+         Output:
+         simVal: N1 by N2 Numby matrix of similarity values. Similarity values fall in the interval [0,1].
+                 The value of the (i,j) element in simVal determines the amountof similarity (or closeness) 
+                 between the i-th time-frequency bin in TFcoords1 and j-th time-frequency bin in TFcoords2. 
+         """         
+         
+         # update the kernel properties if changed to predefined
+         if self.kType in ['cross','vertical','horizontal','periodic']:
+            self.gen_predef_kernel()      
+                             
+         Nhood_vec=self.kNhood(TFcoords1,TFcoords2)
+         Wfunc_vec=self.kWfunc(TFcoords1,TFcoords2)
+         simVal=np.multiply(Nhood_vec,Wfunc_vec).astype(np.float32) 
+
+         return simVal
+             
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+   
+        
+        
+        
+        
+        
+        
+        
+        
+        
+   
+>>>>>>> 082da17232d9b223e78ad90dcd145f0c49a8a4b0
