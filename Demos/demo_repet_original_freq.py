@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 plt.interactive('True')
 import numpy as np
-from FftUtils import f_stft
-from REPET_org_freq import repet
+from nussl.FftUtils import f_stft
+from nussl.REPET_org_freq import repet
 import time
 
 # close all figure windows

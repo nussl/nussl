@@ -1,11 +1,10 @@
 # in this script a mixture of harmonic sources will be analyzed for separation uisng KAM
 # along with harmonic kernels
 
-from scipy.io.wavfile import read,write
 import matplotlib.pyplot as plt
 plt.interactive('True')
 import numpy as np
-from KAM import AudioSignal,kam ,kaml
+from nussl.KAM import AudioSignal,kam
 import time  
 
 # close all figure windows

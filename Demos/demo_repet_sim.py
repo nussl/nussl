@@ -1,12 +1,12 @@
 # In this demo the original REPET-SIM algorithm is tested
 
-from scipy.io.wavfile import read, write
+from scipy.io.wavfile import write
 import matplotlib.pyplot as plt
 
 plt.interactive('True')
 import numpy as np
-from FftUtils import f_stft
-from Repet import repet_sim
+from nussl.FftUtils import f_stft
+from nussl.Repet import repet_sim
 
 # close all figure windows
 plt.close('all')

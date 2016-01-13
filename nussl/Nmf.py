@@ -1,6 +1,12 @@
-import SeparationBase, AudioSignal
-import random, Constants, math
+import random
+import math
+
 import numpy as np
+
+import SeparationBase
+import AudioSignal
+import Constants
+
 
 class Nmf(SeparationBase.SeparationBase):
     """

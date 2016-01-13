@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 plt.interactive('True')
 import numpy as np
-import FftUtils
+from nussl import FftUtils
 
 
 # close all open figure windows

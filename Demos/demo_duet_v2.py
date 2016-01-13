@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import numpy as np
 from SourceSeparation.FftUtils import f_stft
-from DUET_v2 import duet_v2
+from nussl.DUET_v2 import duet_v2
 
 raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
 

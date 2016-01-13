@@ -29,8 +29,9 @@ Required modules:
 """
 import numpy as np
 import scipy.fftpack as scifft
-import FftUtils
 import matplotlib.pyplot as plt
+
+import FftUtils
 
 plt.interactive('True')
 
