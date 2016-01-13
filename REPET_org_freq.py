@@ -145,9 +145,14 @@ def beat_spec(X):
     b = np.mean(Rx, axis=0)  # average over frequencies
 
     return b
+<<<<<<< HEAD
 
 
 def rep_period(b, r):  ####### is not working as it should!!
+=======
+    
+def rep_period(b,r):     
+>>>>>>> 082da17232d9b223e78ad90dcd145f0c49a8a4b0
     """
     The FindRepeatingPeriod fucntion computes the repeating period of the sound signal
     using the beat spectrum calculated from the spectrogram.
@@ -158,9 +163,15 @@ def rep_period(b, r):  ####### is not working as it should!!
     Ouput:
     p: repeating period 
     """
+<<<<<<< HEAD
     b = b[1:]  # discard the first element of b (lag 0)
     b = b[r[0] - 1:r[1]]
     p = int(np.argmax(b) + r[0])  ######## not sure about this part
+=======
+    b=b[1:]  # discard the first element of b (lag 0)
+    b=b[r[0]-1:r[1]]
+    p=int(np.argmax(b)+r[0])  
+>>>>>>> 082da17232d9b223e78ad90dcd145f0c49a8a4b0
 
     return p
 
