@@ -5,8 +5,7 @@ from scipy.io.wavfile import read,write
 import matplotlib.pyplot as plt
 plt.interactive('True')
 import numpy as np
-from AudioMix import mkmixture
-import time  
+from nussl.AudioMix import mkmixture
 
 # close all figure windows
 plt.close('all')

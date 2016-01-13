@@ -1,14 +1,10 @@
-import AudioSignal
-import Repet
+from nussl import AudioSignal, Repet
 
-
-# import time
 
 def main():
-    print "starting"
     myFile = 'Input/K0149.wav'
-    myAudioFile = AudioSignal.AudioSignal(myFile)
-    repet = Repet.Repet(audioSignal=myAudioFile)
+    myAudioFile = AudioSignal(myFile)
+    repet = Repet(audioSignal=myAudioFile)
     # FftUtils.PlotStft(myAudioFile)
     stems = repet()
 

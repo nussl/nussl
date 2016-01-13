@@ -27,10 +27,13 @@ Required modules:
 1. f_stft
 2. f_istft
 """
-import scipy.ndimage.filters, scipy.signal, FftUtils
+import scipy.ndimage.filters
+import scipy.signal
 import numpy as np
 import scipy.fftpack as scifft
 import matplotlib.pyplot as plt
+
+import FftUtils
 
 plt.interactive('True')
 

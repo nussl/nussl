@@ -21,12 +21,12 @@ Required modules:
 """
 
 import numpy as np
-import FftUtils
 import matplotlib.pyplot as plt
+
+import FftUtils
 
 plt.interactive('True')
 from scipy import signal
-from mpl_toolkits.mplot3d import axes3d
 
 
 def duet_v2(x, sparam, adparam, plothist='y'):

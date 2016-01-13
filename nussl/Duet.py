@@ -18,14 +18,12 @@ Northwestern University, 2015
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
 import FftUtils
 import SeparationBase
 import AudioSignal
 import Constants
-
 
 
 class Duet(SeparationBase.SeparationBase):

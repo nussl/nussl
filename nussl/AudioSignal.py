@@ -1,7 +1,8 @@
 from __future__ import division
 
-import numpy as np
 import os.path
+
+import numpy as np
 import scipy.io.wavfile as wav
 
 from WindowType import WindowType

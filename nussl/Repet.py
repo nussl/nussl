@@ -22,9 +22,11 @@ Northwestern University, 2015
 """
 
 import numpy as np
-import FftUtils
-import SeparationBase, Constants
 import scipy.fftpack as scifft
+
+import FftUtils
+import SeparationBase
+import Constants
 import AudioSignal
 
 
