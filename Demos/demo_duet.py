@@ -1,27 +1,25 @@
-import Duet
-import AudioSignal
-import WindowAttributes
-from WindowType import WindowType
 import os
+
+from nussl import Duet, AudioSignal, WindowAttributes, WindowType
 
 
 def main():
     # Load input file
     inputFileName = '../Input/dev1_female3_inst_mix.wav'
-    signal = AudioSignal.AudioSignal(pathToInputFile=inputFileName)
+    signal = AudioSignal(pathToInputFile=inputFileName)
 
     if not os.path.exists('../Output/'):
         os.mkdir('../Output')
 
     # set up FFT window attributes
-    win = WindowAttributes.WindowAttributes(signal.SampleRate)
+    win = WindowAttributes(signal.SampleRate)
     win.WindowLength = 4096
     win.WindowType = WindowType.HAMMING
     win.WindowOverlap = 0.5 * win.WindowLength
 
     # Set up DUET algorithm and run
-    duet = Duet.Duet(signal, aMin=-3, aMax=3, aNum=50, dMin=-3, dMax=3, dNum=50, threshold=0.2, aMinDistance=5,
-                     dMinDistance=5, nSources=3, windowAttributes=win)
+    duet = Duet(signal, aMin=-3, aMax=3, aNum=50, dMin=-3, dMax=3, dNum=50, threshold=0.2, aMinDistance=5,
+                dMinDistance=5, nSources=3, windowAttributes=win)
     duet.Run()
     duet.Plot('../Output/2d.png')
     duet.Plot('../Output/3d.png', three_d_plot=True)

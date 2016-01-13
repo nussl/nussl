@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import numpy as np
 from f_stft import f_stft
-from RPCA import rpca_ss
+from nussl.RPCA import rpca_ss
 import time  
 
 # close all figure windows

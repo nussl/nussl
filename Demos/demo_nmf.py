@@ -2,11 +2,9 @@ import random
 import time
 
 import numpy as np
-
 import matplotlib.pylab as plt
 
-import AudioSignal
-import Nmf as NmfNU
+import nussl
 
 
 def main():
@@ -34,10 +32,10 @@ def simpleExample():
 
     # Set up NU NMF
     nBases = 2
-    nmf = NmfNU.Nmf(mixture, nBases)
+    nmf = nussl.Nmf(mixture, nBases)
     nmf.shouldUseEpsilon = False
     nmf.maxNumIterations = 3000
-    nmf.distanceMeasure = NmfNU.DistanceType.Euclidean
+    nmf.distanceMeasure = nussl.DistanceType.Euclidean
 
     # Run NU NMF
     start = time.time()
@@ -71,8 +69,8 @@ def audioExample():
     firstFileName = '../Input/K0140.wav'
     secondFileName = '../Input/K0149.wav'
 
-    firstNote = AudioSignal.AudioSignal(firstFileName)
-    secondNote = AudioSignal.AudioSignal(secondFileName)
+    firstNote = nussl.AudioSignal(firstFileName)
+    secondNote = nussl.AudioSignal(secondFileName)
 
     # Combine notes into one file and save target
     bothNotesPre = firstNote + secondNote
@@ -101,7 +99,7 @@ def audioExample():
     GuessAct = np.array([firstGuessAct, secondGuessAct])
 
     # run NMF
-    nmf = NmfNU.Nmf(stft, numNotes, activationMatrix=GuessAct, templateVectors=GuessVec)
+    nmf = nussl.Nmf(stft, numNotes, activationMatrix=GuessAct, templateVectors=GuessVec)
     nmf.maxNumIterations = 100
     start = time.time()
     nmf.Run()
@@ -132,12 +130,12 @@ def sineExample():
     sines = np.concatenate((sin1, sin2, sin3))
 
     # load into AudioSignal object and get STFT
-    signal = AudioSignal.AudioSignal(timeSeries=sines)
+    signal = nussl.AudioSignal(timeSeries=sines)
     _, stft, _, _ = signal.STFT()
 
     # Start NMF and time it
     start = time.time()
-    nmf = NmfNU.Nmf(stft, 3)
+    nmf = nussl.Nmf(stft, 3)
     activation, dictionary = nmf.Run()
     print '{0:.3f}'.format(time.time() - start), 'sec'
 
