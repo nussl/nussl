@@ -18,7 +18,7 @@ At its core, nussl contains implementations of the following source separation a
 
 Installation
 ------------
-``` $ pip install nussl (this doesn't work yet)
+``` $ pip install nussl (this doesn't work yet so don't do it)
 ...```
 
 Documentation
