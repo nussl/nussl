@@ -40,31 +40,31 @@ def repet(x, fs, specparam=None, per=None):
     """
     The repet function implements the main algorithm.
     
-    Inputs:
-    x: audio mixture (M by N) containing M channels and N time samples
-    fs: sampling frequency of the audio signal
-    specparam (optional): list containing STFT parameters including in order the window length, 
-                          window type, overlap in # of samples, and # of fft points.
-                          default: window length: 40 ms
-                                   window type: Hamming
-                                   overlap: window length/2
-                                   nfft: window length
-    per (optional): if includes two elements determines the range of repeating 
-         period, if only one element determines the exact value of repeating period
-         in seconds - default: [0.8,min(8,(length(x)/fs)/3)])
+    Arguments:
+        x: audio mixture (M by N) containing M channels and N time samples
+        fs: sampling frequency of the audio signal
+        specparam (optional): list containing STFT parameters including in order the window length,
+                              window type, overlap in # of samples, and # of fft points.
+                              default: window length: 40 ms
+                                       window type: Hamming
+                                       overlap: window length/2
+                                       nfft: window length
+        per (optional): if includes two elements determines the range of repeating
+             period, if only one element determines the exact value of repeating period
+             in seconds - default: [0.8,min(8,(length(x)/fs)/3)])
          
-    Output:
-    y: repeating background (M by N) containing M channels and N time samples
-       (the corresponding non-repeating foreground is equal to x-y)
+    Returns:
+        y: repeating background (M by N) containing M channels and N time samples
+           (the corresponding non-repeating foreground is equal to x-y)
        
-    EXAMPLE:
-    x,fs,enc = wavread('mixture.wav'); 
-    y = repet(np.mat(x),fs,np.array([0.8,8]))
-    wavwrite(y,'background.wav',fs,enc)
-    wavwrite(x-y,'foreground.wav',fs,enc)
+    Examples:
+        x,fs,enc = wavread('mixture.wav');
+        y = repet(np.mat(x),fs,np.array([0.8,8]))
+        wavwrite(y,'background.wav',fs,enc)
+        wavwrite(x-y,'foreground.wav',fs,enc)
 
-    * Note: the 'scikits.audiolab' package is required for reading and writing 
-            .wav files
+    Note:
+        the 'scikits.audiolab' package is required for reading and writing .wav files
     """
     raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
 
