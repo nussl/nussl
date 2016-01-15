@@ -18,5 +18,19 @@ At its core, nussl contains implementations of the following source separation a
 
 Installation
 ------------
-``` $ pip install nussl (this doesn't work yet)
-```
+``` $ pip install nussl (this doesn't work yet so don't do it)
+...```
+
+Documentation
+-------------
+
+Full documentation is available here (<-- add link)
+
+Contributors
+-------
+Corey Grief (![website](http://music.cs.northwestern.edu/)),
+Ethan Manilow (![website](www.ethanmanilow.com)),
+Fatemah Pishdadian (![website](http://music.cs.northwestern.edu/)),
+
+Contact
+-------
