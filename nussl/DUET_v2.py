@@ -24,9 +24,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import FftUtils
+from scipy import signal
 
 plt.interactive('True')
-from scipy import signal
 
 
 def duet_v2(x, sparam, adparam, plothist='y'):
