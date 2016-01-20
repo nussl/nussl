@@ -11,6 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   NUSSL Modules </src/modules>
+
 
 
 Indices and tables

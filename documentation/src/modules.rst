@@ -14,10 +14,7 @@ nussl
    Nmf
    REPET_org
    REPET_org_freq
-   REPET_sim_freq
-   RPCA
    Repet
    SeparationBase
    WindowAttributes
    WindowType
-   test

@@ -1,29 +1,21 @@
 """
-This class implements the REpeating Pattern Extraction Technique algorithm using the
-Similarity Matrix (REPET-SIM). REPET is a simple method for separating the repeating
-background from the non-repeating foreground in a piece of audio mixture. 
-REPET-SIM is a generalization of REPET, which looks for similarities instead of 
-periodicities.
-
-See http://music.eecs.northwestern.edu/research.php?project=repet
+Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM). REPET is a
+simple method for separating the repeating background from the non-repeating foreground in a piece of audio mixture.
+REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.
 
 References:
-[1] Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," 
-    US20130064379 A1, US 13/612,413, March 14, 2013.
-[2] Zafar Rafii and Bryan Pardo. 
-    "Music/Voice Separation using the Similarity Matrix," 
-    13th International Society on Music Information Retrieval, 
-    Porto, Portugal, October 8-12, 2012.
 
-Authors: Fatameh Pishdadian and Ethan Manilow
-Interactive Audio Lab
-Northwestern University, 2015
+    * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14, 2013
+    * Zafar Rafii and Bryan Pardo. "Music/Voice Separation using the Similarity Matrix," 13th International Society on
+      Music Information Retrieval, Porto, Portugal, October 8-12, 2012.
+
+See Also:
+    http://music.eecs.northwestern.edu/research.php?project=repet
 
 """
 
 import numpy as np
 import scipy.fftpack as scifft
-
 import FftUtils
 import SeparationBase
 import Constants
@@ -31,9 +23,29 @@ import AudioSignal
 
 
 class Repet(SeparationBase.SeparationBase):
+    """
+        Parameters:
+            audioSignal (AudioSignal): audio mixture (M by N) containing M channels and N time samples
+            Type (RepetType): Variant of Repet algorithm to perform.
+            windowAttributes (WindowAttributes): WindowAttributes object describing the window used in the repet
+             algorithm
+            sampleRate (int): the sample rate of the audio signal
+            HighPassCutoff (Optional[int]): Defaults to 100
+            similarityThreshold (Optional[int]): Used for RepetType.SIM. Defaults to 0
+            MinDistanceBetweenFrames (Optional[int]): Used for RepetType.SIM. Defaults to 1
+            MaxRepeatingFrames (Optional[int]): Used for RepetType.SIM. Defaults to 10
+            Period (Optional[float]): Used for RepetType.ORIGINAL. The Period of the repeating part of the signal.
+            MinPeriod (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
+             0.8
+            MaxPeriod (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
+             min(8, self.Mixture.SignalLength/3)
+
+        """
+
     def __init__(self, audioSignal, Type=None, windowAttributes=None, sampleRate=None,
                  similarityThreshold=None, MinDistanceBetweenFrames=None, MaxRepeatingFrames=None,
                  MinPeriod=None, MaxPeriod=None, Period=None, HighPassCutoff=None):
+
         self.__dict__.update(locals())
         super(Repet, self).__init__(windowAttributes=windowAttributes, sampleRate=sampleRate,
                                     audioSignal=audioSignal)
@@ -70,36 +82,26 @@ class Repet(SeparationBase.SeparationBase):
 
     # @property
     def Run(self):
-        """
-        This runs the REPET algorithm
-        
-        Inputs:
-        x: audio mixture (M by N) containing M channels and N time samples
-        fs: sampling frequency of the audio signal
-        specparam (optional): list containing STFT parameters including in order the window length, 
-                              window type, overlap in # of samples, and # of fft points.
-                              default: window length: 40 mv
-                                       window type: Hamming
-                                       overlap: window length/2
-                                       nfft: window length
-        par: (optional) Numpy array containing similarity parameters (3 values) (default: [0,1,100])
-              -- par[0]: minimum threshold (in [0,1]) for the similarity measure 
-                  within repeating frames
-              -- par[1]: minimum distance (in seconds) between repeating frames
-              -- par[2]: maximum number of repeating frames for the median filter 
-             
-        Output:
-        y: repeating background (M by N) containing M channels and N time samples
-           (the corresponding non-repeating foreground is equal to x-y)
-           
-        EXAMPLE:
-        x,fs,enc = wavread('mixture.wav'); 
-        y = repet_sim(np.mat(x),fs,np.array([0,1,100]))
-        wavwrite(y,'background.wav',fs,enc)
-        wavwrite(x-y,'foreground.wav',fs,enc)
+        """Runs the REPET algorithm
 
-        * Note: the 'scikits.audiolab' package is required for reading and writing 
-                .wav files
+        Returns:
+            y (AudioSignal): repeating background (M by N) containing M channels and N time samples
+            (the corresponding non-repeating foreground is equal to x-y)
+
+        EXAMPLE:
+             ::
+            signal = nussl.AudioSignal(pathToInputFile='inputName.wav')
+
+            # Set up window parameters
+            win = nussl.WindowAttributes(signal.SampleRate)
+            win.WindowLength = 2048
+            win.WindowType = nussl.WindowType.HAMMING
+
+            # Set up and run Repet
+            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM, windowAttributes=win)
+            repet.MinDistanceBetweenFrames = 0.1
+            repet.Run()
+
         """
 
         # unpack window parameters
@@ -158,9 +160,11 @@ class Repet(SeparationBase.SeparationBase):
             self.RealSpectrum = self.RealSpectrum[:, :, np.newaxis]
 
     def GetSimilarityMatrix(self):
-        """
-        Calculates and returns the similarity matrix for the audio file associated with this object
-        :return: similarity matrix
+        """Calculates and returns the similarity matrix for the audio file associated with this object
+
+        Returns:
+             V (np.array): similarity matrix for the audio file.
+
         """
         self._computeSpectrum()
         V = np.mean(self.RealSpectrum, axis=2)
@@ -168,9 +172,11 @@ class Repet(SeparationBase.SeparationBase):
         return self.SimilarityMatrix
 
     def GetBeatSpectrum(self):
-        """
-        Calculates and returns the beat spectrum for the audio file associated with this object
-        :return: beat spectrum
+        """Calculates and returns the beat spectrum for the audio file associated with this object
+
+        Returns:
+            B (np.array): beat spectrum for the audio file
+
         """
         self._computeSpectrum()
         self.BeatSpectrum = self.ComputeBeatSpectrum(np.mean(self.RealSpectrum ** 2, axis=2))
@@ -199,10 +205,10 @@ class Repet(SeparationBase.SeparationBase):
         """
         Computes the similarity matrix using the cosine similarity for input matrix X.
         
-        Input:
-        X: 2D matrix containing the magnitude spectrogram of the audio signal (Lf by Lt)
-        Output:
-        S: similarity matrix (Lt by Lt)
+        Parameters:
+            X (np.array): 2D matrix containing the magnitude spectrogram of the audio signal (Lf by Lt)
+        Returns:
+            S (np.array): similarity matrix (Lt by Lt)
         """
         assert (type(X) == np.ndarray)
 
@@ -222,16 +228,16 @@ class Repet(SeparationBase.SeparationBase):
         """
         Finds the similarity indices for all time frames from the similarity matrix
         
-        Inputs:
-        S: similarity matrix (Lt by Lt)
-        simparam: array containing 3 similarity parameters 
-              -- simparam[0]: minimum threshold (in [0,1]) for the similarity measure 
-                  within repeating frames
-              -- simparam[1]: minimum distance (in # of time frames) between repeating frames
-              -- simparam[2]: maximum number of repeating frames for the median filter   
+        Parameters:
+            S (np.array): similarity matrix (Lt by Lt)
+            simparam (List): array containing 3 similarity parameters
+
+                * simparam[0]: minimum threshold (in [0,1]) for the similarity measure within repeating frames
+                * simparam[1]: minimum distance (in # of time frames) between repeating frames
+                * simparam[2]: maximum number of repeating frames for the median filter
                  
-        Output:
-        I: array containing similarity indices for all time frames
+        Returns:
+            I (np.array): similarity indices for all time frames
         """
 
         Lt = S.shape[0]
@@ -246,18 +252,17 @@ class Repet(SeparationBase.SeparationBase):
 
     def FindPeaks(self, data, min_thr=0.5, min_dist=None, max_num=1):
         """
-        The 'FindPeaks' function receives a row vector array of positive numerical
-        values (in [0,1]) and finds the peak values and corresponding indices.
+        Receives a row vector array of positive numerical values (in [0,1]) and finds the peak values and corresponding
+         indices.
         
-        Inputs: 
-        data: row vector of real values (in [0,1])
-        min_thr: (optional) minimum threshold (in [0,1]) on data values - default=0.5
-        min_dist:(optional) minimum distance (in # of time elements) between peaks
-                 default: 25% of the vector length
-        max_num: (optional) maximum number of peaks - default: 1
+        Parameters:
+            data (np.array): row vector of real values (in [0,1])
+            min_thr: (Optional[float]) minimum threshold (in [0,1]) on data values. Defaults to 0.5
+            min_dist:(Optional[int]) minimum distance (in # of elements) between peaks. Defaults to .25 * data.length
+            max_num: (Optional[int]) maximum number of peaks. Defaults to 1
         
-        Output:
-        Pi: peaks indices
+        Returns:
+            Pi (np.array): sorted array of indices of peaks in the data
         """
 
         # make sure data is a Numpy matrix
@@ -287,16 +292,14 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def ComputeRepeatingMaskSim(V, I):
-        """
-            Computes the soft mask for the repeating part using
-            the magnitude spectrogram and the similarity indices
+        """Computes the soft mask for the repeating part using the magnitude spectrogram and the similarity indices
 
-            Inputs:
-            V: 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)
-            I: array containing similarity indices for all time frames
-            Output:
-            M: 2D matrix (Lf by Lt) containing the soft mask for the repeating part,
-            elements of M take on values in [0,1]
+        Parameters:
+            V (np.array): 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)
+            I (np.array): array containing similarity indices for all time frames
+        Returns:
+            M (np.array): 2D matrix (Lf by Lt) containing the soft mask for the repeating part. Elements of M take on
+            values in [0,1]
          """
 
         Lf, Lt = np.shape(V)
@@ -316,16 +319,15 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def ComputeBeatSpectrum(X):
-        """
-        The ComputeBeatSpectrum function computes the beat spectrum, which is the average (over freq.s)
-        of the autocorrelation matrix of a one-sided spectrogram. The autocorrelation
-        matrix is computed by taking the autocorrelation of each row of the spectrogram
-        and dismissing the symmetric half.
+        """Computes the beat spectrum; averages (over freq.s) the autocorrelation matrix of a one-sided spectrogram.
 
-        Input:
-        X: 2D matrix containing the one-sided power spectrogram of the audio signal (Lf by Lt)
-        Output:
-        b: beat spectrum
+         The autocorrelation matrix is computed by taking the autocorrelation of each row of the spectrogram and
+         dismissing the symmetric half.
+
+        Parameters:
+            X (np.array): 2D matrix containing the one-sided power spectrogram of the audio signal (Lf by Lt)
+        Returns:
+            b (np.array): array containing the beat spectrum based on the power spectrogram
         """
         # compute the row-wise autocorrelation of the input spectrogram
         Lf, Lt = X.shape
@@ -342,13 +344,14 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def FindRepeatingPeriod(beat_spectrum, min_period, max_period):
-        """
-        The FindRepeatingPeriod function computes the repeating period of the sound signal
-        using the beat spectrum calculated from the spectrogram.
-        :param beat_spectrum: input beat spectrum array
-        :param min_period: minimum possible period value
-        :param max_period: maximum possible period value
-        :return: period
+        """Computes the repeating period of the sound signal using the beat spectrum.
+
+        Parameters:
+            beat_spectrum (np.array): input beat spectrum array
+            min_period (int): minimum possible period value
+            max_period (int): maximum possible period value
+        Returns:
+             period (int) : The period of the sound signal
         """
 
         beat_spectrum = beat_spectrum[1:]  # discard the first element of beat_spectrum (lag 0)
@@ -359,16 +362,15 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def ComputeRepeatingMaskBeat(V, p):
-        """
-        The ComputeRepeatingMaskBeat function computes the soft mask for the repeating part using
-        the magnitude spectrogram and the repeating period
+        """Computes the soft mask for the repeating part using the magnitude spectrogram and the repeating period
 
-        Inputs:
-        V: 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)
-        p: repeating period measured in # of time frames
-        Output:
-        M: 2D matrix (Lf by Lt) containing the soft mask for the repeating part,
-           elements of M take on values in [0,1]
+        Parameters:
+            V (np.array): 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)
+            p (int): repeating period measured in # of time frames
+        Returns:
+            M (np.array): 2D matrix (Lf by Lt) containing the soft mask for the repeating part, elements of M take on
+            values in [0,1]
+
         """
 
         Lf, Lt = V.shape
@@ -397,14 +399,35 @@ class Repet(SeparationBase.SeparationBase):
         return np.ceil(result)
 
     def Plot(self, outputFile):
+        """ NOT YET IMPLEMENTED. Plots REPET results and saves to file.
+
+        Raises:
+            NotImplementedError
+
+        Args:
+
+        Returns:
+
+        """
         raise NotImplementedError('You shouldn\'t be calling this yet...')
 
     def MakeAudioSignals(self):
+        """ Returns the background and foreground audio signals
+
+        Returns:
+            Audio Signals (List): 2 element list.
+
+                * Background: Audio signal with the calculated background track
+                * Foreground: Audio signal with the calculated foreground track
+
+        """
         self.fgnd = self.Mixture - self.bkgd
         return [self.bkgd, self.fgnd]
 
 
 class RepetType():
+    """Types of Repet algorithm implementation.
+    """
     ORIGINAL = 'original'
     SIM = 'sim'
     ADAPTIVE = 'adaptive'
