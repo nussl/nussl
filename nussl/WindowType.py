@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 class WindowType:
     RECTANGULAR = 'Rectangular'
     HAMMING = 'Hamming'

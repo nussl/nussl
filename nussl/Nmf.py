@@ -1,6 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import random
 import math
-
 import numpy as np
 
 import SeparationBase
@@ -12,10 +13,10 @@ class Nmf(SeparationBase.SeparationBase):
     """
     This is an implementation of the Non-negative Matrix Factorization algorithm for
     source separation. This implementation cannot receive a raw audio signal, rather
-    it only accepts a STFT and a number, nBases, which defines the number of bases
+    it only accepts a do_STFT and a number, num_bases, which defines the number of bases
     vectors.
 
-    This class provides two implementations of distance measures, Euclidean and Divergence,
+    This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
     and also allows the user to define distance measure function.
 
     References:
@@ -26,47 +27,47 @@ class Nmf(SeparationBase.SeparationBase):
     def __str__(self):
         return "Nmf"
 
-    def __init__(self, stft, nBases, activationMatrix=None, templateVectors=None,
-                 distanceMeasure=None, shouldUpdateTemplate=None, shouldUpdateActivation=None):
+    def __init__(self, stft, num_bases, activation_matrix=None, templates=None,
+                 distance_measure=None, should_update_template=None, should_update_activation=None):
         self.__dict__.update(locals())
         super(Nmf, self).__init__()
 
-        if nBases <= 0:
+        if num_bases <= 0:
             raise Exception('Need more than 0 bases!')
 
         if stft.size <= 0:
-            raise Exception('STFT size must be > 0!')
+            raise Exception('do_STFT size must be > 0!')
 
         self.stft = stft  # V, in literature
-        self.nBases = nBases
+        self.num_bases = num_bases
 
-        if activationMatrix is None and templateVectors is None:
-            self.templateVectors = np.zeros((stft.shape[0], nBases))  # W, in literature
-            self.activationMatrix = np.zeros((nBases, stft.shape[1]))  # H, in literature
-            self.RandomizeInputMatrices()
-        elif activationMatrix is not None and templateVectors is not None:
-            self.templateVectors = templateVectors
-            self.activationMatrix = activationMatrix
+        if activation_matrix is None and templates is None:
+            self.templates = np.zeros((stft.shape[0], num_bases))  # W, in literature
+            self.activation_matrix = np.zeros((num_bases, stft.shape[1]))  # H, in literature
+            self.randomize_input_matrices()
+        elif activation_matrix is not None and templates is not None:
+            self.templates = templates
+            self.activation_matrix = activation_matrix
         else:
             raise Exception('Must provide both activation matrix and template vectors or nothing at all!')
 
-        self.distanceMeasure = distanceMeasure if distanceMeasure is not None else DistanceType.DEFAULT
-        self.ShouldUpdateTemplate = True if shouldUpdateTemplate is None else shouldUpdateTemplate
-        self.ShouldUpdateActivation = True if shouldUpdateActivation is None else shouldUpdateActivation
+        self.distance_measure = distance_measure if distance_measure is not None else DistanceType.DEFAULT
+        self.should_update_template = True if should_update_template is None else should_update_template
+        self.should_update_activation = True if should_update_activation is None else should_update_activation
 
-        self.shouldUseEpsilon = False  # Replace this with something more general
-        self.epsilonEuclideanType = True
-        self.stoppingEpsilon = 1e10
-        self.maxNumIterations = 20
+        self.should_use_epsilon = False  # Replace this with something more general
+        self.epsilon_euclidean_type = True
+        self.stopping_epsilon = 1e10
+        self.max_num_iterations = 20
 
 
 
-    def Run(self):
+    def run(self):
         """
         This runs the NMF separation algorithm. This function assumes that all
         parameters have been set prior to running.
 
-        No inputs. STFT and N must be set prior to calling this function.
+        No inputs. do_STFT and N must be set prior to calling this function.
 
         Returns an activation matrix (in a 2d numpy array)
         and a set of template vectors (also 2d numpy array).
@@ -75,128 +76,128 @@ class Nmf(SeparationBase.SeparationBase):
         if self.stft is None or self.stft.size == 0:
             raise Exception('Cannot do NMF with an empty STFT!')
 
-        if self.nBases is None or self.nBases == 0:
+        if self.num_bases is None or self.num_bases == 0:
             raise Exception('Cannot do NMF with no bases!')
 
-        if self.shouldUseEpsilon:
-            print 'Warning: User is expected to have set stoppingEpsilon prior to using' \
+        if self.should_use_epsilon:
+            print 'Warning: User is expected to have set stopping_epsilon prior to using' \
                   ' this function. Expect this to take a long time if you have not set' \
                   ' a suitable epsilon.'
 
-        shouldStop = False
-        nIterations = 0
-        while not shouldStop:
+        should_stop = False
+        num_iterations = 0
+        while not should_stop:
 
-            self.Update()
+            self.update()
 
             # Stopping conditions
-            nIterations += 1
-            if self.shouldUseEpsilon:
-                if self.epsilonEuclideanType:
-                    shouldStop = self._euclideanDistance() <= self.stoppingEpsilon
+            num_iterations += 1
+            if self.should_use_epsilon:
+                if self.epsilon_euclidean_type:
+                    should_stop = self._euclidean_distance() <= self.stopping_epsilon
                 else:
-                    shouldStop = self._divergence() <= self.stoppingEpsilon
+                    should_stop = self._divergence() <= self.stopping_epsilon
             else:
-                shouldStop = nIterations >= self.maxNumIterations
+                should_stop = num_iterations >= self.max_num_iterations
 
-        return self.activationMatrix, self.templateVectors
+        return self.activation_matrix, self.templates
 
-    def Update(self):
+    def update(self):
         """
         Computes a single update using the update function specified.
         :return: nothing
         """
-        # Update activation matrix
-        if self.ShouldUpdateActivation:
-            if self.distanceMeasure == DistanceType.Euclidean:
-                self.activationMatrix = self._updateActivationEuclidean()
+        # update activation matrix
+        if self.should_update_activation:
+            if self.distance_measure == DistanceType.EUCLIDEAN:
+                self.activation_matrix = self._update_activation_euclidean()
 
-            elif self.distanceMeasure == DistanceType.Divergence:
-                self.activationMatrix = self._updateActivationDivergent()
+            elif self.distance_measure == DistanceType.DIVERGENCE:
+                self.activation_matrix = self._update_activation_divergent()
 
-        # Update template vectors
-        if self.ShouldUpdateTemplate:
-            if self.distanceMeasure == DistanceType.Euclidean:
-                self.templateVectors = self._updateTemplateEuclidean()
+        # update template vectors
+        if self.should_update_template:
+            if self.distance_measure == DistanceType.EUCLIDEAN:
+                self.templates = self._update_template_euclidean()
 
-            elif self.distanceMeasure == DistanceType.Divergence:
-                self.templateVectors = self._updateTemplateDivergence()
+            elif self.distance_measure == DistanceType.DIVERGENCE:
+                self.templates = self._update_template_divergence()
 
-    def _updateActivationEuclidean(self):
+    def _update_activation_euclidean(self):
         # make a new matrix to store results
-        activationCopy = np.empty_like(self.activationMatrix)
+        activation_copy = np.empty_like(self.activation_matrix)
 
         # store in memory so we don't have to do n*m calculations.
-        templateT = self.templateVectors.T
-        temp_T_stft = np.dot(templateT, self.stft)
-        temp_T_act = np.dot(np.dot(templateT, self.templateVectors), self.activationMatrix)
+        template_T = self.templates.T
+        temp_T_stft = np.dot(template_T, self.stft)
+        temp_T_act = np.dot(np.dot(template_T, self.templates), self.activation_matrix)
 
         # Eq. 4, H update from [1]
-        for indices, val in np.ndenumerate(self.activationMatrix):
+        for indices, val in np.ndenumerate(self.activation_matrix):
             result = temp_T_stft[indices]
             result /= temp_T_act[indices]
-            result *= self.activationMatrix[indices]
-            activationCopy[indices] = result
+            result *= self.activation_matrix[indices]
+            activation_copy[indices] = result
 
-        return activationCopy
+        return activation_copy
 
-    def _updateTemplateEuclidean(self):
+    def _update_template_euclidean(self):
         # make a new matrix to store results
-        templateCopy = np.empty_like(self.templateVectors)
+        template_copy = np.empty_like(self.templates)
 
         # store in memory so we don't have to do n*m calculations.
-        activationT = self.activationMatrix.T
-        stft_act_T = np.dot(self.stft, activationT)
-        temp_act = np.dot(np.dot(self.templateVectors, self.activationMatrix), activationT)
+        activation_T = self.activation_matrix.T
+        stft_act_T = np.dot(self.stft, activation_T)
+        temp_act = np.dot(np.dot(self.templates, self.activation_matrix), activation_T)
 
         # Eq. 4, W update from [1]
-        for indices, val in np.ndenumerate(self.templateVectors):
+        for indices, val in np.ndenumerate(self.templates):
             result = stft_act_T[indices]
             result /= temp_act[indices]
-            result *= self.templateVectors[indices]
-            templateCopy[indices] = result
+            result *= self.templates[indices]
+            template_copy[indices] = result
 
-        return templateCopy
+        return template_copy
 
-    def _updateActivationDivergent(self):
+    def _update_activation_divergent(self):
         # make a new matrix to store results
-        activationCopy = np.empty_like(self.activationMatrix)
+        activation_copy = np.empty_like(self.activation_matrix)
 
-        dot = np.dot(self.templateVectors, self.activationMatrix)
+        dot = np.dot(self.templates, self.activation_matrix)
 
         # Eq. 5, H update from [1]
-        for indices, val in np.ndenumerate(self.activationMatrix):
+        for indices, val in np.ndenumerate(self.activation_matrix):
             (a, mu) = indices
-            result = sum((self.templateVectors[i][a] * self.stft[i][mu]) / dot[i][mu]
-                         for i in range(self.templateVectors.shape[0]))
-            result /= sum(self.templateVectors[k][a] for k in range(self.templateVectors.shape[0]))
-            result *= self.activationMatrix[indices]
-            activationCopy[indices] = result
+            result = sum((self.templates[i][a] * self.stft[i][mu]) / dot[i][mu]
+                         for i in range(self.templates.shape[0]))
+            result /= sum(self.templates[k][a] for k in range(self.templates.shape[0]))
+            result *= self.activation_matrix[indices]
+            activation_copy[indices] = result
 
-        return activationCopy
+        return activation_copy
 
-    def _updateTemplateDivergence(self):
+    def _update_template_divergence(self):
         # make a new matrix to store results
-        templateCopy = np.empty_like(self.templateVectors)
+        template_copy = np.empty_like(self.templates)
 
-        dot = np.dot(self.templateVectors, self.activationMatrix)
+        dot = np.dot(self.templates, self.activation_matrix)
 
         # Eq. 5, W update from [1]
-        for indices, val in np.ndenumerate(self.templateVectors):
+        for indices, val in np.ndenumerate(self.templates):
             (i, a) = indices
-            result = sum((self.activationMatrix[a][mu] * self.stft[i][mu]) / dot[i][mu]
-                         for mu in range(self.activationMatrix.shape[1]))
-            result /= sum(self.activationMatrix[a][nu] for nu in range(self.activationMatrix.shape[1]))
-            result *= self.templateVectors[indices]
-            templateCopy[indices] = result
+            result = sum((self.activation_matrix[a][mu] * self.stft[i][mu]) / dot[i][mu]
+                         for mu in range(self.activation_matrix.shape[1]))
+            result /= sum(self.activation_matrix[a][nu] for nu in range(self.activation_matrix.shape[1]))
+            result *= self.templates[indices]
+            template_copy[indices] = result
 
-        return templateCopy
+        return template_copy
 
-    def _euclideanDistance(self):
+    def _euclidean_distance(self):
         try:
-            mixture = np.dot(self.templateVectors, self.activationMatrix)
+            mixture = np.dot(self.templates, self.activation_matrix)
         except:
-            print self.activationMatrix.shape, self.templateVectors.shape
+            print self.activation_matrix.shape, self.templates.shape
             return
 
         if mixture.shape != self.stft.shape:
@@ -206,7 +207,7 @@ class Nmf(SeparationBase.SeparationBase):
         return sum((self.stft[index] - val) ** 2 for index, val in np.ndenumerate(mixture))
 
     def _divergence(self):
-        mixture = np.dot(self.activationMatrix, self.templateVectors)
+        mixture = np.dot(self.activation_matrix, self.templates)
 
         if mixture.shape != self.stft.shape:
             raise Exception('Something went wrong! Recombining the activation matrix '
@@ -216,31 +217,32 @@ class Nmf(SeparationBase.SeparationBase):
             (self.stft[index] * math.log(self.stft[index] / val, 10) + self.stft[index] - val)
             for index, val in np.ndenumerate(mixture))
 
-    def MakeAudioSignals(self):
+    def make_audio_signals(self):
+        # TODO: this!
         raise NotImplementedError('This does not work yet.')
         signals = []
-        for stft in self.RecombineCalculatedMatrices():
+        for stft in self.recombine_calculated_matrices():
             signal = AudioSignal.AudioSignal(stft=stft)
-            signal.iSTFT()
+            signal.do_iSTFT()
             signals.append(signal)
         return signals
 
-    def RecombineCalculatedMatrices(self):
-        newMatrices = []
-        for n in range(self.nBases):
-            matrix = np.empty_like(self.activationMatrix)
-            matrix[n,] = self.activationMatrix[n,]
+    def recombine_calculated_matrices(self):
+        new_matrices = []
+        for n in range(self.num_bases):
+            matrix = np.empty_like(self.activation_matrix)
+            matrix[n,] = self.activation_matrix[n,]
 
-            newStft = np.dot(self.templateVectors, matrix)
-            newMatrices.append(newStft)
-        return newMatrices
+            new_stft = np.dot(self.templates, matrix)
+            new_matrices.append(new_stft)
+        return new_matrices
 
-    def RandomizeInputMatrices(self, shouldNormalize=False):
-        self._randomizeMatrix(self.activationMatrix, shouldNormalize)
-        self._randomizeMatrix(self.templateVectors, shouldNormalize)
+    def randomize_input_matrices(self, shouldNormalize=False):
+        self._randomize_matrix(self.activation_matrix, shouldNormalize)
+        self._randomize_matrix(self.templates, shouldNormalize)
 
     @staticmethod
-    def _randomizeMatrix(M, shouldNormalize=False):
+    def _randomize_matrix(M, shouldNormalize=False):
         for i, row in enumerate(M):
             for j, col in enumerate(row):
                 M[i][j] = random.random()
@@ -249,14 +251,13 @@ class Nmf(SeparationBase.SeparationBase):
                     M[i][j] *= Constants.DEFAULT_MAX_VAL
         return M
 
-    def Plot(self, outputFile):
+    def plot(self, outputFile, **kwargs):
         raise NotImplementedError('Sorry, you cannot do this yet.')
 
 
 class DistanceType:
-    Euclidean = 'Euclidean'
-    Divergence = 'Divergence'
-    UserDefined = 'UserDefined'
-    DEFAULT = Euclidean
+    EUCLIDEAN = 'euclidean'
+    DIVERGENCE = 'divergence'
+    DEFAULT = EUCLIDEAN
     def __init__(self):
         pass
