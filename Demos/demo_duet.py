@@ -5,31 +5,31 @@ from nussl import Duet, AudioSignal, WindowAttributes, WindowType
 
 def main():
     # Load input file
-    inputFileName = '../Input/dev1_female3_inst_mix.wav'
-    signal = AudioSignal(pathToInputFile=inputFileName)
+    input_file_name = '../Input/dev1_female3_inst_mix.wav'
+    signal = AudioSignal(path_to_input_file=input_file_name)
 
     if not os.path.exists('../Output/'):
         os.mkdir('../Output')
 
     # set up FFT window attributes
-    win = WindowAttributes(signal.SampleRate)
-    win.WindowLength = 4096
-    win.WindowType = WindowType.HAMMING
-    win.WindowOverlap = 0.5 * win.WindowLength
+    win = WindowAttributes(signal.sample_rate)
+    win.window_length = 4096
+    win.window_type = WindowType.HAMMING
+    win.window_overlap = 0.5 * win.window_length
 
     # Set up DUET algorithm and run
-    duet = Duet(signal, aMin=-3, aMax=3, aNum=50, dMin=-3, dMax=3, dNum=50, threshold=0.2, aMinDistance=5,
-                dMinDistance=5, nSources=3, windowAttributes=win)
-    duet.Run()
-    duet.Plot('../Output/2d.png')
-    duet.Plot('../Output/3d.png', three_d_plot=True)
+    duet = Duet(signal, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50, threshold=0.2, a_min_distance=5,
+                d_min_distance=5, num_sources=3, window_attributes=win)
+    duet.run()
+    duet.plot('../Output/2d.png')
+    duet.plot('../Output/3d.png', three_d_plot=True)
 
     # Create output files
-    outputFileStem = '../Output/duet_source'
+    output_name_stem = '../Output/duet_source'
     i = 1
-    for s in duet.MakeAudioSignals():
-        outputFileName = outputFileStem + str(i) + '.wav'
-        s.WriteAudioFile(outputFileName)
+    for s in duet.make_audio_signals():
+        output_file_name = output_name_stem + str(i) + '.wav'
+        s.write_audio_to_file(output_file_name)
         i += 1
 
 

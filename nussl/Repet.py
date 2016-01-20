@@ -1,25 +1,5 @@
-"""
-This class implements the REpeating Pattern Extraction Technique algorithm using the
-Similarity Matrix (REPET-SIM). REPET is a simple method for separating the repeating
-background from the non-repeating foreground in a piece of audio mixture. 
-REPET-SIM is a generalization of REPET, which looks for similarities instead of 
-periodicities.
-
-See http://music.eecs.northwestern.edu/research.php?project=repet
-
-References:
-[1] Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," 
-    US20130064379 A1, US 13/612,413, March 14, 2013.
-[2] Zafar Rafii and Bryan Pardo. 
-    "Music/Voice Separation using the Similarity Matrix," 
-    13th International Society on Music Information Retrieval, 
-    Porto, Portugal, October 8-12, 2012.
-
-Authors: Fatameh Pishdadian and Ethan Manilow
-Interactive Audio Lab
-Northwestern University, 2015
-
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import scipy.fftpack as scifft
@@ -31,57 +11,81 @@ import AudioSignal
 
 
 class Repet(SeparationBase.SeparationBase):
-    def __init__(self, audioSignal, Type=None, windowAttributes=None, sampleRate=None,
-                 similarityThreshold=None, MinDistanceBetweenFrames=None, MaxRepeatingFrames=None,
-                 MinPeriod=None, MaxPeriod=None, Period=None, HighPassCutoff=None):
-        self.__dict__.update(locals())
-        super(Repet, self).__init__(windowAttributes=windowAttributes, sampleRate=sampleRate,
-                                    audioSignal=audioSignal)
-        self.type = RepetType.DEFAULT if Type is None else Type
-        self.HighPassCutoff = 100 if HighPassCutoff is None else HighPassCutoff
+    """
+    This class implements the REpeating Pattern Extraction Technique algorithm using the
+    Similarity Matrix (REPET-SIM). REPET is a simple method for separating the repeating
+    background from the non-repeating foreground in a piece of audio mixture.
+    REPET-SIM is a generalization of REPET, which looks for similarities instead of
+    periodicities.
 
-        if self.type == RepetType.SIM:
-            # if similarityThreshold == 0:
-            #     raise Warning('Using default value of 1 for similarityThreshold.')
-            # if MinDistanceBetweenFrames == 1:
-            #     raise Warning('Using default value of 0 for MinDistanceBetweenFrames.')
-            # if MaxRepeatingFrames == 100:
+    See http://music.eecs.northwestern.edu/research.php?project=repet
+
+    References:
+    [1] Zafar Rafii and Bryan Pardo. "Audio Separation System and Method,"
+        US20130064379 A1, US 13/612,413, March 14, 2013.
+    [2] Zafar Rafii and Bryan Pardo.
+        "Music/Voice Separation using the Similarity Matrix,"
+        13th International Society on Music Information Retrieval,
+        Porto, Portugal, October 8-12, 2012.
+
+    Authors: Fatameh Pishdadian and Ethan Manilow
+    Interactive Audio Lab
+    Northwestern University, 2015
+
+    """
+    def __init__(self, audio_signal, repet_type=None, window_attributes=None, sample_rate=None,
+                 similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
+                 min_period=None, max_period=None, period=None, high_pass_cutoff=None):
+        self.__dict__.update(locals())
+        super(Repet, self).__init__(window_attributes=window_attributes, sample_rate=sample_rate,
+                                    audio_signal=audio_signal)
+        self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
+        self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
+
+        if repet_type not in RepetType.all_types:
+            raise TypeError('\'repet_type\' in Repet() constructor cannot be {}'.format(repet_type))
+
+        if self.repet_type == RepetType.SIM:
+            # if similarity_threshold == 0:
+            #     raise Warning('Using default value of 1 for similarity_threshold.')
+            # if min_distance_between_frames == 1:
+            #     raise Warning('Using default value of 0 for min_distance_between_frames.')
+            # if max_repeating_frames == 100:
             #     raise Warning('Using default value of 100 for maxRepeating frames.')
 
-            self.SimilarityThreshold = 0 if similarityThreshold is None else similarityThreshold
-            self.MinDistanceBetweenFrames = 1 if MinDistanceBetweenFrames is None else MinDistanceBetweenFrames
-            self.MaxRepeatingFrames = 10 if MaxRepeatingFrames is None else MaxRepeatingFrames
-        elif self.type == RepetType.ORIGINAL:
+            self.similarity_threshold = 0 if similarity_threshold is None else similarity_threshold
+            self.min_distance_between_frames = 1 if min_distance_between_frames is None else min_distance_between_frames
+            self.max_repeating_frames = 10 if max_repeating_frames is None else max_repeating_frames
+        elif self.repet_type == RepetType.ORIGINAL:
 
-            if Period is None:
-                self.MinPeriod = 0.8 if MinPeriod is None else MinPeriod
-                self.MaxPeriod = min(8, self.Mixture.SignalLength / 3) if MaxPeriod is None else MaxPeriod
-                self.MinPeriod = self._updatePeriod(self.MinPeriod)
-                self.MaxPeriod = self._updatePeriod(self.MaxPeriod)
+            if period is None:
+                self.min_period = 0.8 if min_period is None else min_period
+                self.max_period = min(8, self.audio_signal.signal_length / 3) if max_period is None else max_period
+                self.min_period = self._update_period(self.min_period)
+                self.max_period = self._update_period(self.max_period)
             else:
-                self.Period = Period
-                self.Period = self._updatePeriod(self.Period)
+                self.period = period
+                self.period = self._update_period(self.period)
 
-        elif self.type == RepetType.ADAPTIVE:
+        elif self.repet_type == RepetType.ADAPTIVE:
             raise NotImplementedError('Not allowed to do this yet!')
-        else:
-            raise TypeError('\'Type\' in Repet() constructor cannot be {}'.format(Type))
-        self.Verbose = False
+
+        self.verbose = False
 
     # @property
-    def Run(self):
+    def run(self):
         """
         This runs the REPET algorithm
         
         Inputs:
         x: audio mixture (M by N) containing M channels and N time samples
         fs: sampling frequency of the audio signal
-        specparam (optional): list containing STFT parameters including in order the window length, 
+        specparam (optional): list containing do_STFT parameters including in order the window length,
                               window type, overlap in # of samples, and # of fft points.
                               default: window length: 40 mv
                                        window type: Hamming
                                        overlap: window length/2
-                                       nfft: window length
+                                       num_fft_bins: window length
         par: (optional) Numpy array containing similarity parameters (3 values) (default: [0,1,100])
               -- par[0]: minimum threshold (in [0,1]) for the similarity measure 
                   within repeating frames
@@ -103,99 +107,99 @@ class Repet(SeparationBase.SeparationBase):
         """
 
         # unpack window parameters
-        win_len, win_type, win_ovp, nfft = self.WindowAttributes.WindowLength, self.WindowAttributes.WindowType, \
-                                           self.WindowAttributes.WindowOverlap, self.WindowAttributes.Nfft
+        win_len, win_type, win_ovp, nfft = self.window_attributes.window_length, self.window_attributes.window_type, \
+                                           self.window_attributes.window_overlap, self.window_attributes.num_fft
 
         # High pass filter cutoff freq. (in # of freq. bins)
-        self.HighPassCutoff = np.ceil(float(self.HighPassCutoff) * (self.WindowAttributes.Nfft - 1) / self.SampleRate)
+        self.high_pass_cutoff = np.ceil(float(self.high_pass_cutoff) * (nfft - 1) / self.sample_rate)
 
-        self._computeSpectrum()
+        self._compute_spectrum()
 
-        # Run the specific algorithm
+        # run the specific algorithm
         mask = None
         S = None
-        if self.type == RepetType.SIM:
-            S = self._doRepetSim()
-            mask = self.ComputeRepeatingMaskSim
+        if self.repet_type == RepetType.SIM:
+            S = self._do_repet_sim()
+            mask = self.compute_repeating_mask_sim
 
-        elif self.type == RepetType.ORIGINAL:
-            S = self._doRepetOriginal()
-            mask = self.ComputeRepeatingMaskBeat
+        elif self.repet_type == RepetType.ORIGINAL:
+            S = self._do_repet_original()
+            mask = self.compute_repeating_mask_with_beat_spectrum
 
-        elif self.type == RepetType.ADAPTIVE:
+        elif self.repet_type == RepetType.ADAPTIVE:
             raise NotImplementedError('How did you get into this state????')
 
         # separate the mixture background by masking
-        N, M = self.Mixture.AudioData.shape
-        self.bkgd = np.zeros_like(self.Mixture.AudioData)
+        N, M = self.audio_signal.audio_data.shape
+        self.bkgd = np.zeros_like(self.audio_signal.audio_data)
         for i in range(N):
-            RepMask = mask(self.RealSpectrum[:, :, i], S)
-            RepMask[1:self.HighPassCutoff, :] = 1  # high-pass filter the foreground
-            XMi = RepMask * self.ComplexSpectrum[:, :, i]
-            yi = FftUtils.f_istft(XMi, win_len, win_type, win_ovp, self.SampleRate)[0]
+            RepMask = mask(self.real_spectrum[:, :, i], S)
+            RepMask[1:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            XMi = RepMask * self.complex_spectrum[:, :, i]
+            yi = FftUtils.f_istft(XMi, win_len, win_type, win_ovp, self.sample_rate)[0]
             self.bkgd[i,] = yi[0:M]
 
         # self.bkgd = self.bkgd.T
-        self.bkgd = AudioSignal.AudioSignal(timeSeries=self.bkgd)
+        self.bkgd = AudioSignal.AudioSignal(audio_data_array=self.bkgd)
 
         return self.bkgd
 
-    def _computeSpectrum(self):
+    def _compute_spectrum(self):
 
         # compute the spectrograms of all channels
-        N, M = self.Mixture.AudioData.shape
-        self.ComplexSpectrum = FftUtils.f_stft(self.Mixture.getChannel(1), windowAttributes=self.WindowAttributes,
-                                               sampleRate=self.SampleRate)[0]
+        N, M = self.audio_signal.audio_data.shape
+        self.complex_spectrum = FftUtils.f_stft(self.audio_signal.get_channel(1),
+                                                window_attributes=self.window_attributes, sample_rate=self.sample_rate)[0]
 
         for i in range(1, N):
-            Sx = FftUtils.f_stft(self.Mixture.getChannel(i), windowAttributes=self.WindowAttributes,
-                                 sampleRate=self.SampleRate)[0]
-            self.ComplexSpectrum = np.dstack([self.ComplexSpectrum, Sx])
+            Sx = FftUtils.f_stft(self.audio_signal.get_channel(i), window_attributes=self.window_attributes,
+                                 sample_rate=self.sample_rate)[0]
+            self.complex_spectrum = np.dstack([self.complex_spectrum, Sx])
 
-        self.RealSpectrum = np.abs(self.ComplexSpectrum)
+        self.real_spectrum = np.abs(self.complex_spectrum)
         if N == 1:
-            self.ComplexSpectrum = self.ComplexSpectrum[:, :, np.newaxis]
-            self.RealSpectrum = self.RealSpectrum[:, :, np.newaxis]
+            self.complex_spectrum = self.complex_spectrum[:, :, np.newaxis]
+            self.real_spectrum = self.real_spectrum[:, :, np.newaxis]
 
-    def GetSimilarityMatrix(self):
+    def get_similarity_matrix(self):
         """
         Calculates and returns the similarity matrix for the audio file associated with this object
         :return: similarity matrix
         """
-        self._computeSpectrum()
-        V = np.mean(self.RealSpectrum, axis=2)
-        self.SimilarityMatrix = self.ComputeSimilarityMatrix(V)
-        return self.SimilarityMatrix
+        self._compute_spectrum()
+        V = np.mean(self.real_spectrum, axis=2)
+        self.similarity_matrix = self.compute_similarity_matrix(V)
+        return self.similarity_matrix
 
-    def GetBeatSpectrum(self):
+    def get_beat_spectrum(self):
         """
         Calculates and returns the beat spectrum for the audio file associated with this object
         :return: beat spectrum
         """
-        self._computeSpectrum()
-        self.BeatSpectrum = self.ComputeBeatSpectrum(np.mean(self.RealSpectrum ** 2, axis=2))
-        return self.BeatSpectrum
+        self._compute_spectrum()
+        self.beat_spectrum = self.compute_beat_spectrum(np.mean(self.real_spectrum ** 2, axis=2))
+        return self.beat_spectrum
 
-    def _doRepetSim(self):
+    def _do_repet_sim(self):
         # unpack window parameters
-        len, type, ovp, nfft = self.WindowAttributes.WindowLength, self.WindowAttributes.WindowType, \
-                               self.WindowAttributes.WindowOverlap, self.WindowAttributes.Nfft
+        len, type, ovp, nfft = self.window_attributes.window_length, self.window_attributes.window_type, \
+                               self.window_attributes.window_overlap, self.window_attributes.num_fft
 
-        Vavg = np.mean(self.RealSpectrum, axis=2)
-        S = self.ComputeSimilarityMatrix(Vavg)
+        Vavg = np.mean(self.real_spectrum, axis=2)
+        S = self.compute_similarity_matrix(Vavg)
 
-        self.MinDistanceBetweenFrames = np.round(self.MinDistanceBetweenFrames * self.SampleRate / ovp)
-        S = self.FindSimilarityIndices(S)
+        self.min_distance_between_frames = np.round(self.min_distance_between_frames * self.sample_rate / ovp)
+        S = self.find_similarity_indices(S)
 
         return S
 
-    def _doRepetOriginal(self):
-        self.BeatSpectrum = self.ComputeBeatSpectrum(np.mean(self.RealSpectrum ** 2, axis=2))
-        self.RepeatingPeriod = self.FindRepeatingPeriod(self.BeatSpectrum, self.MinPeriod, self.MaxPeriod)
-        return self.RepeatingPeriod
+    def _do_repet_original(self):
+        self.beat_spectrum = self.compute_beat_spectrum(np.mean(self.real_spectrum ** 2, axis=2))
+        self.repeating_period = self.find_repeating_period(self.beat_spectrum, self.min_period, self.max_period)
+        return self.repeating_period
 
     @staticmethod
-    def ComputeSimilarityMatrix(X):
+    def compute_similarity_matrix(X):
         """
         Computes the similarity matrix using the cosine similarity for input matrix X.
         
@@ -218,7 +222,7 @@ class Repet(SeparationBase.SeparationBase):
         S = np.dot(X, X.T)
         return S
 
-    def FindSimilarityIndices(self, S):
+    def find_similarity_indices(self, S):
         """
         Finds the similarity indices for all time frames from the similarity matrix
         
@@ -235,18 +239,18 @@ class Repet(SeparationBase.SeparationBase):
         """
 
         Lt = S.shape[0]
-        I = np.zeros((Lt, self.MaxRepeatingFrames))
+        I = np.zeros((Lt, self.max_repeating_frames))
 
         for i in range(0, Lt):
-            pind = self.FindPeaks(S[i, :], self.SimilarityThreshold,
-                                  self.MinDistanceBetweenFrames, self.MaxRepeatingFrames)
+            pind = self.find_peaks(S[i, :], self.similarity_threshold,
+                                  self.min_distance_between_frames, self.max_repeating_frames)
             I[i, :] = pind
 
         return I
 
-    def FindPeaks(self, data, min_thr=0.5, min_dist=None, max_num=1):
+    def find_peaks(self, data, min_thr=0.5, min_dist=None, max_num=1):
         """
-        The 'FindPeaks' function receives a row vector array of positive numerical
+        The 'find_peaks' function receives a row vector array of positive numerical
         values (in [0,1]) and finds the peak values and corresponding indices.
         
         Inputs: 
@@ -286,7 +290,7 @@ class Repet(SeparationBase.SeparationBase):
         return peak_indices
 
     @staticmethod
-    def ComputeRepeatingMaskSim(V, I):
+    def compute_repeating_mask_sim(V, I):
         """
             Computes the soft mask for the repeating part using
             the magnitude spectrogram and the similarity indices
@@ -315,9 +319,9 @@ class Repet(SeparationBase.SeparationBase):
         return M
 
     @staticmethod
-    def ComputeBeatSpectrum(X):
+    def compute_beat_spectrum(X):
         """
-        The ComputeBeatSpectrum function computes the beat spectrum, which is the average (over freq.s)
+        The compute_beat_spectrum function computes the beat spectrum, which is the average (over freq.s)
         of the autocorrelation matrix of a one-sided spectrogram. The autocorrelation
         matrix is computed by taking the autocorrelation of each row of the spectrogram
         and dismissing the symmetric half.
@@ -341,9 +345,9 @@ class Repet(SeparationBase.SeparationBase):
         return b
 
     @staticmethod
-    def FindRepeatingPeriod(beat_spectrum, min_period, max_period):
+    def find_repeating_period(beat_spectrum, min_period, max_period):
         """
-        The FindRepeatingPeriod function computes the repeating period of the sound signal
+        The find_repeating_period function computes the repeating period of the sound signal
         using the beat spectrum calculated from the spectrogram.
         :param beat_spectrum: input beat spectrum array
         :param min_period: minimum possible period value
@@ -358,9 +362,9 @@ class Repet(SeparationBase.SeparationBase):
         return period
 
     @staticmethod
-    def ComputeRepeatingMaskBeat(V, p):
+    def compute_repeating_mask_with_beat_spectrum(V, p):
         """
-        The ComputeRepeatingMaskBeat function computes the soft mask for the repeating part using
+        The compute_repeating_mask_with_beat_spectrum function computes the soft mask for the repeating part using
         the magnitude spectrogram and the repeating period
 
         Inputs:
@@ -381,26 +385,26 @@ class Repet(SeparationBase.SeparationBase):
         W = np.reshape(np.tile(W, (r, 1)), (r * p, Lf)).T
         W = W[:, 0:Lt]
 
-        Wrow = W.flatten() # np.reshape(W, (1, Lf * Lt))
-        Vrow = V.flatten() # np.reshape(V, (1, Lf * Lt))
+        Wrow = W.flatten()  # np.reshape(W, (1, Lf * Lt))
+        Vrow = V.flatten()  # np.reshape(V, (1, Lf * Lt))
         W = np.min(np.vstack([Wrow, Vrow]), axis=0)
         W = np.reshape(W, (Lf, Lt))
         M = (W + Constants.EPSILON) / (V + Constants.EPSILON)
 
         return M
 
-    def _updatePeriod(self, period):
+    def _update_period(self, period):
         period = float(period)
-        result = period * self.Mixture.SampleRate
-        result += self.WindowAttributes.WindowLength / self.WindowAttributes.WindowOverlap - 1
-        result /= self.WindowAttributes.WindowOverlap
+        result = period * self.audio_signal.sample_rate
+        result += self.window_attributes.window_length / self.window_attributes.window_overlap - 1
+        result /= self.window_attributes.window_overlap
         return np.ceil(result)
 
-    def Plot(self, outputFile):
+    def plot(self, outputFile, **kwargs):
         raise NotImplementedError('You shouldn\'t be calling this yet...')
 
-    def MakeAudioSignals(self):
-        self.fgnd = self.Mixture - self.bkgd
+    def make_audio_signals(self):
+        self.fgnd = self.audio_signal - self.bkgd
         return [self.bkgd, self.fgnd]
 
 
@@ -409,6 +413,7 @@ class RepetType():
     SIM = 'sim'
     ADAPTIVE = 'adaptive'
     DEFAULT = ORIGINAL
+    all_types = [ORIGINAL, SIM, ADAPTIVE]
 
     def __init__(self):
         pass

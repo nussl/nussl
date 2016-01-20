@@ -33,20 +33,20 @@ def simpleExample():
     # Set up NU NMF
     nBases = 2
     nmf = nussl.Nmf(mixture, nBases)
-    nmf.shouldUseEpsilon = False
-    nmf.maxNumIterations = 3000
-    nmf.distanceMeasure = nussl.DistanceType.Euclidean
+    nmf.should_use_epsilon = False
+    nmf.max_num_iterations = 3000
+    nmf.distance_measure = nussl.DistanceType.EUCLIDEAN
 
-    # Run NU NMF
+    # run NU NMF
     start = time.time()
-    nmf.Run()
+    nmf.run()
     print '{0:.3f}'.format(time.time() - start), 'seconds for NUSSL'
 
     print 'original mixture =\n', mixture
-    print 'my mixture =\n', np.dot(nmf.templateVectors, nmf.activationMatrix)
+    print 'my mixture =\n', np.dot(nmf.templates, nmf.activation_matrix)
 
     print '    ', '-' * 10, 'NU NMF ', '-' * 10
-    signals = nmf.RecombineCalculatedMatrices()
+    signals = nmf.recombine_calculated_matrices()
     for sig in signals:
         print sig
 
@@ -74,23 +74,23 @@ def audioExample():
 
     # Combine notes into one file and save target
     bothNotesPre = firstNote + secondNote
-    bothNotesPre.WriteAudioFile('../Output/combined_preNMF.wav')
+    bothNotesPre.write_audio_to_file('../Output/combined_preNMF.wav')
 
     bothNotesForNMF = firstNote + secondNote
-    _, stft, _, _ = bothNotesForNMF.STFT()
+    _, stft, _, _ = bothNotesForNMF.do_STFT()
 
     # Make some 'guesses'
     jitter = 0.2
     max = 2 ** 15
-    for i, val in np.ndenumerate(firstNote.AudioData):
-        firstNote.AudioData[i] += int(float(random.random() * jitter) * max)
-    _, firstStft, _, _ = firstNote.STFT()
+    for i, val in np.ndenumerate(firstNote.audio_data):
+        firstNote.audio_data[i] += int(float(random.random() * jitter) * max)
+    _, firstStft, _, _ = firstNote.do_STFT()
     firstGuessAct = np.sum(firstStft, axis=0)
     firstGuessVec = np.sum(firstStft, axis=1)
 
-    for i, val in np.ndenumerate(secondNote.AudioData):
-        secondNote.AudioData[i] += int(float(random.random() * jitter) * max)
-    _, secondStft, _, _ = secondNote.STFT()
+    for i, val in np.ndenumerate(secondNote.audio_data):
+        secondNote.audio_data[i] += int(float(random.random() * jitter) * max)
+    _, secondStft, _, _ = secondNote.do_STFT()
     secondGuessAct = np.sum(secondStft, axis=0)
     secondGuessVec = np.sum(secondStft, axis=1)
 
@@ -99,24 +99,24 @@ def audioExample():
     GuessAct = np.array([firstGuessAct, secondGuessAct])
 
     # run NMF
-    nmf = nussl.Nmf(stft, numNotes, activationMatrix=GuessAct, templateVectors=GuessVec)
-    nmf.maxNumIterations = 100
+    nmf = nussl.Nmf(stft, numNotes, activation_matrix=GuessAct, templates=GuessVec)
+    nmf.max_num_iterations = 100
     start = time.time()
-    nmf.Run()
+    nmf.run()
     print '{0:.3f}'.format(time.time() - start), 'seconds for NUSSL'
 
     # Make output files
     outFileNameBase = '../Output/NMFoutput_'
     i = 1
-    newSignals = nmf.MakeAudioSignals()
+    newSignals = nmf.make_audio_signals()
     for signal in newSignals:
         outFileName = outFileNameBase + str(i) + '.wav'
-        signal.WriteAudioFile(outFileName)
+        signal.write_audio_to_file(outFileName)
         i += 1
 
     # Recombine signals and make a new output file
     recombined = newSignals[0] + newSignals[1]
-    recombined.WriteAudioFile('../Output/combined_postNMF.wav')
+    recombined.write_audio_to_file('../Output/combined_postNMF.wav')
 
 
 def sineExample():
@@ -129,17 +129,17 @@ def sineExample():
 
     sines = np.concatenate((sin1, sin2, sin3))
 
-    # load into AudioSignal object and get STFT
-    signal = nussl.AudioSignal(timeSeries=sines)
-    _, stft, _, _ = signal.STFT()
+    # load into AudioSignal object and get do_STFT
+    signal = nussl.AudioSignal(audio_data_array=sines)
+    _, stft, _, _ = signal.do_STFT()
 
     # Start NMF and time it
     start = time.time()
     nmf = nussl.Nmf(stft, 3)
-    activation, dictionary = nmf.Run()
+    activation, dictionary = nmf.run()
     print '{0:.3f}'.format(time.time() - start), 'sec'
 
-    # Plot results
+    # plot results
     plt.imshow(activation, interpolation='none', aspect='auto')
     ax = plt.axes()
     ya = ax.get_yaxis()

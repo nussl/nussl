@@ -42,18 +42,15 @@ mkplot = 1
 fmax = 5000
 
 plt.figure(1)
-S1, Ps1, F, T = FftUtils.f_stft(s1, nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
-                                mkplot=mkplot)
+S1, Ps1, F, T = FftUtils.f_stft(s1, num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp, sample_rate=fs)
 plt.title('Source 1')
 
 plt.figure(2)
-S2, Ps2, F, T = FftUtils.f_stft(s2, nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
-                                mkplot=mkplot)
+S2, Ps2, F, T = FftUtils.f_stft(s2, num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp, sample_rate=fs)
 plt.title('Source 2')
 
 plt.figure(3)
-X, Px, F, T = FftUtils.f_stft(x, nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
-                              mkplot=mkplot)
+X, Px, F, T = FftUtils.f_stft(x, num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp, sample_rate=fs)
 plt.title('Mixture')
 
 # Make a mask

@@ -35,7 +35,7 @@ fmax = 5000
 
 # plt.figure(1)
 # plt.title('Mixture')
-Sm = f_stft(np.mat(x), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs, mkplot=mkplot)
+Sm = f_stft(np.mat(x), num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp, sample_rate=fs)
 
 # separation
 start_time = time.clock()
@@ -58,13 +58,11 @@ print time.clock() - start_time, "seconds"
 # plt.figure(4)
 # plt.subplot(2, 1, 1)
 # plt.title('Background Spectrogram')
-Sb = f_stft(np.mat(y_org), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
-            mkplot=mkplot)
+Sb = f_stft(np.mat(y_org), num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp, sample_rate=fs)
 # plt.show()
 # plt.subplot(2, 1, 2)
 # plt.title('Foreground Spectrogram')
-Sf = f_stft(np.mat(x - y_org), nFfts=nfft, fmax=fmax, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs,
-            mkplot=mkplot)
+Sf = f_stft(np.mat(x - y_org), num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp, sample_rate=fs)
 # plt.show()
 
 # check whether the separated spectrograms add up to the original spectrogram
