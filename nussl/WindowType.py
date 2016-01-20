@@ -4,5 +4,6 @@ class WindowType:
     HANNING = 'Hanning'
     BLACKMAN = 'Blackman'
     DEFAULT = HAMMING
+
     def __init__(self):
         pass
