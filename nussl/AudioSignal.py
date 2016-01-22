@@ -199,7 +199,7 @@ class AudioSignal(object):
 
         self.time = np.array((1. / self.sample_rate) * np.arange(self.signal_length))
 
-        def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
+    def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
         """Outputs the audio signal to a .wav file
 
         Parameters:
