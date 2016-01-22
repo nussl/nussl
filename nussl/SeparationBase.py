@@ -1,12 +1,5 @@
-"""
-Base class for all separation algorithms.
-Do not call this. It will not do anything.
-
-Authors: Fatameh Pishdadian and Ethan Manilow
-Interactive Audio Lab
-Northwestern University, 2015
-
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import WindowAttributes
 import Constants
@@ -15,43 +8,49 @@ import AudioSignal
 
 class SeparationBase(object):
     """
-    Base class for all separation algorithms
+    Base class for all separation algorithms.
+    Do not call this. It will not do anything.
+
+    Authors: Fatameh Pishdadian and Ethan Manilow
+    Interactive Audio Lab
+    Northwestern University, 2015
+
     """
 
-    def __init__(self, windowAttributes=None, sampleRate=None, audioSignal=None):
+    def __init__(self, window_attributes=None, sample_rate=None, audio_signal=None):
 
-        if sampleRate is not None:
-            self.SampleRate = sampleRate
+        if sample_rate is not None:
+            self.sample_rate = sample_rate
         else:
-            self.SampleRate = Constants.DEFAULT_SAMPLE_RATE
+            self.sample_rate = Constants.DEFAULT_SAMPLE_RATE
 
-        if windowAttributes is not None:
-            self.WindowAttributes = windowAttributes
+        if window_attributes is not None:
+            self.window_attributes = window_attributes
         else:
-            self.WindowAttributes = WindowAttributes.WindowAttributes(self.SampleRate)
+            self.window_attributes = WindowAttributes.WindowAttributes(self.sample_rate)
 
-        if audioSignal is not None:
-            self.Mixture = audioSignal
+        if audio_signal is not None:
+            self.audio_signal = audio_signal
         else:
-            self.Mixture = AudioSignal.AudioSignal()
+            self.audio_signal = AudioSignal.AudioSignal()
 
-    def Plot(self, outputName, **kwargs):
+    def plot(self, outputName, **kwargs):
         """
         Plots relevant data for separation algorithm
         :return:
         """
         raise NotImplementedError('Cannot call base class.')
 
-    def Run(self):
+    def run(self):
         """
-        Run separation algorithm
+        run separation algorithm
         :param args:
         :param kwargs:
         :return:
         """
         raise NotImplementedError('Cannot call base class.')
 
-    def MakeAudioSignals(self):
+    def make_audio_signals(self):
         """
         Makes AudioSignal objects after separation algorithm is run
         :return:
@@ -59,4 +58,4 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def __call__(self):
-        self.Run()
+        self.run()

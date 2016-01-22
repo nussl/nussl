@@ -18,13 +18,13 @@ mix=AudioSignal(FileName)
 WinL=2*2048 # 93 ms window
 Ovp=3*WinL/4 # 50% overlap   
 mix.windowlength=WinL
-mix.overlapSamp=Ovp
-mix.nfft=WinL
+mix.overlap_samples=Ovp
+mix.num_fft_bins=WinL
 mix.makeplot=1; 
 mix.fmaxplot=5000;
 
 plt.figure(1)
-mix.STFT()
+mix.do_STFT()
 plt.title('Mixture')
 
 
@@ -54,10 +54,10 @@ SourceKernels.append(['harmonic',np.mat([40,Np])])  # source #4
 #   SourceKernels.append(['userdef',Nhood])
    
 
-SpecParams=np.zeros(1,dtype=[('windowlength',int),('overlapSamp',int),('nfft',int)])
+SpecParams=np.zeros(1,dtype=[('windowlength',int),('overlap_samples',int),('num_fft_bins',int)])
 SpecParams['windowlength']=WinL
-SpecParams['overlapSamp']=Ovp
-SpecParams['nfft']=WinL
+SpecParams['overlap_samples']=Ovp
+SpecParams['num_fft_bins']=WinL
 
 Numit=3
 

@@ -42,12 +42,12 @@ def repet_sim(x,fs,specparam=None,par=None):
     Inputs:
     x: audio mixture (M by N) containing M channels and N time samples
     fs: sampling frequency of the audio signal
-    specparam (optional): list containing STFT parameters including in order the window length, 
+    specparam (optional): list containing do_STFT parameters including in order the window length,
                           window type, overlap in # of samples, and # of fft points.
                           default: window length: 40 mv
                                    window type: Hamming
                                    overlap: window length/2
-                                   nfft: window length
+                                   num_fft_bins: window length
     par: (optional) Numpy array containing similarity parameters (3 values) (default: [0,1,100])
           -- par[0]: minimum threshold (in [0,1]) for the similarity measure 
               within repeating frames
@@ -67,14 +67,14 @@ def repet_sim(x,fs,specparam=None,par=None):
     * Note: the 'scikits.audiolab' package is required for reading and writing 
             .wav files
     """    
-    # use the default range of repeating period and default STFT parameter values if not specified
+    # use the default range of repeating period and default do_STFT parameter values if not specified
     if specparam is None:
        winlength=int(2**(np.ceil(np.log2(0.04*fs))))
        specparam = [winlength,'Hamming',3*winlength/4,winlength]
     if par is None:
        par = np.array([0,1,100])    
        
-    # STFT parameters
+    # do_STFT parameters
     L,win,ovp,nfft=specparam 
     
     # HPF parameters
