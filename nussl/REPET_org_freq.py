@@ -45,12 +45,12 @@ def repet(x, fs, specparam=None, per=None):
     Inputs:
     x: audio mixture (M by N) containing M channels and N time samples
     fs: sampling frequency of the audio signal
-    specparam (optional): list containing STFT parameters including in order the window length, 
+    specparam (optional): list containing do_STFT parameters including in order the window length,
                           window type, overlap in # of samples, and # of fft points.
                           default: window length: 40 mv
                                    window type: Hamming
                                    overlap: window length/2
-                                   nfft: window length
+                                   num_fft_bins: window length
     per (optional): if includes two elements determines the range of repeating 
          period, if only one element determines the exact value of repeating period
          in seconds - default: [0.8,min(8,(length(x)/fs)/3)])
@@ -71,12 +71,12 @@ def repet(x, fs, specparam=None, per=None):
     raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
 
 
-    # use the default range of repeating period and default STFT parameter values if not specified
+    # use the default range of repeating period and default do_STFT parameter values if not specified
     if specparam is None:
         winlength = int(2 ** (np.ceil(np.log2(0.08 * fs))))
         specparam = [winlength, 'Hamming', 3 * winlength / 4, winlength]
 
-    # STFT parameters      
+    # do_STFT parameters
     L, win, ovp, nfft = specparam
 
     if per is None:
@@ -84,13 +84,15 @@ def repet(x, fs, specparam=None, per=None):
 
         # HPF parameters
     # fc=100   # cutoff freqneyc (in Hz) of the high pass filter
-    # fc=np.ceil(float(fc)*(nfft-1)/fs) # cutoff freq. (in # of freq. bins)
+    # fc=np.ceil(float(fc)*(num_fft_bins-1)/fs) # cutoff freq. (in # of freq. bins)
 
     # compute the spectrograms of all channels
     M, N = np.shape(x)
-    X = FftUtils.f_stft(np.mat(x[0, :]), nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)[0]
+    X = FftUtils.f_stft(np.mat(x[0, :]), num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp,
+                        sample_rate=fs)[0]
     for i in range(1, M):
-        Sx = FftUtils.f_stft(np.mat(x[i, :]), nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)[0]
+        Sx = FftUtils.f_stft(np.mat(x[i, :]), num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp,
+                             sample_rate=fs)[0]
         X = np.dstack([X, Sx])
     V = np.abs(X)
     if M == 1:
@@ -126,7 +128,7 @@ def repet(x, fs, specparam=None, per=None):
 
 def beat_spec(X):
     """
-    The ComputeBeatSpectrum functin computes the beat spectrum, which is the average (over freq.s)
+    The compute_beat_spectrum functin computes the beat spectrum, which is the average (over freq.s)
     of the autocorrelation matrix of a one-sided spectrogram. The autocorrelation
     matrix is computed by taking the autocorrelation of each row of the spectrogram
     and dismissing the symmetric half.
@@ -151,7 +153,7 @@ def beat_spec(X):
     
 def rep_period(b,r):
     """
-    The FindRepeatingPeriod fucntion computes the repeating period of the sound signal
+    The find_repeating_period fucntion computes the repeating period of the sound signal
     using the beat spectrum calculated from the spectrogram.
     
     Inputs:
@@ -169,7 +171,7 @@ def rep_period(b,r):
 
 def rep_mask(V, p):
     """
-    The ComputeRepeatingMaskSim function computes the soft mask for the repeating part using
+    The compute_repeating_mask_sim function computes the soft mask for the repeating part using
     the magnitude spectrogram and the repeating period
     
     Inputs:

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 A repository containing all of the constants frequently used in
 this source separation stuff.
