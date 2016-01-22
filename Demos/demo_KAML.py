@@ -41,17 +41,17 @@ plt.xlabel('t (sec)')
 plt.ylabel('x(t)')
 plt.title('Mixture')
 plt.subplot(212)
-sig.STFT()
+sig.do_STFT()
 TT = np.tile(sig.Tvec, (len(sig.Fvec), 1))
 FF = np.tile(sig.Fvec.T, (len(sig.Tvec), 1)).T
 
 # inputs of the 'kam' function 
 Inputfile = [x3, fs]
 SourceKernels = [['horizontal', np.mat('10')], ['vertical', np.mat('10')]]  # 100ms horizontal and 387Hz vertical
-SpecParams = np.zeros(1, dtype=[('windowlength', int), ('overlapSamp', int), ('nfft', int)])
+SpecParams = np.zeros(1, dtype=[('windowlength', int), ('overlap_samples', int), ('num_fft_bins', int)])
 SpecParams['windowlength'] = WL
-SpecParams['overlapSamp'] = int(WL / 2)
-SpecParams['nfft'] = WL
+SpecParams['overlap_samples'] = int(WL / 2)
+SpecParams['num_fft_bins'] = WL
 AlgParams = np.array([10, 1])
 Numit = 2
 
@@ -108,37 +108,37 @@ Ovp = WinL / 2  # 50% overlap
 src1 = AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/src1.wav')
 fs = src1.fs
 src1.windowlength = WinL
-src1.overlapSamp = Ovp
-src1.nfft = WinL
+src1.overlap_samples = Ovp
+src1.num_fft_bins = WinL
 src1.makeplot = 1
 src1.fmaxplot = 1000
 
 src2 = AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/src2.wav')
 src2.windowlength = WinL
-src2.overlapSamp = Ovp
-src2.nfft = WinL
+src2.overlap_samples = Ovp
+src2.num_fft_bins = WinL
 src2.makeplot = 1
 src2.fmaxplot = 2000
 
 plt.figure(3)
 plt.subplot(211)
-src1.STFT()
+src1.do_STFT()
 plt.title('Drum')
 plt.subplot(212)
-src2.STFT()
+src2.do_STFT()
 plt.title('Flute')
 
 
 # generate spectrograms of the mixture
 mix1 = AudioSignal('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix4.wav', 10)
 mix1.windowlength = WinL
-mix1.overlapSamp = Ovp
-mix1.nfft = WinL
+mix1.overlap_samples = Ovp
+mix1.num_fft_bins = WinL
 mix1.makeplot = 1
 mix1.fmaxplot = 5000
 
 plt.figure(4)
-mix1.STFT()
+mix1.do_STFT()
 plt.title('Mixture')
 
 
@@ -163,10 +163,10 @@ Nhood = lambda TFcoords1, TFcoords2: np.logical_and((np.abs(
                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))) < Dt))
 
 SourceKernels = [['periodic', np.mat([11, 34])], ['userdef', Nhood]]
-SpecParams = np.zeros(1, dtype=[('windowlength', int), ('overlapSamp', int), ('nfft', int)])
+SpecParams = np.zeros(1, dtype=[('windowlength', int), ('overlap_samples', int), ('num_fft_bins', int)])
 SpecParams['windowlength'] = WinL
-SpecParams['overlapSamp'] = Ovp
-SpecParams['nfft'] = WinL
+SpecParams['overlap_samples'] = Ovp
+SpecParams['num_fft_bins'] = WinL
 Numit = 5
 
 # call the kam function and record the running time

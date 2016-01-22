@@ -2,9 +2,10 @@ from nussl import AudioSignal, Repet
 
 
 def main():
-    myFile = 'Input/K0149.wav'
+    #TODO: This don't work...
+    myFile = '../Input/K0149.wav'
     myAudioFile = AudioSignal(myFile)
-    repet = Repet(audioSignal=myAudioFile)
+    repet = Repet(audio_signal=myAudioFile)
     # FftUtils.PlotStft(myAudioFile)
     stems = repet()
 

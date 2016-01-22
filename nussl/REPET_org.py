@@ -68,14 +68,14 @@ def repet(x, fs, specparam=None, per=None):
     """
     raise DeprecationWarning('Don\'t get used to using this. It\'s going away soon!')
 
-    # use the default range of repeating period and default STFT parameter values if not specified
+    # use the default range of repeating period and default do_STFT parameter values if not specified
     if specparam is None:
         winlength = int(2 ** (np.ceil(np.log2(0.04 * fs))))
         specparam = [winlength, 'Hamming', winlength / 2, winlength]
     if per is None:
         per = np.array([0.8, np.array([8, np.shape(x)[1] / 3]).min()])
 
-        # STFT parameters
+        # do_STFT parameters
     L, win, ovp, nfft = specparam
 
     # HPF parameters
@@ -84,9 +84,11 @@ def repet(x, fs, specparam=None, per=None):
 
     # compute the spectrograms of all channels
     M, N = np.shape(x)
-    X = FftUtils.f_stft(np.mat(x[0, :]), nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)[0]
+    X = FftUtils.f_stft(np.mat(x[0, :]), num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp,
+                        sample_rate=fs)[0]
     for i in range(1, M):
-        Sx = FftUtils.f_stft(np.mat(x[i, :]), nFfts=nfft, winLength=L, windowType=win, winOverlap=ovp, sampleRate=fs)[0]
+        Sx = FftUtils.f_stft(np.mat(x[i, :]), num_ffts=nfft, win_length=L, window_type=win, window_overlap=ovp,
+                             sample_rate=fs)[0]
         X = np.dstack([X, Sx])
     V = np.abs(X)
     if M == 1:
@@ -121,7 +123,7 @@ def repet(x, fs, specparam=None, per=None):
 
 def beat_spec(X):
     """
-    The ComputeBeatSpectrum function computes the beat spectrum, which is the average (over freq.s)
+    The compute_beat_spectrum function computes the beat spectrum, which is the average (over freq.s)
     of the autocorrelation matrix of a one-sided spectrogram. The autocorrelation
     matrix is computed by taking the autocorrelation of each row of the spectrogram
     and dismissing the symmetric half.
@@ -147,7 +149,7 @@ def beat_spec(X):
 
 def rep_period(b, r):
     """
-    The FindRepeatingPeriod function computes the repeating period of the sound signal
+    The find_repeating_period function computes the repeating period of the sound signal
     using the beat spectrum calculated from the spectrogram.
     
     Inputs:
@@ -165,7 +167,7 @@ def rep_period(b, r):
 
 def rep_mask(V, p):
     """
-    The ComputeRepeatingMaskSim function computes the soft mask for the repeating part using
+    The compute_repeating_mask_sim function computes the soft mask for the repeating part using
     the magnitude spectrogram and the repeating period
     
     Inputs:

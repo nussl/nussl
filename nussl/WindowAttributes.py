@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import numpy as np
 
 import Constants
@@ -6,71 +8,71 @@ from WindowType import WindowType
 
 class WindowAttributes(object):
     """
-    The WindowAttributes class is a container for information regarding windowing.
+    The window_attributes class is a container for information regarding windowing.
     This object will get passed around instead of each of these individual attributes.
     """
 
-    def __init__(self, sampleRate, windowLength=None, windowType=None, windowOverlap=None, nFft=None):
-        defaultWinLen = int(2 ** (np.ceil(np.log2(Constants.DEFAULT_WIN_LEN_PARAM * sampleRate))))
-        self._windowLength = defaultWinLen if windowLength is None else windowLength
-        self.WindowType = WindowType.DEFAULT if windowType is None else windowType
-        self._windowOverlap = self.WindowLength / 2 if windowOverlap is None else windowOverlap
-        self._nfft = self.WindowLength if nFft is None else nFft
+    def __init__(self, sample_rate, window_length=None, window_type=None, window_overlap=None, num_fft=None):
+        default_win_len = int(2 ** (np.ceil(np.log2(Constants.DEFAULT_WIN_LEN_PARAM * sample_rate))))
+        self._window_length = default_win_len if window_length is None else window_length
+        self.window_type = WindowType.DEFAULT if window_type is None else window_type
+        self._window_overlap = self.window_length / 2 if window_overlap is None else window_overlap
+        self._num_fft = self.window_length if num_fft is None else num_fft
 
-        if windowOverlap is None:
-            self._windowOverlapNeedsUpdate = True
-        if nFft is None:
-            self._nfftNeedsUpdate = True
+        if window_overlap is None:
+            self._window_overlap_needs_update = True
+        if num_fft is None:
+            self._num_fft_needs_update = True
 
     @property
-    def WindowLength(self):
-        return self._windowLength
+    def window_length(self):
+        return self._window_length
 
-    @WindowLength.setter
-    def WindowLength(self, value):
+    @window_length.setter
+    def window_length(self, value):
         """
-        Length of window in samples. If WindowOverlap or Nfft are not set manually,
-        then changing this will update them to WindowOverlap = WindowLength / 2, and
-        and Nfft = WindowLength
+        Length of window in samples. If window_overlap or num_fft are not set manually,
+        then changing this will update them to window_overlap = window_length / 2, and
+        and num_fft = window_length
         :param value:
         :return:
         """
-        self._windowLength = value
+        self._window_length = value
 
-        if self._windowOverlapNeedsUpdate:
-            self._windowOverlap = value / 2
+        if self._window_overlap_needs_update:
+            self._window_overlap = value / 2
 
-        if self._nfftNeedsUpdate:
-            self._nfft = value
+        if self._num_fft_needs_update:
+            self._num_fft = value
 
     @property
-    def WindowOverlap(self):
-        return self._windowOverlap
+    def window_overlap(self):
+        return self._window_overlap
 
-    @WindowOverlap.setter
-    def WindowOverlap(self, value):
+    @window_overlap.setter
+    def window_overlap(self, value):
         """
         Overlap of windows.
-        By default this is linked to WindowLength (value of WindowLength / 2),
+        By default this is linked to window_length (value of window_length / 2),
         but if this is set manually then they are both independent.
         :param value:
         :return:
         """
-        self._windowOverlapNeedsUpdate = False
-        self._windowOverlap = value
+        self._window_overlap_needs_update = False
+        self._window_overlap = value
 
     @property
-    def Nfft(self):
-        return self._nfft
+    def num_fft(self):
+        return self._num_fft
 
-    @Nfft.setter
-    def Nfft(self, value):
+    @num_fft.setter
+    def num_fft(self, value):
         """
         Number of FFT bins.
-        By default this is linked to WindowLength (value of WindowLength),
+        By default this is linked to window_length (value of window_length),
         but if this is set manually then they are both independent.
         :param value:
         :return:
         """
-        self._nfftNeedsUpdate = False
-        self._nfft = value
+        self._num_fft_needs_update = False
+        self._num_fft = value

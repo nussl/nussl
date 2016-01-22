@@ -1,23 +1,9 @@
-"""
-This module implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
-The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
-and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.
-
-References:
-[1] Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation. 
-    Springer Netherlands, 2007. 217-241.
-[2] Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures via 
-    time-frequency masking." Signal Processing, IEEE transactions on 52.7 
-    (2004): 1830-1847.
-
-Authors: Fatameh Pishdadian and Ethan Manilow
-Interactive Audio Lab
-Northwestern University, 2015
-
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
 import FftUtils
@@ -27,20 +13,37 @@ import Constants
 
 
 class Duet(SeparationBase.SeparationBase):
-    def __init__(self, audioSignal, nSources, aMin=-3, aMax=3, aNum=50, dMin=-3, dMax=3, dNum=50, threshold=0.2,
-                 aMinDistance=5, dMinDistance=5, windowAttributes=None, sampleRate=None):
+    """
+    This module implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
+    The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
+    and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.
+
+    References:
+    [1] Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation.
+        Springer Netherlands, 2007. 217-241.
+    [2] Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures via
+        time-frequency masking." Signal Processing, IEEE transactions on 52.7
+        (2004): 1830-1847.
+
+    Authors: Fatameh Pishdadian and Ethan Manilow
+    Interactive Audio Lab
+    Northwestern University, 2015
+
+    """
+    def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
+                  threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
         # TODO: Is there a better way to do this?
         self.__dict__.update(locals())
-        super(Duet, self).__init__(windowAttributes, sampleRate, audioSignal)
-        self.SeparatedSources = None
-        self.agrid = None
-        self.dgrid = None
+        super(Duet, self).__init__(window_attributes, sample_rate, audio_signal)
+        self.separated_sources = None
+        self.a_grid = None
+        self.d_grid = None
         self.hist = None
 
     def __str__(self):
         return 'Duet'
 
-    def Run(self):
+    def run(self):
         """
         The 'duet' function extracts N sources from a given stereo audio mixture
         (N sources captured via 2 sensors)
@@ -51,16 +54,16 @@ class Duet(SeparationBase.SeparationBase):
                 L: window length (in # of samples)
               win: window type, string ('Rectangular', 'Hamming', 'Hanning', 'Blackman')
               ovp: number of overlapping samples between adjacent windows
-              nfft: min number of desired freq. samples in (-pi,pi]. MUST be >= L.
+              num_fft_bins: min number of desired freq. samples in (-pi,pi]. MUST be >= L.
                    *NOTE* If this is not a power of 2, then it will automatically
                    zero-pad up to the next power of 2. IE if you put 257 here,
                    it will pad up to 512.
                fs: sampling rate of the signal
-               ** sparam = np.array([(L,win,ovp,nfft,fs)]
+               ** sparam = np.array([(L,win,ovp,num_fft_bins,fs)]
                dtype=[('winlen',int),('wintype','|S10'),('overlap',int),('numfreq',int),('sampfreq',int)])
 
         adparam: structure array containing ranges and number of bins for attenuation and delay
-               ** adparam = np.array([(self.aMin,self.aMax,self.aNum,self.dMin,self.dMax,self.dNum)],
+               ** adparam = np.array([(self.aMin,self.aMax,self.a_num,self.dMin,self.dMax,self.d_num)],
                dtype=[('amin',float),('amax',float),('anum',float),('dmin',float)
                ,('dmax',float),('dnum',int)])
 
@@ -76,21 +79,21 @@ class Duet(SeparationBase.SeparationBase):
               corresponding to N sources
         """
 
-        if self.Mixture.nChannels != 2:
+        if self.audio_signal.num_channels != 2:
             raise Exception('Cannot run DUET on audio signal without exactly 2 channels!')
 
 
         # Give them shorter names
-        L = self.WindowAttributes.WindowLength
-        winType = self.WindowAttributes.WindowType
-        ovp = self.WindowAttributes.WindowOverlap
-        fs = self.SampleRate
+        L = self.window_attributes.window_length
+        winType = self.window_attributes.window_type
+        ovp = self.window_attributes.window_overlap
+        fs = self.sample_rate
 
-        # Compute the STFT of the two channel mixtures
-        X1, P1, F, T = FftUtils.f_stft(self.Mixture.getChannel(1), windowAttributes=self.WindowAttributes,
-                                       sampleRate=fs)
-        X2, P2, F, T = FftUtils.f_stft(self.Mixture.getChannel(2), windowAttributes=self.WindowAttributes,
-                                       sampleRate=fs)
+        # Compute the do_STFT of the two channel mixtures
+        X1, P1, F, T = FftUtils.f_stft(self.audio_signal.get_channel(1), window_attributes=self.window_attributes,
+                                       sample_rate=fs)
+        X2, P2, F, T = FftUtils.f_stft(self.audio_signal.get_channel(2), window_attributes=self.window_attributes,
+                                       sample_rate=fs)
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
         X1 = X1[1::, :]
@@ -116,8 +119,8 @@ class Duet(SeparationBase.SeparationBase):
         tfw = (np.abs(X1) * np.abs(X2)) ** p * (np.abs(wmat)) ** q  # time-freq weights
 
         # only consider time-freq. points yielding estimates in bounds
-        a_premask = np.logical_and(self.aMin < alpha, alpha < self.aMax)
-        d_premask = np.logical_and(self.dMin < delta, delta < self.dMax)
+        a_premask = np.logical_and(self.a_min < alpha, alpha < self.a_max)
+        d_premask = np.logical_and(self.d_min < delta, delta < self.d_max)
         ad_premask = np.logical_and(a_premask, d_premask)
 
         ad_nzind = np.nonzero(ad_premask)
@@ -126,8 +129,8 @@ class Duet(SeparationBase.SeparationBase):
         tfw_vec = tfw[ad_nzind]
 
         # compute the histogram
-        H = np.histogram2d(alpha_vec, delta_vec, bins=np.array([self.aNum, self.dNum]),
-                           range=np.array([[self.aMin, self.aMax], [self.dMin, self.dMax]]), normed=False,
+        H = np.histogram2d(alpha_vec, delta_vec, bins=np.array([self.a_num, self.d_num]),
+                           range=np.array([[self.a_min, self.a_max], [self.d_min, self.d_max]]), normed=False,
                            weights=tfw_vec)
 
         hist = H[0] / H[0].max()
@@ -135,8 +138,8 @@ class Duet(SeparationBase.SeparationBase):
         dgrid = H[2]
 
         # Save these for later
-        self.agrid = agrid
-        self.dgrid = dgrid
+        self.a_grid = agrid
+        self.d_grid = dgrid
         self.hist = hist
 
         # smooth the histogram - local average 3-by-3 neighboring bins
@@ -146,7 +149,8 @@ class Duet(SeparationBase.SeparationBase):
         hist /= hist.max()
 
         # find the location of peaks in the alpha-delta plane
-        pindex = self.find_peaks2(hist, self.threshold, np.array([self.aMinDistance, self.dMinDistance]), self.nSources)
+        pindex = self.find_peaks2(hist, self.threshold,
+                                  np.array([self.a_min_distance, self.d_min_distance]), self.num_sources)
 
         alphapeak = agrid[pindex[0, :]]
         deltapeak = dgrid[pindex[1, :]]
@@ -159,16 +163,16 @@ class Duet(SeparationBase.SeparationBase):
         # compute masks for separation
         bestsofar = np.inf * np.ones((Lf - 1, Lt))
         bestind = np.zeros((Lf - 1, Lt), int)
-        for i in range(0, self.nSources):
+        for i in range(0, self.num_sources):
             score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * X1 - X2) ** 2 / (1 + atnpeak[i] ** 2)
             mask = (score < bestsofar)
             bestind[mask] = i
             bestsofar[mask] = score[mask]
 
         # demix with ML alignment and convert to time domain
-        Lx = self.Mixture.SignalLength
-        xhat = np.zeros((self.nSources, Lx))
-        for i in range(0, self.nSources):
+        Lx = self.audio_signal.signal_length
+        xhat = np.zeros((self.num_sources, Lx))
+        for i in range(0, self.num_sources):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, Lt)), (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2)
                             / (1 + atnpeak[i] ** 2) * mask])
@@ -179,7 +183,7 @@ class Duet(SeparationBase.SeparationBase):
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]
 
-        self.SeparatedSources = xhat
+        self.separated_sources = xhat
 
         return xhat, ad_est
 
@@ -234,7 +238,7 @@ class Duet(SeparationBase.SeparationBase):
         # TODO: consolidate both find_peaks functions
         # TODO: when is this used?
         """
-        The 'FindPeaks' function receives a row vector array of positive numerical
+        The 'find_peaks' function receives a row vector array of positive numerical
         values (in [0,1]) and finds the peak values and corresponding indices.
 
         Inputs:
@@ -339,18 +343,18 @@ class Duet(SeparationBase.SeparationBase):
         return SMAT
 
 
-    def MakeAudioSignals(self):
+    def make_audio_signals(self):
         signals = []
-        for i in range(self.nSources):
-            signal = AudioSignal.AudioSignal(timeSeries=self.SeparatedSources[i])
+        for i in range(self.num_sources):
+            signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i])
             signals.append(signal)
         return signals
 
-    def Plot(self, outputName, three_d_plot=False):
+    def plot(self, outputName, three_d_plot=False):
         plt.close('all')
 
-        AA = np.tile(self.agrid[1::], (self.dNum, 1)).T
-        DD = np.tile(self.dgrid[1::].T, (self.aNum, 1))
+        AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T
+        DD = np.tile(self.d_grid[1::].T, (self.a_num, 1))
 
         # plot the histogram in 2D
         if not three_d_plot:

@@ -1,3 +1,4 @@
+
 """
 This module implements the Kernel Additive Modeling (KAM) algorithm and its light 
 version (KAML) for source separation. 
@@ -67,15 +68,15 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
     SpecParams: (optional) structured containing spectrogram parameters including:
                          - windowtype (default is Hamming)
                          - windowlength (default is 60 ms)
-                         - overlapSamp in [0,windowlength] (default is widowlength/2)
-                         - nfft (default is windowlength)
+                         - overlap_samples in [0,windowlength] (default is widowlength/2)
+                         - num_fft_bins (default is windowlength)
                          - makeplot in {0,1} (default is 0)
                          - fmaxplot in Hz (default is fs/2)
                          example: 
                          SpecParams=np.zeros(1,dtype=[('windowtype','|S1'),
                                                       ('windowlength',int),
-                                                      ('overlapSamp',int),
-                                                      ('nfft',int),
+                                                      ('overlap_samples',int),
+                                                      ('num_fft_bins',int),
                                                       ('makeplot',int),
                                                       ('fmaxplot',float)])
                          SpecParams['windowlength']=1024   
@@ -110,7 +111,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             exec ('Mixture.' + nameTemp + '=' + valTemp)
 
     x, tvec = np.array([Mixture.x, Mixture.time])  # time-domain channel mixtures
-    X, Px, Fvec, Tvec = Mixture.STFT()  # stft and PSD of the channel mixtures
+    X, Px, Fvec, Tvec = Mixture.do_STFT()  # stft and PSD of the channel mixtures
 
     I = Mixture.numCh  # number of channel mixtures
     J = len(SourceKernels)  # number of sources
@@ -146,7 +147,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
     # Initialize the PSDs with average mixture PSD and the spatial covarince matricies
     # with identity matrices
 
-    X = np.reshape(X.T, (LF * LT, I))  # reshape the STFT tensor into I vectors
+    X = np.reshape(X.T, (LF * LT, I))  # reshape the do_STFT tensor into I vectors
     if I > 1:
         MeanPSD = np.mean(Px, axis=2) / (I * J)
     else:
@@ -274,16 +275,16 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             Shat[:, :, nch, ns] = np.reshape(S[:, nch, ns], (LT, LF)).T
 
 
-    # Compute the inverse STFT of the estimated sources
+    # Compute the inverse do_STFT of the estimated sources
     shat = np.zeros((x.shape[0], I, J))
     sigTemp = AudioSignal()
     sigTemp.windowtype = Mixture.windowtype
     sigTemp.windowlength = Mixture.windowlength
-    sigTemp.overlapSamp = Mixture.overlapSamp
+    sigTemp.overlap_samples = Mixture.overlap_samples
     sigTemp.numCh = I
     for ns in range(0, J):
         sigTemp.X = Shat[:, :, :, ns]
-        shat[:, :, ns] = sigTemp.iSTFT()[0][0:x.shape[0]]
+        shat[:, :, ns] = sigTemp.do_iSTFT()[0][0:x.shape[0]]
 
     return shat, fhat
 
@@ -331,15 +332,15 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     SpecParams: (optional) structured containing spectrogram parameters including:
                          - windowtype (default is Hamming)
                          - windowlength (default is 60 ms)
-                         - overlapSamp in [0,windowlength] (default is widowlength/2)
-                         - nfft (default is windowlength)
+                         - overlap_samples in [0,windowlength] (default is widowlength/2)
+                         - num_fft_bins (default is windowlength)
                          - makeplot in {0,1} (default is 0)
                          - fmaxplot in Hz (default is fs/2)
                          example: 
                          SpecParams=np.zeros(1,dtype=[('windowtype','|S1'),
                                                       ('windowlength',int),
-                                                      ('overlapSamp',int),
-                                                      ('nfft',int),
+                                                      ('overlap_samples',int),
+                                                      ('num_fft_bins',int),
                                                       ('makeplot',int),
                                                       ('fmaxplot',float)])
                          SpecParams['windowlength']=1024                             
@@ -375,7 +376,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             exec ('Mixture.' + nameTemp + '=' + valTemp)
 
     x, tvec = np.array([Mixture.x, Mixture.time])  # time-domain channel mixtures
-    X, Px, Fvec, Tvec = Mixture.STFT()  # stft and PSD of the channel mixtures
+    X, Px, Fvec, Tvec = Mixture.do_STFT()  # stft and PSD of the channel mixtures
 
     I = Mixture.numCh  # number of channel mixtures
     J = len(SourceKernels)  # number of sources
@@ -411,7 +412,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     # Initialize the PSDs with average mixture PSD and the spatial covarince matricies
     # with identity matrices
 
-    X = np.reshape(X.T, (LF * LT, I))  # reshape the STFT tensor into I vectors
+    X = np.reshape(X.T, (LF * LT, I))  # reshape the do_STFT tensor into I vectors
     if I > 1:
         MeanPSD = np.mean(Px, axis=2) / (I * J)
     else:
@@ -559,16 +560,16 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             Shat[:, :, nch, ns] = np.reshape(S[:, nch, ns], (LT, LF)).T
 
 
-    # Compute the inverse STFT of the estimated sources
+    # Compute the inverse do_STFT of the estimated sources
     shat = np.zeros((x.shape[0], I, J))
     sigTemp = AudioSignal()
     sigTemp.windowtype = Mixture.windowtype
     sigTemp.windowlength = Mixture.windowlength
-    sigTemp.overlapSamp = Mixture.overlapSamp
+    sigTemp.overlap_samples = Mixture.overlap_samples
     sigTemp.numCh = I
     for ns in range(0, J):
         sigTemp.X = Shat[:, :, :, ns]
-        shat[:, :, ns] = sigTemp.iSTFT()[0][0:x.shape[0]]
+        shat[:, :, ns] = sigTemp.do_iSTFT()[0][0:x.shape[0]]
 
     return shat, phat
 

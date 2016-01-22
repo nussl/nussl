@@ -40,13 +40,13 @@ def rpca_ss(x,fs,specparam=None,mask=False,maskgain=0):
     x: M by N numpy array containing M channel mixtures, each of length N time 
        samples
     fs: sampling frequency of the audio signal
-    specparam(optional): list containing STFT parameters including in order, 
+    specparam(optional): list containing do_STFT parameters including in order,
                          the window length, window type, overlap in # of samples, 
                          and # of fft points.
                          default: window length: 40 ms
                          window type: Hamming
                          overlap: window length/2 (50%)
-                         nfft: window length (no zero padding)
+                         num_fft_bins: window length (no zero padding)
     mask (optional): determines whether the output of RPCA is used directly as
                      separated sources (False), or it is used to create a mask
                      for separating the sources (True). Default is False                     
@@ -65,13 +65,13 @@ def rpca_ss(x,fs,specparam=None,mask=False,maskgain=0):
      
     """
     
-    # use the default range of repeating period and default STFT parameter values 
+    # use the default range of repeating period and default do_STFT parameter values
     # if not specified
     if specparam is None:
        winlength=int(2**(np.ceil(np.log2(0.04*fs)))) # next power 2 of 40ms*fs
        specparam = [winlength,'Hamming',winlength/2,winlength]
    
-   # STFT parameters      
+   # do_STFT parameters
     winL,win,ovp,nfft=specparam 
     
     # compute the spectrograms of all channels
