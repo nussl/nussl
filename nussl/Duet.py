@@ -13,42 +13,34 @@ import Constants
 
 
 class Duet(SeparationBase.SeparationBase):
-    """
-    This module implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
+    """Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
+
     The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
     and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.
 
+
     References:
-    [1] Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation.
-        Springer Netherlands, 2007. 217-241.
-    [2] Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures via
-        time-frequency masking." Signal Processing, IEEE transactions on 52.7
-        (2004): 1830-1847.
 
-    Authors: Fatameh Pishdadian and Ethan Manilow
-    Interactive Audio Lab
-    Northwestern University, 2015
+        * Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation. Springer Netherlands,
+          2007. 217-241.
+        * Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures via time-frequency masking." Signal
+          Processing, IEEE transactions on 52.7 (2004): 1830-1847.
 
-    """
-    def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
-                  threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
-        # TODO: Is there a better way to do this?
-        self.__dict__.update(locals())
-        super(Duet, self).__init__(window_attributes, sample_rate, audio_signal)
-        self.separated_sources = None
-        self.a_grid = None
-        self.d_grid = None
-        self.hist = None
+    Parameters:
+        audio_signal (np.array):
+        num_sources (int):
+        a_min (Optional[int]): Defaults to -3
+        a_max(Optional[int]): Defaults to 3
+        a_num(Optional[int]): Defaults to 50
+        d_min (Optional[int]): Defaults to -3
+        d_max (Optional[int]): Defaults to 3
+        d_num (Optional[int]): Defaults to 50
+        threshold (Optional[float]): Defaults to 0.2
+        a_min_distance (Optional[int]): Defaults to 5
+        d_min_distance (Optional[int]): Defaults to 5
+        window_attributes (Optional[WindowAttributes]): Defaults to WindowAttributes.WindowAttributes(self.sample_rate)
+        sample_rate (Optional[int]): Defaults to Constants.DEFAULT_SAMPLE_RATE
 
-    def __str__(self):
-        return 'Duet'
-
-    def run(self):
-        """
-        The 'duet' function extracts N sources from a given stereo audio mixture
-        (N sources captured via 2 sensors)
-
-        Inputs:
         x: a 2-row Numpy matrix containing samples of the two-channel mixture
         sparam: structure array containing spectrogram parameters including
                 L: window length (in # of samples)
@@ -73,10 +65,28 @@ class Duet(SeparationBase.SeparationBase):
         plothist: (optional) string input, indicates if the histogram is to be plotted
               'y' (default): plot the histogram, 'n': don't plot
 
-        Output:
-        xhat: an N-row Numpy matrix containing N time-domain estimates of sources
-        ad_est: N by 2 Numpy matrix containing estimated attenuation and delay values
+    """
+    def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
+                  threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
+        # TODO: Is there a better way to do this?
+        self.__dict__.update(locals())
+        super(Duet, self).__init__(window_attributes, sample_rate, audio_signal)
+        self.separated_sources = None
+        self.a_grid = None
+        self.d_grid = None
+        self.hist = None
+
+    def __str__(self):
+        return 'Duet'
+
+    def run(self):
+        """Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)
+
+        Returns:
+            * **xhat** (*np.array*) - an N-row matrix containing time-domain estimates of sources
+            * **ad_est** (*np.array*) - N by 2 Numpy matrix containing estimated attenuation and delay values
               corresponding to N sources
+
         """
 
         if self.audio_signal.num_channels != 2:
@@ -189,20 +199,17 @@ class Duet(SeparationBase.SeparationBase):
 
     @staticmethod
     def find_peaks2(data, min_thr=0.5, min_dist=None, max_peaks=1):
+        """Receives a matrix of positive numerical values (in [0,1]) and finds the peak values and corresponding indices.
 
-        """
-        The 'find_peaks2d' function receives a matrix of positive numerical
-        values (in [0,1]) and finds the peak values and corresponding indices.
+        Parameters:
+            data (np.array): a 2D Numpy matrix containing real values (in [0,1])
+            min_thr (Optional[float]): minimum threshold (in [0,1]) on data values. Defaults to 0.5
+            min_dist (Optional[np.array]): 1 by 2 matrix containing minimum distances (in # of time elements) between
+             peaks row-wise and column-wise. Defaults to .25* matrix dimensions
+            max_peaks (Optional[int]): maximum number of peaks in the whole matrix. Defaults to 1
 
-        Inputs:
-        data: a 2D Numpy matrix containing real values (in [0,1])
-        min_thr:(optional) minimum threshold (in [0,1]) on data values - default=0.5
-        min_dist:(optional) 1 by 2 matrix containing minimum distances (in # of time elements) between peaks
-                  row-wise and column-wise - default: 25% of matrix dimensions
-        max_peaks: (optional) maximum number of peaks in the whole matrix - default: 1
-
-        Output:
-        Pi: a two-row Numpy matrix containing peaks indices
+        Returns:
+            peakIndex (np.array): a two-row Numpy matrix containing peaks and their indices
         """
         assert (type(data) == np.ndarray)
 
@@ -237,19 +244,17 @@ class Duet(SeparationBase.SeparationBase):
     def find_peaks(data, min_thr=0.5, min_dist=None, max_num=1):
         # TODO: consolidate both find_peaks functions
         # TODO: when is this used?
-        """
-        The 'find_peaks' function receives a row vector array of positive numerical
-        values (in [0,1]) and finds the peak values and corresponding indices.
+        """Receives a row vector of positive values (in [0,1]) and finds the peak values and corresponding indices.
 
-        Inputs:
-        data: row vector of real values (in [0,1])
-        min_thr: (optional) minimum threshold (in [0,1]) on data values - default=0.5
-        min_dist:(optiotnal) minimum distance (in # of time elements) between peaks
-                 default: 25% of the vector length
-        max_num: (optional) maximum number of peaks - default: 1
+       Parameters:
+            data (np.array): a 2D Numpy matrix containing real values (in [0,1])
+            min_thr (Optional[float]): minimum threshold (in [0,1]) on data values. Defaults to 0.5
+            min_dist (Optional[np.array]): 1 by 2 matrix containing minimum distances (in # of time elements) between
+             peaks row-wise and column-wise. Defaults to .25* matrix dimensions
+            max_peaks (Optional[int]): maximum number of peaks in the whole matrix. Defaults to 1
 
-        Output:
-        Pi: peaks indices
+        Returns:
+            peakIndex (np.array): a two-row Numpy matrix containing peaks and their indices
         """
         assert (type(data) == np.ndarray)
 
@@ -279,18 +284,18 @@ class Duet(SeparationBase.SeparationBase):
         return peak_indices
 
     def twoDsmooth(self, Mat, Kernel):
-        """
-        The 'twoDsmooth' function receives a matrix and a kernel type and performs
-        two-dimensional convolution in order to smooth the values of matrix elements.
+        """Performs two-dimensional convolution in order to smooth the values of matrix elements.
+
         (similar to low-pass filtering)
 
-        Inputs:
-        Mat: a 2D Numpy matrix to be smoothed
-        Kernel: a 2D Numpy matrix containing kernel values
-               Note: if Kernel is of size 1 by 1 (scalar), a Kernel by Kernel matrix
-               of 1/Kernel**2 will be used as the matrix averaging kernel
+        Parameters:
+            Mat (np.array): a 2D Numpy matrix to be smoothed
+            Kernel (np.array): a 2D Numpy matrix containing kernel values
+        Note:
+            if Kernel is of size 1 by 1 (scalar), a Kernel by Kernel matrix of 1/Kernel**2 will be used as the matrix
+            averaging kernel
         Output:
-        SMat: a 2D Numpy matrix containing a smoothed version of Mat (same size as Mat)
+            SMat (np.array): a 2D Numpy matrix containing a smoothed version of Mat (same size as Mat)
         """
 
         # check the dimensions of the Kernel matrix and set the values of the averaging
@@ -342,8 +347,13 @@ class Duet(SeparationBase.SeparationBase):
 
         return SMAT
 
-
     def make_audio_signals(self):
+        """Returns the extracted signals
+
+        Returns:
+            signals (List[AudioSignal]): List of AudioSignals extracted using DUET.
+
+        """
         signals = []
         for i in range(self.num_sources):
             signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i])
@@ -351,6 +361,15 @@ class Duet(SeparationBase.SeparationBase):
         return signals
 
     def plot(self, outputName, three_d_plot=False):
+        """
+
+        Parameters:
+            outputName (str): path to save plot as
+            three_d_plot (Optional[bool]): Flags whether or not to plot in 3d. Defaults to False
+
+        Returns:
+
+        """
         plt.close('all')
 
         AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T
