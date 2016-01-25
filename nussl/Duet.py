@@ -27,43 +27,20 @@ class Duet(SeparationBase.SeparationBase):
           Processing, IEEE transactions on 52.7 (2004): 1830-1847.
 
     Parameters:
-        audio_signal (np.array):
-        num_sources (int):
-        a_min (Optional[int]): Defaults to -3
-        a_max(Optional[int]): Defaults to 3
-        a_num(Optional[int]): Defaults to 50
-        d_min (Optional[int]): Defaults to -3
-        d_max (Optional[int]): Defaults to 3
-        d_num (Optional[int]): Defaults to 50
-        threshold (Optional[float]): Defaults to 0.2
-        a_min_distance (Optional[int]): Defaults to 5
-        d_min_distance (Optional[int]): Defaults to 5
-        window_attributes (Optional[WindowAttributes]): Defaults to WindowAttributes.WindowAttributes(self.sample_rate)
-        sample_rate (Optional[int]): Defaults to Constants.DEFAULT_SAMPLE_RATE
-
-        x: a 2-row Numpy matrix containing samples of the two-channel mixture
-        sparam: structure array containing spectrogram parameters including
-                L: window length (in # of samples)
-              win: window type, string ('Rectangular', 'Hamming', 'Hanning', 'Blackman')
-              ovp: number of overlapping samples between adjacent windows
-              num_fft_bins: min number of desired freq. samples in (-pi,pi]. MUST be >= L.
-                   *NOTE* If this is not a power of 2, then it will automatically
-                   zero-pad up to the next power of 2. IE if you put 257 here,
-                   it will pad up to 512.
-               fs: sampling rate of the signal
-               ** sparam = np.array([(L,win,ovp,num_fft_bins,fs)]
-               dtype=[('winlen',int),('wintype','|S10'),('overlap',int),('numfreq',int),('sampfreq',int)])
-
-        adparam: structure array containing ranges and number of bins for attenuation and delay
-               ** adparam = np.array([(self.aMin,self.aMax,self.a_num,self.dMin,self.dMax,self.d_num)],
-               dtype=[('amin',float),('amax',float),('anum',float),('dmin',float)
-               ,('dmax',float),('dnum',int)])
-
-        Pr: vector containing user defined information including a threshold value (in [0,1])
-            for peak picking (thr), minimum distance between peaks, and the number of sources (N)
-            ** Pr = np.array(thr,self.aMindist,self.dMindist,N)
-        plothist: (optional) string input, indicates if the histogram is to be plotted
-              'y' (default): plot the histogram, 'n': don't plot
+        audio_signal (np.array): a 2-row Numpy matrix containing samples of the two-channel mixture
+        num_sources (int): number of sources to find
+        a_min (Optional[int]): Minimum attenuation. Defaults to -3
+        a_max(Optional[int]): Maximum attenuation. Defaults to 3
+        a_num(Optional[int]): Number of bins for attenuation. Defaults to 50
+        d_min (Optional[int]): Minimum delay. Defaults to -3
+        d_max (Optional[int]): Maximum delay. Defaults to 3
+        d_num (Optional[int]): Number of bins for delay. Defaults to 50
+        threshold (Optional[float]): Value in [0, 1] for peak picking. Defaults to 0.2
+        a_min_distance (Optional[int]): Minimum distance between peaks wrt attenuation. Defaults to 5
+        d_min_distance (Optional[int]): Minimum distance between peaks wrt delay. Defaults to 5
+        window_attributes (Optional[WindowAttributes]): Window attributes for stft. Defaults to
+         WindowAttributes.WindowAttributes(self.sample_rate)
+        sample_rate (Optional[int]): Sample rate for the audio. Defaults to Constants.DEFAULT_SAMPLE_RATE
 
     """
     def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
@@ -361,14 +338,11 @@ class Duet(SeparationBase.SeparationBase):
         return signals
 
     def plot(self, outputName, three_d_plot=False):
-        """
+        """Plots histograms with the results of the DUET algorithm
 
         Parameters:
             outputName (str): path to save plot as
             three_d_plot (Optional[bool]): Flags whether or not to plot in 3d. Defaults to False
-
-        Returns:
-
         """
         plt.close('all')
 
