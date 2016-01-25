@@ -21,14 +21,14 @@ def mkmixture(sn, mixparam, fs, rsch=False):
         sn (np.array): Numpy N by Ls array. Each row contains a single channel time-domain source signal.
         mixparam (List[np.array]): List containing locations of sources/mics and room parameters
 
-            * Ps: Numpy N by 3 array containing source locations (x,y,z coordinates)
-            * Pm: Numpy M by 3 array containing mic locations (x,y,z, coordinates)
-            * RoomParams: Numpy 1 by 2 array containing room characteristics
+            * Numpy N by 3 array containing source locations (x,y,z coordinates)
+            * Numpy M by 3 array containing mic locations (x,y,z, coordinates)
+            * Numpy 1 by 2 array containing room characteristics
 
                 #. number of virtual sources
                 #. reflection coefficients in (-1,1)
 
-            * RoomDim: Numpy 1 by 3 array containing room dimensions (meters)
+            * Numpy 1 by 3 array containing room dimensions (meters)
 
         fs (int): sampling rate (in Hz)
         rsch (Optional[bool]): logical argument indicating whether the room schematic should be generated or not.
