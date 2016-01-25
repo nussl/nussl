@@ -11,35 +11,36 @@ import AudioSignal
 
 
 class Repet(SeparationBase.SeparationBase):
-    """
-    Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM). REPET is a
-    simple method for separating the repeating background from the non-repeating foreground in a piece of audio mixture.
-    REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.
+    """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
+
+    REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
+    audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.
 
     References:
 
-        * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14, 2013
-        * Zafar Rafii and Bryan Pardo. "Music/Voice Separation using the Similarity Matrix," 13th International Society on
-          Music Information Retrieval, Porto, Portugal, October 8-12, 2012.
+        * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14,
+          2013
+        * Zafar Rafii and Bryan Pardo. "Music/Voice Separation using the Similarity Matrix," 13th International Society
+          on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.
 
     See Also:
         http://music.eecs.northwestern.edu/research.php?project=repet
 
     Parameters:
-            audioSignal (AudioSignal): audio mixture (M by N) containing M channels and N time samples
-            Type (RepetType): Variant of Repet algorithm to perform.
-            windowAttributes (WindowAttributes): WindowAttributes object describing the window used in the repet
+            audio_signal (AudioSignal): audio mixture (M by N) containing M channels and N time samples
+            repet_type (RepetType): Variant of Repet algorithm to perform.
+            window_attributes (WindowAttributes): WindowAttributes object describing the window used in the repet
              algorithm
-            sampleRate (int): the sample rate of the audio signal
-            HighPassCutoff (Optional[int]): Defaults to 100
-            similarityThreshold (Optional[int]): Used for RepetType.SIM. Defaults to 0
-            MinDistanceBetweenFrames (Optional[int]): Used for RepetType.SIM. Defaults to 1
-            MaxRepeatingFrames (Optional[int]): Used for RepetType.SIM. Defaults to 10
-            Period (Optional[float]): Used for RepetType.ORIGINAL. The Period of the repeating part of the signal.
-            MinPeriod (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
+            sample_rate (int): the sample rate of the audio signal
+            similarity_threshold (Optional[int]): Used for RepetType.SIM. Defaults to 0
+            min_distance_between_frames (Optional[int]): Used for RepetType.SIM. Defaults to 1
+            max_repeating_frames (Optional[int]): Used for RepetType.SIM. Defaults to 10
+            period (Optional[float]): Used for RepetType.ORIGINAL. The Period of the repeating part of the signal.
+            min_period (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
              0.8
-            MaxPeriod (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
+            max_period (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
              min(8, self.Mixture.SignalLength/3)
+            high_pass_cutoff (Optional[int]): Defaults to 100
 
     """
     def __init__(self, audio_signal, repet_type=None, window_attributes=None, sample_rate=None,
@@ -164,7 +165,7 @@ class Repet(SeparationBase.SeparationBase):
         """Calculates and returns the similarity matrix for the audio file associated with this object
 
         Returns:
-             V (np.array): similarity matrix for the audio file.
+             similarity_matrix (np.array): similarity matrix for the audio file.
 
         """
         self._compute_spectrum()
@@ -176,7 +177,7 @@ class Repet(SeparationBase.SeparationBase):
         """Calculates and returns the beat spectrum for the audio file associated with this object
 
         Returns:
-            B (np.array): beat spectrum for the audio file
+            beat_spectrum (np.array): beat spectrum for the audio file
 
         """
         self._compute_spectrum()
@@ -203,8 +204,7 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def compute_similarity_matrix(X):
-        """
-        Computes the similarity matrix using the cosine similarity for input matrix X.
+        """Computes the similarity matrix using the cosine similarity for input matrix X.
         
         Parameters:
             X (np.array): 2D matrix containing the magnitude spectrogram of the audio signal (Lf by Lt)
@@ -226,16 +226,10 @@ class Repet(SeparationBase.SeparationBase):
         return S
 
     def find_similarity_indices(self, S):
-        """
-        Finds the similarity indices for all time frames from the similarity matrix
+        """Finds the similarity indices for all time frames from the similarity matrix
         
         Parameters:
             S (np.array): similarity matrix (Lt by Lt)
-            simparam (List): array containing 3 similarity parameters
-
-                * simparam[0]: minimum threshold (in [0,1]) for the similarity measure within repeating frames
-                * simparam[1]: minimum distance (in # of time frames) between repeating frames
-                * simparam[2]: maximum number of repeating frames for the median filter
                  
         Returns:
             I (np.array): similarity indices for all time frames
@@ -252,9 +246,7 @@ class Repet(SeparationBase.SeparationBase):
         return I
 
     def find_peaks(self, data, min_thr=0.5, min_dist=None, max_num=1):
-        """
-        Receives a row vector array of positive numerical values (in [0,1]) and finds the peak values and corresponding
-         indices.
+        """Finds the peak values and corresponding indices in a vector of real values in [0,1]
         
         Parameters:
             data (np.array): row vector of real values (in [0,1])
@@ -263,7 +255,7 @@ class Repet(SeparationBase.SeparationBase):
             max_num: (Optional[int]) maximum number of peaks. Defaults to 1
         
         Returns:
-            Pi (np.array): sorted array of indices of peaks in the data
+            peak_indices (np.array): sorted array of indices of peaks in the data
         """
 
         # make sure data is a Numpy matrix
@@ -418,8 +410,8 @@ class Repet(SeparationBase.SeparationBase):
         Returns:
             Audio Signals (List): 2 element list.
 
-                * Background: Audio signal with the calculated background track
-                * Foreground: Audio signal with the calculated foreground track
+                * bkgd: Audio signal with the calculated background track
+                * fkgd: Audio signal with the calculated foreground track
 
         """
         self.fgnd = self.audio_signal - self.bkgd
