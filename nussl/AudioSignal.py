@@ -12,45 +12,36 @@ import Constants
 
 
 class AudioSignal(object):
-    """
-    The class Signal defines the properties of the audio signal object and performs
-    basic operations such as Wav loading and computing the do_STFT/do_iSTFT.
-    
-    Read/write signal properties:
-    - x: signal
-    - signalLength: signal length (in number of samples)
-    
-    Read/write stft properties:
-    - windowtype (e.g. 'Rectangular', 'Hamming', 'Hanning', 'Blackman')
-    - windowlength (ms)
-    - num_fft_bins (number of samples)
-    - overlap_ratio (in [0,1])
-    - X: stft of the data
-        
-    Read-only properties:
-    - sample_rate: sampling frequency
-    - enc: encoding of the audio file
-    - numCh: number of channels
+    """Defines properties of an audio signal and performs basic operations such as Wav loading and STFT/iSTFT.
+
+    Parameters:
+        path_to_input_file (string): string specifying path to file. Either this or timeSeries must be provided
+        audio_data_array (np.array): Numpy matrix containing a time series of a signal
+        signalStartingPosition (Optional[int]): Starting point of the section to be extracted in seconds. Defaults to 0
+        signalLength (Optional[int]): Length of the signal to be extracted. Defaults to full length of the signal
+        SampleRate (Optional[int]): sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE
+        stft (Optional[np.array]): Optional pre-coumputed complex spectrogram data.
+
+    Attributes:
+        window_type(WindowType): type of window to use in operations on the signal. Defaults to WindowType.DEFAULT
+        window_length (int): Length of window in ms. Defaults to 0.06 * SampleRate
+        num_fft_bins (int): Number of bins for fft. Defaults to windowLength
+        overlap_ratio (float): Ratio of window that overlaps in [0,1). Defaults to 0.5
+        complex_spectrogram_data (np.array): complex spectrogram of the data
+        power_spectrum_data (np.array): power spectrogram of the data
+        Fvec (np.array): frequency vector for stft
+        Tvec (np.array): time vector for stft
+        sample_rate (int): sampling frequency
   
-    EXAMPLES:
-    -create a new signal object:     sig=Signal('sample_audio_file.wav')  
-    -compute the spectrogram of the new signal object:   sigSpec,sigPow,F,T=sig.do_STFT()
-    -compute the inverse stft of a spectrogram:          sigrec,tvec=sig.do_iSTFT()
+    Examples:
+        * create a new signal object:     ``sig=AudioSignal('sample_audio_file.wav')``
+        * compute the spectrogram of the new signal object:   ``sigSpec,sigPow,F,T=sig.STFT()``
+        * compute the inverse stft of a spectrogram:          ``sigrec,tvec=sig.iSTFT()``
   
     """
 
     def __init__(self, path_to_input_file=None, audio_data_array=None, signalStartingPosition=0, signalLength=0,
                  sampleRate=Constants.DEFAULT_SAMPLE_RATE, stft=None):
-        """
-        inputs: 
-        path_to_input_file is a string indicating a path to a .wav file
-        signalLength (in seconds): optional input indicating the length of the signal to be extracted. 
-                             Default: full length of the signal
-        signalStartingPosition (in seconds): optional input indicating the starting point of the section to be 
-                               extracted. Default: 0 seconds
-        audio_data_array: Numpy matrix containing a time series
-        sample_rate: sampling rate
-        """
 
         self.path_to_input_file = path_to_input_file
         self._audioData = None
@@ -102,36 +93,25 @@ class AudioSignal(object):
 
     @property
     def signal_length(self):
-        """
-        Returns the length of the audio signal represented by this object in samples
-        Note: This is a property and not settable from here.
-        :return: length of the audio signal represented by this object in samples
+        """The length of the audio signal represented by this object in samples
         """
         return self._audioData.shape[self._LEN]
 
     @property
     def signal_duration(self):
-        """
-        Returns the length of the audio signal represented by this object in seconds
-        Note: This is a property and not settable from here.
-        :return: length of the audio signal represented by this object in seconds
+        """The length of the audio signal represented by this object in seconds
         """
         return self.signal_length / self.sample_rate
 
     @property
     def num_channels(self):
-        """
-        Returns number of channels
-        Note: This is a property and not settable from here.
-        :return: number of channels
+        """The number of channels
         """
         return self._audioData.shape[self._CHAN]
 
     @property
     def audio_data(self):
-        """
-        A numpy array that represents the audio
-        :return: numpy array representing the audio
+        """A numpy array that represents the audio
         """
         return self._audioData
 
@@ -146,10 +126,7 @@ class AudioSignal(object):
 
     @property
     def file_name(self):
-        """
-        The name of the file wth extension, NOT the full path
-        Note: This is a property and not settable from here.
-        :return: file name with extension
+        """The name of the file wth extension, NOT the full path
         """
         if self.path_to_input_file is not None:
             return os.path.split(self.path_to_input_file)[1]
@@ -160,19 +137,15 @@ class AudioSignal(object):
     ##################################################
 
     def load_audio_from_file(self, input_file_path, signal_starting_position=0, signal_length=0):
-        """
-        Loads an audio signal from a .wav file
-        signal_length (in seconds): optional input indicating  extracted.
-            signal_length of 0 means read the whole file
-            Default: full length of the signal
-        signal_starting_position (in seconds): optional input indicating the starting point of the section to be
-            extracted.
-            Default: 0 seconds
-        :param input_file_path: path to input file.
-        :param signal_starting_position: (optional) position (in seconds) to start reading in the file
-                                        to read full file set this as signal_starting_position=0, default is 0
-        :param signal_length: (optional) the length of the signal to be read from the file.
-        signal_length of 0 means read the whole file
+        """Loads an audio signal from a .wav file
+
+        Parameters:
+            input_file_path: path to input file.
+            signal_length (Optional[int]): Length of signal to load. signal_length of 0 means read the whole file
+             Defaults to the full length of the signal
+            signal_starting_position (Optional[int]): The starting point of the section to be extracted (seconds).
+             Defaults to 0 seconds
+
         """
         try:
             self.sample_rate, audio_input = wav.read(input_file_path)
@@ -195,11 +168,12 @@ class AudioSignal(object):
         self.time = np.array((1. / self.sample_rate) * np.arange(self.signal_length))
 
     def load_audio_from_array(self, signal, sample_rate=Constants.DEFAULT_SAMPLE_RATE):
-        """
-        Loads an audio signal in numpy matrix format along with the sampling rate
-        :param signal: numpy array that is the input signal
-        :param sample_rate: (optional) sample rate of signal, default is 44.1kHz
-        :return:
+        """Loads an audio signal from a numpy array
+
+        Parameters:
+            signal (np.array): np.array containing the audio file signal sampled at sampleRate
+            sample_rate (Optional[int]): the sampleRate of signal. Default is Constants.DEFAULT_SAMPLE_RATE
+
         """
         self.path_to_input_file = None
         self.audio_data = np.array(signal)
@@ -208,12 +182,13 @@ class AudioSignal(object):
         self.time = np.array((1. / self.sample_rate) * np.arange(self.signal_length))
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
-        """
-        Outputs the audio signal in a .wav file
-        :param output_file_path: desired full output path
-        :param sample_rate: (optional) sample rate of the output, default is sample rate from this object
-        :param verbose:
-        :return:
+        """Outputs the audio signal to a .wav file
+
+        Parameters:
+            output_file_path (str): Filename where waveform will be saved
+            sample_rate (Optional[int]): The sample rate to write the file at. Default is AudioSignal.SampleRate, which
+            is the samplerate of the original signal.
+            verbose (Optional[bool]): Flag controlling printing when writing the file.
         """
         if self.audio_data is None:
             raise Exception("Cannot write audio file because there is no audio data.")
@@ -236,13 +211,17 @@ class AudioSignal(object):
     ##################################################
 
     def do_STFT(self):
-        """
-        computes the do_STFT of the audio signal
-        :return:
-            self.complex_spectrogram_data: complex stft
-            self.power_spectrum_data: power spectrogram
-            self.Fvec: frequency vector
-            self.Tvec: vector of time frames
+        """computes the STFT of the audio signal
+
+        Returns:
+            * **complex_spectrogram_data** (*np.array*) - complex stft data
+
+            * **power_spectrum_data** (*np.array*) - power spectrogram
+
+            * **Fvec** (*np.array*) - frequency vector
+
+            * **Tvec** (*np.array*) - vector of time frames
+
         """
         if self.audio_data is None:
             raise Exception("No audio data to make do_STFT from.")
@@ -265,11 +244,14 @@ class AudioSignal(object):
         return self.complex_spectrogram_data, self.power_spectrum_data, self.Fvec, self.Tvec
 
     def do_iSTFT(self):
-        """
-        Computes and returns the inverse do_STFT.
-        Will overwrite any data in self.audio_data!
+        """Computes and returns the inverse STFT.
 
-        :returns: self.audio_data: time-domain signal and self.time: time vector
+        Warning:
+            Will overwrite any data in self.AudioData!
+
+        Returns:
+             audio_data (np.array): time-domain signal
+             time (np.array): time vector
         """
         if self.complex_spectrogram_data.size == 0:
             raise Exception('Cannot do inverse do_STFT without do_STFT data!')
@@ -295,9 +277,10 @@ class AudioSignal(object):
     ##################################################
 
     def concat(self, other):
-        """
-        Add two AudioSignal objects (by adding self.audio_data) temporally.
-        :param other: Another AudioSignal object
+        """ Add two AudioSignal objects (by adding self.audio_data) temporally.
+
+        Parameters:
+            other (AudioSignal): Audio Signal to concatenate with the current one.
         """
         if self.num_channels != other.num_channels:
             raise Exception('Cannot concat two signals that have a different number of channels!')
@@ -305,17 +288,20 @@ class AudioSignal(object):
         self.audio_data = np.concatenate((self.audio_data, other.audio_data))
 
     def get_channel(self, n):
-        """
-        Gets the n-th channel. 1-based!
-        :param n: index of channel to get. 1-based!
-        :return: numpy array of n-th channel.
+        """Gets the n-th channel. 1-based.
+
+        Parameters:
+            n (int): index of channel to get 1-based.
+        Returns:
+             n-th channel (np.array): the data in the n-th channel of the signal
         """
         return self.audio_data[n - 1,]
 
     def peak_normalize(self, bitDepth=16):
-        """
-        Normalizes the whole audio file to the max value.
-        :param bitDepth: (optional) Max value (in bits) to normalize to. Default is 16 bits.
+        """Normalizes the whole audio file to the max value.
+
+        Parameters:
+            bitDepth (Optional[int]): Max value (in bits) to normalize to. Default is 16 bits.
         """
         bitDepth -= 1
         maxVal = 1.0
@@ -324,18 +310,22 @@ class AudioSignal(object):
             self.audio_data = np.divide(self.audio_data, maxSignal)
 
     def add(self, other):
-        """
+        """adds two audio signals
 
-        :param other:
-        :return:
+        Parameters:
+            other (AudioSignal): Other audio signal to add.
+        Returns:
+            sum (AudioSignal): AudioSignal with the sum of the current object and other.
         """
         return self + other
 
     def sub(self, other):
-        """
+        """subtracts two audio signals
 
-        :param other:
-        :return:
+        Parameters:
+            other (AudioSignal): Other audio signal to subtract.
+        Returns:
+            diff (AudioSignal): AudioSignal with the difference of the current object and other.
         """
         return self - other
 
