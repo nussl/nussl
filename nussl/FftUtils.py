@@ -4,39 +4,35 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from WindowType import WindowType
+import scipy.fftpack as spfft
 
 plt.interactive('True')
-import scipy.fftpack as spfft
 
 
 def f_stft(signal, num_ffts=None, window_attributes=None, win_length=None, window_type=None, window_overlap=None,
            sample_rate=None):
-    """
-    This function computes the one-sided do_STFT of a signal
-    :param window_attributes: window_attributes object that contains all info about windowing
-    :param signal: signal, row vector
-    :param win_length: length of one window (in # of samples)
-    :param window_type: window type, window_type object
-    :param window_overlap: number of overlapping samples between adjacent windows
-    :param sample_rate: sampling rate of the signal
-    :param num_ffts: min number of desired freq. samples in (-pi,pi]. MUST be >= L.
-    :param mkplot: binary input (1 for show plot). Default value is 0
-    :return:    S: 2D numpy matrix containing the one-sided short-time Fourier transform of the signal (complex)
-                P: 2D numpy matrix containing the one-sided PSD of the signal
-                F: frequency vector
-                T: time vector
-    """
-    """
-    *NOTE* The default value for num_fft_bins is the next power 2 of the window length (nextpower2(L)).
-       e.g. if num_fft_bins is not specified and L=257, num_fft_bins will be set to 512.
-    mkplot:
-    freq_max(optional):
+    """Computes the one-sided do_STFT of a signal
 
-    Outputs:
+    Parameters:
+        signal (np.array): row vector containing the signal.
+        num_ffts (Optional[int]): min number of desired freq. samples in (-pi,pi]. MUST be >= L. Defaults to
+         int(2 ** np.ceil(np.log2(win_length)))
+        window_attributes (Optional[WindowAttributes]): Contains all info about windowing for stft.
+        win_length (Optional[int]): length of one window (in # of samples)
+        window_type (Optional[WindowType]): window type
+        window_overlap (Optional[int]): number of overlapping samples between adjacent windows
+        sample_rate (int): sampling rate of the signal
 
-    * Note: windowing and fft will be performed row-wise so that the code runs faster
+    Note:
+        Either window_attributes or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
 
+    Returns:
+        * **S** (*np.array*) - 2D numpy matrix containing the one-sided short-time Fourier transform of the signal (complex)
+        * **P** (*np.array*) - 2D numpy matrix containing the one-sided PSD of the signal
+        * **F** (*np.array*) - frequency vector
+        * **T** (*np.array*) - time vector
     """
+
     if window_attributes is None:
         if all(i is None for i in [win_length, window_type, window_overlap, num_ffts]):
             raise Exception('Cannot do do_STFT! win_length, window_type, window_overlap, num_ffts are all required!')
@@ -118,6 +114,26 @@ def f_stft(signal, num_ffts=None, window_attributes=None, win_length=None, windo
 
 def PlotStft(signal, file_name, num_ffts=None, freq_max=None, window_attributes=None, win_length=None, window_type=None,
              win_overlap=None, sample_rate=None, show_interactive_plot=False):
+    """ Plots a stft of signal with the given window attributes
+
+    Parameters:
+        signal (np.array):
+        file_name (str):
+        num_ffts (Optional[int]): min number of desired freq. samples in (-pi,pi]. MUST be >= L. Defaults to
+         int(2 ** np.ceil(np.log2(win_length)))
+        freq_max (int): Max frequency to display
+        window_attributes (Optional[WindowAttributes]): Contains all info about windowing for stft.
+        win_length (Optional[int]): length of one window (in # of samples)
+        window_type (Optional[WindowType]): window type
+        win_overlap (Optional[int]): number of overlapping samples between adjacent windows
+        sample_rate (int): sampling rate of the signal
+        show_interactive_plot (Optional[bool]): Flag indicating if plot should be shown when function is run.
+         Defaults to False
+
+    Note:
+         Either window_attributes or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
+
+    """
     (S, P, F, Time) = f_stft(signal, num_ffts=num_ffts, window_attributes=window_attributes, win_length=win_length,
                              window_type=window_type, window_overlap=win_overlap, sample_rate=sample_rate)
     TT = np.tile(Time, (len(F), 1))
@@ -135,17 +151,18 @@ def PlotStft(signal, file_name, num_ffts=None, freq_max=None, window_attributes=
 
 
 def f_istft(stft, win_length, window_type, win_overlap, sample_rate):
-    """
-    This function computes the inverse do_STFT of a spectrogram using
-    Overlap Addition method
+    """Computes the inverse do_STFT of a spectrogram using Overlap Addition method
 
-    :param stft: one-sided do_STFT (spectrogram) of the signal x
-    :param win_length: window length (in # of samples)
-    :param window_type: window type, (string): 'Rectangular', 'Hamming', 'Hanning', 'Blackman'
-    :param win_overlap: overlap between adjacent windows in do_STFT analysis
-    :param sample_rate: sampling rate of the original signal x
-    :return:    t: Numpy array containing time values for the reconstructed signal
-                y: Numpy array containing the reconstructed signal
+    Parameters:
+        stft (np.array): one-sided do_STFT (spectrogram) of the signal x
+        win_length (Optional[int]): length of one window (in # of samples)
+        window_type (Optional[WindowType]): window type
+        win_overlap (Optional[int]): number of overlapping samples between adjacent windows
+        sample_rate (int): sampling rate of the signal
+
+    Returns:
+        * **t** (*np.array*) - Numpy array containing time values for the reconstructed signal
+        * **y** (*np.array*) - Numpy array containing the reconstructed signal
     """
     # TODO: make this accept a WindowAttributes object
     # Get spectrogram dimensions and compute window hop size
@@ -177,11 +194,13 @@ def f_istft(stft, win_length, window_type, win_overlap, sample_rate):
 
 
 def make_window(window_type, length):
-    """
-    Returns an np array of type window_type
-    :param window_type: Type of window to create, window_type object
-    :param length: length of window
-    :return: np array of window
+    """Returns an np array of type window_type
+
+    Parameters:
+        window_type (WindowType): Type of window to create, window_type object
+        length (int): length of window
+    Returns:
+         window (np.array): np array of windowtype
     """
 
     # Generate samples of a normalized window
