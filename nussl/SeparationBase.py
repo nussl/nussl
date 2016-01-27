@@ -7,13 +7,19 @@ import AudioSignal
 
 
 class SeparationBase(object):
-    """
-    Base class for all separation algorithms.
+    """Base class for all separation algorithms.
+
     Do not call this. It will not do anything.
 
     Authors: Fatameh Pishdadian and Ethan Manilow
     Interactive Audio Lab
     Northwestern University, 2015
+
+    Parameters:
+        window_attributes (WindowAttributes): WindowAttributes for the separation algorithm. Defaults to
+         WindowAttributes.WindowAttributes(self.sample_rate)
+        sample_rate (Optional[int]): Sample rate. Defaults to Constants.DEFAULT_SAMPLE_RATE
+        audio_signal (Optional[np.array]): Audio signal in array form. Defaults to AudioSignal.AudioSignal()
 
     """
 
@@ -35,25 +41,26 @@ class SeparationBase(object):
             self.audio_signal = AudioSignal.AudioSignal()
 
     def plot(self, outputName, **kwargs):
-        """
-        Plots relevant data for separation algorithm
-        :return:
+        """Plots relevant data for separation algorithm
+
+        Raises:
+            NotImplementedError: Cannot call base class
         """
         raise NotImplementedError('Cannot call base class.')
 
     def run(self):
-        """
-        run separation algorithm
-        :param args:
-        :param kwargs:
-        :return:
+        """run separation algorithm
+
+        Raises:
+            NotImplementedError: Cannot call base class
         """
         raise NotImplementedError('Cannot call base class.')
 
     def make_audio_signals(self):
-        """
-        Makes AudioSignal objects after separation algorithm is run
-        :return:
+        """Makes AudioSignal objects after separation algorithm is run
+
+        Raises:
+            NotImplementedError: Cannot call base class
         """
         raise NotImplementedError('Cannot call base class.')
 
