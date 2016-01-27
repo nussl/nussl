@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>AudioMix module &mdash; nussl 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 1.0 documentation" href="../index.html"/>
+        <link rel="up" title="nussl" href="modules.html"/>
+        <link rel="next" title="AudioSignal module" href="AudioSignal.html"/>
+        <link rel="prev" title="nussl" href="modules.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">AudioMix module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DUET_v2.html">DUET_v2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FftUtils.html">FftUtils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="REPET_org.html">REPET_org module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="REPET_org_freq.html">REPET_org_freq module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="modules.html">nussl</a> &raquo;</li>
+      
+    <li>AudioMix module</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/src/AudioMix.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-AudioMix">
+<span id="audiomix-module"></span><h1>AudioMix module<a class="headerlink" href="#module-AudioMix" title="Permalink to this headline">¶</a></h1>
+<p>Audio mixture generator implementation. The mixture types include: instantaneous,
+anechoic, and convolutive.</p>
+<dl class="docutils">
+<dt>Required packages:</dt>
+<dd><ul class="first last simple">
+<li>Numpy</li>
+<li>Scipy</li>
+<li>Matplotlib</li>
+</ul>
+</dd>
+</dl>
+<dl class="function">
+<dt id="AudioMix.fastconv">
+<code class="descclassname">AudioMix.</code><code class="descname">fastconv</code><span class="sig-paren">(</span><em>x</em>, <em>h</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioMix.fastconv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs fast convolution (in freq. domain rather than in time domain.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>np.array</em>) &#8211; Numpy row vector containing samples of the time-domain signal x[n]</li>
+<li><strong>h</strong> (<em>np.array</em>) &#8211; Numpy row vector containing samples of the time-domain signal h[n] which here is considered to be
+the impulse response of a channel</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>y</strong> (<em>np.array</em>) &#8211;
+a Numpy row vector containing samples of the time-domain signal y[n], the output of the
+channel h to an input signal x</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<p>The original MATLAB implementation can be found on the Mathworks File Exchange at:
+<a class="reference external" href="http://www.mathworks.com/matlabcentral/fileexchange/5110-fast-convolution">http://www.mathworks.com/matlabcentral/fileexchange/5110-fast-convolution</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="AudioMix.mkmixture">
+<code class="descclassname">AudioMix.</code><code class="descname">mkmixture</code><span class="sig-paren">(</span><em>sn</em>, <em>mixparam</em>, <em>fs</em>, <em>rsch=False</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioMix.mkmixture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synthesizes an M-channel convolutive mixture of N sources</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sn</strong> (<em>np.array</em>) &#8211; Numpy N by Ls array. Each row contains a single channel time-domain source signal.</li>
+<li><strong>mixparam</strong> (<em>List[np.array]</em>) &#8211; <p>List containing locations of sources/mics and room parameters</p>
+<ul>
+<li>Numpy N by 3 array containing source locations (x,y,z coordinates)</li>
+<li>Numpy M by 3 array containing mic locations (x,y,z, coordinates)</li>
+<li>Numpy 1 by 2 array containing room characteristics<blockquote>
+<div><ol class="arabic">
+<li>number of virtual sources</li>
+<li>reflection coefficients in (-1,1)</li>
+</ol>
+</div></blockquote>
+</li>
+<li>Numpy 1 by 3 array containing room dimensions (meters)</li>
+</ul>
+</li>
+<li><strong>fs</strong> (<em>int</em>) &#8211; sampling rate (in Hz)</li>
+<li><strong>rsch</strong> (<em>Optional[bool]</em>) &#8211; logical argument indicating whether the room schematic should be generated or not.
+Default is False</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>Mixtures</strong> (<em>np.array</em>) - a Numpy M by Lx array. Each row contains a single channel time-domain mixture</li>
+<li><strong>SourceIMS</strong> (<em>np.array</em>) - a Numpy N by M by Lx array containing time-domain samples of source images</li>
+<li><strong>H</strong> (<em>list</em>) - a M by N list containing impulse responses of M*N acoustic channels between sources and mics</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="AudioMix.rir">
+<code class="descclassname">AudioMix.</code><code class="descname">rir</code><span class="sig-paren">(</span><em>Rdim</em>, <em>Mcoords</em>, <em>Scoords</em>, <em>Numvs</em>, <em>Rcoef</em>, <em>fs</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioMix.rir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the room impulse response given the recording setup and the room features, using the mirror image method</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Rdim</strong> (<em>np.array</em>) &#8211; Numpy array containing the dimensions of the room (meters)</li>
+<li><strong>Mcoords</strong> (<em>np.array</em>) &#8211; Numpy 1 by 3 array containing microphone location (x,y,z, coordinates)</li>
+<li><strong>Scoords</strong> (<em>np.array</em>) &#8211; Numpy 1 by 3 array containing the sound source location (x,y,z, coordinates)</li>
+<li><strong>Numvs</strong> (<em>int</em>) &#8211; number of virtual sources will be (2*Numvs+1)**3</li>
+<li><strong>Rcoef</strong> (<em>int</em>) &#8211; reflection coefficinet for the walls, taking on a value in (-1,1)</li>
+<li><strong>fs</strong> (<em>int</em>) &#8211; sampling rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>h</strong> (<em>np.array</em>) &#8211;
+Numpy 1 by Lh array containing the room impulse response</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre>Rdim=np.array([20,19,21])
+Mcoords=np.array([19,18,1.6])
+Scoords=np.array([5,2,1]
+Numvs=1
+Rcoef=0.3
+fs=44100
+h = rir(Rdim,Mcoords,Scoords,Numvs,Rcoef,fs)
+</pre></div>
+</div>
+<p class="rubric">References</p>
+<p>The original MATLAB implementation by Stephen G. McGovern can be found on the Mathworks File Exchange at:
+<a class="reference external" href="http://www.mathworks.com/matlabcentral/fileexchange/5116-room-impulse-response-generator">http://www.mathworks.com/matlabcentral/fileexchange/5116-room-impulse-response-generator</a></p>
+<p>McGovern, Stephen G. &#8220;Fast image method for impulse response calculations of box-shaped rooms.&#8221;
+Applied Acoustics 70.1 (2009): 182-189.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="AudioSignal.html" class="btn btn-neutral float-right" title="AudioSignal module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="modules.html" class="btn btn-neutral" title="nussl" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

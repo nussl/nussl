@@ -1,0 +1,540 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Repet module &mdash; nussl 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 1.0 documentation" href="../index.html"/>
+        <link rel="up" title="nussl" href="modules.html"/>
+        <link rel="next" title="SeparationBase module" href="SeparationBase.html"/>
+        <link rel="prev" title="REPET_org_freq module" href="REPET_org_freq.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AudioMix.html">AudioMix module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DUET_v2.html">DUET_v2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FftUtils.html">FftUtils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="REPET_org.html">REPET_org module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="REPET_org_freq.html">REPET_org_freq module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Repet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="modules.html">nussl</a> &raquo;</li>
+      
+    <li>Repet module</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/src/Repet.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-Repet">
+<span id="repet-module"></span><h1>Repet module<a class="headerlink" href="#module-Repet" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="Repet.Repet">
+<em class="property">class </em><code class="descclassname">Repet.</code><code class="descname">Repet</code><span class="sig-paren">(</span><em>audio_signal</em>, <em>repet_type=None</em>, <em>window_attributes=None</em>, <em>sample_rate=None</em>, <em>similarity_threshold=None</em>, <em>min_distance_between_frames=None</em>, <em>max_repeating_frames=None</em>, <em>min_period=None</em>, <em>max_period=None</em>, <em>period=None</em>, <em>high_pass_cutoff=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="SeparationBase.html#SeparationBase.SeparationBase" title="SeparationBase.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">SeparationBase.SeparationBase</span></code></a></p>
+<p>Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).</p>
+<p>REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
+audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.</p>
+<p class="rubric">References</p>
+<ul class="simple">
+<li>Zafar Rafii and Bryan Pardo. &#8220;Audio Separation System and Method,&#8221; US20130064379 A1, US 13/612,413, March 14,
+2013</li>
+<li>Zafar Rafii and Bryan Pardo. &#8220;Music/Voice Separation using the Similarity Matrix,&#8221; 13th International Society
+on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.</li>
+</ul>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="http://music.eecs.northwestern.edu/research.php?project=repet">http://music.eecs.northwestern.edu/research.php?project=repet</a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>audio_signal</strong> (<a class="reference internal" href="AudioSignal.html#module-AudioSignal" title="AudioSignal"><em>AudioSignal</em></a>) &#8211; audio mixture (M by N) containing M channels and N time samples</li>
+<li><strong>repet_type</strong> (<a class="reference internal" href="#Repet.RepetType" title="Repet.RepetType"><em>RepetType</em></a>) &#8211; Variant of Repet algorithm to perform.</li>
+<li><strong>window_attributes</strong> (<a class="reference internal" href="WindowAttributes.html#module-WindowAttributes" title="WindowAttributes"><em>WindowAttributes</em></a>) &#8211; WindowAttributes object describing the window used in the repet
+algorithm</li>
+<li><strong>sample_rate</strong> (<em>int</em>) &#8211; the sample rate of the audio signal</li>
+<li><strong>similarity_threshold</strong> (<em>Optional[int]</em>) &#8211; Used for RepetType.SIM. Defaults to 0</li>
+<li><strong>min_distance_between_frames</strong> (<em>Optional[int]</em>) &#8211; Used for RepetType.SIM. Defaults to 1</li>
+<li><strong>max_repeating_frames</strong> (<em>Optional[int]</em>) &#8211; Used for RepetType.SIM. Defaults to 10</li>
+<li><strong>period</strong> (<em>Optional[float]</em>) &#8211; Used for RepetType.ORIGINAL. The Period of the repeating part of the signal.</li>
+<li><strong>min_period</strong> (<em>Optional[float]</em>) &#8211; Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
+0.8</li>
+<li><strong>max_period</strong> (<em>Optional[float]</em>) &#8211; Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
+min(8, self.Mixture.SignalLength/3)</li>
+<li><strong>high_pass_cutoff</strong> (<em>Optional[int]</em>) &#8211; Defaults to 100</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="staticmethod">
+<dt id="Repet.Repet.compute_beat_spectrum">
+<em class="property">static </em><code class="descname">compute_beat_spectrum</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.compute_beat_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the beat spectrum averages (over freq.s) the autocorrelation matrix of a one-sided spectrogram.</p>
+<blockquote>
+<div>The autocorrelation matrix is computed by taking the autocorrelation of each row of the spectrogram and
+dismissing the symmetric half.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>np.array</em>) &#8211; 2D matrix containing the one-sided power spectrogram of the audio signal (Lf by Lt)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>b</strong> (<em>np.array</em>) &#8211;
+array containing the beat spectrum based on the power spectrogram</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="Repet.Repet.compute_repeating_mask_sim">
+<em class="property">static </em><code class="descname">compute_repeating_mask_sim</code><span class="sig-paren">(</span><em>V</em>, <em>I</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.compute_repeating_mask_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the soft mask for the repeating part using the magnitude spectrogram and the similarity indices</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>V</strong> (<em>np.array</em>) &#8211; 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)</li>
+<li><strong>I</strong> (<em>np.array</em>) &#8211; array containing similarity indices for all time frames</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>M</strong> (<em>np.array</em>) &#8211;
+2D matrix (Lf by Lt) containing the soft mask for the repeating part. Elements of M take on
+values in [0,1]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="Repet.Repet.compute_repeating_mask_with_beat_spectrum">
+<em class="property">static </em><code class="descname">compute_repeating_mask_with_beat_spectrum</code><span class="sig-paren">(</span><em>V</em>, <em>p</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.compute_repeating_mask_with_beat_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the soft mask for the repeating part using the magnitude spectrogram and the repeating period</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>V</strong> (<em>np.array</em>) &#8211; 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)</li>
+<li><strong>p</strong> (<em>int</em>) &#8211; repeating period measured in # of time frames</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>M</strong> (<em>np.array</em>) &#8211;
+2D matrix (Lf by Lt) containing the soft mask for the repeating part, elements of M take on
+values in [0,1]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="Repet.Repet.compute_similarity_matrix">
+<em class="property">static </em><code class="descname">compute_similarity_matrix</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.compute_similarity_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the similarity matrix using the cosine similarity for input matrix X.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>np.array</em>) &#8211; 2D matrix containing the magnitude spectrogram of the audio signal (Lf by Lt)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>S</strong> (<em>np.array</em>) &#8211;
+similarity matrix (Lt by Lt)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.find_peaks">
+<code class="descname">find_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_num=1</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.find_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the peak values and corresponding indices in a vector of real values in [0,1]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>np.array</em>) &#8211; row vector of real values (in [0,1])</li>
+<li><strong>min_thr</strong> &#8211; (Optional[float]) minimum threshold (in [0,1]) on data values. Defaults to 0.5</li>
+<li><strong>min_dist</strong> &#8211; (Optional[int]) minimum distance (in # of elements) between peaks. Defaults to .25 * data.length</li>
+<li><strong>max_num</strong> &#8211; (Optional[int]) maximum number of peaks. Defaults to 1</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>peak_indices</strong> (<em>np.array</em>) &#8211;
+sorted array of indices of peaks in the data</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="Repet.Repet.find_repeating_period">
+<em class="property">static </em><code class="descname">find_repeating_period</code><span class="sig-paren">(</span><em>beat_spectrum</em>, <em>min_period</em>, <em>max_period</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.find_repeating_period" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the repeating period of the sound signal using the beat spectrum.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>beat_spectrum</strong> (<em>np.array</em>) &#8211; input beat spectrum array</li>
+<li><strong>min_period</strong> (<em>int</em>) &#8211; minimum possible period value</li>
+<li><strong>max_period</strong> (<em>int</em>) &#8211; maximum possible period value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>period</strong> (<em>int</em>) &#8211;
+The period of the sound signal</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.find_similarity_indices">
+<code class="descname">find_similarity_indices</code><span class="sig-paren">(</span><em>S</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.find_similarity_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the similarity indices for all time frames from the similarity matrix</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>S</strong> (<em>np.array</em>) &#8211; similarity matrix (Lt by Lt)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>I</strong> (<em>np.array</em>) &#8211;
+similarity indices for all time frames</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.get_beat_spectrum">
+<code class="descname">get_beat_spectrum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.get_beat_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns the beat spectrum for the audio file associated with this object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>beat_spectrum</strong> (<em>np.array</em>) &#8211;
+beat spectrum for the audio file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.get_similarity_matrix">
+<code class="descname">get_similarity_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.get_similarity_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns the similarity matrix for the audio file associated with this object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>similarity_matrix</strong> (<em>np.array</em>) &#8211;
+similarity matrix for the audio file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the background and foreground audio signals</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>Audio Signals</strong> (<em>List</em>) &#8211;
+2 element list.<blockquote>
+<div><ul class="simple">
+<li>bkgd: Audio signal with the calculated background track</li>
+<li>fkgd: Audio signal with the calculated foreground track</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>NOT YET IMPLEMENTED. Plots REPET results and saves to file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>Args:</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the REPET algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>y</strong> (<em>AudioSignal</em>) &#8211;
+repeating background (M by N) containing M channels and N time samples
+(the corresponding non-repeating foreground is equal to x-y)</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">pathToInputFile</span><span class="o">=</span><span class="s">&#39;inputName.wav&#39;</span><span class="p">)</span>
+
+<span class="c"># Set up window parameters</span>
+<span class="n">win</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowAttributes</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SampleRate</span><span class="p">)</span>
+<span class="n">win</span><span class="o">.</span><span class="n">WindowLength</span> <span class="o">=</span> <span class="mi">2048</span>
+<span class="n">win</span><span class="o">.</span><span class="n">WindowType</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
+
+<span class="c"># Set up and run Repet</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">Type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">,</span> <span class="n">windowAttributes</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+<span class="n">repet</span><span class="o">.</span><span class="n">MinDistanceBetweenFrames</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">repet</span><span class="o">.</span><span class="n">Run</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Repet.RepetType">
+<em class="property">class </em><code class="descclassname">Repet.</code><code class="descname">RepetType</code><a class="headerlink" href="#Repet.RepetType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Types of Repet algorithm implementation.</p>
+<dl class="attribute">
+<dt id="Repet.RepetType.ADAPTIVE">
+<code class="descname">ADAPTIVE</code><em class="property"> = 'adaptive'</em><a class="headerlink" href="#Repet.RepetType.ADAPTIVE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Repet.RepetType.DEFAULT">
+<code class="descname">DEFAULT</code><em class="property"> = 'original'</em><a class="headerlink" href="#Repet.RepetType.DEFAULT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Repet.RepetType.ORIGINAL">
+<code class="descname">ORIGINAL</code><em class="property"> = 'original'</em><a class="headerlink" href="#Repet.RepetType.ORIGINAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Repet.RepetType.SIM">
+<code class="descname">SIM</code><em class="property"> = 'sim'</em><a class="headerlink" href="#Repet.RepetType.SIM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Repet.RepetType.all_types">
+<code class="descname">all_types</code><em class="property"> = ['original', 'sim', 'adaptive']</em><a class="headerlink" href="#Repet.RepetType.all_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="SeparationBase.html" class="btn btn-neutral float-right" title="SeparationBase module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="REPET_org_freq.html" class="btn btn-neutral" title="REPET_org_freq module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

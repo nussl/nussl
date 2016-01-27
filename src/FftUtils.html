@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FftUtils module &mdash; nussl 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 1.0 documentation" href="../index.html"/>
+        <link rel="up" title="nussl" href="modules.html"/>
+        <link rel="next" title="KAM module" href="KAM.html"/>
+        <link rel="prev" title="Duet module" href="Duet.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="AudioMix.html">AudioMix module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DUET_v2.html">DUET_v2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">FftUtils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="REPET_org.html">REPET_org module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="REPET_org_freq.html">REPET_org_freq module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="modules.html">nussl</a> &raquo;</li>
+      
+    <li>FftUtils module</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/src/FftUtils.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-FftUtils">
+<span id="fftutils-module"></span><h1>FftUtils module<a class="headerlink" href="#module-FftUtils" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="FftUtils.PlotStft">
+<code class="descclassname">FftUtils.</code><code class="descname">PlotStft</code><span class="sig-paren">(</span><em>signal</em>, <em>file_name</em>, <em>num_ffts=None</em>, <em>freq_max=None</em>, <em>window_attributes=None</em>, <em>win_length=None</em>, <em>window_type=None</em>, <em>win_overlap=None</em>, <em>sample_rate=None</em>, <em>show_interactive_plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#FftUtils.PlotStft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a stft of signal with the given window attributes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>signal</strong> (<em>np.array</em>) &#8211; </li>
+<li><strong>file_name</strong> (<em>str</em>) &#8211; </li>
+<li><strong>num_ffts</strong> (<em>Optional[int]</em>) &#8211; min number of desired freq. samples in (-pi,pi]. MUST be &gt;= L. Defaults to
+int(2 ** np.ceil(np.log2(win_length)))</li>
+<li><strong>freq_max</strong> (<em>int</em>) &#8211; Max frequency to display</li>
+<li><strong>window_attributes</strong> (<em>Optional[WindowAttributes]</em>) &#8211; Contains all info about windowing for stft.</li>
+<li><strong>win_length</strong> (<em>Optional[int]</em>) &#8211; length of one window (in # of samples)</li>
+<li><strong>window_type</strong> (<em>Optional[WindowType]</em>) &#8211; window type</li>
+<li><strong>win_overlap</strong> (<em>Optional[int]</em>) &#8211; number of overlapping samples between adjacent windows</li>
+<li><strong>sample_rate</strong> (<em>int</em>) &#8211; sampling rate of the signal</li>
+<li><strong>show_interactive_plot</strong> (<em>Optional[bool]</em>) &#8211; Flag indicating if plot should be shown when function is run.
+Defaults to False</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Either window_attributes or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="FftUtils.f_istft">
+<code class="descclassname">FftUtils.</code><code class="descname">f_istft</code><span class="sig-paren">(</span><em>stft</em>, <em>win_length</em>, <em>window_type</em>, <em>win_overlap</em>, <em>sample_rate</em><span class="sig-paren">)</span><a class="headerlink" href="#FftUtils.f_istft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the inverse do_STFT of a spectrogram using Overlap Addition method</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stft</strong> (<em>np.array</em>) &#8211; one-sided do_STFT (spectrogram) of the signal x</li>
+<li><strong>win_length</strong> (<em>Optional[int]</em>) &#8211; length of one window (in # of samples)</li>
+<li><strong>window_type</strong> (<em>Optional[WindowType]</em>) &#8211; window type</li>
+<li><strong>win_overlap</strong> (<em>Optional[int]</em>) &#8211; number of overlapping samples between adjacent windows</li>
+<li><strong>sample_rate</strong> (<em>int</em>) &#8211; sampling rate of the signal</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>t</strong> (<em>np.array</em>) - Numpy array containing time values for the reconstructed signal</li>
+<li><strong>y</strong> (<em>np.array</em>) - Numpy array containing the reconstructed signal</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="FftUtils.f_stft">
+<code class="descclassname">FftUtils.</code><code class="descname">f_stft</code><span class="sig-paren">(</span><em>signal</em>, <em>num_ffts=None</em>, <em>window_attributes=None</em>, <em>win_length=None</em>, <em>window_type=None</em>, <em>window_overlap=None</em>, <em>sample_rate=None</em><span class="sig-paren">)</span><a class="headerlink" href="#FftUtils.f_stft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the one-sided do_STFT of a signal</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>signal</strong> (<em>np.array</em>) &#8211; row vector containing the signal.</li>
+<li><strong>num_ffts</strong> (<em>Optional[int]</em>) &#8211; min number of desired freq. samples in (-pi,pi]. MUST be &gt;= L. Defaults to
+int(2 ** np.ceil(np.log2(win_length)))</li>
+<li><strong>window_attributes</strong> (<em>Optional[WindowAttributes]</em>) &#8211; Contains all info about windowing for stft.</li>
+<li><strong>win_length</strong> (<em>Optional[int]</em>) &#8211; length of one window (in # of samples)</li>
+<li><strong>window_type</strong> (<em>Optional[WindowType]</em>) &#8211; window type</li>
+<li><strong>window_overlap</strong> (<em>Optional[int]</em>) &#8211; number of overlapping samples between adjacent windows</li>
+<li><strong>sample_rate</strong> (<em>int</em>) &#8211; sampling rate of the signal</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Either window_attributes or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>S</strong> (<em>np.array</em>) - 2D numpy matrix containing the one-sided short-time Fourier transform of the signal (complex)</li>
+<li><strong>P</strong> (<em>np.array</em>) - 2D numpy matrix containing the one-sided PSD of the signal</li>
+<li><strong>F</strong> (<em>np.array</em>) - frequency vector</li>
+<li><strong>T</strong> (<em>np.array</em>) - time vector</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="FftUtils.make_window">
+<code class="descclassname">FftUtils.</code><code class="descname">make_window</code><span class="sig-paren">(</span><em>window_type</em>, <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#FftUtils.make_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an np array of type window_type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>window_type</strong> (<a class="reference internal" href="WindowType.html#module-WindowType" title="WindowType"><em>WindowType</em></a>) &#8211; Type of window to create, window_type object</li>
+<li><strong>length</strong> (<em>int</em>) &#8211; length of window</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>window</strong> (<em>np.array</em>) &#8211;
+np array of windowtype</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="KAM.html" class="btn btn-neutral float-right" title="KAM module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Duet.html" class="btn btn-neutral" title="Duet module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
