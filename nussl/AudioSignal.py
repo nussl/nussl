@@ -42,16 +42,6 @@ class AudioSignal(object):
 
     def __init__(self, path_to_input_file=None, audio_data_array=None, signal_starting_position=0, signal_length=0,
                  sample_rate=Constants.DEFAULT_SAMPLE_RATE, stft=None):
-        """
-        inputs: 
-        path_to_input_file is a string indicating a path to a .wav file
-        signal_length (in seconds): optional input indicating the length of the signal to be extracted.
-                             Default: full length of the signal
-        signal_starting_position (in seconds): optional input indicating the starting point of the section to be
-                               extracted. Default: 0 seconds
-        audio_data_array: Numpy matrix containing a time series
-        sample_rate: sampling rate
-        """
 
         self.path_to_input_file = path_to_input_file
         self._audioData = None
