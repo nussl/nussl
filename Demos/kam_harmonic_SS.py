@@ -76,8 +76,8 @@ for i in range(0,Ns):
  
  # plot the separated time-domain signals and corresponding power spectral dencities
 ts=np.mat(np.arange(shat.shape[0])/float(mix.fs))
-Fvec=mix.Fvec
-Tvec=mix.Tvec[0:fhat.shape[1]]
+Fvec=mix.freq_vec
+Tvec=mix.time_vec[0:fhat.shape[1]]
 TT=np.tile(Tvec,(len(Fvec),1))
 FF=np.tile(Fvec.T,(len(Tvec),1)).T
 
@@ -98,6 +98,6 @@ for i in range(0,Ns):
     plt.ylabel('f(Hz)')
     plt.title(r'$\hat{f}_'+str(i+1)+' $')
     plt.axis('tight')
-    #plt.ylim(src1.Fvec[0],5000)
+    #plt.ylim(src1.freq_vec[0],5000)
 plt.xlabel('t(s)')     
     

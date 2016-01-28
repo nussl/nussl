@@ -42,8 +42,8 @@ plt.ylabel('x(t)')
 plt.title('Mixture')
 plt.subplot(212)
 sig.do_STFT()
-TT = np.tile(sig.Tvec, (len(sig.Fvec), 1))
-FF = np.tile(sig.Fvec.T, (len(sig.Tvec), 1)).T
+TT = np.tile(sig.time_vec, (len(sig.freq_vec), 1))
+FF = np.tile(sig.freq_vec.T, (len(sig.time_vec), 1)).T
 
 # inputs of the 'kam' function 
 Inputfile = [x3, fs]
@@ -79,7 +79,7 @@ plt.xlabel('t(sec)')
 plt.ylabel('f(Hz)')
 plt.title(r'$\hat{f}_1$')
 plt.axis('tight')
-plt.ylim(sig.Fvec[0], 5000)
+plt.ylim(sig.freq_vec[0], 5000)
 
 plt.subplot(2, 2, 3)
 plt.plot(ts.T, shat[:, 0, 1])
@@ -92,7 +92,7 @@ plt.xlabel('t(sec)')
 plt.ylabel('f(Hz)')
 plt.title(r'$\hat{f}_2$')
 plt.axis('tight')
-plt.ylim(sig.Fvec[0], 5000)
+plt.ylim(sig.freq_vec[0], 5000)
 
 
 
@@ -189,8 +189,8 @@ ss2.writeaudiofile('/Users/fpishdadian/SourceSeparation/Audio Samples/Output/kam
 
 # plot the separated time-domain signals and corresponding power spectral dencities
 ts = np.mat(np.arange(shat.shape[0]) / float(fs))
-Fvec = mix1.Fvec
-Tvec = mix1.Tvec[0:fhat.shape[1]]
+Fvec = mix1.freq_vec
+Tvec = mix1.time_vec[0:fhat.shape[1]]
 TT = np.tile(Tvec, (len(Fvec), 1))
 FF = np.tile(Fvec.T, (len(Tvec), 1)).T
 
@@ -205,7 +205,7 @@ plt.pcolormesh(TT, FF, np.log10(fhat[:, :, 0]))
 plt.ylabel('f(Hz)')
 plt.title(r'$\hat{f}_1$')
 plt.axis('tight')
-# plt.ylim(src1.Fvec[0],5000)
+# plt.ylim(src1.freq_vec[0],5000)
 
 plt.subplot(2, 2, 3)
 plt.plot(ts.T, src2.x[0:shat.shape[0]])
@@ -217,4 +217,4 @@ plt.pcolormesh(TT, FF, np.log10(fhat[:, :, 1]))
 plt.ylabel('f(Hz)')
 plt.title(r'$\hat{f}_2$')
 plt.axis('tight')
-# plt.ylim(src2.Fvec[0],5000)
+# plt.ylim(src2.freq_vec[0],5000)
