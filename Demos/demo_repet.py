@@ -22,8 +22,8 @@ def main():
 
     # Get audio signals and write out to files
     bkgd, fgnd = repet.make_audio_signals()
-    bkgd.write_audio_to_file('../Output/repet_background.wav')
-    fgnd.write_audio_to_file('../Output/repet_foreground.wav')
+    bkgd.write_audio_to_file(os.path.join('..', 'Output', 'repet_background.wav'))
+    fgnd.write_audio_to_file(os.path.join('..', 'Output', 'repet_foreground.wav'))
 
 
 if __name__ == '__main__':

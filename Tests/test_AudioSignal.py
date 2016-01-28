@@ -1,5 +1,6 @@
 import unittest
 
+
 class TestAudioSignal(unittest.TestCase):
 
     def test_concat(self):
