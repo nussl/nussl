@@ -13,21 +13,34 @@ import Constants
 
 
 class Duet(SeparationBase.SeparationBase):
-    """
-    This module implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
+    """Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
+
     The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
     and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.
 
-    References:
-    [1] Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation.
-        Springer Netherlands, 2007. 217-241.
-    [2] Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures via
-        time-frequency masking." Signal Processing, IEEE transactions on 52.7
-        (2004): 1830-1847.
 
-    Authors: Fatameh Pishdadian and Ethan Manilow
-    Interactive Audio Lab
-    Northwestern University, 2015
+    References:
+
+        * Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation. Springer Netherlands,
+          2007. 217-241.
+        * Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures via time-frequency masking." Signal
+          Processing, IEEE transactions on 52.7 (2004): 1830-1847.
+
+    Parameters:
+        audio_signal (np.array): a 2-row Numpy matrix containing samples of the two-channel mixture
+        num_sources (int): number of sources to find
+        a_min (Optional[int]): Minimum attenuation. Defaults to -3
+        a_max(Optional[int]): Maximum attenuation. Defaults to 3
+        a_num(Optional[int]): Number of bins for attenuation. Defaults to 50
+        d_min (Optional[int]): Minimum delay. Defaults to -3
+        d_max (Optional[int]): Maximum delay. Defaults to 3
+        d_num (Optional[int]): Number of bins for delay. Defaults to 50
+        threshold (Optional[float]): Value in [0, 1] for peak picking. Defaults to 0.2
+        a_min_distance (Optional[int]): Minimum distance between peaks wrt attenuation. Defaults to 5
+        d_min_distance (Optional[int]): Minimum distance between peaks wrt delay. Defaults to 5
+        window_attributes (Optional[WindowAttributes]): Window attributes for stft. Defaults to
+         WindowAttributes.WindowAttributes(self.sample_rate)
+        sample_rate (Optional[int]): Sample rate for the audio. Defaults to Constants.DEFAULT_SAMPLE_RATE
 
     """
     def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
@@ -44,39 +57,13 @@ class Duet(SeparationBase.SeparationBase):
         return 'Duet'
 
     def run(self):
-        """
-        The 'duet' function extracts N sources from a given stereo audio mixture
-        (N sources captured via 2 sensors)
+        """Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)
 
-        Inputs:
-        x: a 2-row Numpy matrix containing samples of the two-channel mixture
-        sparam: structure array containing spectrogram parameters including
-                L: window length (in # of samples)
-              win: window type, string ('Rectangular', 'Hamming', 'Hanning', 'Blackman')
-              ovp: number of overlapping samples between adjacent windows
-              num_fft_bins: min number of desired freq. samples in (-pi,pi]. MUST be >= L.
-                   *NOTE* If this is not a power of 2, then it will automatically
-                   zero-pad up to the next power of 2. IE if you put 257 here,
-                   it will pad up to 512.
-               fs: sampling rate of the signal
-               ** sparam = np.array([(L,win,ovp,num_fft_bins,fs)]
-               dtype=[('winlen',int),('wintype','|S10'),('overlap',int),('numfreq',int),('sampfreq',int)])
-
-        adparam: structure array containing ranges and number of bins for attenuation and delay
-               ** adparam = np.array([(self.aMin,self.aMax,self.a_num,self.dMin,self.dMax,self.d_num)],
-               dtype=[('amin',float),('amax',float),('anum',float),('dmin',float)
-               ,('dmax',float),('dnum',int)])
-
-        Pr: vector containing user defined information including a threshold value (in [0,1])
-            for peak picking (thr), minimum distance between peaks, and the number of sources (N)
-            ** Pr = np.array(thr,self.aMindist,self.dMindist,N)
-        plothist: (optional) string input, indicates if the histogram is to be plotted
-              'y' (default): plot the histogram, 'n': don't plot
-
-        Output:
-        xhat: an N-row Numpy matrix containing N time-domain estimates of sources
-        ad_est: N by 2 Numpy matrix containing estimated attenuation and delay values
+        Returns:
+            * **xhat** (*np.array*) - an N-row matrix containing time-domain estimates of sources
+            * **ad_est** (*np.array*) - N by 2 Numpy matrix containing estimated attenuation and delay values
               corresponding to N sources
+
         """
 
         if self.audio_signal.num_channels != 2:
@@ -189,20 +176,17 @@ class Duet(SeparationBase.SeparationBase):
 
     @staticmethod
     def find_peaks2(data, min_thr=0.5, min_dist=None, max_peaks=1):
+        """Receives a matrix of positive numerical values (in [0,1]) and finds the peak values and corresponding indices.
 
-        """
-        The 'find_peaks2d' function receives a matrix of positive numerical
-        values (in [0,1]) and finds the peak values and corresponding indices.
+        Parameters:
+            data (np.array): a 2D Numpy matrix containing real values (in [0,1])
+            min_thr (Optional[float]): minimum threshold (in [0,1]) on data values. Defaults to 0.5
+            min_dist (Optional[np.array]): 1 by 2 matrix containing minimum distances (in # of time elements) between
+             peaks row-wise and column-wise. Defaults to .25* matrix dimensions
+            max_peaks (Optional[int]): maximum number of peaks in the whole matrix. Defaults to 1
 
-        Inputs:
-        data: a 2D Numpy matrix containing real values (in [0,1])
-        min_thr:(optional) minimum threshold (in [0,1]) on data values - default=0.5
-        min_dist:(optional) 1 by 2 matrix containing minimum distances (in # of time elements) between peaks
-                  row-wise and column-wise - default: 25% of matrix dimensions
-        max_peaks: (optional) maximum number of peaks in the whole matrix - default: 1
-
-        Output:
-        Pi: a two-row Numpy matrix containing peaks indices
+        Returns:
+            peakIndex (np.array): a two-row Numpy matrix containing peaks and their indices
         """
         assert (type(data) == np.ndarray)
 
@@ -237,19 +221,17 @@ class Duet(SeparationBase.SeparationBase):
     def find_peaks(data, min_thr=0.5, min_dist=None, max_num=1):
         # TODO: consolidate both find_peaks functions
         # TODO: when is this used?
-        """
-        The 'find_peaks' function receives a row vector array of positive numerical
-        values (in [0,1]) and finds the peak values and corresponding indices.
+        """Receives a row vector of positive values (in [0,1]) and finds the peak values and corresponding indices.
 
-        Inputs:
-        data: row vector of real values (in [0,1])
-        min_thr: (optional) minimum threshold (in [0,1]) on data values - default=0.5
-        min_dist:(optiotnal) minimum distance (in # of time elements) between peaks
-                 default: 25% of the vector length
-        max_num: (optional) maximum number of peaks - default: 1
+       Parameters:
+            data (np.array): a 2D Numpy matrix containing real values (in [0,1])
+            min_thr (Optional[float]): minimum threshold (in [0,1]) on data values. Defaults to 0.5
+            min_dist (Optional[np.array]): 1 by 2 matrix containing minimum distances (in # of time elements) between
+             peaks row-wise and column-wise. Defaults to .25* matrix dimensions
+            max_peaks (Optional[int]): maximum number of peaks in the whole matrix. Defaults to 1
 
-        Output:
-        Pi: peaks indices
+        Returns:
+            peakIndex (np.array): a two-row Numpy matrix containing peaks and their indices
         """
         assert (type(data) == np.ndarray)
 
@@ -279,18 +261,18 @@ class Duet(SeparationBase.SeparationBase):
         return peak_indices
 
     def twoDsmooth(self, Mat, Kernel):
-        """
-        The 'twoDsmooth' function receives a matrix and a kernel type and performs
-        two-dimensional convolution in order to smooth the values of matrix elements.
+        """Performs two-dimensional convolution in order to smooth the values of matrix elements.
+
         (similar to low-pass filtering)
 
-        Inputs:
-        Mat: a 2D Numpy matrix to be smoothed
-        Kernel: a 2D Numpy matrix containing kernel values
-               Note: if Kernel is of size 1 by 1 (scalar), a Kernel by Kernel matrix
-               of 1/Kernel**2 will be used as the matrix averaging kernel
+        Parameters:
+            Mat (np.array): a 2D Numpy matrix to be smoothed
+            Kernel (np.array): a 2D Numpy matrix containing kernel values
+        Note:
+            if Kernel is of size 1 by 1 (scalar), a Kernel by Kernel matrix of 1/Kernel**2 will be used as the matrix
+            averaging kernel
         Output:
-        SMat: a 2D Numpy matrix containing a smoothed version of Mat (same size as Mat)
+            SMat (np.array): a 2D Numpy matrix containing a smoothed version of Mat (same size as Mat)
         """
 
         # check the dimensions of the Kernel matrix and set the values of the averaging
@@ -342,8 +324,13 @@ class Duet(SeparationBase.SeparationBase):
 
         return SMAT
 
-
     def make_audio_signals(self):
+        """Returns the extracted signals
+
+        Returns:
+            signals (List[AudioSignal]): List of AudioSignals extracted using DUET.
+
+        """
         signals = []
         for i in range(self.num_sources):
             signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i])
@@ -351,6 +338,12 @@ class Duet(SeparationBase.SeparationBase):
         return signals
 
     def plot(self, outputName, three_d_plot=False):
+        """Plots histograms with the results of the DUET algorithm
+
+        Parameters:
+            outputName (str): path to save plot as
+            three_d_plot (Optional[bool]): Flags whether or not to plot in 3d. Defaults to False
+        """
         plt.close('all')
 
         AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T
