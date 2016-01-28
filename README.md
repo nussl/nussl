@@ -3,7 +3,7 @@ nussl
 =====
 
 **nussl** (pronounced like "nuzzle") is a flexible python source separation library
-created by the ![Interactive Audio Lab] (http://music.cs.northwestern.edu/) at Northwestern University.
+created by the [Interactive Audio Lab] (http://music.cs.northwestern.edu/) at Northwestern University.
 
 
 Features
@@ -43,7 +43,7 @@ nussl requires:
 Documentation
 -------------
 
-Full documentation is ![available here.](https://interactiveaudiolab.github.io/nussl/)
+Full documentation is [available here.](https://interactiveaudiolab.github.io/nussl/)
 
 Note: This package has been tested with python 2.7, but not 3.*. Use 3.* at your own peril!
 
@@ -59,9 +59,9 @@ nussl 0.1.0 is under an Apache License 2.0 (http://choosealicense.com/licenses/a
 
 Contributors
 ------------
-Corey Grief (![website](http://music.cs.northwestern.edu/people.php)),
-Ethan Manilow (![website](www.ethanmanilow.com)),
-Fatemah Pishdadian (![website](http://music.cs.northwestern.edu/people.php)),
+Corey Grief ([website](http://music.cs.northwestern.edu/people.php)),
+Ethan Manilow ([website](www.ethanmanilow.com)),
+Fatemah Pishdadian ([website](http://music.cs.northwestern.edu/people.php)),
 
 Contact
 -------
