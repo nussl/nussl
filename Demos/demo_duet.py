@@ -8,8 +8,8 @@ def main():
     input_file_name = '../Input/dev1_female3_inst_mix.wav'
     signal = AudioSignal(path_to_input_file=input_file_name)
 
-    if not os.path.exists('../Output/'):
-        os.mkdir('../Output')
+    if not os.path.exists(os.path.join('..', 'Output/')):
+        os.mkdir(os.path.join('..', 'Output/'))
 
     # set up FFT window attributes
     win = WindowAttributes(signal.sample_rate)
