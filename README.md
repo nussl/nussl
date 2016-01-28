@@ -40,10 +40,7 @@ $ python setup.py install
 You can also download and copy the nussl folder into your working directory.
 
 
-nussl requires:
-    - numpy, version >= 1.8.0
-    - scipy, version >= 0.13.0
-    - matplotlib, version >= 1.3.1
+nussl requires: `numpy, version >= 1.8.0`, `scipy, version >= 0.13.0`, `matplotlib, version >= 1.3.1`
 
 
 Documentation
