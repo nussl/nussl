@@ -41,11 +41,9 @@ You can also download and copy the nussl folder into your working directory.
 
 
 nussl requires:
-    numpy, version >= 1.8.0
-
-    scipy, version >= 0.13.0
-
-    matplotlib, version >= 1.3.1
+    - numpy, version >= 1.8.0
+    - scipy, version >= 0.13.0
+    - matplotlib, version >= 1.3.1
 
 
 Documentation
@@ -57,7 +55,8 @@ Note: This package has been tested with python 2.7, but not 3.\*. Use 3.\* at yo
 
 Status
 ------
-KAM, RPCA (and corresponding demos) need to be migrated to the framework.
+KAM, RPCA, and AudioMix (and corresponding demos) need to be migrated to the framework. They will be
+more difficult to get running.
 
 
 Licence
