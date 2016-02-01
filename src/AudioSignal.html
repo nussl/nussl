@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AudioSignal module &mdash; nussl 1.0 documentation</title>
+  <title>AudioSignal Class &mdash; nussl 1.0 documentation</title>
   
 
   
@@ -85,21 +85,19 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="AudioMix.html">AudioMix module</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">AudioSignal module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">AudioSignal Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="DUET_v2.html">DUET_v2 module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="FftUtils.html">FftUtils module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="REPET_org.html">REPET_org module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="REPET_org_freq.html">REPET_org_freq module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType Class</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
 </ul>
 
             
@@ -132,7 +130,7 @@
       
           <li><a href="modules.html">nussl</a> &raquo;</li>
       
-    <li>AudioSignal module</li>
+    <li>AudioSignal Class</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -147,10 +145,10 @@
            <div itemprop="articleBody">
             
   <div class="section" id="module-AudioSignal">
-<span id="audiosignal-module"></span><h1>AudioSignal module<a class="headerlink" href="#module-AudioSignal" title="Permalink to this headline">¶</a></h1>
+<span id="audiosignal-class"></span><h1>AudioSignal Class<a class="headerlink" href="#module-AudioSignal" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="AudioSignal.AudioSignal">
-<em class="property">class </em><code class="descclassname">AudioSignal.</code><code class="descname">AudioSignal</code><span class="sig-paren">(</span><em>path_to_input_file=None</em>, <em>audio_data_array=None</em>, <em>signalStartingPosition=0</em>, <em>signalLength=0</em>, <em>sampleRate=44100</em>, <em>stft=None</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">AudioSignal.</code><code class="descname">AudioSignal</code><span class="sig-paren">(</span><em>path_to_input_file=None</em>, <em>audio_data_array=None</em>, <em>signal_starting_position=0</em>, <em>signal_length=0</em>, <em>sample_rate=44100</em>, <em>stft=None</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Defines properties of an audio signal and performs basic operations such as Wav loading and STFT/iSTFT.</p>
 <table class="docutils field-list" frame="void" rules="none">

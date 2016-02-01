@@ -1,5 +1,5 @@
-Repet module
-============
+Repet Class
+===========
 
 .. automodule:: Repet
     :members:
