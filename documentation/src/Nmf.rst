@@ -1,5 +1,5 @@
-Nmf module
-==========
+Nmf Class
+=========
 
 .. automodule:: Nmf
     :members:

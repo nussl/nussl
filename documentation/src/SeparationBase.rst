@@ -1,5 +1,5 @@
-SeparationBase module
-=====================
+SeparationBase Class
+====================
 
 .. automodule:: SeparationBase
     :members:

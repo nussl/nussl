@@ -1,5 +1,5 @@
-AudioSignal module
-==================
+AudioSignal Class
+=================
 
 .. automodule:: AudioSignal
     :members:
