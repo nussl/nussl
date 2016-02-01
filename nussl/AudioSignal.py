@@ -40,27 +40,27 @@ class AudioSignal(object):
   
     """
 
-    def __init__(self, path_to_input_file=None, audio_data_array=None, signalStartingPosition=0, signalLength=0,
-                 sampleRate=Constants.DEFAULT_SAMPLE_RATE, stft=None):
+    def __init__(self, path_to_input_file=None, audio_data_array=None, signal_starting_position=0, signal_length=0,
+                 sample_rate=Constants.DEFAULT_SAMPLE_RATE, stft=None):
 
         self.path_to_input_file = path_to_input_file
         self._audioData = None
         self.time = np.array([])
-        self.sample_rate = sampleRate
+        self.sample_rate = sample_rate
 
         if (path_to_input_file is not None) and (audio_data_array is not None):
             raise Exception('Cannot initialize AudioSignal object with a path AND an array!')
 
         if path_to_input_file is not None:
-            self.load_audio_from_file(self.path_to_input_file, signalLength, signalStartingPosition)
+            self.load_audio_from_file(self.path_to_input_file, signal_length, signal_starting_position)
         elif audio_data_array is not None:
-            self.load_audio_from_array(audio_data_array, sampleRate)
+            self.load_audio_from_array(audio_data_array, sample_rate)
 
         # do_STFT properties
         self.complex_spectrogram_data = np.array([]) if stft is None else stft  # complex spectrogram
         self.power_spectrum_data = np.array([])  # power spectrogram
-        self.Fvec = np.array([])  # freq. vector
-        self.Tvec = np.array([])  # time vector
+        self.freq_vec = np.array([])  # freq. vector
+        self.time_vec = np.array([])  # time vector
 
         # TODO: put these in a window_attributes object and wrap in a property
         self.window_type = WindowType.DEFAULT
@@ -68,7 +68,7 @@ class AudioSignal(object):
         self.num_fft_bins = self.window_length
         self.overlap_ratio = 0.5
         self.overlap_samples = int(np.ceil(self.overlap_ratio * self.window_length))
-        self.FrequencyMaxPlot = self.sample_rate / 2
+        self.frequency_max_plot = self.sample_rate / 2
 
     def __str__(self):
         return 'AudioSignal'
@@ -87,7 +87,7 @@ class AudioSignal(object):
     # Properties
     ##################################################
 
-    # Constants for accessing _audioData np.array indices
+    # Constants for accessing _audio_data np.array indices
     _LEN = 1
     _CHAN = 0
 
@@ -235,13 +235,13 @@ class AudioSignal(object):
             if np.size(self.complex_spectrogram_data) == 0:
                 self.complex_spectrogram_data = Xtemp
                 self.power_spectrum_data = Ptemp
-                self.Fvec = Ftemp
-                self.Tvec = Ttemp
+                self.freq_vec = Ftemp
+                self.time_vec = Ttemp
             else:
                 self.complex_spectrogram_data = np.dstack([self.complex_spectrogram_data, Xtemp])
                 self.power_spectrum_data = np.dstack([self.power_spectrum_data, Ptemp])
 
-        return self.complex_spectrogram_data, self.power_spectrum_data, self.Fvec, self.Tvec
+        return self.complex_spectrogram_data, self.power_spectrum_data, self.freq_vec, self.time_vec
 
     def do_iSTFT(self):
         """Computes and returns the inverse STFT.

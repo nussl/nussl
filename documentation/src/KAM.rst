@@ -1,5 +1,5 @@
-KAM module
-==========
+KAM Class
+=========
 
 .. automodule:: KAM
     :members:

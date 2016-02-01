@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.abspath('../nussl'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
 ]
 
 napoleon_use_rtype = False

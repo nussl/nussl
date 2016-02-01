@@ -1,5 +1,5 @@
-WindowType module
-=================
+WindowType Class
+================
 
 .. automodule:: WindowType
     :members:
