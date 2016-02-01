@@ -11,7 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   NUSSL Modules </src/modules>
+   NUSSL Modules </src>
+   Code Examples </examples>
 
 
 
