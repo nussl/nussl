@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; nussl 1.0 documentation</title>
+  <title>Installation instructions &mdash; nussl 1.0 documentation</title>
   
 
   
@@ -30,7 +30,9 @@
   
 
   
-    <link rel="top" title="nussl 1.0 documentation" href="index.html"/> 
+    <link rel="top" title="nussl 1.0 documentation" href="index.html"/>
+        <link rel="next" title="nussl" href="src/modules.html"/>
+        <link rel="prev" title="NUSSL" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -65,7 +67,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -79,8 +81,8 @@
           
             
             
-                <ul>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation instructions</a></li>
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Installation instructions</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="src/modules.html">NUSSL Modules</a></li>
@@ -117,8 +119,12 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li></li>
+    <li>Installation instructions</li>
       <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/install.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
   </ul>
@@ -127,23 +133,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="installation-instructions">
+<h1>Installation instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this headline">¶</a></h1>
+<p>We recommend installing <a class="reference external" href="https://www.continuum.io/">anaconda</a> prior to using this package.</p>
+<p>Installing <em>NUSSL</em> is easy using pip and the Python Package Index. This will install all required dependencies alongside the
+NUSSL installation. Use the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install librosa
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo pip install librosa
+</pre></div>
+</div>
+<p>to install system-wide.</p>
+<p>Alternatively, you may download the source code and install with the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+</pre></div>
+</div>
+<p>Finally, you may download and copy the nussl folder into your working directory and directly import the modules</p>
+<p>nussl requires: <code class="docutils literal"><span class="pre">python</span> <span class="pre">2.7</span></code>, <code class="docutils literal"><span class="pre">numpy</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">1.8.0</span></code>, <code class="docutils literal"><span class="pre">scipy</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">0.13.0</span></code>, and
+<code class="docutils literal"><span class="pre">matplotlib</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">1.3.1</span></code> all of which are satisfied by <a class="reference external" href="https://www.continuum.io/">anaconda</a>.</p>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="src/modules.html" class="btn btn-neutral float-right" title="nussl" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="NUSSL" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -181,7 +205,6 @@
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="_static/searchtools.js"></script>
 
   
 
@@ -197,14 +220,7 @@
           SphinxRtdTheme.StickyNav.enable();
       });
   </script>
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

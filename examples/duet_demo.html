@@ -33,7 +33,7 @@
     <link rel="top" title="nussl 1.0 documentation" href="../index.html"/>
         <link rel="up" title="nussl Examples" href="examples.html"/>
         <link rel="next" title="REPET example" href="repet_demo.html"/>
-        <link rel="prev" title="AudioMix Examples" href="audiomix_demo.html"/> 
+        <link rel="prev" title="nussl Examples" href="examples.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -82,10 +82,14 @@
           
             
             
-                <ul class="current">
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation instructions</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../src/modules.html">NUSSL Modules</a></li>
+</ul>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Code Examples</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="audiomix_demo.html">AudioMix</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Duet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="repet_demo.html">REPET</a></li>
 </ul>
@@ -148,23 +152,27 @@
     <span class="n">input_file_name</span> <span class="o">=</span> <span class="s">&#39;../Input/dev1_female3_inst_mix.wav&#39;</span>
     <span class="n">signal</span> <span class="o">=</span> <span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_file_name</span><span class="p">)</span>
 
+    <span class="c"># make a directory to store output if needed</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output/&#39;</span><span class="p">)):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output/&#39;</span><span class="p">))</span>
 
-    <span class="c"># set up FFT window attributes</span>
+    <span class="c"># set up window parameters</span>
     <span class="n">win</span> <span class="o">=</span> <span class="n">WindowAttributes</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
     <span class="n">win</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">4096</span>
     <span class="n">win</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
     <span class="n">win</span><span class="o">.</span><span class="n">window_overlap</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">win</span><span class="o">.</span><span class="n">window_length</span>
 
-    <span class="c"># Set up DUET algorithm and run</span>
+    <span class="c"># Set up DUET</span>
     <span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
                 <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">window_attributes</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+    <span class="c"># and run</span>
     <span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+    <span class="c"># plot histogram results</span>
     <span class="n">duet</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;../Output/2d.png&#39;</span><span class="p">)</span>
     <span class="n">duet</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;../Output/3d.png&#39;</span><span class="p">,</span> <span class="n">three_d_plot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-    <span class="c"># Create output files</span>
+    <span class="c"># Create output file for each source found</span>
     <span class="n">output_name_stem</span> <span class="o">=</span> <span class="s">&#39;../Output/duet_source&#39;</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">duet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">():</span>
@@ -189,7 +197,7 @@
         <a href="repet_demo.html" class="btn btn-neutral float-right" title="REPET example" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="audiomix_demo.html" class="btn btn-neutral" title="AudioMix Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral" title="nussl Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
