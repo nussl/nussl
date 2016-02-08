@@ -42,6 +42,9 @@ class Duet(SeparationBase.SeparationBase):
          WindowAttributes.WindowAttributes(self.sample_rate)
         sample_rate (Optional[int]): Sample rate for the audio. Defaults to Constants.DEFAULT_SAMPLE_RATE
 
+    Examples:
+        :ref:`The DUET Demo Example <duet_demo>`
+
     """
     def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
                   threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
@@ -63,6 +66,15 @@ class Duet(SeparationBase.SeparationBase):
             * **xhat** (*np.array*) - an N-row matrix containing time-domain estimates of sources
             * **ad_est** (*np.array*) - N by 2 Numpy matrix containing estimated attenuation and delay values
               corresponding to N sources
+        Example:
+             ::
+            input_file_name = '../Input/dev1_female3_inst_mix.wav'
+            signal = AudioSignal(path_to_input_file=input_file_name)
+
+            duet = Duet(signal, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50, threshold=0.2,
+            a_min_distance=5, d_min_distance=5, num_sources=3)
+
+            duet.run()
 
         """
 
