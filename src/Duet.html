@@ -189,6 +189,8 @@ WindowAttributes.WindowAttributes(self.sample_rate)</li>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Examples</p>
+<p><a class="reference internal" href="../examples/duet_demo.html#duet-demo"><span>The DUET Demo Example</span></a></p>
 <dl class="staticmethod">
 <dt id="Duet.Duet.find_peaks">
 <em class="property">static </em><code class="descname">find_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_num=1</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.find_peaks" title="Permalink to this definition">¶</a></dt>
@@ -285,6 +287,16 @@ corresponding to N sources</li>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">input_file_name</span> <span class="o">=</span> <span class="s">&#39;../Input/dev1_female3_inst_mix.wav&#39;</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_file_name</span><span class="p">)</span>
+
+<span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
