@@ -16,7 +16,7 @@ def main():
     win = WindowAttributes(signal.sample_rate)
     win.window_length = 4096
     win.window_type = WindowType.HAMMING
-    win.window_overlap = 0.5 * win.window_length
+    win.window_overlap_ratio = 0.5 * win.window_length
 
     # Set up DUET
     duet = Duet(signal, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50, threshold=0.2, a_min_distance=5,

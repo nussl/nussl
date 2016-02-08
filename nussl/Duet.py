@@ -46,8 +46,9 @@ class Duet(SeparationBase.SeparationBase):
         :ref:`The DUET Demo Example <duet_demo>`
 
     """
+
     def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
-                  threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
+                 threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
         # TODO: Is there a better way to do this?
         self.__dict__.update(locals())
         super(Duet, self).__init__(window_attributes, sample_rate, audio_signal)
@@ -81,11 +82,10 @@ class Duet(SeparationBase.SeparationBase):
         if self.audio_signal.num_channels != 2:
             raise Exception('Cannot run DUET on audio signal without exactly 2 channels!')
 
-
         # Give them shorter names
         L = self.window_attributes.window_length
         winType = self.window_attributes.window_type
-        ovp = self.window_attributes.window_overlap
+        ovp = self.window_attributes.window_overlap_samples
         fs = self.sample_rate
 
         # Compute the do_STFT of the two channel mixtures
@@ -173,8 +173,8 @@ class Duet(SeparationBase.SeparationBase):
         xhat = np.zeros((self.num_sources, Lx))
         for i in range(0, self.num_sources):
             mask = (bestind == i)
-            Xm = np.vstack([np.zeros((1, Lt)), (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2)
-                            / (1 + atnpeak[i] ** 2) * mask])
+            Xm = np.vstack([np.zeros((1, Lt)),
+                            (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2) / (1 + atnpeak[i] ** 2) * mask])
             xi = FftUtils.f_istft(Xm, L, winType, ovp, fs)
 
             xhat[i, :] = np.array(xi)[0, 0:Lx]
@@ -345,15 +345,15 @@ class Duet(SeparationBase.SeparationBase):
         """
         signals = []
         for i in range(self.num_sources):
-            signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i])
-            signals.append(signal)
+            cur_signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i])
+            signals.append(cur_signal)
         return signals
 
-    def plot(self, outputName, three_d_plot=False):
+    def plot(self, output_name, three_d_plot=False):
         """Plots histograms with the results of the DUET algorithm
 
         Parameters:
-            outputName (str): path to save plot as
+            output_name (str): path to save plot as
             three_d_plot (Optional[bool]): Flags whether or not to plot in 3d. Defaults to False
         """
         plt.close('all')
@@ -369,7 +369,7 @@ class Duet(SeparationBase.SeparationBase):
             plt.ylabel(r'$\delta$', fontsize=16)
             plt.title(r'$\alpha-\delta$ Histogram')
             plt.axis('tight')
-            plt.savefig(outputName)
+            plt.savefig(output_name)
             plt.close()
 
         else:
@@ -382,5 +382,5 @@ class Duet(SeparationBase.SeparationBase):
             plt.title(r'$\alpha-\delta$ Histogram')
             plt.axis('tight')
             ax.view_init(30, 30)
-            plt.savefig(outputName)
+            plt.savefig(output_name)
             plt.close()
