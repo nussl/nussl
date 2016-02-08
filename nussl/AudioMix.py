@@ -101,7 +101,7 @@ def mkmixture(sn, mixparam, fs, rsch=False):
 
 
 def fastconv(x, h):
-    """Performs fast convolution (in freq. domain rather than in time domain.
+    """Performs fast convolution (in freq. domain rather than in time domain).
     
     Parameters:
         x (np.array): Numpy row vector containing samples of the time-domain signal x[n]
