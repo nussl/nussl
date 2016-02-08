@@ -42,6 +42,8 @@ class Repet(SeparationBase.SeparationBase):
              min(8, self.Mixture.SignalLength/3)
             high_pass_cutoff (Optional[int]): Defaults to 100
 
+    Examples:
+        :ref:`The REPET Demo Example <repet_demo>`
     """
     def __init__(self, audio_signal, repet_type=None, window_attributes=None, sample_rate=None,
                  similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
@@ -90,19 +92,12 @@ class Repet(SeparationBase.SeparationBase):
             y (AudioSignal): repeating background (M by N) containing M channels and N time samples
             (the corresponding non-repeating foreground is equal to x-y)
 
-        EXAMPLE:
+        Example:
              ::
             signal = nussl.AudioSignal(pathToInputFile='inputName.wav')
 
-            # Set up window parameters
-            win = nussl.WindowAttributes(signal.SampleRate)
-            win.WindowLength = 2048
-            win.WindowType = nussl.WindowType.HAMMING
-
-            # Set up and run Repet
-            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM, windowAttributes=win)
-            repet.MinDistanceBetweenFrames = 0.1
-            repet.Run()
+            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM)
+            repet.run()
 
         """
 
@@ -167,6 +162,12 @@ class Repet(SeparationBase.SeparationBase):
         Returns:
              similarity_matrix (np.array): similarity matrix for the audio file.
 
+        Example:
+             ::
+            signal = nussl.AudioSignal(pathToInputFile='inputName.wav')
+            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM)
+            similarity_matrix = repet.get_similarity_matrix()
+
         """
         self._compute_spectrum()
         V = np.mean(self.real_spectrum, axis=2)
@@ -178,6 +179,12 @@ class Repet(SeparationBase.SeparationBase):
 
         Returns:
             beat_spectrum (np.array): beat spectrum for the audio file
+
+        Example:
+             ::
+            signal = nussl.AudioSignal(pathToInputFile='inputName.wav')
+            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM)
+            similarity_matrix = repet.get_beat_spectrum()
 
         """
         self._compute_spectrum()
@@ -210,6 +217,8 @@ class Repet(SeparationBase.SeparationBase):
             X (np.array): 2D matrix containing the magnitude spectrogram of the audio signal (Lf by Lt)
         Returns:
             S (np.array): similarity matrix (Lt by Lt)
+
+
         """
         assert (type(X) == np.ndarray)
 
