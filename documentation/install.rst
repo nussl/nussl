@@ -5,17 +5,17 @@ We recommend installing `anaconda <https://www.continuum.io/>`_ prior to using t
 Installing *NUSSL* is easy using pip and the Python Package Index. This will install all required dependencies alongside the
 NUSSL installation. Use the following command::
 
-        pip install librosa
+        pip install nussl
 
 or::
 
-        sudo pip install librosa
+        sudo pip install nussl
 
 to install system-wide.
 
 Alternatively, you may download the source code and install with the following command::
 
-        python setup.py install
+        python setup.py nussl
 
 Finally, you may download and copy the nussl folder into your working directory and directly import the modules
 
