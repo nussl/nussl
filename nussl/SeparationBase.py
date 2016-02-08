@@ -11,10 +11,6 @@ class SeparationBase(object):
 
     Do not call this. It will not do anything.
 
-    Authors: Fatameh Pishdadian and Ethan Manilow
-    Interactive Audio Lab
-    Northwestern University, 2015
-
     Parameters:
         window_attributes (WindowAttributes): WindowAttributes for the separation algorithm. Defaults to
          WindowAttributes.WindowAttributes(self.sample_rate)
@@ -40,7 +36,7 @@ class SeparationBase(object):
         else:
             self.audio_signal = AudioSignal.AudioSignal()
 
-    def plot(self, outputName, **kwargs):
+    def plot(self, output_name, **kwargs):
         """Plots relevant data for separation algorithm
 
         Raises:
