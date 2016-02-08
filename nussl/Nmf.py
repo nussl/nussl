@@ -60,8 +60,6 @@ class Nmf(SeparationBase.SeparationBase):
         self.stopping_epsilon = 1e10
         self.max_num_iterations = 20
 
-
-
     def run(self):
         """
         This runs the NMF separation algorithm. This function assumes that all
@@ -231,7 +229,7 @@ class Nmf(SeparationBase.SeparationBase):
         new_matrices = []
         for n in range(self.num_bases):
             matrix = np.empty_like(self.activation_matrix)
-            matrix[n,] = self.activation_matrix[n,]
+            matrix[n, ] = self.activation_matrix[n, ]
 
             new_stft = np.dot(self.templates, matrix)
             new_matrices.append(new_stft)
@@ -259,5 +257,6 @@ class DistanceType:
     EUCLIDEAN = 'euclidean'
     DIVERGENCE = 'divergence'
     DEFAULT = EUCLIDEAN
+
     def __init__(self):
         pass

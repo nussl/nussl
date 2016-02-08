@@ -54,7 +54,7 @@ class Repet(SeparationBase.SeparationBase):
         self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
 
-        if repet_type not in RepetType.all_types:
+        if self.repet_type not in RepetType.all_types:
             raise TypeError('\'repet_type\' in Repet() constructor cannot be {}'.format(repet_type))
 
         if self.repet_type == RepetType.SIM:
@@ -94,16 +94,23 @@ class Repet(SeparationBase.SeparationBase):
 
         Example:
              ::
-            signal = nussl.AudioSignal(pathToInputFile='inputName.wav')
+            signal = nussl.AudioSignal(path_to_input_file='input_name.wav')
 
-            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM)
+            # Set up window parameters
+            win = nussl.WindowAttributes(signal.sample_rate)
+            win.window_length = 2048
+            win.window_type = nussl.WindowType.HAMMING
+
+            # Set up and run Repet
+            repet = nussl.Repet(signal, window_type=nussl.RepetType.SIM, window_attributes=win)
+            repet.min_distance_between_frames = 0.1
             repet.run()
 
         """
 
         # unpack window parameters
         win_len, win_type, win_ovp, nfft = self.window_attributes.window_length, self.window_attributes.window_type, \
-                                           self.window_attributes.window_overlap, self.window_attributes.num_fft
+                                           self.window_attributes.window_overlap_samples, self.window_attributes.num_fft
 
         # High pass filter cutoff freq. (in # of freq. bins)
         self.high_pass_cutoff = np.ceil(float(self.high_pass_cutoff) * (nfft - 1) / self.sample_rate)
@@ -162,11 +169,16 @@ class Repet(SeparationBase.SeparationBase):
         Returns:
              similarity_matrix (np.array): similarity matrix for the audio file.
 
-        Example:
-             ::
-            signal = nussl.AudioSignal(pathToInputFile='inputName.wav')
-            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM)
-            similarity_matrix = repet.get_similarity_matrix()
+        EXAMPLE:
+            ::
+            # Set up audio signal
+            signal = nussl.AudioSignal('path_to_file.wav')
+
+            # Set up a Repet object
+            repet = nussl.Repet(signal)
+
+            # I don't have to run repet to get a similarity matrix for signal
+            sim_mat = repet.get_similarity_matrix()
 
         """
         self._compute_spectrum()
@@ -180,26 +192,29 @@ class Repet(SeparationBase.SeparationBase):
         Returns:
             beat_spectrum (np.array): beat spectrum for the audio file
 
-        Example:
-             ::
-            signal = nussl.AudioSignal(pathToInputFile='inputName.wav')
-            repet = nussl.Repet(signal, Type=nussl.RepetType.SIM)
-            similarity_matrix = repet.get_beat_spectrum()
+        EXAMPLE:
+            ::
+            # Set up audio signal
+            signal = nussl.AudioSignal('path_to_file.wav')
 
+            # Set up a Repet object
+            repet = nussl.Repet(signal)
+
+            # I don't have to run repet to get a beat spectrum for signal
+            beat_spec = repet.get_beat_spectrum()
         """
         self._compute_spectrum()
         self.beat_spectrum = self.compute_beat_spectrum(np.mean(self.real_spectrum ** 2, axis=2))
         return self.beat_spectrum
 
     def _do_repet_sim(self):
-        # unpack window parameters
-        len, type, ovp, nfft = self.window_attributes.window_length, self.window_attributes.window_type, \
-                               self.window_attributes.window_overlap, self.window_attributes.num_fft
+        # unpack window overlap
+        ovp = self.window_attributes.window_overlap_samples
 
         Vavg = np.mean(self.real_spectrum, axis=2)
         S = self.compute_similarity_matrix(Vavg)
 
-        self.min_distance_between_frames = np.round(self.min_distance_between_frames * self.sample_rate / ovp)
+        self.min_distance_between_frames = np.round([self.min_distance_between_frames * self.sample_rate / ovp])
         S = self.find_similarity_indices(S)
 
         return S
@@ -211,7 +226,7 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def compute_similarity_matrix(X):
-        """Computes the similarity matrix using the cosine similarity for input matrix X.
+        """Computes the similarity matrix using the cosine similarity for any given input matrix X.
         
         Parameters:
             X (np.array): 2D matrix containing the magnitude spectrogram of the audio signal (Lf by Lt)
@@ -249,7 +264,7 @@ class Repet(SeparationBase.SeparationBase):
 
         for i in range(0, Lt):
             pind = self.find_peaks(S[i, :], self.similarity_threshold,
-                                  self.min_distance_between_frames, self.max_repeating_frames)
+                                   self.min_distance_between_frames, self.max_repeating_frames)
             I[i, :] = pind
 
         return I
@@ -327,7 +342,8 @@ class Repet(SeparationBase.SeparationBase):
          dismissing the symmetric half.
 
         Parameters:
-            X (np.array): 2D matrix containing the one-sided power spectrogram of the audio signal (Lf by Lt)
+            X (np.array): 2D matrix containing the one-sided power
+            spectrogram of the audio signal (Lf by Lt by num channels)
         Returns:
             b (np.array): array containing the beat spectrum based on the power spectrogram
         """
@@ -396,22 +412,101 @@ class Repet(SeparationBase.SeparationBase):
     def _update_period(self, period):
         period = float(period)
         result = period * self.audio_signal.sample_rate
-        result += self.window_attributes.window_length / self.window_attributes.window_overlap - 1
-        result /= self.window_attributes.window_overlap
+        result += self.window_attributes.window_length / self.window_attributes.window_overlap_samples - 1
+        result /= self.window_attributes.window_overlap_samples
         return np.ceil(result)
 
-    def plot(self, outputFile, **kwargs):
-        """ NOT YET IMPLEMENTED. Plots REPET results and saves to file.
+    def plot(self, output_file, **kwargs):
+        """ Creates a plot of either the beat spectrum or similarity matrix for this file and outputs to output_file.
+            By default, the repet_type is used to determine which to plot,
+            (original -> beat spectrum. sim -> similarity matrix)
+            You can override this by passing in plot_beat_spectrum=True or plot_sim_matrix=True as parameters.
+            You cannot set both of these overrides simultaneously.
 
-        Raises:
-            NotImplementedError
+        Parameters:
+            output_file: string representing a path to the desired output file to be created.
+            plot_beat_spectrum: Setting this will force plotting the beat spectrum
+            plot_sim_matrix: Setting this will force plotting the similarity matrix
 
-        Args:
+        EXAMPLE:
+            To plot the beat spectrum you have a few options:
+            1) (recommended)
+            ::
+            # set up AudioSignal
+            signal = nussl.AudioSignal('path_to_file.wav')
 
-        Returns:
+            # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
+            repet = nussl.Repet(signal)
 
+            # plots beat spectrum by default
+            repet.plot('new_beat_spec_plot.png')
+
+            2)
+            ::
+            # set up AudioSignal
+            signal = nussl.AudioSignal('path_to_file.wav')
+
+            # by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix
+            repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
+
+            # but we can override this Repet object plotting the similarity matrix with this argument
+            repet.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
+
+            To plot the similarity matrix you have a few options:
+            1) (recommended)
+            ::
+            # set up AudioSignal
+            signal = nussl.AudioSignal('path_to_file.wav')
+
+            # by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix
+            repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
+
+            # plots similarity matrix by default
+            repet.plot('new_sim_matrix_plot.png')
+
+            2)
+            ::
+            # set up AudioSignal
+            signal = nussl.AudioSignal('path_to_file.wav')
+
+            # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
+            repet = nussl.Repet(signal)
+
+            # override plotting the beat spectrum with this argument
+            repet.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
+
+            NOTE: You cannot do
+            ::
+            repet.plot('new_plot.png', plot_beat_spectrum=True, plot_sim_matrix=True)
+
+            this will cause nussl to throw an exception!
         """
-        raise NotImplementedError('You shouldn\'t be calling this yet...')
+        import matplotlib.pyplot as plt
+        plt.close('all')
+
+        plot_beat_spectrum = self.repet_type is RepetType.ORIGINAL
+        plot_sim_matrix = self.repet_type is RepetType.SIM
+
+        if kwargs is not None:
+            if kwargs.has_key('plot_beat_spectrum'):
+                plot_beat_spectrum = kwargs['plot_beat_spectrum']
+            if kwargs.has_key('plt_sim_matrix'):
+                plot_sim_matrix = kwargs['plot_sim_matrix']
+
+        if plot_beat_spectrum == plot_sim_matrix == True:
+            raise AssertionError('Cannot set both plot_beat_spectrum=True and plot_sim_matrix=True!')
+
+        if plot_beat_spectrum:
+            plt.plot(self.get_beat_spectrum())
+            plt.title('Beat Spectrum for {}'.format(self.audio_signal.file_name))
+            plt.grid('on')
+
+        elif plot_sim_matrix:
+            plt.pcolormesh(self.get_similarity_matrix())
+            plt.title('Similarity Matrix for {}'.format(self.audio_signal.file_name))
+
+        plt.axis('tight')
+        plt.savefig(output_file)
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals
@@ -422,6 +517,10 @@ class Repet(SeparationBase.SeparationBase):
                 * bkgd: Audio signal with the calculated background track
                 * fkgd: Audio signal with the calculated foreground track
 
+        EXAMPLE:
+            ::
+            # set up AudioSignal object
+            signal = nussl.
         """
         self.fgnd = self.audio_signal - self.bkgd
         return [self.bkgd, self.fgnd]

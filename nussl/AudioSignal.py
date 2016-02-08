@@ -5,8 +5,12 @@ from __future__ import division
 import os.path
 import numpy as np
 import scipy.io.wavfile as wav
+import librosa
+import numbers
+import audioread
 
 from WindowType import WindowType
+import WindowAttributes
 import FftUtils
 import Constants
 
@@ -44,7 +48,7 @@ class AudioSignal(object):
                  sample_rate=Constants.DEFAULT_SAMPLE_RATE, stft=None):
 
         self.path_to_input_file = path_to_input_file
-        self._audioData = None
+        self._audio_data = None
         self.time = np.array([])
         self.sample_rate = sample_rate
 
@@ -63,12 +67,15 @@ class AudioSignal(object):
         self.time_vec = np.array([])  # time vector
 
         # TODO: put these in a window_attributes object and wrap in a property
-        self.window_type = WindowType.DEFAULT
-        self.window_length = int(0.06 * self.sample_rate)
-        self.num_fft_bins = self.window_length
-        self.overlap_ratio = 0.5
-        self.overlap_samples = int(np.ceil(self.overlap_ratio * self.window_length))
-        self.frequency_max_plot = self.sample_rate / 2
+
+        # self.window_type = WindowType.DEFAULT
+        # self.window_length = int(0.06 * self.sample_rate)
+        # self.num_fft_bins = self.window_length
+        # self.overlap_ratio = 0.5
+        # self.overlap_samples = int(np.ceil(self.overlap_ratio * self.window_length))
+        # self.frequency_max_plot = self.sample_rate / 2
+
+        self.window_attributes = WindowAttributes.WindowAttributes(self.sample_rate)
 
     def __str__(self):
         return 'AudioSignal'
@@ -80,8 +87,10 @@ class AudioSignal(object):
     def plot_time_domain(self):
         raise NotImplementedError('Not ready yet!')
 
-    def plot_freq_domain(self):
-        raise NotImplementedError('Not ready yet!')
+    def plot_spectrogram(self, file_name):
+        FftUtils.plot_stft(self.audio_data, file_name,
+                           window_attributes=self.window_attributes,
+                           sample_rate=self.sample_rate)
 
     ##################################################
     # Properties
@@ -93,13 +102,13 @@ class AudioSignal(object):
 
     @property
     def signal_length(self):
-        """The length of the audio signal represented by this object in samples
+        """Returns the length of the audio signal represented by this object in samples
         """
-        return self._audioData.shape[self._LEN]
+        return self._audio_data.shape[self._LEN]
 
     @property
     def signal_duration(self):
-        """The length of the audio signal represented by this object in seconds
+        """Returns the length of the audio signal represented by this object in seconds
         """
         return self.signal_length / self.sample_rate
 
@@ -107,22 +116,22 @@ class AudioSignal(object):
     def num_channels(self):
         """The number of channels
         """
-        return self._audioData.shape[self._CHAN]
+        return self._audio_data.shape[self._CHAN]
 
     @property
     def audio_data(self):
         """A numpy array that represents the audio
         """
-        return self._audioData
+        return self._audio_data
 
     @audio_data.setter
     def audio_data(self, value):
         assert (type(value) == np.ndarray)
 
-        self._audioData = value
+        self._audio_data = value
 
-        if self._audioData.ndim < 2:
-            self._audioData = np.expand_dims(self._audioData, axis=self._CHAN)
+        if self._audio_data.ndim < 2:
+            self._audio_data = np.expand_dims(self._audio_data, axis=self._CHAN)
 
     @property
     def file_name(self):
@@ -148,37 +157,58 @@ class AudioSignal(object):
 
         """
         try:
-            self.sample_rate, audio_input = wav.read(input_file_path)
+            with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
+                self.sample_rate = input_file.samplerate
+                file_length = input_file.duration
+                n_ch = input_file.channels
+
+            if signal_length == 0:
+                signal_length = file_length
+
+            read_mono = True
+            if n_ch != 1:
+                read_mono = False
+
+            audio_input, self.sample_rate = librosa.load(input_file_path,
+                                                         sr=input_file.samplerate,
+                                                         offset=signal_starting_position,
+                                                         duration=signal_length,
+                                                         mono=read_mono)
+
+            # Change from fixed point to floating point
+            if not np.issubdtype(audio_input.dtype, float):
+                audio_input = audio_input.astype('float') / (np.iinfo(audio_input.dtype).max + 1.0)
+
+            self.audio_data = audio_input
+
         except Exception, e:
             print "Cannot read from file, {file}".format(file=input_file_path)
+            print "If you are convinced that this audio file should work, please use ffmpeg to reformat it."
             raise e
-
-        audio_input = audio_input.T
-
-        # Change from fixed point to floating point
-        audio_input = audio_input.astype('float') / (np.iinfo(audio_input.dtype).max + 1.0)
-
-        # TODO: the logic here needs work
-        if signal_length == 0:
-            self.audio_data = np.array(audio_input)
-        else:
-            start_position = int(signal_starting_position * self.sample_rate)
-            self.audio_data = np.array(audio_input[start_position: start_position + self.signal_length, :])
 
         self.time = np.array((1. / self.sample_rate) * np.arange(self.signal_length))
 
     def load_audio_from_array(self, signal, sample_rate=Constants.DEFAULT_SAMPLE_RATE):
-        """Loads an audio signal from a numpy array
+        """Loads an audio signal from a numpy array. Only accepts float arrays and int arrays of depth 16-bits.
 
         Parameters:
             signal (np.array): np.array containing the audio file signal sampled at sampleRate
-            sample_rate (Optional[int]): the sampleRate of signal. Default is Constants.DEFAULT_SAMPLE_RATE
+            sample_rate (Optional[int]): the sample rate of signal. Default is Constants.DEFAULT_SAMPLE_RATE (44.1kHz)
 
         """
-        self.path_to_input_file = None
-        self.audio_data = np.array(signal)
-        self.sample_rate = sample_rate
+        assert (type(signal) == np.ndarray)
 
+        self.path_to_input_file = None
+
+        # Change from fixed point to floating point
+        if not np.issubdtype(signal.dtype, float):
+            if np.max(signal) > np.iinfo(np.dtype('int16')).max:
+                raise ValueError('Please convert your array to 16-bit audio.')
+
+            signal = signal.astype('float') / (np.iinfo(np.dtype('int16')).max + 1.0)
+
+        self.audio_data = signal
+        self.sample_rate = sample_rate
         self.time = np.array((1. / self.sample_rate) * np.arange(self.signal_length))
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
@@ -199,7 +229,13 @@ class AudioSignal(object):
             if sample_rate is None:
                 sample_rate = self.sample_rate
 
-            wav.write(output_file_path, sample_rate, self.audio_data.T)
+            audio_output = np.copy(self.audio_data)
+
+            # convert to fixed point again
+            if not np.issubdtype(audio_output.dtype, int):
+                audio_output = np.multiply(audio_output, 2 ** Constants.DEFAULT_BIT_DEPTH).astype('int16')
+
+            wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception, e:
             print "Cannot write to file, {file}.".format(file=output_file_path)
             raise e
@@ -213,24 +249,28 @@ class AudioSignal(object):
     def do_STFT(self):
         """computes the STFT of the audio signal
 
+        Warning:
+            Will overwrite any data in self.complex_spectrogram_data and self.power_spectrum_data
+
         Returns:
-            * **complex_spectrogram_data** (*np.array*) - complex stft data
+            * **self.complex_spectrogram_data** (*np.array*) - complex stft data
 
-            * **power_spectrum_data** (*np.array*) - power spectrogram
+            * **self.power_spectrum_data** (*np.array*) - power spectrogram
 
-            * **Fvec** (*np.array*) - frequency vector
+            * **self.freq_vec** (*np.array*) - frequency vector
 
-            * **Tvec** (*np.array*) - vector of time frames
+            * **self.time_vec** (*np.array*) - vector of time frames
 
         """
         if self.audio_data is None:
             raise Exception("No audio data to make do_STFT from.")
 
+        self.complex_spectrogram_data = np.array([])
+        self.power_spectrum_data = np.array([])
+
         for i in range(1, self.num_channels + 1):
-            Xtemp, Ptemp, Ftemp, Ttemp = FftUtils.f_stft(self.get_channel(i).T, num_ffts=self.num_fft_bins,
-                                                         win_length=self.window_length, window_type=self.window_type,
-                                                         window_overlap=self.overlap_samples,
-                                                         sample_rate=self.sample_rate)
+            Xtemp, Ptemp, Ftemp, Ttemp = FftUtils.f_stft(self.get_channel(i).T,
+                                                         window_attributes=self.window_attributes)
 
             if np.size(self.complex_spectrogram_data) == 0:
                 self.complex_spectrogram_data = Xtemp
@@ -247,19 +287,19 @@ class AudioSignal(object):
         """Computes and returns the inverse STFT.
 
         Warning:
-            Will overwrite any data in self.AudioData!
+            Will overwrite any data in self.audio_data!
 
         Returns:
-             audio_data (np.array): time-domain signal
-             time (np.array): time vector
+             * **self.audio_data** (np.array): time-domain signal
+             * **self.time** (np.array): time vector
         """
         if self.complex_spectrogram_data.size == 0:
             raise Exception('Cannot do inverse do_STFT without do_STFT data!')
 
         self.audio_data = np.array([])
         for i in range(1, self.num_channels + 1):
-            x_temp, t_temp = FftUtils.f_istft(self.complex_spectrogram_data, self.window_length, self.window_type,
-                                              self.overlap_samples, self.sample_rate)
+            x_temp, t_temp = FftUtils.f_istft(self.complex_spectrogram_data,
+                                              window_attributes=self.window_attributes)
 
             if np.size(self.audio_data) == 0:
                 self.audio_data = np.array(x_temp).T
@@ -287,6 +327,23 @@ class AudioSignal(object):
 
         self.audio_data = np.concatenate((self.audio_data, other.audio_data))
 
+    def truncate_samples(self, n_samples):
+        """ Truncates the signal leaving only the first n_samples number of samples.
+        """
+        if n_samples > self.signal_length:
+            raise Exception('n_samples must be less than self.signal_length!')
+
+        self._audio_data = self._audio_data[0: n_samples]
+
+    def trancate_seconds(self, seconds):
+        """ Truncates the signal leaving only the first seconds
+        """
+        if seconds > self.signal_duration:
+            raise Exception('seconds must be shorter than self.signal_duration!')
+
+        n_samples = seconds * self.sample_rate
+        self.truncate_samples(n_samples)
+
     def get_channel(self, n):
         """Gets the n-th channel. 1-based.
 
@@ -295,19 +352,21 @@ class AudioSignal(object):
         Returns:
              n-th channel (np.array): the data in the n-th channel of the signal
         """
+        if n > self.num_channels:
+            raise Exception(
+                'Cannot get channel {1} when this object only has {2} channels!'.format(n, self.num_channels))
+
         return self.audio_data[n - 1,]
 
-    def peak_normalize(self, bitDepth=16):
-        """Normalizes the whole audio file to the max value.
+    def peak_normalize(self):
+        """ Normalizes the whole audio file to 1.0.
+            NOTE: if self.audio_data is not represented as floats this will convert the representation to floats!
 
-        Parameters:
-            bitDepth (Optional[int]): Max value (in bits) to normalize to. Default is 16 bits.
         """
-        bitDepth -= 1
-        maxVal = 1.0
-        maxSignal = np.max(np.abs(self.audio_data))
-        if maxSignal > maxVal:
-            self.audio_data = np.divide(self.audio_data, maxSignal)
+        max_val = 1.0
+        max_signal = np.max(np.abs(self.audio_data))
+        if max_signal > max_val:
+            self.audio_data = self.audio_data.astype('float') / max_signal
 
     def add(self, other):
         """adds two audio signals
@@ -369,5 +428,9 @@ class AudioSignal(object):
     def __isub__(self, other):
         return self - other
 
+    def __mul__(self, other):
+        assert isinstance(other, numbers.Real)
+        raise NotImplemented('Not implemented yet.')
+
     def __len__(self):
-        return len(self.audio_data)
+        return self.signal_length
