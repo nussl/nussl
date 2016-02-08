@@ -56,7 +56,7 @@ KAM, RPCA, and AudioMix (and corresponding demos) need to be migrated to the fra
 more difficult to get running.
 
 
-Licence
+License
 -------
 nussl 0.1.1 is under an [Apache License 2.0](http://choosealicense.com/licenses/apache-2.0/)
 
