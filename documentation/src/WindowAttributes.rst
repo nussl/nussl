@@ -1,5 +1,5 @@
-WindowAttributes module
-=======================
+WindowAttributes Class
+======================
 
 .. automodule:: WindowAttributes
     :members:

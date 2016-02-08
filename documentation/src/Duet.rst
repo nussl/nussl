@@ -1,5 +1,5 @@
-Duet module
-===========
+Duet Class
+==========
 
 .. automodule:: Duet
     :members:
