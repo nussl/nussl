@@ -20,7 +20,9 @@ KEYWORDS = ['audio', 'source', 'separation', 'music', 'sound', 'source separatio
 REQUIREMENTS = [
     'numpy >= 1.7.0',
     'scipy >= 0.12.0',
-    'matplotlib >= 1.3.0'
+    'matplotlib >= 1.3.0',
+    'audioread >= 2.1.2',
+    'librosa >= 0.4.1'
 ]
 CLASSIFIERS = [
     'Development Status :: 3 - Alpha',
