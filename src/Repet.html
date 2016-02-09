@@ -457,8 +457,8 @@ You cannot set both of these overrides simultaneously.</dd>
 </table>
 <p class="rubric">EXAMPLE</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># To plot the beat spectrum you have a few options:</span>
-<span class="c"># 1) (recommended)</span>
 
+<span class="c"># 1) (recommended)</span>
 <span class="c"># set up AudioSignal</span>
 <span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
 
@@ -469,7 +469,7 @@ You cannot set both of these overrides simultaneously.</dd>
 <span class="n">repet1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_beat_spec_plot.png&#39;</span><span class="p">)</span>
 
 <span class="c"># 2)</span>
-<span class="c"># by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix</span>
+<span class="c"># by giving this Repet object RepetType.SIM, it will default to plotting the similarity matrix</span>
 <span class="n">repet2</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">repet_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">)</span>
 
 <span class="c"># but we can override this Repet object plotting the similarity matrix with this argument</span>
@@ -487,12 +487,11 @@ You cannot set both of these overrides simultaneously.</dd>
 <span class="n">repet3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_sim_matrix_plot.png&#39;</span><span class="p">)</span>
 
 <span class="c"># 4)</span>
-
 <span class="c"># by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)</span>
 <span class="n">repet4</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
 
-<span class="c"># override plotting the beat spectrum with this argument</span>
-<span class="n">repet4</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_sim_matrix_plot.png&#39;</span><span class="p">,</span> <span class="n">plot_beat_spectrum</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># BUT we can override plotting the beat spectrum with this argument</span>
+<span class="n">repet4</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_sim_matrix_plot.png&#39;</span><span class="p">,</span> <span class="n">plot_sim_matrix</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="c"># NOTE: You cannot do</span>
 <span class="c"># repet.plot(&#39;new_plot.png&#39;, plot_beat_spectrum=True, plot_sim_matrix=True)</span>
