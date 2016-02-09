@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AudioSignal Class &mdash; nussl 1.0 documentation</title>
+  <title>AudioSignal Class &mdash; nussl 0.1.3 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="nussl 1.0 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
         <link rel="up" title="nussl" href="modules.html"/>
         <link rel="next" title="Constants module" href="Constants.html"/>
         <link rel="prev" title="AudioMix module" href="AudioMix.html"/> 
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                1.0
+                0.1
               </div>
             
           
@@ -282,15 +282,19 @@ AudioSignal with the sum of the current object and other.</td>
 <dt id="AudioSignal.AudioSignal.do_STFT">
 <code class="descname">do_STFT</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.do_STFT" title="Permalink to this definition">¶</a></dt>
 <dd><p>computes the STFT of the audio signal</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Will overwrite any data in self.complex_spectrogram_data and self.power_spectrum_data</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
-<li><strong>complex_spectrogram_data</strong> (<em>np.array</em>) - complex stft data</li>
-<li><strong>power_spectrum_data</strong> (<em>np.array</em>) - power spectrogram</li>
-<li><strong>Fvec</strong> (<em>np.array</em>) - frequency vector</li>
-<li><strong>Tvec</strong> (<em>np.array</em>) - vector of time frames</li>
+<li><strong>self.complex_spectrogram_data</strong> (<em>np.array</em>) - complex stft data</li>
+<li><strong>self.power_spectrum_data</strong> (<em>np.array</em>) - power spectrogram</li>
+<li><strong>self.freq_vec</strong> (<em>np.array</em>) - frequency vector</li>
+<li><strong>self.time_vec</strong> (<em>np.array</em>) - vector of time frames</li>
 </ul>
 </td>
 </tr>
@@ -304,15 +308,15 @@ AudioSignal with the sum of the current object and other.</td>
 <dd><p>Computes and returns the inverse STFT.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Will overwrite any data in self.AudioData!</p>
+<p class="last">Will overwrite any data in self.audio_data!</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>audio_data</strong> (<em>np.array</em>) &#8211;
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>* **self.audio_data**</strong> (<em>np.array</em>) &#8211;
 time-domain signal
-time (np.array): time vector</td>
+* <strong>self.time</strong> (np.array): time vector</td>
 </tr>
 </tbody>
 </table>
@@ -344,14 +348,14 @@ the data in the n-th channel of the signal</td>
 <dl class="method">
 <dt id="AudioSignal.AudioSignal.load_audio_from_array">
 <code class="descname">load_audio_from_array</code><span class="sig-paren">(</span><em>signal</em>, <em>sample_rate=44100</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.load_audio_from_array" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads an audio signal from a numpy array</p>
+<dd><p>Loads an audio signal from a numpy array. Only accepts float arrays and int arrays of depth 16-bits.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>signal</strong> (<em>np.array</em>) &#8211; np.array containing the audio file signal sampled at sampleRate</li>
-<li><strong>sample_rate</strong> (<em>Optional[int]</em>) &#8211; the sampleRate of signal. Default is Constants.DEFAULT_SAMPLE_RATE</li>
+<li><strong>sample_rate</strong> (<em>Optional[int]</em>) &#8211; the sample rate of signal. Default is Constants.DEFAULT_SAMPLE_RATE (44.1kHz)</li>
 </ul>
 </td>
 </tr>
@@ -388,21 +392,14 @@ Defaults to 0 seconds</li>
 
 <dl class="method">
 <dt id="AudioSignal.AudioSignal.peak_normalize">
-<code class="descname">peak_normalize</code><span class="sig-paren">(</span><em>bitDepth=16</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.peak_normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalizes the whole audio file to the max value.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bitDepth</strong> (<em>Optional[int]</em>) &#8211; Max value (in bits) to normalize to. Default is 16 bits.</td>
-</tr>
-</tbody>
-</table>
+<code class="descname">peak_normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.peak_normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes the whole audio file to 1.0.
+NOTE: if self.audio_data is not represented as floats this will convert the representation to floats!</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="AudioSignal.AudioSignal.plot_freq_domain">
-<code class="descname">plot_freq_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.plot_freq_domain" title="Permalink to this definition">¶</a></dt>
+<dt id="AudioSignal.AudioSignal.plot_spectrogram">
+<code class="descname">plot_spectrogram</code><span class="sig-paren">(</span><em>file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.plot_spectrogram" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -413,13 +410,13 @@ Defaults to 0 seconds</li>
 <dl class="attribute">
 <dt id="AudioSignal.AudioSignal.signal_duration">
 <code class="descname">signal_duration</code><a class="headerlink" href="#AudioSignal.AudioSignal.signal_duration" title="Permalink to this definition">¶</a></dt>
-<dd><p>The length of the audio signal represented by this object in seconds</p>
+<dd><p>Returns the length of the audio signal represented by this object in seconds</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="AudioSignal.AudioSignal.signal_length">
 <code class="descname">signal_length</code><a class="headerlink" href="#AudioSignal.AudioSignal.signal_length" title="Permalink to this definition">¶</a></dt>
-<dd><p>The length of the audio signal represented by this object in samples</p>
+<dd><p>Returns the length of the audio signal represented by this object in samples</p>
 </dd></dl>
 
 <dl class="method">
@@ -437,6 +434,18 @@ AudioSignal with the difference of the current object and other.</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="AudioSignal.AudioSignal.trancate_seconds">
+<code class="descname">trancate_seconds</code><span class="sig-paren">(</span><em>seconds</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.trancate_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncates the signal leaving only the first seconds</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="AudioSignal.AudioSignal.truncate_samples">
+<code class="descname">truncate_samples</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#AudioSignal.AudioSignal.truncate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncates the signal leaving only the first n_samples number of samples.</p>
 </dd></dl>
 
 <dl class="method">
@@ -504,7 +513,7 @@ AudioSignal with the difference of the current object and other.</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.0',
+            VERSION:'0.1.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

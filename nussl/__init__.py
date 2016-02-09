@@ -8,9 +8,7 @@ from AudioSignal import AudioSignal
 from Duet import Duet
 from Nmf import Nmf, DistanceType
 from Repet import Repet, RepetType
-
-
-__version__ = '0.1.3'
+from .version import version as __version__
 
 __title__ = 'nussl'
 __description__ = 'A flexible sound source separation library.'

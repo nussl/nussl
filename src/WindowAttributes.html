@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>WindowAttributes Class &mdash; nussl 1.0 documentation</title>
+  <title>WindowAttributes Class &mdash; nussl 0.1.3 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="nussl 1.0 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
         <link rel="up" title="nussl" href="modules.html"/>
         <link rel="next" title="WindowType Class" href="WindowType.html"/>
         <link rel="prev" title="SeparationBase Class" href="SeparationBase.html"/> 
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                1.0
+                0.1
               </div>
             
           
@@ -153,7 +153,7 @@
 <span id="windowattributes-class"></span><h1>WindowAttributes Class<a class="headerlink" href="#module-WindowAttributes" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="WindowAttributes.WindowAttributes">
-<em class="property">class </em><code class="descclassname">WindowAttributes.</code><code class="descname">WindowAttributes</code><span class="sig-paren">(</span><em>sample_rate</em>, <em>window_length=None</em>, <em>window_type=None</em>, <em>window_overlap=None</em>, <em>num_fft=None</em><span class="sig-paren">)</span><a class="headerlink" href="#WindowAttributes.WindowAttributes" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">WindowAttributes.</code><code class="descname">WindowAttributes</code><span class="sig-paren">(</span><em>sample_rate</em>, <em>window_length=None</em>, <em>window_type=None</em>, <em>window_overlap_ratio=None</em>, <em>num_fft=None</em><span class="sig-paren">)</span><a class="headerlink" href="#WindowAttributes.WindowAttributes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>The window_attributes class is a container for information regarding windowing.
 This object will get passed around instead of each of these individual attributes.</p>
@@ -168,8 +168,8 @@ This object will get passed around instead of each of these individual attribute
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="WindowAttributes.WindowAttributes.window_overlap">
-<code class="descname">window_overlap</code><a class="headerlink" href="#WindowAttributes.WindowAttributes.window_overlap" title="Permalink to this definition">¶</a></dt>
+<dt id="WindowAttributes.WindowAttributes.window_overlap_samples">
+<code class="descname">window_overlap_samples</code><a class="headerlink" href="#WindowAttributes.WindowAttributes.window_overlap_samples" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -217,7 +217,7 @@ This object will get passed around instead of each of these individual attribute
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.0',
+            VERSION:'0.1.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

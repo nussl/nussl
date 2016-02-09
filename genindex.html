@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; nussl 1.0 documentation</title>
+  <title>Index &mdash; nussl 0.1.3 documentation</title>
   
 
   
@@ -31,7 +31,7 @@
   
 
   
-    <link rel="top" title="nussl 1.0 documentation" href="index.html"/> 
+    <link rel="top" title="nussl 0.1.3 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                1.0
+                0.1
               </div>
             
           
@@ -385,7 +385,7 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/WindowType.html#WindowType.WindowType.HANNING">HANNING (WindowType.WindowType attribute)</a>
+  <dt><a href="src/WindowType.html#WindowType.WindowType.HANN">HANN (WindowType.WindowType attribute)</a>
   </dt>
 
   </dl></td>
@@ -537,17 +537,17 @@
 
       </dl></dd>
       
-  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.plot_freq_domain">plot_freq_domain() (AudioSignal.AudioSignal method)</a>
+  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.plot_spectrogram">plot_spectrogram() (AudioSignal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.plot_time_domain">plot_time_domain() (AudioSignal.AudioSignal method)</a>
+  <dt><a href="src/FftUtils.html#FftUtils.plot_stft">plot_stft() (in module FftUtils)</a>
   </dt>
 
       
-  <dt><a href="src/FftUtils.html#FftUtils.PlotStft">PlotStft() (in module FftUtils)</a>
+  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.plot_time_domain">plot_time_domain() (AudioSignal.AudioSignal method)</a>
   </dt>
 
       
@@ -663,11 +663,19 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.Tvec">Tvec (AudioSignal.AudioSignal attribute)</a>
+  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.trancate_seconds">trancate_seconds() (AudioSignal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.truncate_samples">truncate_samples() (AudioSignal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="src/AudioSignal.html#AudioSignal.AudioSignal.Tvec">Tvec (AudioSignal.AudioSignal attribute)</a>
+  </dt>
+
       
   <dt><a href="src/Duet.html#Duet.Duet.twoDsmooth">twoDsmooth() (Duet.Duet method)</a>
   </dt>
@@ -699,7 +707,7 @@
 
       </dl></dd>
       
-  <dt><a href="src/WindowAttributes.html#WindowAttributes.WindowAttributes.window_overlap">window_overlap (WindowAttributes.WindowAttributes attribute)</a>
+  <dt><a href="src/WindowAttributes.html#WindowAttributes.WindowAttributes.window_overlap_samples">window_overlap_samples (WindowAttributes.WindowAttributes attribute)</a>
   </dt>
 
       
@@ -768,7 +776,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0',
+            VERSION:'0.1.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -5,8 +5,8 @@
 
 NUSSL
 =====
-nussl (pronounced "nuzzle") is a flexible python source separation library created by the Interactive Audio Lab at
-Northwestern University. It provides implementations of common source separation algoirthms in addition to an easy
+nussl (pronounced "nuzzle") is a flexible python audio source separation library created by the Interactive Audio Lab at
+Northwestern University. It provides implementations of common source separation algorithms in addition to an easy
 framework for adding new algorithms.
 
 Installation

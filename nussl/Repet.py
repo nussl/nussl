@@ -170,7 +170,7 @@ class Repet(SeparationBase.SeparationBase):
              similarity_matrix (np.array): similarity matrix for the audio file.
 
         EXAMPLE:
-            ::
+             ::
             # Set up audio signal
             signal = nussl.AudioSignal('path_to_file.wav')
 
@@ -193,7 +193,7 @@ class Repet(SeparationBase.SeparationBase):
             beat_spectrum (np.array): beat spectrum for the audio file
 
         EXAMPLE:
-            ::
+             ::
             # Set up audio signal
             signal = nussl.AudioSignal('path_to_file.wav')
 
@@ -424,62 +424,53 @@ class Repet(SeparationBase.SeparationBase):
             You cannot set both of these overrides simultaneously.
 
         Parameters:
-            output_file: string representing a path to the desired output file to be created.
-            plot_beat_spectrum: Setting this will force plotting the beat spectrum
-            plot_sim_matrix: Setting this will force plotting the similarity matrix
+            output_file (string) : string representing a path to the desired output file to be created.
+            plot_beat_spectrum (Optional[bool]) : Setting this will force plotting the beat spectrum
+            plot_sim_matrix (Optional[bool]) : Setting this will force plotting the similarity matrix
 
         EXAMPLE:
-            To plot the beat spectrum you have a few options:
-            1) (recommended)
-            ::
+             ::
+            # To plot the beat spectrum you have a few options:
+            # 1) (recommended)
+
             # set up AudioSignal
             signal = nussl.AudioSignal('path_to_file.wav')
 
             # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
-            repet = nussl.Repet(signal)
+            repet1 = nussl.Repet(signal)
 
             # plots beat spectrum by default
-            repet.plot('new_beat_spec_plot.png')
+            repet1.plot('new_beat_spec_plot.png')
 
-            2)
-            ::
-            # set up AudioSignal
-            signal = nussl.AudioSignal('path_to_file.wav')
-
+            # 2)
             # by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix
-            repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
+            repet2 = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
 
             # but we can override this Repet object plotting the similarity matrix with this argument
-            repet.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
+            repet2.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
 
-            To plot the similarity matrix you have a few options:
-            1) (recommended)
-            ::
+            # To plot the similarity matrix you have a few options:
+            # 3) (recommended)
             # set up AudioSignal
             signal = nussl.AudioSignal('path_to_file.wav')
 
             # by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix
-            repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
+            repet3 = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
 
             # plots similarity matrix by default
-            repet.plot('new_sim_matrix_plot.png')
+            repet3.plot('new_sim_matrix_plot.png')
 
-            2)
-            ::
-            # set up AudioSignal
-            signal = nussl.AudioSignal('path_to_file.wav')
+            # 4)
 
             # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
-            repet = nussl.Repet(signal)
+            repet4 = nussl.Repet(signal)
 
             # override plotting the beat spectrum with this argument
-            repet.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
+            repet4.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
 
-            NOTE: You cannot do
-            ::
-            repet.plot('new_plot.png', plot_beat_spectrum=True, plot_sim_matrix=True)
-
-            this will cause nussl to throw an exception!
+            # NOTE: You cannot do
+            # repet.plot('new_plot.png', plot_beat_spectrum=True, plot_sim_matrix=True)
+            # this will cause nussl to throw an exception!
         """
         import matplotlib.pyplot as plt
         plt.close('all')
@@ -518,9 +509,16 @@ class Repet(SeparationBase.SeparationBase):
                 * fkgd: Audio signal with the calculated foreground track
 
         EXAMPLE:
-            ::
+             ::
             # set up AudioSignal object
-            signal = nussl.
+            signal = nussl.AudioSignal('path_to_file.wav')
+
+            # set up and run repet
+            repet = nussl.Repet(signal)
+            repet.run()
+
+            # get audio signals (AudioSignal objects)
+            background, foreground = repet.make_audio_signals()
         """
         self.fgnd = self.audio_signal - self.bkgd
         return [self.bkgd, self.fgnd]

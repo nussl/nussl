@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Repet Class &mdash; nussl 1.0 documentation</title>
+  <title>Repet Class &mdash; nussl 0.1.3 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="nussl 1.0 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
         <link rel="up" title="nussl" href="modules.html"/>
         <link rel="next" title="SeparationBase Class" href="SeparationBase.html"/>
         <link rel="prev" title="Nmf Class" href="Nmf.html"/> 
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                1.0
+                0.1
               </div>
             
           
@@ -206,10 +206,15 @@ dismissing the symmetric half.</div></blockquote>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>np.array</em>) &#8211; 2D matrix containing the one-sided power spectrogram of the audio signal (Lf by Lt)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>np.array</em>) &#8211; 2D matrix containing the one-sided power</li>
+<li><strong>of the audio signal</strong> (<em>spectrogram</em>) &#8211; </li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>b</strong> (<em>np.array</em>) &#8211;
-array containing the beat spectrum based on the power spectrogram</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>b</strong> (<em>np.array</em>) &#8211;
+array containing the beat spectrum based on the power spectrogram</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -264,7 +269,7 @@ values in [0,1]</p>
 <dl class="staticmethod">
 <dt id="Repet.Repet.compute_similarity_matrix">
 <em class="property">static </em><code class="descname">compute_similarity_matrix</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.compute_similarity_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the similarity matrix using the cosine similarity for input matrix X.</p>
+<dd><p>Computes the similarity matrix using the cosine similarity for any given input matrix X.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -355,10 +360,15 @@ beat spectrum for the audio file</td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">pathToInputFile</span><span class="o">=</span><span class="s">&#39;inputName.wav&#39;</span><span class="p">)</span>
-<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">Type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">)</span>
-<span class="n">similarity_matrix</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">get_beat_spectrum</span><span class="p">()</span>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Set up audio signal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c"># Set up a Repet object</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+<span class="c"># I don&#39;t have to run repet to get a beat spectrum for signal</span>
+<span class="n">beat_spec</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">get_beat_spectrum</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -376,10 +386,15 @@ similarity matrix for the audio file.</td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">pathToInputFile</span><span class="o">=</span><span class="s">&#39;inputName.wav&#39;</span><span class="p">)</span>
-<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">Type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">)</span>
-<span class="n">similarity_matrix</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">get_similarity_matrix</span><span class="p">()</span>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Set up audio signal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c"># Set up a Repet object</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+<span class="c"># I don&#39;t have to run repet to get a similarity matrix for signal</span>
+<span class="n">sim_mat</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">get_similarity_matrix</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -403,22 +418,87 @@ similarity matrix for the audio file.</td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># set up AudioSignal object</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c"># set up and run repet</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+<span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c"># get audio signals (AudioSignal objects)</span>
+<span class="n">background</span><span class="p">,</span> <span class="n">foreground</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="Repet.Repet.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>NOT YET IMPLEMENTED. Plots REPET results and saves to file.</p>
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_file</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.plot" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Creates a plot of either the beat spectrum or similarity matrix for this file and outputs to output_file.</dt>
+<dd>By default, the repet_type is used to determine which to plot,
+(original -&gt; beat spectrum. sim -&gt; similarity matrix)
+You can override this by passing in plot_beat_spectrum=True or plot_sim_matrix=True as parameters.
+You cannot set both of these overrides simultaneously.</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_file</strong> (<em>string</em>) &#8211; string representing a path to the desired output file to be created.</li>
+<li><strong>plot_beat_spectrum</strong> (<em>Optional[bool]</em>) &#8211; Setting this will force plotting the beat spectrum</li>
+<li><strong>plot_sim_matrix</strong> (<em>Optional[bool]</em>) &#8211; Setting this will force plotting the similarity matrix</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<p>Args:</p>
-<p>Returns:</p>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># To plot the beat spectrum you have a few options:</span>
+<span class="c"># 1) (recommended)</span>
+
+<span class="c"># set up AudioSignal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c"># by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)</span>
+<span class="n">repet1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+<span class="c"># plots beat spectrum by default</span>
+<span class="n">repet1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_beat_spec_plot.png&#39;</span><span class="p">)</span>
+
+<span class="c"># 2)</span>
+<span class="c"># by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix</span>
+<span class="n">repet2</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">repet_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">)</span>
+
+<span class="c"># but we can override this Repet object plotting the similarity matrix with this argument</span>
+<span class="n">repet2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_sim_matrix_plot.png&#39;</span><span class="p">,</span> <span class="n">plot_beat_spectrum</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># To plot the similarity matrix you have a few options:</span>
+<span class="c"># 3) (recommended)</span>
+<span class="c"># set up AudioSignal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c"># by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix</span>
+<span class="n">repet3</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">repet_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">)</span>
+
+<span class="c"># plots similarity matrix by default</span>
+<span class="n">repet3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_sim_matrix_plot.png&#39;</span><span class="p">)</span>
+
+<span class="c"># 4)</span>
+
+<span class="c"># by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)</span>
+<span class="n">repet4</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+<span class="c"># override plotting the beat spectrum with this argument</span>
+<span class="n">repet4</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s">&#39;new_sim_matrix_plot.png&#39;</span><span class="p">,</span> <span class="n">plot_beat_spectrum</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># NOTE: You cannot do</span>
+<span class="c"># repet.plot(&#39;new_plot.png&#39;, plot_beat_spectrum=True, plot_sim_matrix=True)</span>
+<span class="c"># this will cause nussl to throw an exception!</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -436,9 +516,16 @@ repeating background (M by N) containing M channels and N time samples
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">pathToInputFile</span><span class="o">=</span><span class="s">&#39;inputName.wav&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="s">&#39;input_name.wav&#39;</span><span class="p">)</span>
 
-<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">Type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">)</span>
+<span class="c"># Set up window parameters</span>
+<span class="n">win</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowAttributes</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
+<span class="n">win</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">2048</span>
+<span class="n">win</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
+
+<span class="c"># Set up and run Repet</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">,</span> <span class="n">window_attributes</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+<span class="n">repet</span><span class="o">.</span><span class="n">min_distance_between_frames</span> <span class="o">=</span> <span class="mf">0.1</span>
 <span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -520,7 +607,7 @@ repeating background (M by N) containing M channels and N time samples
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.0',
+            VERSION:'0.1.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

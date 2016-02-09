@@ -3,7 +3,5 @@
 
 """Version info"""
 
-from __init__ import __version__
-
-version = __version__
+version = '0.1.3'
 short_version = '.'.join(version.split('.')[:-1])
