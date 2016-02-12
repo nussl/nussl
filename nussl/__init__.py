@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import FftUtils
+from FftUtils import *
 from WindowType import WindowType
 from WindowAttributes import WindowAttributes
 from AudioSignal import AudioSignal
