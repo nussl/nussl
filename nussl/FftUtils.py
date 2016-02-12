@@ -5,24 +5,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from WindowType import WindowType
 import scipy.fftpack as spfft
+from scipy.signal import hamming, hann, blackman
 
 
-def f_stft(signal, num_ffts=None, window_attributes=None, win_length=None, window_type=None, window_overlap=None,
-           sample_rate=None):
+def f_stft(signal, num_ffts, win_length, window_type, window_overlap, sample_rate):
     """Computes the one-sided STFT of a signal
 
     Parameters:
         signal (np.array): row vector containing the signal.
-        num_ffts (Optional[int]): min number of desired freq. samples in (-pi,pi]. MUST be >= L. Defaults to
+        num_ffts [int]: min number of desired freq. samples in (-pi,pi]. MUST be >= L. Defaults to
          int(2 ** np.ceil(np.log2(win_length)))
-        window_attributes (Optional[WindowAttributes]): Contains all info about windowing for stft.
+        stft_params ([WindowAttributes]): Contains all info about windowing for stft.
         win_length (Optional[int]): length of one window (in # of samples)
         window_type (Optional[WindowType]): window type
         window_overlap (Optional[int]): number of overlapping samples between adjacent windows
         sample_rate (int): sampling rate of the signal
 
     Note:
-        Either window_attributes or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
+        Either stft_params or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
 
     Returns:
         * **S** (*np.array*) - 2D numpy matrix containing the one-sided short-time Fourier transform of the signal
@@ -31,18 +31,6 @@ def f_stft(signal, num_ffts=None, window_attributes=None, win_length=None, windo
         * **F** (*np.array*) - frequency vector
         * **T** (*np.array*) - time vector
     """
-
-    if window_attributes is None:
-        if all(i is None for i in [win_length, window_type, window_overlap, num_ffts, sample_rate]):
-            raise Exception(
-                'Cannot do f_stft()! win_length, window_type, window_overlap, num_ffts, sample_rate are all required!')
-    else:
-        win_length = window_attributes.window_length
-        window_type = window_attributes.window_type
-        window_overlap = window_attributes.window_overlap_samples
-        num_ffts = int(2 ** np.ceil(np.log2(win_length)))
-        sample_rate = window_attributes.sample_rate
-
     if num_ffts is None:
         num_ffts = int(2 ** np.ceil(np.log2(win_length)))
 
@@ -110,6 +98,40 @@ def f_stft(signal, num_ffts=None, window_attributes=None, win_length=None, windo
 
     return S, P, freq, T
 
+def e_stft(signal, window_length, hop_length, window_type):
+    n_hops = int(np.ceil(float(len(signal)) / hop_length))
+
+    # zero pad signal
+    if n_hops * hop_length > len(signal):
+        sig_temp = np.zeros(n_hops * hop_length)
+        sig_temp[0:len(signal)] += signal
+        signal = sig_temp
+
+    window = make_window(window_type, window_length)
+
+    stft = np.zeros((n_hops, window_length), dtype=complex)
+    for hop in range(n_hops):
+        start = hop * hop_length
+        end = start + window_length
+        unwindowed_signal = signal[start:end]
+        windowed_signal = np.multiply(unwindowed_signal, window)
+        stft[hop, ] = spfft.fft(windowed_signal, window_length)
+
+    return stft
+
+def e_istft(stft, hop_length):
+    n_hops = len(stft)
+    window_length = len(stft[0])
+    signal_length = (n_hops - 1) * hop_length + window_length
+    signal = np.zeros(signal_length)
+
+    for n in range(n_hops):
+        start = n * hop_length
+        end = start + window_length
+        signal[start:end] = signal[start:end] + np.real(spfft.ifft(stft[n]))
+    return signal
+
+
 
 def plot_stft(signal, file_name, num_ffts=None, freq_max=None, window_attributes=None, win_length=None,
               window_type=None, win_overlap=None, sample_rate=None, show_interactive_plot=False):
@@ -130,7 +152,7 @@ def plot_stft(signal, file_name, num_ffts=None, freq_max=None, window_attributes
          Defaults to False
 
     Note:
-         Either window_attributes or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
+         Either stft_params or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
 
     """
     if window_attributes is None:
@@ -162,7 +184,7 @@ def f_istft(stft, win_length=None, window_type=None, win_overlap=None, sample_ra
     """Computes the inverse STFT of a spectrogram using Overlap Addition method
 
     Parameters:
-        stft (np.array): one-sided do_STFT (spectrogram) of the signal x
+        stft (np.array): one-sided stft (spectrogram) of the signal x
         win_length (Optional[int]): length of one window (in # of samples)
         window_type (Optional[WindowType]): window type
         win_overlap (Optional[int]): number of overlapping samples between adjacent windows
@@ -220,15 +242,17 @@ def make_window(window_type, length):
         window_type (WindowType): Type of window to create, window_type object
         length (int): length of window
     Returns:
-         window (np.array): np array of windowtype
+         window (np.array): np array of window_type
     """
 
     # Generate samples of a normalized window
     if (window_type == WindowType.RECTANGULAR):
         return np.ones(length)
     elif (window_type == WindowType.HANN):
-        return np.hanning(length)
+        return hann(length)
     elif (window_type == WindowType.BLACKMAN):
-        return np.blackman(length)
+        return blackman(length)
+    elif (window_type == WindowType.HAMMING):
+        return hamming(length)
     else:
-        return np.hamming(length)
+        return None
