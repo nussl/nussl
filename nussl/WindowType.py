@@ -10,4 +10,5 @@ class WindowType:
     DEFAULT = HAMMING
 
     def __init__(self):
-        pass
+        # TODO: delete this
+        raise DeprecationWarning('Moved to spectral_utils.py')
