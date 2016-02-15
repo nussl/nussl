@@ -17,7 +17,7 @@ def main():
     win.window_type = nussl.WindowType.HAMMING
 
     # Set up Repet
-    repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM, window_attributes=win)
+    repet = nussl.Repet()
     repet.min_distance_between_frames = 0.1
     # and Run
     repet.run()

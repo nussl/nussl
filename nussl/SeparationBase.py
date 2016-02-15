@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import WindowAttributes
+import spectral_utils
 import Constants
 import AudioSignal
 
@@ -12,24 +12,23 @@ class SeparationBase(object):
     Do not call this. It will not do anything.
 
     Parameters:
-        window_attributes (WindowAttributes): WindowAttributes for the separation algorithm. Defaults to
-         WindowAttributes.WindowAttributes(self.sample_rate)
-        sample_rate (Optional[int]): Sample rate. Defaults to Constants.DEFAULT_SAMPLE_RATE
         audio_signal (Optional[np.array]): Audio signal in array form. Defaults to AudioSignal.AudioSignal()
-
+        sample_rate (Optional[int]): Sample rate. Defaults to Constants.DEFAULT_SAMPLE_RATE
+        stft_params (StftParams): STFT parameters for the separation algorithm. Defaults to
+         spectral_utils.StftParams(Constants.DEFAULT_SAMPLE_RATE)
     """
 
-    def __init__(self, window_attributes=None, sample_rate=None, audio_signal=None):
+    def __init__(self, audio_signal=None, sample_rate=None, stft_params=None):
 
         if sample_rate is not None:
             self.sample_rate = sample_rate
         else:
             self.sample_rate = Constants.DEFAULT_SAMPLE_RATE
 
-        if window_attributes is not None:
-            self.window_attributes = window_attributes
+        if stft_params is not None:
+            self.stft_params = stft_params
         else:
-            self.window_attributes = WindowAttributes.WindowAttributes(self.sample_rate)
+            self.stft_params = spectral_utils.StftParams(self.sample_rate)
 
         if audio_signal is not None:
             self.audio_signal = audio_signal

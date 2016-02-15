@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
-import FftUtils
+import spectral_utils
 import SeparationBase
 import AudioSignal
 import Constants
@@ -38,7 +38,7 @@ class Duet(SeparationBase.SeparationBase):
         threshold (Optional[float]): Value in [0, 1] for peak picking. Defaults to 0.2
         a_min_distance (Optional[int]): Minimum distance between peaks wrt attenuation. Defaults to 5
         d_min_distance (Optional[int]): Minimum distance between peaks wrt delay. Defaults to 5
-        window_attributes (Optional[WindowAttributes]): Window attributes for stft. Defaults to
+        stft_params (Optional[WindowAttributes]): Window attributes for stft. Defaults to
          WindowAttributes.WindowAttributes(self.sample_rate)
         sample_rate (Optional[int]): Sample rate for the audio. Defaults to Constants.DEFAULT_SAMPLE_RATE
 
@@ -47,11 +47,10 @@ class Duet(SeparationBase.SeparationBase):
 
     """
 
-    def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
-                 threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
+    def __init__(self, audio_signal=None, sample_rate=None, stft_params=None):
         # TODO: Is there a better way to do this?
         self.__dict__.update(locals())
-        super(Duet, self).__init__(window_attributes, sample_rate, audio_signal)
+        super(Duet, self).__init__(stft_params, sample_rate, stft_params)
         self.separated_sources = None
         self.a_grid = None
         self.d_grid = None
@@ -83,16 +82,16 @@ class Duet(SeparationBase.SeparationBase):
             raise Exception('Cannot run DUET on audio signal without exactly 2 channels!')
 
         # Give them shorter names
-        L = self.window_attributes.window_length
-        winType = self.window_attributes.window_type
-        ovp = self.window_attributes.window_overlap_samples
+        L = self.stft_params.window_length
+        winType = self.stft_params.window_type
+        ovp = self.stft_params.window_overlap_samples
         fs = self.sample_rate
 
-        # Compute the do_STFT of the two channel mixtures
-        X1, P1, F, T = FftUtils.f_stft(self.audio_signal.get_channel(1), window_attributes=self.window_attributes,
-                                       sample_rate=fs)
-        X2, P2, F, T = FftUtils.f_stft(self.audio_signal.get_channel(2), window_attributes=self.window_attributes,
-                                       sample_rate=fs)
+        # Compute the stft of the two channel mixtures
+        X1, P1, F, T = spectral_utils.f_stft(self.audio_signal.get_channel(1), window_attributes=self.stft_params,
+                                             sample_rate=fs)
+        X2, P2, F, T = spectral_utils.f_stft(self.audio_signal.get_channel(2), window_attributes=self.stft_params,
+                                             sample_rate=fs)
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
         X1 = X1[1::, :]
@@ -175,7 +174,7 @@ class Duet(SeparationBase.SeparationBase):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, Lt)),
                             (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2) / (1 + atnpeak[i] ** 2) * mask])
-            xi = FftUtils.f_istft(Xm, L, winType, ovp, fs)
+            xi = spectral_utils.f_istft(Xm, L, winType, ovp, fs)
 
             xhat[i, :] = np.array(xi)[0, 0:Lx]
             # add back to the separated signal a portion of the mixture to eliminate
