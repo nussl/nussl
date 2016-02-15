@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from spectral_utils import *
-from spectral_utils import WindowType
-# from WindowType import WindowType
-from WindowAttributes import WindowAttributes
+import spectral_utils
+import Constants
 from AudioSignal import AudioSignal
 from Duet import Duet
 from Nmf import Nmf, DistanceType

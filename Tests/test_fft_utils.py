@@ -3,7 +3,7 @@ import numpy as np
 import nussl
 
 
-class TestFftUtils(unittest.TestCase):
+class TestSpectralUtils(unittest.TestCase):
     sr = 44100
     dur = 3
     length = sr * dur
@@ -18,7 +18,7 @@ class TestFftUtils(unittest.TestCase):
     win_length_40ms = int(2 ** (np.ceil(np.log2(nussl.Constants.DEFAULT_WIN_LEN_PARAM * sr))))
 
     def test_stft_istft_noise_seed1(self):
-        win_type = nussl.WindowType.RECTANGULAR
+        win_type = nussl.spectral_utils.WindowType.RECTANGULAR
 
         for win_length in self.win_lengths:
             for i in range(10):
@@ -31,7 +31,7 @@ class TestFftUtils(unittest.TestCase):
                 self.do_stft_istft_assert_allclose(win_length, hop_length, win_type, noise)
 
     def test_stft_istft_noise_no_seed(self):
-        win_type = nussl.WindowType.RECTANGULAR
+        win_type = nussl.spectral_utils.WindowType.RECTANGULAR
 
         for win_length in self.win_lengths:
             hop_length = win_length
@@ -45,7 +45,7 @@ class TestFftUtils(unittest.TestCase):
         Tests all ones with rectangular window at a bunch of different lengths
         hop length is same as window length
         '''
-        win_type = nussl.WindowType.RECTANGULAR
+        win_type = nussl.spectral_utils.WindowType.RECTANGULAR
         ones = np.ones(self.length)
 
         for win_length in self.win_lengths:
@@ -55,7 +55,7 @@ class TestFftUtils(unittest.TestCase):
 
     def test_stft_istft_ones2(self):
 
-        win_type = nussl.WindowType.RECTANGULAR
+        win_type = nussl.spectral_utils.WindowType.RECTANGULAR
         ones = np.ones(self.length)
 
         for win_length in self.win_lengths:
@@ -65,7 +65,7 @@ class TestFftUtils(unittest.TestCase):
                 self.do_stft_istft(win_length, hop_length, win_type, ones)
 
     def test_stft_istft_hann1(self):
-        win_type = nussl.WindowType.HANN
+        win_type = nussl.spectral_utils.WindowType.HANN
 
         for win_length in self.win_lengths:
             hop_length = win_length / 2
@@ -74,7 +74,7 @@ class TestFftUtils(unittest.TestCase):
             self.do_stft_istft_assert_allclose(win_length, hop_length, win_type, ones)
 
     def test_stft_istft_40ms_win_length(self):
-        win_type = nussl.WindowType.RECTANGULAR
+        win_type = nussl.spectral_utils.WindowType.RECTANGULAR
         ones = np.ones(self.length)
 
 
@@ -92,11 +92,12 @@ class TestFftUtils(unittest.TestCase):
         win_type = 'rectangular'
         ones = np.ones(self.length)
 
-        stft, psd, f, t = nussl.e_stft_plus(ones, self.win_length_40ms, self.win_length_40ms, win_type, self.sr)
+        stft, psd, f, t = nussl.spectral_utils.e_stft_plus(ones, self.win_length_40ms,
+                                                           self.win_length_40ms, win_type, self.sr)
 
     @staticmethod
     def do_stft_istft_assert_allclose(win_length, hop_length, win_type, signal):
-        signal_1, calculated_signal = TestFftUtils.do_stft_istft(win_length, hop_length, win_type, signal)
+        signal_1, calculated_signal = TestSpectralUtils.do_stft_istft(win_length, hop_length, win_type, signal)
 
         # leave off comparing the first and last hop to mitigate edge effects
         assert (np.allclose(signal_1, calculated_signal))
@@ -104,11 +105,11 @@ class TestFftUtils(unittest.TestCase):
 
     @staticmethod
     def do_stft_istft(win_length, hop_length, win_type, signal):
-        stft = nussl.e_stft(signal, win_length, hop_length, win_type)
+        stft = nussl.spectral_utils.e_stft(signal, win_length, hop_length, win_type)
 
         # get rid of last hop because it's zero padded and screws up the stft and np.allclose
         length = int(len(signal) / hop_length) * hop_length
-        calculated_signal = nussl.e_istft(stft, win_length, hop_length, win_type)
+        calculated_signal = nussl.spectral_utils.e_istft(stft, win_length, hop_length, win_type)
 
         # useful for debugging:
         # diff = signal[hop_length:length] - calculated_signal[hop_length:length]

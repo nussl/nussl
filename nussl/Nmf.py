@@ -37,7 +37,7 @@ class Nmf(SeparationBase.SeparationBase):
             raise Exception('Need more than 0 bases!')
 
         if stft_params.size <= 0:
-            raise Exception('do_STFT size must be > 0!')
+            raise Exception('STFT size must be > 0!')
 
         self.stft = stft_params  # V, in literature
         self.num_bases = num_bases
