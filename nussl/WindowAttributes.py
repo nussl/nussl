@@ -8,7 +8,7 @@ from WindowType import WindowType
 
 class WindowAttributes(object):
     """
-    The window_attributes class is a container for information regarding windowing.
+    The stft_params class is a container for information regarding windowing.
     This object will get passed around instead of each of these individual attributes.
     """
 

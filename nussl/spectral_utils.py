@@ -3,9 +3,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from WindowType import WindowType
 import scipy.fftpack as spfft
 from scipy.signal import hamming, hann, blackman
+
+import Constants
 
 
 def f_stft(signal, num_ffts, win_length, window_type, window_overlap, sample_rate):
@@ -98,43 +99,12 @@ def f_stft(signal, num_ffts, win_length, window_type, window_overlap, sample_rat
 
     return S, P, freq, T
 
-def e_stft(signal, window_length, hop_length, window_type):
-    n_hops = int(np.ceil(float(len(signal)) / hop_length))
-
-    # zero pad signal
-    if n_hops * hop_length > len(signal):
-        sig_temp = np.zeros(n_hops * hop_length)
-        sig_temp[0:len(signal)] += signal
-        signal = sig_temp
-
-    window = make_window(window_type, window_length)
-
-    stft = np.zeros((n_hops, window_length), dtype=complex)
-    for hop in range(n_hops):
-        start = hop * hop_length
-        end = start + window_length
-        unwindowed_signal = signal[start:end]
-        windowed_signal = np.multiply(unwindowed_signal, window)
-        stft[hop, ] = spfft.fft(windowed_signal, window_length)
-
-    return stft
-
-def e_istft(stft, hop_length):
-    n_hops = len(stft)
-    window_length = len(stft[0])
-    signal_length = (n_hops - 1) * hop_length + window_length
-    signal = np.zeros(signal_length)
-
-    for n in range(n_hops):
-        start = n * hop_length
-        end = start + window_length
-        signal[start:end] = signal[start:end] + np.real(spfft.ifft(stft[n]))
-    return signal
 
 
 
-def plot_stft(signal, file_name, num_ffts=None, freq_max=None, window_attributes=None, win_length=None,
-              window_type=None, win_overlap=None, sample_rate=None, show_interactive_plot=False):
+def plot_stft(signal, file_name, win_length=None, hop_length=None,
+              window_type=None, sample_rate=None, n_fft_bins=None,
+              freq_max=None, show_interactive_plot=False):
     """ Plots a stft of signal with the given window attributes
 
     Parameters:
@@ -155,24 +125,29 @@ def plot_stft(signal, file_name, num_ffts=None, freq_max=None, window_attributes
          Either stft_params or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
 
     """
-    if window_attributes is None:
-        if all(i is None for i in [win_length, window_type, win_overlap, num_ffts]):
-            raise Exception(
-                'Cannot do plot_stft()! win_length, window_type, window_overlap, num_ffts are all required!')
+    sample_rate = Constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
 
-        (S, P, F, Time) = f_stft(signal, num_ffts=num_ffts, window_attributes=window_attributes, win_length=win_length,
-                                 window_type=window_type, window_overlap=win_overlap, sample_rate=sample_rate)
-    else:
-        (S, P, F, Time) = f_stft(signal, window_attributes=window_attributes)
+    required = [win_length, hop_length, window_type]
+    if any([r is None for r in required]):
+        defaults = StftParams(sample_rate)
 
-    TT = np.tile(Time, (len(F), 1))
-    FF = np.tile(F.T, (len(Time), 1)).T
-    SP = 10 * np.log10(np.abs(P))
-    plt.pcolormesh(TT, FF, SP)
+        win_length = defaults.window_length if win_length is None else win_length
+        hop_length = defaults.hop_length if hop_length is None else hop_length
+        window_type = defaults.window_type if window_type is None else window_type
+
+
+    (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length, window_type, sample_rate, n_fft_bins)
+
+    freq_max = Constants.MAX_FREQUENCY if freq_max is None else freq_max
+
+    time_tile = np.tile(time, (len(freqs), 1))
+    frew_tile = np.tile(freqs.T, (len(time), 1)).T
+    sp = 10 * np.log10(np.abs(psd))
+    plt.pcolormesh(time_tile, frew_tile, sp)
     plt.xlabel('Time')
     plt.ylabel('Frequency')
-    plt.xlim(Time[0], Time[-1])
-    plt.ylim(F[0], freq_max)
+    plt.xlim(time[0], time[-1])
+    plt.ylim(freqs[0], freq_max)
     plt.savefig(file_name)
 
     if show_interactive_plot:
@@ -189,7 +164,7 @@ def f_istft(stft, win_length=None, window_type=None, win_overlap=None, sample_ra
         window_type (Optional[WindowType]): window type
         win_overlap (Optional[int]): number of overlapping samples between adjacent windows
         sample_rate (int): sampling rate of the signal
-        window_attributes (WindowAttributes): WindowAttributes object that has all of the windowing info
+        window_attributes (StftParams): WindowAttributes object that has all of the windowing info
 
     Returns:
         * **t** (*np.array*) - Numpy array containing time values for the reconstructed signal
@@ -234,6 +209,78 @@ def f_istft(stft, win_length=None, window_type=None, win_overlap=None, sample_ra
 
     return y, t
 
+def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None):
+    if n_fft_bins is None:
+        n_fft_bins = window_length
+
+    n_hops = int(np.ceil(float(len(signal)) / hop_length))
+
+    # zero pad signal
+    if n_hops * hop_length >= len(signal):
+        sig_temp = np.zeros((n_hops + 1) * hop_length + window_length)
+        sig_temp[0:len(signal)] += signal
+        signal = sig_temp
+
+    window = make_window(window_type, window_length)
+
+    stft = np.zeros((n_hops, n_fft_bins), dtype=complex)
+    for hop in range(n_hops):
+        start = hop * hop_length
+        end = start + window_length
+        unwindowed_signal = signal[start:end]
+        windowed_signal = np.multiply(unwindowed_signal, window)
+        stft[hop, ] = spfft.fft(windowed_signal, n=n_fft_bins)
+
+    return stft
+
+def e_istft(stft, window_length, hop_length, window_type, n_fft_bins=None):
+    if n_fft_bins is None:
+        n_fft_bins = window_length
+
+    n_hops = len(stft)
+    window_length = len(stft[0])
+    signal_length = (n_hops - 1) * hop_length + window_length
+    signal = np.zeros(signal_length)
+
+    for n in range(n_hops):
+        start = n * hop_length
+        end = start + window_length
+        signal[start:end] = signal[start:end] + np.real(spfft.ifft(stft[n], n=n_fft_bins))
+
+    window = make_window(window_type, window_length)
+    c = sum(window) / hop_length
+    signal /= c
+    return signal
+
+def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_fft_bins=None):
+    """
+    Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
+    the power spectral density (PSD), frequency and time vectors for the calculated STFT.
+    :param signal:
+    :param window_length:
+    :param hop_length:
+    :param window_type:
+    :param sample_rate:
+    :param n_fft_bins:
+    :return:
+    """
+    if n_fft_bins is None:
+        n_fft_bins = window_length
+
+    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins)
+    frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
+
+    time_vector = np.array(range(len(stft)))
+    hop_in_secs = hop_length / (1.0 * sample_rate)
+    time_vector = time_vector * hop_in_secs
+
+    window = make_window(window_type, window_length)
+    win_dot = np.dot(window, window.T)
+    psd = np.zeros_like(stft, dtype=float)
+    for i in range(len(psd)):
+        psd[i, :] = (1 / float(sample_rate)) * ((abs(stft[i, :]) ** 2) / float(win_dot))
+
+    return stft, psd, frequency_vector, time_vector
 
 def make_window(window_type, length):
     """Returns an np array of type window_type
@@ -246,13 +293,98 @@ def make_window(window_type, length):
     """
 
     # Generate samples of a normalized window
-    if (window_type == WindowType.RECTANGULAR):
+    if window_type == WindowType.RECTANGULAR:
         return np.ones(length)
-    elif (window_type == WindowType.HANN):
-        return hann(length)
-    elif (window_type == WindowType.BLACKMAN):
-        return blackman(length)
-    elif (window_type == WindowType.HAMMING):
-        return hamming(length)
+    elif window_type == WindowType.HANN:
+        return hann(length, False)
+    elif window_type == WindowType.BLACKMAN:
+        return blackman(length, False)
+    elif window_type == WindowType.HAMMING:
+        return hamming(length, False)
     else:
         return None
+
+
+class WindowType:
+    RECTANGULAR = 'rectangular'
+    HAMMING = 'hamming'
+    HANN = 'hann'
+    BLACKMAN = 'blackman'
+    DEFAULT = HAMMING
+
+    all_types = [RECTANGULAR, HAMMING, HANN, BLACKMAN]
+
+    def __init__(self):
+        pass
+
+
+class StftParams(object):
+    """
+    The StftParams class is a container for information needed to run an STFT or iSTFT.
+    This object will get passed around instead of each of these individual attributes.
+    """
+
+    def __init__(self, sample_rate, window_length=None, hop_length=None, window_type=None, n_fft_bins=None):
+        self.sample_rate = sample_rate
+
+        # default to 40ms windows
+        default_win_len = int(2 ** (np.ceil(np.log2(Constants.DEFAULT_WIN_LEN_PARAM * sample_rate))))
+        self._window_length = default_win_len if window_length is None else window_length
+        self._hop_length = self._window_length / 2 if hop_length is None else hop_length
+        self.window_type = WindowType.DEFAULT if window_type is None else window_type
+        self._n_fft_bins = self._window_length if n_fft_bins is None else n_fft_bins
+
+        self._hop_length_needs_update = True
+        self._n_fft_bins_needs_update = True
+
+        if hop_length is not None:
+            self._hop_length_needs_update = False
+
+        if n_fft_bins is not None:
+            self._n_fft_bins_needs_update = False
+
+    @property
+    def window_length(self):
+        return self._window_length
+
+    @window_length.setter
+    def window_length(self, value):
+        """
+        Length of window in samples. If window_overlap or num_fft are not set manually,
+        then changing this will update them to hop_length = window_length / 2, and
+        and num_fft = window_length
+        :param value:
+        :return:
+        """
+        self._window_length = value
+
+        if self._n_fft_bins_needs_update:
+            self._n_fft_bins = value
+
+        if self._hop_length_needs_update:
+            self._hop_length = value / 2
+
+    @property
+    def hop_length(self):
+        return self._hop_length
+
+    @hop_length.setter
+    def hop_length(self, value):
+        self._hop_length_needs_update = False
+        self._hop_length = value
+
+    @property
+    def n_fft_bins(self):
+        return self._n_fft_bins
+
+    @n_fft_bins.setter
+    def n_fft_bins(self, value):
+        """
+        Number of FFT bins per stft window.
+        By default this is linked to window_length (value of window_length),
+        but if this is set manually then they are both independent.
+        :param value:
+        :return:
+        """
+        self._n_fft_bins_needs_update = False
+        self._n_fft_bins = value

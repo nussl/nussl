@@ -19,8 +19,9 @@ def main():
     win.window_overlap_ratio = 0.5 * win.window_length
 
     # Set up DUET
-    duet = Duet(signal, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50, threshold=0.2, a_min_distance=5,
-                d_min_distance=5, num_sources=3, window_attributes=win)
+    duet = Duet()
+
+    duet.stft_params.hop_length = 200
     # and run
     duet.run()
 

@@ -3,8 +3,9 @@
 
 import numpy as np
 import scipy.fftpack as scifft
+import warnings
 
-import FftUtils
+import spectral_utils
 import SeparationBase
 import Constants
 import AudioSignal
@@ -29,7 +30,7 @@ class Repet(SeparationBase.SeparationBase):
     Parameters:
             audio_signal (AudioSignal): audio mixture (M by N) containing M channels and N time samples
             repet_type (RepetType): Variant of Repet algorithm to perform.
-            window_attributes (WindowAttributes): WindowAttributes object describing the window used in the repet
+            stft_params (WindowAttributes): WindowAttributes object describing the window used in the repet
              algorithm
             sample_rate (int): the sample rate of the audio signal
             similarity_threshold (Optional[int]): Used for RepetType.SIM. Defaults to 0
@@ -45,12 +46,11 @@ class Repet(SeparationBase.SeparationBase):
     Examples:
         :ref:`The REPET Demo Example <repet_demo>`
     """
-    def __init__(self, audio_signal, repet_type=None, window_attributes=None, sample_rate=None,
+    def __init__(self, audio_signal=None, sample_rate=None, stft_params=None, repet_type=None,
                  similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
                  min_period=None, max_period=None, period=None, high_pass_cutoff=None):
         self.__dict__.update(locals())
-        super(Repet, self).__init__(window_attributes=window_attributes, sample_rate=sample_rate,
-                                    audio_signal=audio_signal)
+        super(Repet, self).__init__(audio_signal=stft_params, sample_rate=sample_rate, stft_params=stft_params)
         self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
 
@@ -59,11 +59,11 @@ class Repet(SeparationBase.SeparationBase):
 
         if self.repet_type == RepetType.SIM:
             # if similarity_threshold == 0:
-            #     raise Warning('Using default value of 1 for similarity_threshold.')
+            #     warnings.warn('Using default value of 1 for similarity_threshold.')
             # if min_distance_between_frames == 1:
-            #     raise Warning('Using default value of 0 for min_distance_between_frames.')
+            #     warnings.warn('Using default value of 0 for min_distance_between_frames.')
             # if max_repeating_frames == 100:
-            #     raise Warning('Using default value of 100 for maxRepeating frames.')
+            #     warnings.warn('Using default value of 100 for maxRepeating frames.')
 
             self.similarity_threshold = 0 if similarity_threshold is None else similarity_threshold
             self.min_distance_between_frames = 1 if min_distance_between_frames is None else min_distance_between_frames
@@ -102,15 +102,15 @@ class Repet(SeparationBase.SeparationBase):
             win.window_type = nussl.WindowType.HAMMING
 
             # Set up and run Repet
-            repet = nussl.Repet(signal, window_type=nussl.RepetType.SIM, window_attributes=win)
+            repet = nussl.Repet(signal, window_type=nussl.RepetType.SIM, stft_params=win)
             repet.min_distance_between_frames = 0.1
             repet.run()
 
         """
 
         # unpack window parameters
-        win_len, win_type, win_ovp, nfft = self.window_attributes.window_length, self.window_attributes.window_type, \
-                                           self.window_attributes.window_overlap_samples, self.window_attributes.num_fft
+        win_len, win_type, win_ovp, nfft = self.stft_params.window_length, self.stft_params.window_type, \
+                                           self.stft_params.window_overlap_samples, self.stft_params.num_fft
 
         # High pass filter cutoff freq. (in # of freq. bins)
         self.high_pass_cutoff = np.ceil(float(self.high_pass_cutoff) * (nfft - 1) / self.sample_rate)
@@ -138,7 +138,7 @@ class Repet(SeparationBase.SeparationBase):
             RepMask = mask(self.real_spectrum[:, :, i], S)
             RepMask[1:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
             XMi = RepMask * self.complex_spectrum[:, :, i]
-            yi = FftUtils.f_istft(XMi, win_len, win_type, win_ovp, self.sample_rate)[0]
+            yi = spectral_utils.f_istft(XMi, win_len, win_type, win_ovp, self.sample_rate)[0]
             self.bkgd[i,] = yi[0:M]
 
         # self.bkgd = self.bkgd.T
@@ -150,12 +150,12 @@ class Repet(SeparationBase.SeparationBase):
 
         # compute the spectrograms of all channels
         N, M = self.audio_signal.audio_data.shape
-        self.complex_spectrum = FftUtils.f_stft(self.audio_signal.get_channel(1),
-                                                window_attributes=self.window_attributes, sample_rate=self.sample_rate)[0]
+        self.complex_spectrum = spectral_utils.f_stft(self.audio_signal.get_channel(1),
+                                                      window_attributes=self.stft_params, sample_rate=self.sample_rate)[0]
 
         for i in range(1, N):
-            Sx = FftUtils.f_stft(self.audio_signal.get_channel(i), window_attributes=self.window_attributes,
-                                 sample_rate=self.sample_rate)[0]
+            Sx = spectral_utils.f_stft(self.audio_signal.get_channel(i), window_attributes=self.stft_params,
+                                       sample_rate=self.sample_rate)[0]
             self.complex_spectrum = np.dstack([self.complex_spectrum, Sx])
 
         self.real_spectrum = np.abs(self.complex_spectrum)
@@ -209,7 +209,7 @@ class Repet(SeparationBase.SeparationBase):
 
     def _do_repet_sim(self):
         # unpack window overlap
-        ovp = self.window_attributes.window_overlap_samples
+        ovp = self.stft_params.window_overlap_samples
 
         Vavg = np.mean(self.real_spectrum, axis=2)
         S = self.compute_similarity_matrix(Vavg)
@@ -412,8 +412,8 @@ class Repet(SeparationBase.SeparationBase):
     def _update_period(self, period):
         period = float(period)
         result = period * self.audio_signal.sample_rate
-        result += self.window_attributes.window_length / self.window_attributes.window_overlap_samples - 1
-        result /= self.window_attributes.window_overlap_samples
+        result += self.stft_params.window_length / self.stft_params.window_overlap_samples - 1
+        result /= self.stft_params.window_overlap_samples
         return np.ceil(result)
 
     def plot(self, output_file, **kwargs):
@@ -531,9 +531,9 @@ class RepetType():
     """
     ORIGINAL = 'original'
     SIM = 'sim'
-    ADAPTIVE = 'adaptive'
+    # ADAPTIVE = 'adaptive'
     DEFAULT = ORIGINAL
-    all_types = [ORIGINAL, SIM, ADAPTIVE]
+    all_types = [ORIGINAL, SIM]
 
     def __init__(self):
         pass

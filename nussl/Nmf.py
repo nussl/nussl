@@ -13,7 +13,7 @@ class Nmf(SeparationBase.SeparationBase):
     """
     This is an implementation of the Non-negative Matrix Factorization algorithm for
     source separation. This implementation cannot receive a raw audio signal, rather
-    it only accepts a do_STFT and a number, num_bases, which defines the number of bases
+    it only accepts a stft and a number, num_bases, which defines the number of bases
     vectors.
 
     This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
@@ -27,23 +27,24 @@ class Nmf(SeparationBase.SeparationBase):
     def __str__(self):
         return "Nmf"
 
-    def __init__(self, stft, num_bases, activation_matrix=None, templates=None,
-                 distance_measure=None, should_update_template=None, should_update_activation=None):
+    def __init__(self, stft, num_bases, audio_signal=None, sample_rate=None, stft_params=None,
+                 activation_matrix=None, templates=None, distance_measure=None,
+                 should_update_template=None, should_update_activation=None):
         self.__dict__.update(locals())
         super(Nmf, self).__init__()
 
         if num_bases <= 0:
             raise Exception('Need more than 0 bases!')
 
-        if stft.size <= 0:
+        if stft_params.size <= 0:
             raise Exception('do_STFT size must be > 0!')
 
-        self.stft = stft  # V, in literature
+        self.stft = stft_params  # V, in literature
         self.num_bases = num_bases
 
         if activation_matrix is None and templates is None:
-            self.templates = np.zeros((stft.shape[0], num_bases))  # W, in literature
-            self.activation_matrix = np.zeros((num_bases, stft.shape[1]))  # H, in literature
+            self.templates = np.zeros((stft_params.shape[0], num_bases))  # W, in literature
+            self.activation_matrix = np.zeros((num_bases, stft_params.shape[1]))  # H, in literature
             self.randomize_input_matrices()
         elif activation_matrix is not None and templates is not None:
             self.templates = templates
@@ -221,7 +222,7 @@ class Nmf(SeparationBase.SeparationBase):
         signals = []
         for stft in self.recombine_calculated_matrices():
             signal = AudioSignal.AudioSignal(stft=stft)
-            signal.do_iSTFT()
+            signal.istft()
             signals.append(signal)
         return signals
 
