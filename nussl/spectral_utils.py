@@ -140,14 +140,20 @@ def plot_stft(signal, file_name, win_length=None, hop_length=None,
 
     freq_max = Constants.MAX_FREQUENCY if freq_max is None else freq_max
 
+    # TODO: this can be better!
     time_tile = np.tile(time, (len(freqs), 1))
-    frew_tile = np.tile(freqs.T, (len(time), 1)).T
+    freq_tile = np.tile(freqs.T, (len(time), 1)).T
     sp = 10 * np.log10(np.abs(psd))
-    plt.pcolormesh(time_tile, frew_tile, sp)
+    sp = sp.T[:(len(sp.T)/2 + 1)]
+    plt.pcolormesh(time_tile, freq_tile, sp)
+
+    plt.axis('tight')
     plt.xlabel('Time')
     plt.ylabel('Frequency')
     plt.xlim(time[0], time[-1])
     plt.ylim(freqs[0], freq_max)
+
+    # plt.specgram(signal, NFFT=n_fft_bins, Fs=sample_rate) #, Fc=freq_max) # , window=window_type)
     plt.savefig(file_name)
 
     if show_interactive_plot:
