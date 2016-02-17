@@ -86,6 +86,26 @@ class TestAudioSignal(unittest.TestCase):
     def test_get_channel(self):
         pass
 
+    def test_arithmetic(self):
+        a = nussl.AudioSignal(self.path)
+        b = nussl.AudioSignal('../Input/k0140.wav')
+
+        with self.assertRaises(Exception):
+            a.add(b)
+        with self.assertRaises(Exception):
+            a.sub(b)
+        with self.assertRaises(Exception):
+            c = a + b
+        with self.assertRaises(Exception):
+            c = a - b
+        with self.assertRaises(Exception):
+            a += b
+        with self.assertRaises(Exception):
+            a -= b
+
+        self.assertTrue(np.allclose((a + a).audio_data, a.audio_data + a.audio_data))
+        self.assertTrue(np.allclose((a - a).audio_data, a.audio_data - a.audio_data))
+
 
 if __name__ == '__main__':
     unittest.main()
