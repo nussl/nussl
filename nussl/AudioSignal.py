@@ -148,6 +148,8 @@ class AudioSignal(object):
              Defaults to 0 seconds
 
         """
+
+        self.path_to_input_file = input_file_path
         try:
             with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
                 self.sample_rate = input_file.samplerate
@@ -225,7 +227,7 @@ class AudioSignal(object):
 
             # convert to fixed point again
             if not np.issubdtype(audio_output.dtype, int):
-                audio_output = np.multiply(audio_output, 2 ** Constants.DEFAULT_BIT_DEPTH).astype('int16')
+                audio_output = np.multiply(audio_output, 2 ** (Constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
 
             wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception, e:
@@ -355,7 +357,7 @@ class AudioSignal(object):
 
         self._audio_data = self._audio_data[0: n_samples]
 
-    def trancate_seconds(self, seconds):
+    def truncate_seconds(self, seconds):
         """ Truncates the signal leaving only the first seconds
         """
         if seconds > self.signal_duration:
