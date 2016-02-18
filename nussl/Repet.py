@@ -372,9 +372,29 @@ class Repet(SeparationBase.SeparationBase):
              period (int) : The period of the sound signal
         """
 
-        beat_spectrum = beat_spectrum[1:]  # discard the first element of beat_spectrum (lag 0)
-        beat_spectrum = beat_spectrum[min_period - 1:  max_period]
-        period = np.argmax(beat_spectrum) + min_period  # TODO: not sure about this part
+        auto_cosine = np.zeros((len(beat_spectrum), 1))
+        for i in range(0, len(beat_spectrum) - 1):
+	        auto_cosine[i] = 1 - cosine(beat_spectrum[0:len(beat_spectrum) - i], beat_spectrum[i:len(beat_spectrum)])
+        ac = auto_cosine[0:np.floor(auto_cosine.shape[0])/2]
+        auto_cosine = np.vstack([ac[1], ac, ac[-2]])
+        auto_cosine_diff = np.ediff1d(auto_cosine)
+        sign_changes = auto_cosine_diff[0:-1]*auto_cosine_diff[1:]
+        sign_changes = np.where(sign_changes < 0)[0]
+
+        extrema_values = ac[sign_changes]
+
+        e1 = np.insert(extrema_values, 0, extrema_values[0])
+        e2 = np.insert(extrema_values, -1, extrema_values[-1])
+
+        extrema_neighbors = np.stack((e1[0:-1], e2[1:]))
+
+        m = np.amax(extrema_neighbors, axis=0)
+        extrema_values = extrema_values.flatten() 
+        maxima = np.where(extrema_values >= m)[0]
+        maxima = zip(sign_changes[maxima], extrema_values[maxima])
+        maxima = maxima[1:]
+        maxima = sorted(maxima, key = lambda x: -x[1])
+        period = maxima[0][0]
 
         return period
 
