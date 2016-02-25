@@ -253,9 +253,6 @@ def e_istft(stft, window_length, hop_length, window_type, n_fft_bins=None):
         end = start + window_length
         signal[start:end] = signal[start:end] + np.real(spfft.ifft(stft[n], n=n_fft_bins))
 
-    window = make_window(window_type, window_length)
-    c = sum(window) / hop_length
-    signal /= c
     return signal
 
 def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_fft_bins=None):
