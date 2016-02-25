@@ -13,7 +13,7 @@ class Nmf(SeparationBase.SeparationBase):
     """
     This is an implementation of the Non-negative Matrix Factorization algorithm for
     source separation. This implementation cannot receive a raw audio signal, rather
-    it only accepts a stft and a number, num_bases, which defines the number of bases
+    it only accepts a stft and a number, num_templates, which defines the number of bases
     vectors.
 
     This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
@@ -27,24 +27,24 @@ class Nmf(SeparationBase.SeparationBase):
     def __str__(self):
         return "Nmf"
 
-    def __init__(self, stft, num_bases, audio_signal=None, sample_rate=None, stft_params=None,
+    def __init__(self, stft, num_templates, audio_signal=None, sample_rate=None, stft_params=None,
                  activation_matrix=None, templates=None, distance_measure=None,
                  should_update_template=None, should_update_activation=None):
         self.__dict__.update(locals())
         super(Nmf, self).__init__()
 
-        if num_bases <= 0:
+        if num_templates <= 0:
             raise Exception('Need more than 0 bases!')
 
         if stft_params.size <= 0:
             raise Exception('STFT size must be > 0!')
 
         self.stft = stft_params  # V, in literature
-        self.num_bases = num_bases
+        self.num_templates = num_templates
 
         if activation_matrix is None and templates is None:
-            self.templates = np.zeros((stft_params.shape[0], num_bases))  # W, in literature
-            self.activation_matrix = np.zeros((num_bases, stft_params.shape[1]))  # H, in literature
+            self.templates = np.zeros((stft_params.shape[0], num_templates))  # W, in literature
+            self.activation_matrix = np.zeros((num_templates, stft_params.shape[1]))  # H, in literature
             self.randomize_input_matrices()
         elif activation_matrix is not None and templates is not None:
             self.templates = templates
@@ -75,7 +75,7 @@ class Nmf(SeparationBase.SeparationBase):
         if self.stft is None or self.stft.size == 0:
             raise Exception('Cannot do NMF with an empty STFT!')
 
-        if self.num_bases is None or self.num_bases == 0:
+        if self.num_templates is None or self.num_templates == 0:
             raise Exception('Cannot do NMF with no bases!')
 
         if self.should_use_epsilon:
@@ -228,7 +228,7 @@ class Nmf(SeparationBase.SeparationBase):
 
     def recombine_calculated_matrices(self):
         new_matrices = []
-        for n in range(self.num_bases):
+        for n in range(self.num_templates):
             matrix = np.empty_like(self.activation_matrix)
             matrix[n, ] = self.activation_matrix[n, ]
 

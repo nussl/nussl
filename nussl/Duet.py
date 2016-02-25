@@ -344,7 +344,8 @@ class Duet(SeparationBase.SeparationBase):
         """
         signals = []
         for i in range(self.num_sources):
-            cur_signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i])
+            cur_signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i],
+                                                 sample_rate=self.sample_rate)
             signals.append(cur_signal)
         return signals
 
