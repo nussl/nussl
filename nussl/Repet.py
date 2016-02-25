@@ -142,7 +142,7 @@ class Repet(SeparationBase.SeparationBase):
             self.bkgd[i,] = yi[0:M]
 
         # self.bkgd = self.bkgd.T
-        self.bkgd = AudioSignal.AudioSignal(audio_data_array=self.bkgd)
+        self.bkgd = AudioSignal.AudioSignal(audio_data_array=self.bkgd, sample_rate=self.sample_rate)
 
         return self.bkgd
 
