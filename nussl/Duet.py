@@ -8,7 +8,7 @@ from scipy import signal
 
 import spectral_utils
 import SeparationBase
-import AudioSignal
+import audio_signal
 import Constants
 
 
@@ -47,10 +47,12 @@ class Duet(SeparationBase.SeparationBase):
 
     """
 
-    def __init__(self, audio_signal=None, sample_rate=None, stft_params=None):
+    def __init__(self, input_audio_signal, num_sources, sample_rate=None, stft_params=None,
+                 a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
+                 threshold=0.2, a_min_distance=5, d_min_distance=5):
         # TODO: Is there a better way to do this?
         self.__dict__.update(locals())
-        super(Duet, self).__init__(stft_params, sample_rate, stft_params)
+        super(Duet, self).__init__(input_audio_signal, sample_rate, stft_params)
         self.separated_sources = None
         self.a_grid = None
         self.d_grid = None
@@ -84,14 +86,12 @@ class Duet(SeparationBase.SeparationBase):
         # Give them shorter names
         L = self.stft_params.window_length
         winType = self.stft_params.window_type
-        ovp = self.stft_params.window_overlap_samples
+        hop = self.stft_params.hop_length
         fs = self.sample_rate
 
         # Compute the stft of the two channel mixtures
-        X1, P1, F, T = spectral_utils.f_stft(self.audio_signal.get_channel(1), window_attributes=self.stft_params,
-                                             sample_rate=fs)
-        X2, P2, F, T = spectral_utils.f_stft(self.audio_signal.get_channel(2), window_attributes=self.stft_params,
-                                             sample_rate=fs)
+        X1, P1, F, T = spectral_utils.e_stft_plus(self.audio_signal.get_channel(1), L, hop, winType, fs)
+        X2, P2, F, T = spectral_utils.e_stft_plus(self.audio_signal.get_channel(2), L, hop, winType, fs)
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
         X1 = X1[1::, :]
@@ -174,9 +174,10 @@ class Duet(SeparationBase.SeparationBase):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, Lt)),
                             (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2) / (1 + atnpeak[i] ** 2) * mask])
-            xi = spectral_utils.f_istft(Xm, L, winType, ovp, fs)
+            # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
+            xi = spectral_utils.e_istft(Xm, L, hop, winType)
 
-            xhat[i, :] = np.array(xi)[0, 0:Lx]
+            xhat[i, :] = xi[0:Lx]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]
@@ -344,8 +345,8 @@ class Duet(SeparationBase.SeparationBase):
         """
         signals = []
         for i in range(self.num_sources):
-            cur_signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i],
-                                                 sample_rate=self.sample_rate)
+            cur_signal = audio_signal.AudioSignal(audio_data_array=self.separated_sources[i],
+                                                  sample_rate=self.sample_rate)
             signals.append(cur_signal)
         return signals
 

@@ -5,7 +5,7 @@ import math
 import numpy as np
 
 import SeparationBase
-import AudioSignal
+import audio_signal
 import Constants
 
 
@@ -221,7 +221,7 @@ class Nmf(SeparationBase.SeparationBase):
         raise NotImplementedError('This does not work yet.')
         signals = []
         for stft in self.recombine_calculated_matrices():
-            signal = AudioSignal.AudioSignal(stft=stft)
+            signal = audio_signal.AudioSignal(stft=stft)
             signal.istft()
             signals.append(signal)
         return signals
