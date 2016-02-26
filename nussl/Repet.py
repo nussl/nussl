@@ -8,7 +8,7 @@ import warnings
 import spectral_utils
 import SeparationBase
 import Constants
-import AudioSignal
+from audio_signal import AudioSignal
 
 
 class Repet(SeparationBase.SeparationBase):
@@ -46,11 +46,11 @@ class Repet(SeparationBase.SeparationBase):
     Examples:
         :ref:`The REPET Demo Example <repet_demo>`
     """
-    def __init__(self, audio_signal=None, sample_rate=None, stft_params=None, repet_type=None,
+    def __init__(self, input_audio_signal=None, sample_rate=None, stft_params=None, repet_type=None,
                  similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
                  min_period=None, max_period=None, period=None, high_pass_cutoff=None):
         self.__dict__.update(locals())
-        super(Repet, self).__init__(audio_signal=stft_params, sample_rate=sample_rate, stft_params=stft_params)
+        super(Repet, self).__init__(input_audio_signal=input_audio_signal, sample_rate=sample_rate, stft_params=stft_params)
         self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
 
@@ -73,8 +73,6 @@ class Repet(SeparationBase.SeparationBase):
             if period is None:
                 self.min_period = 0.8 if min_period is None else min_period
                 self.max_period = min(8, self.audio_signal.signal_length / 3) if max_period is None else max_period
-                self.min_period = self._update_period(self.min_period)
-                self.max_period = self._update_period(self.max_period)
             else:
                 self.period = period
                 self.period = self._update_period(self.period)
@@ -109,8 +107,9 @@ class Repet(SeparationBase.SeparationBase):
         """
 
         # unpack window parameters
-        win_len, win_type, win_ovp, nfft = self.stft_params.window_length, self.stft_params.window_type, \
-                                           self.stft_params.window_overlap_samples, self.stft_params.num_fft
+        win_len, win_type, hop_len, nfft = self.stft_params.window_length, self.stft_params.window_type, \
+                                           self.stft_params.hop_length, self.stft_params.n_fft_bins
+        win_ovp = self.stft_params.window_overlap
 
         # High pass filter cutoff freq. (in # of freq. bins)
         self.high_pass_cutoff = np.ceil(float(self.high_pass_cutoff) * (nfft - 1) / self.sample_rate)
@@ -133,15 +132,16 @@ class Repet(SeparationBase.SeparationBase):
 
         # separate the mixture background by masking
         N, M = self.audio_signal.audio_data.shape
-        self.bkgd = np.zeros_like(self.audio_signal.audio_data)
+        bkgd = np.zeros_like(self.audio_signal.audio_data)
         for i in range(N):
-            RepMask = mask(self.real_spectrum[:, :, i], S)
-            RepMask[1:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
-            XMi = RepMask * self.complex_spectrum[:, :, i]
-            yi = spectral_utils.f_istft(XMi, win_len, win_type, win_ovp, self.sample_rate)[0]
-            self.bkgd[i,] = yi[0:M]
+            repeating_mask = mask(self.magnitude_spectrogram[:, :, i], S)
+            repeating_mask[1:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            stft_with_mask = repeating_mask * self.stft[:, :, i]
+            y = spectral_utils.e_istft(stft_with_mask, win_len, hop_len, win_type)
+            bkgd[i,] = y[0:M]
 
         # self.bkgd = self.bkgd.T
+        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.sample_rate)
         self.bkgd = AudioSignal.AudioSignal(audio_data_array=self.bkgd, sample_rate=self.sample_rate)
 
         return self.bkgd
@@ -149,19 +149,27 @@ class Repet(SeparationBase.SeparationBase):
     def _compute_spectrum(self):
 
         # compute the spectrograms of all channels
-        N, M = self.audio_signal.audio_data.shape
-        self.complex_spectrum = spectral_utils.f_stft(self.audio_signal.get_channel(1),
-                                                      window_attributes=self.stft_params, sample_rate=self.sample_rate)[0]
+        # N, M = self.audio_signal.audio_data.shape
+        # self.stft = spectral_utils.f_stft(self.audio_signal.get_channel(1),
+        #                                   window_attributes=self.stft_params, sample_rate=self.sample_rate)[0]
+        #
+        # for i in range(1, N):
+        #     Sx = spectral_utils.f_stft(self.audio_signal.get_channel(i), window_attributes=self.stft_params,
+        #                                sample_rate=self.sample_rate)[0]
+        #     self.stft = np.dstack([self.stft, Sx])
+        #
+        # self.magnitude_spectrogram = np.abs(self.stft)
+        # if N == 1:
+        #     self.stft = self.stft[:, :, np.newaxis]
+        #     self.magnitude_spectrogram = self.magnitude_spectrogram[:, :, np.newaxis]
 
-        for i in range(1, N):
-            Sx = spectral_utils.f_stft(self.audio_signal.get_channel(i), window_attributes=self.stft_params,
-                                       sample_rate=self.sample_rate)[0]
-            self.complex_spectrum = np.dstack([self.complex_spectrum, Sx])
+        self.stft = self.audio_signal.stft(self.stft_params.window_length, self.stft_params.hop_length,
+                                           self.stft_params.window_type, self.stft_params.n_fft_bins,
+                                           overwrite=False)
 
-        self.real_spectrum = np.abs(self.complex_spectrum)
-        if N == 1:
-            self.complex_spectrum = self.complex_spectrum[:, :, np.newaxis]
-            self.real_spectrum = self.real_spectrum[:, :, np.newaxis]
+        self.magnitude_spectrogram = np.abs(self.stft)
+
+
 
     def get_similarity_matrix(self):
         """Calculates and returns the similarity matrix for the audio file associated with this object
@@ -182,7 +190,7 @@ class Repet(SeparationBase.SeparationBase):
 
         """
         self._compute_spectrum()
-        V = np.mean(self.real_spectrum, axis=2)
+        V = np.mean(self.magnitude_spectrogram, axis=2)
         self.similarity_matrix = self.compute_similarity_matrix(V)
         return self.similarity_matrix
 
@@ -204,14 +212,14 @@ class Repet(SeparationBase.SeparationBase):
             beat_spec = repet.get_beat_spectrum()
         """
         self._compute_spectrum()
-        self.beat_spectrum = self.compute_beat_spectrum(np.mean(self.real_spectrum ** 2, axis=2))
+        self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram ** 2), axis=2))
         return self.beat_spectrum
 
     def _do_repet_sim(self):
         # unpack window overlap
         ovp = self.stft_params.window_overlap_samples
 
-        Vavg = np.mean(self.real_spectrum, axis=2)
+        Vavg = np.mean(self.magnitude_spectrogram, axis=2)
         S = self.compute_similarity_matrix(Vavg)
 
         self.min_distance_between_frames = np.round([self.min_distance_between_frames * self.sample_rate / ovp])
@@ -220,7 +228,9 @@ class Repet(SeparationBase.SeparationBase):
         return S
 
     def _do_repet_original(self):
-        self.beat_spectrum = self.compute_beat_spectrum(np.mean(self.real_spectrum ** 2, axis=2))
+        self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram), axis=2))
+        self.min_period = self._update_period(self.min_period)
+        self.max_period = self._update_period(self.max_period)
         self.repeating_period = self.find_repeating_period(self.beat_spectrum, self.min_period, self.max_period)
         return self.repeating_period
 
@@ -412,8 +422,8 @@ class Repet(SeparationBase.SeparationBase):
     def _update_period(self, period):
         period = float(period)
         result = period * self.audio_signal.sample_rate
-        result += self.stft_params.window_length / self.stft_params.window_overlap_samples - 1
-        result /= self.stft_params.window_overlap_samples
+        result += self.stft_params.window_length / self.stft_params.window_overlap - 1
+        result /= self.stft_params.window_overlap
         return np.ceil(result)
 
     def plot(self, output_file, **kwargs):
