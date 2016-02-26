@@ -1,4 +1,3 @@
-
 """
 This module implements the Kernel Additive Modeling (KAM) algorithm and its light 
 version (KAML) for source separation. 
@@ -27,7 +26,7 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import scipy.ndimage.filters
 import scipy
-from AudioSignal import AudioSignal
+from audio_signal import AudioSignal
 
 
 def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=False):

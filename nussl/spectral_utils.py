@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fftpack as spfft
 from scipy.signal import hamming, hann, blackman
+import os.path
 
 import Constants
 
@@ -100,9 +101,7 @@ def f_stft(signal, num_ffts, win_length, window_type, window_overlap, sample_rat
     return S, P, freq, T
 
 
-
-
-def plot_stft(signal, file_name, win_length=None, hop_length=None,
+def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
               window_type=None, sample_rate=None, n_fft_bins=None,
               freq_max=None, show_interactive_plot=False):
     """ Plots a stft of signal with the given window attributes
@@ -126,6 +125,12 @@ def plot_stft(signal, file_name, win_length=None, hop_length=None,
 
     """
     sample_rate = Constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
+    freq_max = Constants.MAX_FREQUENCY if freq_max is None else freq_max
+
+    if title is None:
+        title = os.path.basename(file_name)
+        title = os.path.splitext(title)[0]
+        title = 'Spectrogram of {}'.format(title)
 
     required = [win_length, hop_length, window_type]
     if any([r is None for r in required]):
@@ -135,22 +140,26 @@ def plot_stft(signal, file_name, win_length=None, hop_length=None,
         hop_length = defaults.hop_length if hop_length is None else hop_length
         window_type = defaults.window_type if window_type is None else window_type
 
-
     (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length, window_type, sample_rate, n_fft_bins)
 
-    freq_max = Constants.MAX_FREQUENCY if freq_max is None else freq_max
+    plt.close('all')
 
     # TODO: this can be better!
     time_tile = np.tile(time, (len(freqs), 1))
     freq_tile = np.tile(freqs.T, (len(time), 1)).T
-    sp = 10 * np.log10(np.abs(psd))
-    sp = sp.T[:(len(sp.T)/2 + 1)]
-    plt.pcolormesh(time_tile, freq_tile, sp)
+    sp = np.multiply(10, np.log10(np.abs(psd)))
+    # sp = sp.T[:(len(sp.T) / 2 + 1)]
+    mesh = plt.pcolormesh(time_tile, freq_tile, sp)
+    # plt.matshow(sp)
+    # plt.specgram(signal, Fs=sample_rate, NFFT=n_fft_bins)
+
+    # cbar = plt.colorbar(mesh)
 
     plt.axis('tight')
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
-    plt.xlim(time[0], time[-1])
+    plt.xlabel('Time (sec)')
+    plt.ylabel('Frequency (Hz)')
+    plt.title(title)
+    # plt.xlim(time[0], time[-1])
     plt.ylim(freqs[0], freq_max)
 
     # plt.specgram(signal, NFFT=n_fft_bins, Fs=sample_rate) #, Fc=freq_max) # , window=window_type)
@@ -187,7 +196,6 @@ def f_istft(stft, win_length=None, window_type=None, win_overlap=None, sample_ra
         win_overlap = window_attributes.window_overlap_samples
         sample_rate = window_attributes.sample_rate
 
-
     # Get spectrogram dimensions and compute window hop size
     Nc = stft.shape[1]  # number of columns of X
     Hop = int(win_length - win_overlap)
@@ -215,45 +223,68 @@ def f_istft(stft, win_length=None, window_type=None, win_overlap=None, sample_ra
 
     return y, t
 
+
 def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None):
     if n_fft_bins is None:
-        n_fft_bins = window_length
+        n_fft_bins = int(2 ** np.ceil(np.log2(window_length)))
 
-    n_hops = int(np.ceil(float(len(signal)) / hop_length))
+    orig_signal_length = len(signal)
 
-    # zero pad signal
-    if n_hops * hop_length >= len(signal):
-        sig_temp = np.zeros((n_hops + 1) * hop_length + window_length)
-        sig_temp[0:len(signal)] += signal
-        signal = sig_temp
+    # zero-pad the vector at the beginning and end to reduce the window tapering effect
+    if window_length % 2 == 0:
+        zero_pad1 = np.zeros(window_length / 2)
+    else:
+        zero_pad1 = np.zeros((window_length - 1) / 2)
+    signal = np.concatenate((zero_pad1, signal, zero_pad1))
+
+    # another zero pad if not integer multiple of hop_length
+    zero_pad2_len = 0
+    if orig_signal_length % hop_length != 0:
+        zero_pad2_len = hop_length - (orig_signal_length % hop_length)
+        signal = np.concatenate((signal, np.zeros(zero_pad2_len)))
 
     window = make_window(window_type, window_length)
 
-    stft = np.zeros((n_hops, n_fft_bins), dtype=complex)
-    for hop in range(n_hops):
+    # figure out size of output stft
+    num_blocks = int(((len(signal) - window_length) / hop_length + 1))
+    stft_bins = n_fft_bins / 2 + 1  # only want just over half of each fft
+
+    stft = np.zeros((num_blocks, stft_bins), dtype=complex)
+    for hop in range(num_blocks):
         start = hop * hop_length
         end = start + window_length
         unwindowed_signal = signal[start:end]
         windowed_signal = np.multiply(unwindowed_signal, window)
-        stft[hop, ] = spfft.fft(windowed_signal, n=n_fft_bins)
+        fft = spfft.fft(windowed_signal, n=n_fft_bins)
+        stft[hop, ] = fft[0:stft_bins]
+
+    # reshape the 2d array, so it's how we expect it.
+    stft = stft.T
+    first = int(len(zero_pad1) / hop_length)
+    last = stft.shape[1] - int((len(zero_pad1) + zero_pad2_len) / hop_length)
+    stft = stft[:, first: last]
 
     return stft
 
-def e_istft(stft, window_length, hop_length, window_type, n_fft_bins=None):
-    if n_fft_bins is None:
-        n_fft_bins = window_length
 
-    n_hops = len(stft)
-    window_length = len(stft[0])
+def e_istft(stft, window_length, hop_length, window_type):
+
+    n_hops = stft.shape[1]
     signal_length = (n_hops - 1) * hop_length + window_length
     signal = np.zeros(signal_length)
+
+    # Add reflection back
+    reflection = stft[-2:0:-1, :]
+    reflection = reflection.conj()
+    stft = np.vstack((stft, reflection))
 
     for n in range(n_hops):
         start = n * hop_length
         end = start + window_length
-        signal[start:end] = signal[start:end] + np.real(spfft.ifft(stft[n], n=n_fft_bins))
+        signal[start:end] = signal[start:end] + np.real(spfft.ifft(stft[:, n]))
 
     return signal
+
 
 def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_fft_bins=None):
     """
@@ -273,17 +304,18 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_f
     stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins)
     frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
 
-    time_vector = np.array(range(len(stft)))
+    time_vector = np.array(range(stft.shape[1]))
     hop_in_secs = hop_length / (1.0 * sample_rate)
-    time_vector = time_vector * hop_in_secs
+    time_vector = np.multiply(hop_in_secs, time_vector)
 
     window = make_window(window_type, window_length)
     win_dot = np.dot(window, window.T)
     psd = np.zeros_like(stft, dtype=float)
-    for i in range(len(psd)):
-        psd[i, :] = (1 / float(sample_rate)) * ((abs(stft[i, :]) ** 2) / float(win_dot))
+    for i in range(psd.shape[1]):
+        psd[:, i] = (1 / float(sample_rate)) * ((abs(stft[:, i]) ** 2) / float(win_dot))
 
     return stft, psd, frequency_vector, time_vector
+
 
 def make_window(window_type, length):
     """Returns an np array of type window_type
@@ -303,7 +335,8 @@ def make_window(window_type, length):
     elif window_type == WindowType.BLACKMAN:
         return blackman(length, False)
     elif window_type == WindowType.HAMMING:
-        return hamming(length, False)
+        return np.hamming(length)
+        # return hamming(length, False)
     else:
         return None
 
@@ -391,3 +424,7 @@ class StftParams(object):
         """
         self._n_fft_bins_needs_update = False
         self._n_fft_bins = value
+
+    @property
+    def window_overlap(self):
+        return self.window_length - self.hop_length

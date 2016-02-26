@@ -1,10 +1,15 @@
 import unittest
+import numpy as np
+import nussl
 import nussl
 import numpy as np
 import scipy.io.wavfile as wav
 
 
 class TestAudioSignal(unittest.TestCase):
+    sr = nussl.Constants.DEFAULT_SAMPLE_RATE
+    dur = 3 # seconds
+    length = dur * sr
     def setUp(self):
         self.path = "../Input/k0140_int.wav"
         self.out_path = '../Output/test_write.wav'
@@ -73,9 +78,30 @@ class TestAudioSignal(unittest.TestCase):
 
         assert(b.sample_rate == sample_rate)
 
-    def test_concat(self):
-        # This is where the test will go
-        pass
+    freq = 30
+    sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
+
+    def test_stft_istft_simple1(self):
+        a = nussl.AudioSignal(audio_data_array=self.sine_wave)
+        a.stft()
+        a.istft()
+
+    def test_stft_istft_simple2(self):
+        a = nussl.AudioSignal(audio_data_array=self.sine_wave)
+
+        # complete OLA
+        a.stft_params.window_type = nussl.WindowType.RECTANGULAR
+        a.stft_params.hop_length = a.stft_params.window_length
+
+        a.stft()
+        calc_sine = a.istft(overwrite=False)
+
+        # diff = a.audio_data[0, 0:a.signal_length] - calc_sine[0, 0:a.signal_length]
+
+        assert (np.allclose(a.audio_data[0, 0:a.signal_length], calc_sine[0, 0:a.signal_length]))
+
+
+
 
     def test_stft(self):
         pass
