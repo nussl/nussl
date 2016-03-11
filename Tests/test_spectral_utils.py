@@ -4,16 +4,16 @@ import nussl
 
 
 class TestSpectralUtils(unittest.TestCase):
-   # set all test cases to be 3 seconds long at the default sample rate (44.1kHz), with 1 channel (ie mono)
+    # set all test cases to be 3 seconds long at the default sample rate (44.1kHz), with 1 channel (ie mono)
     sr = nussl.Constants.DEFAULT_SAMPLE_RATE
     dur = 3
     length = sr * dur
     n_ch = 1
 
     # Define my window lengths to be powers of 2, ranging from 128 to 8192 samples
-    win_min = 7   # 2 ** 7  =  128
+    win_min = 7  # 2 ** 7  =  128
     win_max = 13  # 2 ** 13 = 8192
-    win_lengths = [2 ** i for i in range(win_min, win_max)]
+    win_lengths = [2 ** i for i in range(win_min, win_max + 1)]
 
     # pick hop lengths in terms of window length. 1 = one full window. .1 = 1/10th of a window
     hop_length_ratios = [1.0, 0.75, 0.5, 0.3, 0.25, 0.1]
@@ -36,14 +36,13 @@ class TestSpectralUtils(unittest.TestCase):
         """
         win_type = nussl.WindowType.RECTANGULAR
 
-        for win_length in self.win_lengths:
-            for i in range(10):
+        for i in range(10):
+            np.random.seed(i)
+            noise = (np.random.rand(self.n_ch, self.length) * 2) - 1
+            noise = noise[0,]
+
+            for win_length in self.win_lengths:
                 hop_length = win_length
-
-                np.random.seed(i)
-                noise = (np.random.rand(self.n_ch, self.length) * 2) - 1
-                noise = noise[0, ]
-
                 self.do_stft_istft_assert_allclose(win_length, hop_length, win_type, noise)
 
     def test_stft_istft_noise_no_seed(self):
@@ -61,7 +60,7 @@ class TestSpectralUtils(unittest.TestCase):
         for win_length in self.win_lengths:
             hop_length = win_length
             noise = (np.random.rand(self.n_ch, self.length) * 2) - 1
-            noise = noise[0, ]
+            noise = noise[0,]
 
             self.do_stft_istft_assert_allclose(win_length, hop_length, win_type, noise)
 
@@ -144,7 +143,8 @@ class TestSpectralUtils(unittest.TestCase):
         This WILL raise an error if the calculated array is different than the original array.
         """
         win_type = nussl.WindowType.HANN
-        x = np.linspace(0, 300 * 2 * np.pi, self.dur * self.sr)
+        freq = 300
+        x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
         x = np.sin(x)
         win_length = 2048
         hop_length = win_length / 2
@@ -168,6 +168,18 @@ class TestSpectralUtils(unittest.TestCase):
         nussl.spectral_utils.e_stft_plus(ones, self.win_length_40ms,
                                          self.win_length_40ms, win_type, self.sr)
 
+    def test_e_stft_plus_sin(self):
+        freq = 300
+        win_type = nussl.WindowType.HANN
+        x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
+        x = np.sin(x)
+        win_length = 2048
+        hop_length = win_length / 2
+
+        stft, p, freq_array, _, sp = nussl.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
+
+        i = 0
+
     # ##########################################################################################
     # COMING SOON:
     # Tests that verify that the stft produces correct results (i.e., not just invetable results)
@@ -184,10 +196,30 @@ class TestSpectralUtils(unittest.TestCase):
         :param win_type: window type, to be given to stft() and istft()
         :param signal: signal to be converted to stft and then back with istft
         """
-        signal_1, calculated_signal = TestSpectralUtils.do_stft_istft(win_length, hop_length, win_type, signal)
+        calculated_signal = TestSpectralUtils.do_stft_istft(win_length, hop_length, win_type, signal)
+
+        # get rid of last hop because the signals's zero padded and screws up the stft and np.allclose
+        length = int(len(signal) / hop_length) * hop_length
+
+        # we need to align the signal and calculated signal
+        # if it's not aligned at 0, it's usually at hop_length // 2
+        diffs = [np.abs(signal[hop_length:length] - calculated_signal[hop_length + i:length + i])
+                 for i in [0, hop_length // 2]]
+        # if this is breaking, loop through this array instead of [0, hop_length // 2] (it's much slower):
+        # range(len(calculated_signal) - len(signal))
+        max_diffs = [np.max(diffs[i]) for i in range(len(diffs))]
+        min_index = max_diffs.index(min(max_diffs))
+        min_index = 0 if min_index == 0 else hop_length // (2 * min_index)
+
+        # Truncate lengths
+        signal_truncated = signal[hop_length:length]
+        calculated_signal = calculated_signal[hop_length + min_index:length + min_index]
+
+        # useful for debugging:
+        # diff = signal_truncated - calculated_signal
 
         # leave off comparing the first and last hop to mitigate edge effects
-        assert (np.allclose(signal_1, calculated_signal))
+        assert (np.allclose(signal_truncated, calculated_signal))
 
     @staticmethod
     def do_stft_istft(win_length, hop_length, win_type, signal):
@@ -197,18 +229,13 @@ class TestSpectralUtils(unittest.TestCase):
         :param hop_length: hop length, to be given to stft() and istft()
         :param win_type: window type, to be given to stft() and istft()
         :param signal: signal to be converted to stft and then back with istft
-        :return: original signal (starting from first hop), calculated signal
+        :return: calculated signal
         """
         stft = nussl.e_stft(signal, win_length, hop_length, win_type)
-
-        # get rid of last hop because it's zero padded and screws up the stft and np.allclose
-        length = int(len(signal) / hop_length) * hop_length
         calculated_signal = nussl.spectral_utils.e_istft(stft, win_length, hop_length, win_type)
 
-        # useful for debugging:
-        diff = signal[hop_length:length] - calculated_signal[hop_length:length]
+        return calculated_signal
 
-        return signal[hop_length:length], calculated_signal[hop_length:length]
 
 if __name__ == '__main__':
     unittest.main()
