@@ -7,7 +7,7 @@ import scipy.io.wavfile as wav
 
 
 class TestAudioSignal(unittest.TestCase):
-    sr = nussl.Constants.DEFAULT_SAMPLE_RATE
+    sr = nussl.constants.DEFAULT_SAMPLE_RATE
     dur = 3 # seconds
     length = dur * sr
     def setUp(self):
@@ -96,9 +96,10 @@ class TestAudioSignal(unittest.TestCase):
         a.stft()
         calc_sine = a.istft(overwrite=False)
 
-        # diff = a.audio_data[0, 0:a.signal_length] - calc_sine[0, 0:a.signal_length]
+        l = a.stft_params.hop_length//2
+        # diff = a.audio_data[0, 0:a.signal_length] - calc_sine[0, l:a.signal_length+l]
 
-        assert (np.allclose(a.audio_data[0, 0:a.signal_length], calc_sine[0, 0:a.signal_length]))
+        assert (np.allclose(a.audio_data[0, 0:a.signal_length], calc_sine[0, l:a.signal_length+l]))
 
 
 

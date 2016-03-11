@@ -10,7 +10,7 @@ import numbers
 import audioread
 
 import spectral_utils
-import Constants
+import constants
 
 
 class AudioSignal(object):
@@ -43,7 +43,7 @@ class AudioSignal(object):
     """
 
     def __init__(self, path_to_input_file=None, audio_data_array=None, signal_starting_position=0, signal_length=0,
-                 sample_rate=Constants.DEFAULT_SAMPLE_RATE, stft=None, stft_params=None):
+                 sample_rate=constants.DEFAULT_SAMPLE_RATE, stft=None, stft_params=None):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
@@ -206,7 +206,7 @@ class AudioSignal(object):
             print "If you are convinced that this audio file should work, please use ffmpeg to reformat it."
             raise e
 
-    def load_audio_from_array(self, signal, sample_rate=Constants.DEFAULT_SAMPLE_RATE):
+    def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
         """Loads an audio signal from a numpy array. Only accepts float arrays and int arrays of depth 16-bits.
 
         Parameters:
@@ -251,7 +251,7 @@ class AudioSignal(object):
             # TODO: better fix
             # convert to fixed point again
             if not np.issubdtype(audio_output.dtype, int):
-                audio_output = np.multiply(audio_output, 2 ** (Constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
+                audio_output = np.multiply(audio_output, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
 
             wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception, e:
@@ -334,7 +334,7 @@ class AudioSignal(object):
         signals = []
         for i in range(self.num_channels):
             signals.append(
-                spectral_utils.e_istft(self.get_stft_channel(i + 1).T, window_length, hop_length, window_type,
+                spectral_utils.e_istft(self.get_stft_channel(i + 1), window_length, hop_length, window_type,
                                        reconstruct_reflection))
 
         return np.array(signals)
