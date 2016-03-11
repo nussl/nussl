@@ -21,7 +21,8 @@ def sine_example():
 
     # load into AudioSignal object and get stft
     signal = nussl.AudioSignal(audio_data_array=sines)
-    _, stft, _, _ = signal.stft()
+    signal.stft()
+    stft = signal.get_stft_channel(1)
 
     # Start NMF and time it
     start = time.time()

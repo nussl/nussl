@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from .spectral_utils import *
-import Constants
+from constants import *
 from .audio_signal import AudioSignal
-from Duet import Duet
-from Nmf import Nmf, DistanceType
-from Repet import Repet, RepetType
+from separation_base import SeparationBase
+from duet import Duet
+from nmf import Nmf, DistanceType
+from repet import Repet, RepetType
 
 
 __version__ = '0.1.4'

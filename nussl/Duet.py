@@ -7,12 +7,12 @@ from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
 import spectral_utils
-import SeparationBase
+import separation_base
 import audio_signal
-import Constants
+import constants
 
 
-class Duet(SeparationBase.SeparationBase):
+class Duet(separation_base.SeparationBase):
     """Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
 
     The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
@@ -104,7 +104,7 @@ class Duet(SeparationBase.SeparationBase):
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        R21 = (X2 + Constants.EPSILON) / (X1 + Constants.EPSILON)
+        R21 = (X2 + constants.EPSILON) / (X1 + constants.EPSILON)
         atn = np.abs(R21)  # relative attenuation between the two channels
         alpha = atn - 1 / atn  # symmetric attenuation
         delta = -np.imag(np.log(R21)) / (2 * np.pi * wmat)  # relative delay
