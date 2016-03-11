@@ -4,12 +4,12 @@ import random
 import math
 import numpy as np
 
-import SeparationBase
+import separation_base
 import audio_signal
-import Constants
+import constants
 
 
-class Nmf(SeparationBase.SeparationBase):
+class Nmf(separation_base.SeparationBase):
     """
     This is an implementation of the Non-negative Matrix Factorization algorithm for
     source separation. This implementation cannot receive a raw audio signal, rather
@@ -27,24 +27,26 @@ class Nmf(SeparationBase.SeparationBase):
     def __str__(self):
         return "Nmf"
 
-    def __init__(self, stft, num_templates, audio_signal=None, sample_rate=None, stft_params=None,
+    # TODO: Change this so that NMF accepts an AudioSignal object and not a raw stft
+    def __init__(self, stft, num_templates, input_audio_signal=None, sample_rate=None, stft_params=None,
                  activation_matrix=None, templates=None, distance_measure=None,
                  should_update_template=None, should_update_activation=None):
         self.__dict__.update(locals())
-        super(Nmf, self).__init__()
+        super(Nmf, self).__init__(input_audio_signal=input_audio_signal,
+                                  sample_rate=sample_rate, stft_params=stft_params)
 
         if num_templates <= 0:
             raise Exception('Need more than 0 bases!')
 
-        if stft_params.size <= 0:
+        if stft.size <= 0:
             raise Exception('STFT size must be > 0!')
 
-        self.stft = stft_params  # V, in literature
+        self.stft = stft  # V, in literature
         self.num_templates = num_templates
 
         if activation_matrix is None and templates is None:
-            self.templates = np.zeros((stft_params.shape[0], num_templates))  # W, in literature
-            self.activation_matrix = np.zeros((num_templates, stft_params.shape[1]))  # H, in literature
+            self.templates = np.zeros((stft.shape[0], num_templates))  # W, in literature
+            self.activation_matrix = np.zeros((num_templates, stft.shape[1]))  # H, in literature
             self.randomize_input_matrices()
         elif activation_matrix is not None and templates is not None:
             self.templates = templates
@@ -247,7 +249,7 @@ class Nmf(SeparationBase.SeparationBase):
                 M[i][j] = random.random()
 
                 if not shouldNormalize:
-                    M[i][j] *= Constants.DEFAULT_MAX_VAL
+                    M[i][j] *= constants.DEFAULT_MAX_VAL
         return M
 
     def plot(self, outputFile, **kwargs):
