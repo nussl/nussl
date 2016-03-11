@@ -16,7 +16,7 @@ def main():
     L = 2048
     repet.stft_params.window_length = L
     repet.stft_params.window_type = nussl.WindowType.HAMMING
-    repet.stft_params.hop_length = 0.25 * L
+    repet.stft_params.hop_length = L // 2
     repet.stft_params.n_fft_bins = L
     # and Run
     repet.run()
