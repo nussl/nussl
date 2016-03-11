@@ -6,12 +6,12 @@ import scipy.fftpack as scifft
 import scipy.spatial.distance
 
 import spectral_utils
-import SeparationBase
-import Constants
+import separation_base
+import constants
 from audio_signal import AudioSignal
 
 
-class Repet(SeparationBase.SeparationBase):
+class Repet(separation_base.SeparationBase):
     """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
 
     REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
@@ -50,7 +50,8 @@ class Repet(SeparationBase.SeparationBase):
                  similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
                  min_period=None, max_period=None, period=None, high_pass_cutoff=None):
         self.__dict__.update(locals())
-        super(Repet, self).__init__(input_audio_signal=input_audio_signal, sample_rate=sample_rate, stft_params=stft_params)
+        super(Repet, self).__init__(input_audio_signal=input_audio_signal,
+                                    sample_rate=sample_rate, stft_params=stft_params)
         self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
 
@@ -234,7 +235,7 @@ class Repet(SeparationBase.SeparationBase):
         for i in range(0, Lt):
             Xi = X[i, :]
             rowNorm = np.sqrt(np.dot(Xi, Xi))
-            X[i, :] = Xi / (rowNorm + Constants.EPSILON)
+            X[i, :] = Xi / (rowNorm + constants.EPSILON)
 
         # compute the similarity matrix    
         S = np.dot(X, X.T)
@@ -321,7 +322,7 @@ class Repet(SeparationBase.SeparationBase):
         Vrow = np.reshape(V, (1, Lf * Lt))
         W = np.min(np.vstack([Wrow, Vrow]), axis=0)
         W = np.reshape(W, (Lf, Lt))
-        M = (W + Constants.EPSILON) / (V + Constants.EPSILON)
+        M = (W + constants.EPSILON) / (V + constants.EPSILON)
 
         return M
 
@@ -429,7 +430,7 @@ class Repet(SeparationBase.SeparationBase):
         Vrow = V.flatten()  # np.reshape(V, (1, Lf * Lt))
         W = np.min(np.vstack([Wrow, Vrow]), axis=0)
         W = np.reshape(W, (n, m))
-        M = (W + Constants.EPSILON) / (V + Constants.EPSILON)
+        M = (W + constants.EPSILON) / (V + constants.EPSILON)
 
         return M
 
