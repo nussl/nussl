@@ -4,7 +4,7 @@ import nussl
 
 def main():
     # input audio file
-    input_name = os.path.join('..', 'Input','HistoryRepeating_PropellorHeads.wav')
+    input_name = os.path.join('..', 'Input','mix3.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_name)
 
     # make a directory to store output if needed
