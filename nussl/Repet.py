@@ -3,6 +3,7 @@
 
 import numpy as np
 import scipy.fftpack as scifft
+import scipy.spatial.distance
 
 import spectral_utils
 import SeparationBase
@@ -354,7 +355,7 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def find_repeating_period_simple(beat_spectrum, min_period, max_period):
-        """Computes the repeating period of the sound signal using the beat spectrum.
+        """Computes the repeating period of the sound signal using the beat spectrum using simple algorithm.
 
         Parameters:
             beat_spectrum (np.array): input beat spectrum array
@@ -368,11 +369,16 @@ class Repet(SeparationBase.SeparationBase):
         beat_spectrum = beat_spectrum[min_period - 1:  max_period]
         period = np.argmax(beat_spectrum) + min_period
 
+        return period
+
     @staticmethod
     def find_repeating_period_complex(beat_spectrum):
         auto_cosine = np.zeros((len(beat_spectrum), 1))
+
         for i in range(0, len(beat_spectrum) - 1):
-	        auto_cosine[i] = 1 - cosine(beat_spectrum[0:len(beat_spectrum) - i], beat_spectrum[i:len(beat_spectrum)])
+            auto_cosine[i] = 1 - scipy.spatial.distance.cosine(beat_spectrum[0:len(beat_spectrum) - i],
+                                                               beat_spectrum[i:len(beat_spectrum)])
+
         ac = auto_cosine[0:np.floor(auto_cosine.shape[0])/2]
         auto_cosine = np.vstack([ac[1], ac, ac[-2]])
         auto_cosine_diff = np.ediff1d(auto_cosine)
