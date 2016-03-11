@@ -5,7 +5,7 @@ import nussl
 
 class TestSpectralUtils(unittest.TestCase):
     # set all test cases to be 3 seconds long at the default sample rate (44.1kHz), with 1 channel (ie mono)
-    sr = nussl.Constants.DEFAULT_SAMPLE_RATE
+    sr = nussl.constants.DEFAULT_SAMPLE_RATE
     dur = 3
     length = sr * dur
     n_ch = 1
@@ -22,7 +22,7 @@ class TestSpectralUtils(unittest.TestCase):
     # it is 1/25th of a second. This gives a window length that can hold 1 full cycle of a 25 hz signal
     # Of course, human hearing extends down to 20 Hz....but at least this is lower than the lowest note
     # on a piano (27.5 Hz for equal temperament A440 tuning)
-    win_length_40ms = int(2 ** (np.ceil(np.log2(nussl.Constants.DEFAULT_WIN_LEN_PARAM * sr))))
+    win_length_40ms = int(2 ** (np.ceil(np.log2(nussl.constants.DEFAULT_WIN_LEN_PARAM * sr))))
 
     def test_stft_istft_noise_seed1(self):
         """
@@ -176,7 +176,7 @@ class TestSpectralUtils(unittest.TestCase):
         win_length = 2048
         hop_length = win_length / 2
 
-        stft, p, freq_array, _, sp = nussl.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
+        stft, p, freq_array, _ = nussl.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
 
         i = 0
 

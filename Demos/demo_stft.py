@@ -3,7 +3,7 @@ import numpy as np
 
 def main():
     win_type = nussl.WindowType.HANN
-    sample_rate = nussl.Constants.DEFAULT_SAMPLE_RATE
+    sample_rate = nussl.DEFAULT_SAMPLE_RATE
 
     # Plot a simple sine wave at 5kHz
     dt = 1.0 / float(sample_rate)
