@@ -8,6 +8,7 @@ import FftUtils
 import SeparationBase
 import Constants
 import AudioSignal
+from scipy.spatial.distance import cosine
 
 
 class Repet(SeparationBase.SeparationBase):
