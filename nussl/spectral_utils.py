@@ -3,12 +3,12 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.fftpack as spfft
+import scipy.fftpack as scifft
 from scipy.signal import hamming, hann, blackman
 import os.path
 import librosa
 
-import Constants
+import constants
 
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
@@ -35,8 +35,8 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
          Either stft_params or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
 
     """
-    sample_rate = Constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
-    freq_max = Constants.MAX_FREQUENCY if freq_max is None else freq_max
+    sample_rate = constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
+    freq_max = constants.MAX_FREQUENCY if freq_max is None else freq_max
 
     if title is None:
         title = os.path.basename(file_name)
@@ -160,7 +160,7 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
         end = start + window_length
         unwindowed_signal = signal[start:end]
         windowed_signal = np.multiply(unwindowed_signal, window)
-        fft = spfft.fft(windowed_signal, n=n_fft_bins)
+        fft = scifft.fft(windowed_signal, n=n_fft_bins)
         stft[hop,] = fft[0:stft_bins]
 
     # reshape the 2d array, so it's how we expect it.
@@ -227,7 +227,7 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     for n in range(n_hops):
         start = n * hop_length
         end = start + window_length
-        signal[start:end] = signal[start:end] + np.real(spfft.ifft(stft[:, n]))
+        signal[start:end] = signal[start:end] + np.real(scifft.ifft(stft[:, n]))
 
     # remove zero-padding
     if remove_padding:
@@ -327,7 +327,7 @@ class StftParams(object):
         self.sample_rate = sample_rate
 
         # default to 40ms windows
-        default_win_len = int(2 ** (np.ceil(np.log2(Constants.DEFAULT_WIN_LEN_PARAM * sample_rate))))
+        default_win_len = int(2 ** (np.ceil(np.log2(constants.DEFAULT_WIN_LEN_PARAM * sample_rate))))
         self._window_length = default_win_len if window_length is None else window_length
         self._hop_length = self._window_length / 2 if hop_length is None else hop_length
         self.window_type = WindowType.DEFAULT if window_type is None else window_type

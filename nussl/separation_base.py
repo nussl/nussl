@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import spectral_utils
-import Constants
+import constants
 import audio_signal
 
 
@@ -31,7 +31,7 @@ class SeparationBase(object):
         if sample_rate is not None:
             self.sample_rate = sample_rate
         else:
-            self.sample_rate = Constants.DEFAULT_SAMPLE_RATE
+            self.sample_rate = constants.DEFAULT_SAMPLE_RATE
 
         if stft_params is not None:
             self.stft_params = stft_params
