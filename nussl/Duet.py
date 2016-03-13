@@ -139,6 +139,7 @@ class Duet(SeparationBase.SeparationBase):
         self.a_grid = agrid
         self.d_grid = dgrid
         self.hist = hist
+        self.non_normalized_hist = H[0]
 
         # smooth the histogram - local average 3-by-3 neighboring bins
         hist = self.twoDsmooth(hist, np.array([3]))
@@ -350,7 +351,7 @@ class Duet(SeparationBase.SeparationBase):
             signals.append(cur_signal)
         return signals
 
-    def plot(self, output_name, three_d_plot=False):
+    def plot(self, output_name, three_d_plot=False, normalize=True):
         """Plots histograms with the results of the DUET algorithm
 
         Parameters:
@@ -362,10 +363,12 @@ class Duet(SeparationBase.SeparationBase):
         AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T
         DD = np.tile(self.d_grid[1::].T, (self.a_num, 1))
 
+        histogram_data = self.hist if normalize else self.non_normalized_hist
+
         # plot the histogram in 2D
         if not three_d_plot:
             plt.figure()
-            plt.pcolormesh(AA, DD, self.hist)
+            plt.pcolormesh(AA, DD, histogram_data)
             plt.xlabel(r'$\alpha$', fontsize=16)
             plt.ylabel(r'$\delta$', fontsize=16)
             plt.title(r'$\alpha-\delta$ Histogram')
@@ -377,7 +380,7 @@ class Duet(SeparationBase.SeparationBase):
             # plot the histogram in 3D
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
-            ax.plot_wireframe(AA, DD, self.hist, rstride=2, cstride=2)
+            ax.plot_wireframe(AA, DD, histogram_data, rstride=2, cstride=2)
             plt.xlabel(r'$\alpha$', fontsize=16)
             plt.ylabel(r'$\delta$', fontsize=16)
             plt.title(r'$\alpha-\delta$ Histogram')
