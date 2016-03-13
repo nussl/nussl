@@ -3,14 +3,15 @@
 
 import numpy as np
 import scipy.fftpack as scifft
+import scipy.spatial.distance
 
 import spectral_utils
-import SeparationBase
-import Constants
+import separation_base
+import constants
 from audio_signal import AudioSignal
 
 
-class Repet(SeparationBase.SeparationBase):
+class Repet(separation_base.SeparationBase):
     """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
 
     REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
@@ -49,7 +50,8 @@ class Repet(SeparationBase.SeparationBase):
                  similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
                  min_period=None, max_period=None, period=None, high_pass_cutoff=None):
         self.__dict__.update(locals())
-        super(Repet, self).__init__(input_audio_signal=input_audio_signal, sample_rate=sample_rate, stft_params=stft_params)
+        super(Repet, self).__init__(input_audio_signal=input_audio_signal,
+                                    sample_rate=sample_rate, stft_params=stft_params)
         self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
 
@@ -233,7 +235,7 @@ class Repet(SeparationBase.SeparationBase):
         for i in range(0, Lt):
             Xi = X[i, :]
             rowNorm = np.sqrt(np.dot(Xi, Xi))
-            X[i, :] = Xi / (rowNorm + Constants.EPSILON)
+            X[i, :] = Xi / (rowNorm + constants.EPSILON)
 
         # compute the similarity matrix    
         S = np.dot(X, X.T)
@@ -320,7 +322,7 @@ class Repet(SeparationBase.SeparationBase):
         Vrow = np.reshape(V, (1, Lf * Lt))
         W = np.min(np.vstack([Wrow, Vrow]), axis=0)
         W = np.reshape(W, (Lf, Lt))
-        M = (W + Constants.EPSILON) / (V + Constants.EPSILON)
+        M = (W + constants.EPSILON) / (V + constants.EPSILON)
 
         return M
 
@@ -354,7 +356,7 @@ class Repet(SeparationBase.SeparationBase):
 
     @staticmethod
     def find_repeating_period_simple(beat_spectrum, min_period, max_period):
-        """Computes the repeating period of the sound signal using the beat spectrum.
+        """Computes the repeating period of the sound signal using the beat spectrum using simple algorithm.
 
         Parameters:
             beat_spectrum (np.array): input beat spectrum array
@@ -367,6 +369,37 @@ class Repet(SeparationBase.SeparationBase):
         beat_spectrum = beat_spectrum[1:]  # discard the first element of beat_spectrum (lag 0)
         beat_spectrum = beat_spectrum[min_period - 1:  max_period]
         period = np.argmax(beat_spectrum) + min_period
+
+        return period
+
+    @staticmethod
+    def find_repeating_period_complex(beat_spectrum):
+        auto_cosine = np.zeros((len(beat_spectrum), 1))
+
+        for i in range(0, len(beat_spectrum) - 1):
+            auto_cosine[i] = 1 - scipy.spatial.distance.cosine(beat_spectrum[0:len(beat_spectrum) - i],
+                                                               beat_spectrum[i:len(beat_spectrum)])
+
+        ac = auto_cosine[0:np.floor(auto_cosine.shape[0])/2]
+        auto_cosine = np.vstack([ac[1], ac, ac[-2]])
+        auto_cosine_diff = np.ediff1d(auto_cosine)
+        sign_changes = auto_cosine_diff[0:-1]*auto_cosine_diff[1:]
+        sign_changes = np.where(sign_changes < 0)[0]
+
+        extrema_values = ac[sign_changes]
+
+        e1 = np.insert(extrema_values, 0, extrema_values[0])
+        e2 = np.insert(extrema_values, -1, extrema_values[-1])
+
+        extrema_neighbors = np.stack((e1[0:-1], e2[1:]))
+
+        m = np.amax(extrema_neighbors, axis=0)
+        extrema_values = extrema_values.flatten()
+        maxima = np.where(extrema_values >= m)[0]
+        maxima = zip(sign_changes[maxima], extrema_values[maxima])
+        maxima = maxima[1:]
+        maxima = sorted(maxima, key = lambda x: -x[1])
+        period = maxima[0][0]
 
         return period
 
@@ -397,7 +430,7 @@ class Repet(SeparationBase.SeparationBase):
         Vrow = V.flatten()  # np.reshape(V, (1, Lf * Lt))
         W = np.min(np.vstack([Wrow, Vrow]), axis=0)
         W = np.reshape(W, (n, m))
-        M = (W + Constants.EPSILON) / (V + Constants.EPSILON)
+        M = (W + constants.EPSILON) / (V + constants.EPSILON)
 
         return M
 
