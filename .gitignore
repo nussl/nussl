@@ -1,5 +1,3 @@
 *.pyc
 .idea/
 Output/
-_sources/
-doctrees/
