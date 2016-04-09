@@ -87,17 +87,14 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="AudioMix.html">AudioMix module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="FftUtils.html">FftUtils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM Class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Nmf Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils Module</a></li>
 </ul>
 </li>
 </ul>
@@ -173,11 +170,11 @@
 
 <dl class="class">
 <dt id="Nmf.Nmf">
-<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">Nmf</code><span class="sig-paren">(</span><em>stft</em>, <em>num_bases</em>, <em>activation_matrix=None</em>, <em>templates=None</em>, <em>distance_measure=None</em>, <em>should_update_template=None</em>, <em>should_update_activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="SeparationBase.html#SeparationBase.SeparationBase" title="SeparationBase.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">SeparationBase.SeparationBase</span></code></a></p>
+<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">Nmf</code><span class="sig-paren">(</span><em>stft</em>, <em>num_templates</em>, <em>input_audio_signal=None</em>, <em>sample_rate=None</em>, <em>stft_params=None</em>, <em>activation_matrix=None</em>, <em>templates=None</em>, <em>distance_measure=None</em>, <em>should_update_template=None</em>, <em>should_update_activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></p>
 <p>This is an implementation of the Non-negative Matrix Factorization algorithm for
 source separation. This implementation cannot receive a raw audio signal, rather
-it only accepts a do_STFT and a number, num_bases, which defines the number of bases
+it only accepts a stft and a number, num_templates, which defines the number of bases
 vectors.</p>
 <p>This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
 and also allows the user to define distance measure function.</p>

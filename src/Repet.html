@@ -87,17 +87,14 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="AudioMix.html">AudioMix module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="FftUtils.html">FftUtils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf Class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Repet Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils Module</a></li>
 </ul>
 </li>
 </ul>
@@ -153,8 +150,8 @@
 <span id="repet-class"></span><h1>Repet Class<a class="headerlink" href="#module-Repet" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="Repet.Repet">
-<em class="property">class </em><code class="descclassname">Repet.</code><code class="descname">Repet</code><span class="sig-paren">(</span><em>audio_signal</em>, <em>repet_type=None</em>, <em>window_attributes=None</em>, <em>sample_rate=None</em>, <em>similarity_threshold=None</em>, <em>min_distance_between_frames=None</em>, <em>max_repeating_frames=None</em>, <em>min_period=None</em>, <em>max_period=None</em>, <em>period=None</em>, <em>high_pass_cutoff=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="SeparationBase.html#SeparationBase.SeparationBase" title="SeparationBase.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">SeparationBase.SeparationBase</span></code></a></p>
+<em class="property">class </em><code class="descclassname">Repet.</code><code class="descname">Repet</code><span class="sig-paren">(</span><em>input_audio_signal=None</em>, <em>sample_rate=None</em>, <em>stft_params=None</em>, <em>repet_type=None</em>, <em>similarity_threshold=None</em>, <em>min_distance_between_frames=None</em>, <em>max_repeating_frames=None</em>, <em>min_period=None</em>, <em>max_period=None</em>, <em>period=None</em>, <em>high_pass_cutoff=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></p>
 <p>Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).</p>
 <p>REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
 audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.</p>
@@ -174,9 +171,9 @@ on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>audio_signal</strong> (<a class="reference internal" href="AudioSignal.html#module-AudioSignal" title="AudioSignal"><em>AudioSignal</em></a>) &#8211; audio mixture (M by N) containing M channels and N time samples</li>
+<li><strong>audio_signal</strong> (<em>AudioSignal</em>) &#8211; audio mixture (M by N) containing M channels and N time samples</li>
 <li><strong>repet_type</strong> (<a class="reference internal" href="#Repet.RepetType" title="Repet.RepetType"><em>RepetType</em></a>) &#8211; Variant of Repet algorithm to perform.</li>
-<li><strong>window_attributes</strong> (<a class="reference internal" href="WindowAttributes.html#module-WindowAttributes" title="WindowAttributes"><em>WindowAttributes</em></a>) &#8211; WindowAttributes object describing the window used in the repet
+<li><strong>stft_params</strong> (<em>WindowAttributes</em>) &#8211; WindowAttributes object describing the window used in the repet
 algorithm</li>
 <li><strong>sample_rate</strong> (<em>int</em>) &#8211; the sample rate of the audio signal</li>
 <li><strong>similarity_threshold</strong> (<em>Optional[int]</em>) &#8211; Used for RepetType.SIM. Defaults to 0</li>
@@ -308,9 +305,14 @@ sorted array of indices of peaks in the data</p>
 </dd></dl>
 
 <dl class="staticmethod">
-<dt id="Repet.Repet.find_repeating_period">
-<em class="property">static </em><code class="descname">find_repeating_period</code><span class="sig-paren">(</span><em>beat_spectrum</em>, <em>min_period</em>, <em>max_period</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.find_repeating_period" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the repeating period of the sound signal using the beat spectrum.</p>
+<dt id="Repet.Repet.find_repeating_period_complex">
+<em class="property">static </em><code class="descname">find_repeating_period_complex</code><span class="sig-paren">(</span><em>beat_spectrum</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.find_repeating_period_complex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="Repet.Repet.find_repeating_period_simple">
+<em class="property">static </em><code class="descname">find_repeating_period_simple</code><span class="sig-paren">(</span><em>beat_spectrum</em>, <em>min_period</em>, <em>max_period</em><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.find_repeating_period_simple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the repeating period of the sound signal using the beat spectrum using simple algorithm.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -323,7 +325,7 @@ sorted array of indices of peaks in the data</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>period</strong> (<em>int</em>) &#8211;
-The period of the sound signal</p>
+The period of the sound signal in stft time bins</p>
 </td>
 </tr>
 </tbody>
@@ -523,11 +525,25 @@ repeating background (M by N) containing M channels and N time samples
 <span class="n">win</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
 
 <span class="c"># Set up and run Repet</span>
-<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">,</span> <span class="n">window_attributes</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">,</span> <span class="n">stft_params</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
 <span class="n">repet</span><span class="o">.</span><span class="n">min_distance_between_frames</span> <span class="o">=</span> <span class="mf">0.1</span>
 <span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Repet.Repet.update_periods">
+<code class="descname">update_periods</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Repet.Repet.update_periods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will update periods for use with self.find_repeating_period_simple(). Updates from seconds to stft bin values.
+Call this if you haven&#8217;t done self.run() or else you won&#8217;t get good results
+.. rubric:: Examples</p>
+<p>::
+a = nussl.AudioSignal(&#8216;path/to/file.wav&#8217;)
+r = nussl.Repet(a)</p>
+<p>beat_spectrum = r.get_beat_spectrum()
+r.update_periods()
+repeating_period = r.find_repeating_period_simple(beat_spectrum, r.min_period, r.max_period)</p>
 </dd></dl>
 
 </dd></dl>
@@ -536,11 +552,6 @@ repeating background (M by N) containing M channels and N time samples
 <dt id="Repet.RepetType">
 <em class="property">class </em><code class="descclassname">Repet.</code><code class="descname">RepetType</code><a class="headerlink" href="#Repet.RepetType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Types of Repet algorithm implementation.</p>
-<dl class="attribute">
-<dt id="Repet.RepetType.ADAPTIVE">
-<code class="descname">ADAPTIVE</code><em class="property"> = 'adaptive'</em><a class="headerlink" href="#Repet.RepetType.ADAPTIVE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="attribute">
 <dt id="Repet.RepetType.DEFAULT">
 <code class="descname">DEFAULT</code><em class="property"> = 'original'</em><a class="headerlink" href="#Repet.RepetType.DEFAULT" title="Permalink to this definition">¶</a></dt>
@@ -558,7 +569,7 @@ repeating background (M by N) containing M channels and N time samples
 
 <dl class="attribute">
 <dt id="Repet.RepetType.all_types">
-<code class="descname">all_types</code><em class="property"> = ['original', 'sim', 'adaptive']</em><a class="headerlink" href="#Repet.RepetType.all_types" title="Permalink to this definition">¶</a></dt>
+<code class="descname">all_types</code><em class="property"> = ['original', 'sim']</em><a class="headerlink" href="#Repet.RepetType.all_types" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

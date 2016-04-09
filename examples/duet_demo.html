@@ -143,8 +143,7 @@
   <div class="section" id="duet-example">
 <span id="duet-demo"></span><h1>DUET example<a class="headerlink" href="#duet-example" title="Permalink to this headline">¶</a></h1>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
-
-<span class="kn">from</span> <span class="nn">nussl</span> <span class="kn">import</span> <span class="n">Duet</span><span class="p">,</span> <span class="n">AudioSignal</span><span class="p">,</span> <span class="n">WindowAttributes</span><span class="p">,</span> <span class="n">WindowType</span>
+<span class="kn">from</span> <span class="nn">nussl</span> <span class="kn">import</span> <span class="n">Duet</span><span class="p">,</span> <span class="n">AudioSignal</span>
 
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
@@ -156,15 +155,9 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output/&#39;</span><span class="p">)):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output/&#39;</span><span class="p">))</span>
 
-    <span class="c"># set up window parameters</span>
-    <span class="n">win</span> <span class="o">=</span> <span class="n">WindowAttributes</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">4096</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">window_overlap_ratio</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">win</span><span class="o">.</span><span class="n">window_length</span>
-
     <span class="c"># Set up DUET</span>
-    <span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">window_attributes</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+    <span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="c"># duet.stft_params.hop_length = 200</span>
     <span class="c"># and run</span>
     <span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 

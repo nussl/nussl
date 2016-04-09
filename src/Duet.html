@@ -32,7 +32,7 @@
   
     <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
         <link rel="up" title="nussl" href="modules.html"/>
-        <link rel="next" title="FftUtils module" href="FftUtils.html"/>
+        <link rel="next" title="KAM Class" href="KAM.html"/>
         <link rel="prev" title="Constants module" href="Constants.html"/> 
 
   
@@ -87,17 +87,14 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="AudioMix.html">AudioMix module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">Duet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="FftUtils.html">FftUtils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils Module</a></li>
 </ul>
 </li>
 </ul>
@@ -153,8 +150,8 @@
 <span id="duet-class"></span><h1>Duet Class<a class="headerlink" href="#module-Duet" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="Duet.Duet">
-<em class="property">class </em><code class="descclassname">Duet.</code><code class="descname">Duet</code><span class="sig-paren">(</span><em>audio_signal</em>, <em>num_sources</em>, <em>a_min=-3</em>, <em>a_max=3</em>, <em>a_num=50</em>, <em>d_min=-3</em>, <em>d_max=3</em>, <em>d_num=50</em>, <em>threshold=0.2</em>, <em>a_min_distance=5</em>, <em>d_min_distance=5</em>, <em>window_attributes=None</em>, <em>sample_rate=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="SeparationBase.html#SeparationBase.SeparationBase" title="SeparationBase.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">SeparationBase.SeparationBase</span></code></a></p>
+<em class="property">class </em><code class="descclassname">Duet.</code><code class="descname">Duet</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_sources</em>, <em>sample_rate=None</em>, <em>stft_params=None</em>, <em>a_min=-3</em>, <em>a_max=3</em>, <em>a_num=50</em>, <em>d_min=-3</em>, <em>d_max=3</em>, <em>d_num=50</em>, <em>threshold=0.2</em>, <em>a_min_distance=5</em>, <em>d_min_distance=5</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></p>
 <p>Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.</p>
 <p>The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
 and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.</p>
@@ -181,7 +178,7 @@ Processing, IEEE transactions on 52.7 (2004): 1830-1847.</li>
 <li><strong>threshold</strong> (<em>Optional[float]</em>) &#8211; Value in [0, 1] for peak picking. Defaults to 0.2</li>
 <li><strong>a_min_distance</strong> (<em>Optional[int]</em>) &#8211; Minimum distance between peaks wrt attenuation. Defaults to 5</li>
 <li><strong>d_min_distance</strong> (<em>Optional[int]</em>) &#8211; Minimum distance between peaks wrt delay. Defaults to 5</li>
-<li><strong>window_attributes</strong> (<em>Optional[WindowAttributes]</em>) &#8211; Window attributes for stft. Defaults to
+<li><strong>stft_params</strong> (<em>Optional[WindowAttributes]</em>) &#8211; Window attributes for stft. Defaults to
 WindowAttributes.WindowAttributes(self.sample_rate)</li>
 <li><strong>sample_rate</strong> (<em>Optional[int]</em>) &#8211; Sample rate for the audio. Defaults to Constants.DEFAULT_SAMPLE_RATE</li>
 </ul>
@@ -254,7 +251,7 @@ List of AudioSignals extracted using DUET.</td>
 
 <dl class="method">
 <dt id="Duet.Duet.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>three_d_plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.plot" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>three_d_plot=False</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots histograms with the results of the DUET algorithm</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -338,7 +335,7 @@ averaging kernel</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="FftUtils.html" class="btn btn-neutral float-right" title="FftUtils module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="KAM.html" class="btn btn-neutral float-right" title="KAM Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="Constants.html" class="btn btn-neutral" title="Constants module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

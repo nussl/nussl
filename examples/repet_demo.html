@@ -147,21 +147,20 @@
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c"># input audio file</span>
-    <span class="n">input_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Input&#39;</span><span class="p">,</span><span class="s">&#39;HistoryRepeating_PropellorHeads.wav&#39;</span><span class="p">)</span>
+    <span class="n">input_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Input&#39;</span><span class="p">,</span><span class="s">&#39;mix3.wav&#39;</span><span class="p">)</span>
     <span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_name</span><span class="p">)</span>
 
     <span class="c"># make a directory to store output if needed</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s">&#39;../Output/&#39;</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s">&#39;../Output&#39;</span><span class="p">)</span>
 
-    <span class="c"># Set up window parameters</span>
-    <span class="n">win</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowAttributes</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">)</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">2048</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
-
     <span class="c"># Set up Repet</span>
-    <span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">repet_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">RepetType</span><span class="o">.</span><span class="n">SIM</span><span class="p">,</span> <span class="n">window_attributes</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
-    <span class="n">repet</span><span class="o">.</span><span class="n">min_distance_between_frames</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="mi">2048</span>
+    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="n">L</span>
+    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
+    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">=</span> <span class="n">L</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">n_fft_bins</span> <span class="o">=</span> <span class="n">L</span>
     <span class="c"># and Run</span>
     <span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
@@ -171,6 +170,18 @@
     <span class="c"># and write out to files</span>
     <span class="n">bkgd</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output&#39;</span><span class="p">,</span> <span class="s">&#39;repet_background.wav&#39;</span><span class="p">))</span>
     <span class="n">fgnd</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output&#39;</span><span class="p">,</span> <span class="s">&#39;repet_foreground.wav&#39;</span><span class="p">))</span>
+
+    <span class="c"># Set up Repet</span>
+    <span class="c"># repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)</span>
+    <span class="c"># # and Run</span>
+    <span class="c"># # repet.run()</span>
+    <span class="c">#</span>
+    <span class="c"># # Get foreground and backgroun audio signals</span>
+    <span class="c"># bkgd, fgnd = repet.make_audio_signals()</span>
+    <span class="c">#</span>
+    <span class="c"># # and write out to files</span>
+    <span class="c"># bkgd.write_audio_to_file(os.path.join(&#39;..&#39;, &#39;Output&#39;, &#39;repet_background_SIM.wav&#39;))</span>
+    <span class="c"># fgnd.write_audio_to_file(os.path.join(&#39;..&#39;, &#39;Output&#39;, &#39;repet_foreground_SIM.wav&#39;))</span>
 
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>

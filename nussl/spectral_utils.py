@@ -23,10 +23,11 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
     Notes:
         To find out what output formats are available for your machine run the following code:
         ::
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
 
-        print fig.canvas.get_supported_filetypes()
+            import matplotlib.pyplot as plt
+            fig = plt.figure()
+
+            print fig.canvas.get_supported_filetypes()
 
         (From here: http://stackoverflow.com/a/7608273/5768001)
 
@@ -47,20 +48,20 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         show_interactive_plot: (bool) (Optional) Flag indicating if plot should be shown when function is run.
         Defaults to False
 
-    Examples:
-    ::
-    # Set up sine wave parameters
-    sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
-    n_sec = 3 # seconds
-    duration = n_sec * sr
-    freq = 300 # Hz
+    Examples::
 
-    # Make sine wave array
-    x = np.linspace(0, freq * 2 * np.pi, duration)
-    x = np.sin(x)
+        # Set up sine wave parameters
+        sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
+        n_sec = 3 # seconds
+        duration = n_sec * sr
+        freq = 300 # Hz
 
-    # plot it and save it in path 'path/to/sine_wav.png'
-    nussl.plot_stft(x, 'path/to/sine_wav.png')
+        # Make sine wave array
+        x = np.linspace(0, freq * 2 * np.pi, duration)
+        x = np.sin(x)
+
+        # plot it and save it in path 'path/to/sine_wav.png'
+        nussl.plot_stft(x, 'path/to/sine_wav.png')
 
     """
     sample_rate = constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
@@ -134,8 +135,8 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
         Data is of shape (num_time_blocks, num_fft_bins). These numbers are determined by length of the input signal,
         on internal zero padding (explained at top), and n_fft_bins/remove_reflection input (see example below).
 
-    Examples:
-        ::
+    Examples::
+
         # Set up sine wave parameters
         sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
         n_sec = 3 # seconds
@@ -163,6 +164,7 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
         num_bins = 4096
         stft_more_bins = e_stft(x, win_length, hop_length, win_type, n_fft_bins=num_bins)
         # stft_more_bins has shape (num_bins // 2 + 1, duration / hop_length)
+
     """
     if n_fft_bins is None:
         n_fft_bins = int(2 ** np.ceil(np.log2(window_length)))
@@ -244,8 +246,8 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     Returns:
         1D numpy array containing an audio signal representing the original signal used to make stft
 
-    Examples:
-        ::
+    Examples::
+
         # Set up sine wave parameters
         sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
         n_sec = 3 # seconds
@@ -265,6 +267,7 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
         stft = nussl.e_stft(x, win_length, hop_length, win_type)
 
         calculated_signal = nussl.e_istft(stft, win_length, hop_length)
+
     """
     if use_librosa:
         signal = librosa.istft(stft, hop_length, window_length, make_window(window_type, window_length))
@@ -375,14 +378,14 @@ class WindowType:
     The WindowType class provides standardized strings for use in make_window(). Many other things
     in spectral_utils.py use this class, but they all get bubbled down to make_window().
     The windows defined are:
-        RECTANGULAR = 'rectangular'
-        HAMMING = 'hamming'
-        HANN = 'hann'
-        BLACKMAN = 'blackman'
-        DEFAULT = HAMMING
+        * ``RECTANGULAR = 'rectangular'``
+        * ``HAMMING = 'hamming'``
+        * ``HANN = 'hann'``
+        * ``BLACKMAN = 'blackman'``
+        * ``DEFAULT = HAMMING``
 
-    Examples:
-        ::
+    Examples::
+
         # get a blackman window
         window_type = nussl.WindowType.BLACKMAN
         length = 1024
@@ -444,16 +447,16 @@ class StftParams(object):
 
     @property
     def window_length(self):
+        """
+        Length of stft window in samples. If window_overlap
+        or num_fft are not set manually, then changing this will update them to
+        ``hop_length = window_length // 2``, and and ``num_fft = window_length``
+        **This property is settable.**
+        """
         return self._window_length
 
     @window_length.setter
     def window_length(self, value):
-        """
-        Length of stft window in samples. If window_overlap
-        or num_fft are not set manually, then changing this will update them to
-        hop_length = window_length // 2, and and num_fft = window_length
-        This property is settable.
-        """
         self._window_length = value
 
         if self._n_fft_bins_needs_update:
@@ -464,25 +467,28 @@ class StftParams(object):
 
     @property
     def hop_length(self):
+        """
+        Number of samples that ``e_stft`` will jump ahead for every time slice.
+        By default, this is equal to half of ``self.window_length`` and will update when you
+        change self.window_length to stay at ``self.window_length // 2``. If you set ``self.hop_length`` directly
+        then ``self.hop_length`` and ``self.window_length`` are unlinked.
+        **This property is settable.**
+        """
         return self._hop_length
 
     @hop_length.setter
     def hop_length(self, value):
-        """
-        Number of samples that e_stft will jump ahead for every time slice.
-        By default, this is equal to half of self.window_length and will update when you
-        change self.window_length to stay at self.window_length // 2. If you set self.hop_length directly
-        then self.hop_length and self.window_length are unlinked.
-        This property is settable.
-        """
         self._hop_length_needs_update = False
         self._hop_length = value
 
     @property
     def n_fft_bins(self):
         """
-
-        Returns:
+        Number of fft bins per time slice in the stft. A time slice is of length window length.
+        By default the number of FFT bins is equal to window_length (value of window_length),
+        but if this is set manually then e_stft takes a window of length.
+        If you give it a value lower than ``self.window_length``, ``self.window_length`` will be used.
+        **This property is settable.**
 
         """
         return self._n_fft_bins
@@ -493,8 +499,8 @@ class StftParams(object):
         Number of fft bins per time slice in the stft. A time slice is of length window length.
         By default the number of FFT bins is equal to window_length (value of window_length),
         but if this is set manually then e_stft takes a window of length.
-        If you give it a value lower than self.window_length, self.window_length will be used.
-        This property is settable.
+        | If you give it a value lower than ``self.window_length``, ``self.window_length`` will be used.
+        **This property is settable.**
 
         """
         # TODO: add warning for this
@@ -508,7 +514,7 @@ class StftParams(object):
     def window_overlap(self):
         """
         Returns number of samples of overlap between adjacent time slices.
-        This is calculated like self.window_length - self.hop_length
-        This property is not settable.
+        This is calculated like ``self.window_length - self.hop_length``.
+        **This property is not settable.**
         """
         return self.window_length - self.hop_length

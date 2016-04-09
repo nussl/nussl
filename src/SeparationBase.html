@@ -32,7 +32,7 @@
   
     <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
         <link rel="up" title="nussl" href="modules.html"/>
-        <link rel="next" title="WindowAttributes Class" href="WindowAttributes.html"/>
+        <link rel="next" title="spectral_utils Module" href="spectral_utils.html"/>
         <link rel="prev" title="Repet Class" href="Repet.html"/> 
 
   
@@ -87,17 +87,14 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="AudioMix.html">AudioMix module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">audio_signal Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="FftUtils.html">FftUtils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf Class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet Class</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="">SeparationBase Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowAttributes.html">WindowAttributes Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="WindowType.html">WindowType Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils Module</a></li>
 </ul>
 </li>
 </ul>
@@ -149,75 +146,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-SeparationBase">
-<span id="separationbase-class"></span><h1>SeparationBase Class<a class="headerlink" href="#module-SeparationBase" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="SeparationBase.SeparationBase">
-<em class="property">class </em><code class="descclassname">SeparationBase.</code><code class="descname">SeparationBase</code><span class="sig-paren">(</span><em>window_attributes=None</em>, <em>sample_rate=None</em>, <em>audio_signal=None</em><span class="sig-paren">)</span><a class="headerlink" href="#SeparationBase.SeparationBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Base class for all separation algorithms.</p>
-<p>Do not call this. It will not do anything.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>window_attributes</strong> (<a class="reference internal" href="WindowAttributes.html#module-WindowAttributes" title="WindowAttributes"><em>WindowAttributes</em></a>) &#8211; WindowAttributes for the separation algorithm. Defaults to
-WindowAttributes.WindowAttributes(self.sample_rate)</li>
-<li><strong>sample_rate</strong> (<em>Optional[int]</em>) &#8211; Sample rate. Defaults to Constants.DEFAULT_SAMPLE_RATE</li>
-<li><strong>audio_signal</strong> (<em>Optional[np.array]</em>) &#8211; Audio signal in array form. Defaults to AudioSignal.AudioSignal()</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="SeparationBase.SeparationBase.make_audio_signals">
-<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SeparationBase.SeparationBase.make_audio_signals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes AudioSignal objects after separation algorithm is run</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> &#8211;
-Cannot call base class</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="SeparationBase.SeparationBase.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#SeparationBase.SeparationBase.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots relevant data for separation algorithm</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> &#8211;
-Cannot call base class</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="SeparationBase.SeparationBase.run">
-<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#SeparationBase.SeparationBase.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>run separation algorithm</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> &#8211;
-Cannot call base class</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="separationbase-class">
+<h1>SeparationBase Class<a class="headerlink" href="#separationbase-class" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
@@ -227,7 +157,7 @@ Cannot call base class</td>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="WindowAttributes.html" class="btn btn-neutral float-right" title="WindowAttributes Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="spectral_utils.html" class="btn btn-neutral float-right" title="spectral_utils Module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="Repet.html" class="btn btn-neutral" title="Repet Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

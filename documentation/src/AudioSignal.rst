@@ -1,7 +1,7 @@
-AudioSignal Class
-=================
+audio_signal Class
+==================
 
-.. automodule:: AudioSignal
+.. automodule:: audio_signal
     :members:
     :undoc-members:
     :show-inheritance:

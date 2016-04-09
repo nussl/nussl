@@ -73,6 +73,11 @@ class AudioSignal(object):
     ##################################################
 
     def plot_time_domain(self):
+        """
+        Not implemented yet -- will raise and exception
+        Returns:
+
+        """
         raise NotImplementedError('Not ready yet!')
 
     _NAME_STEM = 'audio_signal'
@@ -387,12 +392,12 @@ class AudioSignal(object):
             self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant', constant_values=(0, 0))
 
     def get_channel(self, n):
-        """Gets the n-th channel. 1-based.
+        """Gets the n-th channel from ``self.audio_data``. **1-based.**
 
         Parameters:
-            n (int): index of channel to get 1-based.
+            n (int): index of channel to get. **1-based**
         Returns:
-             n-th channel (np.array): the data in the n-th channel of the signal
+            n-th channel (np.array): the audio data in the n-th channel of the signal
         """
         if n > self.num_channels:
             raise Exception(
@@ -405,7 +410,14 @@ class AudioSignal(object):
 
 
     def get_stft_channel(self, n):
+        """
+        Returns the n-th channel from ``self.stft_data``. **1-based.**
+        Args:
+            n: (int) index of stft channel to get. **1 based**
 
+        Returns:
+            n-th channel (np.array): the stft data in the n-th channel of the signal
+        """
         if n > self.num_channels:
             raise Exception(
                 'Cannot get channel {1} when this object only has {2} channels!'.format((n, self.num_channels)))
@@ -414,7 +426,8 @@ class AudioSignal(object):
 
     def peak_normalize(self):
         """ Normalizes the whole audio file to 1.0.
-            NOTE: if self.audio_data is not represented as floats this will convert the representation to floats!
+            Notes:
+            **If self.audio_data is not represented as floats this will convert the representation to floats!**
 
         """
         max_val = 1.0
@@ -423,7 +436,7 @@ class AudioSignal(object):
             self.audio_data = self.audio_data.astype('float') / max_signal
 
     def add(self, other):
-        """adds two audio signals
+        """Adds two audio signal objects. This does element-wise addition on the ``self.audio_data`` array.
 
         Parameters:
             other (AudioSignal): Other audio signal to add.
@@ -433,7 +446,7 @@ class AudioSignal(object):
         return self + other
 
     def sub(self, other):
-        """subtracts two audio signals
+        """Subtracts two audio signal objects. This does element-wise subtraction on the ``self.audio_data`` array.
 
         Parameters:
             other (AudioSignal): Other audio signal to subtract.
@@ -447,11 +460,7 @@ class AudioSignal(object):
     ##################################################
 
     def __add__(self, other):
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot add two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot add two signals that have different sample rates!')
+        self._verify_audio(other)
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -465,11 +474,7 @@ class AudioSignal(object):
         return AudioSignal(audio_data_array=combined)
 
     def __sub__(self, other):
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot subtract two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot subtract two signals that have different sample rates!')
+        self._verify_audio(other)
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -481,6 +486,13 @@ class AudioSignal(object):
             combined[0: self.audio_data.size] -= self.audio_data
 
         return AudioSignal(audio_data_array=combined)
+
+    def _verify_audio(self, other):
+        if self.num_channels != other.num_channels:
+            raise Exception('Cannot subtract two signals that have a different number of channels!')
+
+        if self.sample_rate != other.sample_rate:
+            raise Exception('Cannot subtract two signals that have different sample rates!')
 
     def __iadd__(self, other):
         return self + other
