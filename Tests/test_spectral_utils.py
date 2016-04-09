@@ -24,6 +24,9 @@ class TestSpectralUtils(unittest.TestCase):
     # on a piano (27.5 Hz for equal temperament A440 tuning)
     win_length_40ms = int(2 ** (np.ceil(np.log2(nussl.constants.DEFAULT_WIN_LEN_PARAM * sr))))
 
+    # epsilon value used to verify we are using librosa's stft & istft correctly
+    librosa_epsilon = 1e-6
+
     def test_stft_istft_noise_seed1(self):
         """
         Tests whether the stft can be inverted correctly (with istft) on a seeded random array.
@@ -169,6 +172,13 @@ class TestSpectralUtils(unittest.TestCase):
                                          self.win_length_40ms, win_type, self.sr)
 
     def test_e_stft_plus_sin(self):
+        """
+        This is a second test for e_stft_plus, where we verify all of the outputs (stft, psd, freq & time arrays).
+
+        This test does not try to invert the stft.
+
+        This will NOT raise an error if the calculated array is different than the original array.
+        """
         freq = 300
         win_type = nussl.WindowType.HANN
         x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
@@ -178,7 +188,27 @@ class TestSpectralUtils(unittest.TestCase):
 
         stft, p, freq_array, _ = nussl.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
 
-        i = 0
+
+    def test_librosa_stft(self):
+        """
+        This test makes sure that librosa's stft functions work without crashing. librosa has it's own tests to verify
+        correctness of its stft and istft, but we double check that to make sure out interface works correctly.
+
+        This test does not try to invert the stft.
+
+        This will NOT raise an error if the calculated array is different than the original array.
+        """
+        freq = 300
+        win_type = nussl.WindowType.HANN
+        x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
+        x = np.sin(x)
+        win_length = 2048
+        hop_length = win_length / 2
+
+        stft = nussl.e_stft(x, win_length, hop_length, win_type, use_librosa=True)
+        signal = nussl.e_istft(stft, win_length, hop_length, win_type, use_librosa=True)
+
+        assert max(np.abs(x[0:len(signal)] - signal)) <= self.librosa_epsilon
 
     # ##########################################################################################
     # COMING SOON:
@@ -216,7 +246,7 @@ class TestSpectralUtils(unittest.TestCase):
         calculated_signal = calculated_signal[hop_length + min_index:length + min_index]
 
         # useful for debugging:
-        # diff = signal_truncated - calculated_signal
+        diff = signal_truncated - calculated_signal
 
         # leave off comparing the first and last hop to mitigate edge effects
         assert (np.allclose(signal_truncated, calculated_signal))
