@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
-import FftUtils
-import SeparationBase
-import AudioSignal
-import Constants
+import spectral_utils
+import separation_base
+import audio_signal
+import constants
 
 
-class Duet(SeparationBase.SeparationBase):
+class Duet(separation_base.SeparationBase):
     """Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
 
     The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
@@ -38,7 +38,7 @@ class Duet(SeparationBase.SeparationBase):
         threshold (Optional[float]): Value in [0, 1] for peak picking. Defaults to 0.2
         a_min_distance (Optional[int]): Minimum distance between peaks wrt attenuation. Defaults to 5
         d_min_distance (Optional[int]): Minimum distance between peaks wrt delay. Defaults to 5
-        window_attributes (Optional[WindowAttributes]): Window attributes for stft. Defaults to
+        stft_params (Optional[WindowAttributes]): Window attributes for stft. Defaults to
          WindowAttributes.WindowAttributes(self.sample_rate)
         sample_rate (Optional[int]): Sample rate for the audio. Defaults to Constants.DEFAULT_SAMPLE_RATE
 
@@ -47,11 +47,12 @@ class Duet(SeparationBase.SeparationBase):
 
     """
 
-    def __init__(self, audio_signal, num_sources, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
-                 threshold=0.2, a_min_distance=5, d_min_distance=5, window_attributes=None, sample_rate=None):
+    def __init__(self, input_audio_signal, num_sources, sample_rate=None, stft_params=None,
+                 a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
+                 threshold=0.2, a_min_distance=5, d_min_distance=5):
         # TODO: Is there a better way to do this?
         self.__dict__.update(locals())
-        super(Duet, self).__init__(window_attributes, sample_rate, audio_signal)
+        super(Duet, self).__init__(input_audio_signal, sample_rate, stft_params)
         self.separated_sources = None
         self.a_grid = None
         self.d_grid = None
@@ -83,16 +84,14 @@ class Duet(SeparationBase.SeparationBase):
             raise Exception('Cannot run DUET on audio signal without exactly 2 channels!')
 
         # Give them shorter names
-        L = self.window_attributes.window_length
-        winType = self.window_attributes.window_type
-        ovp = self.window_attributes.window_overlap_samples
+        L = self.stft_params.window_length
+        winType = self.stft_params.window_type
+        hop = self.stft_params.hop_length
         fs = self.sample_rate
 
-        # Compute the do_STFT of the two channel mixtures
-        X1, P1, F, T = FftUtils.f_stft(self.audio_signal.get_channel(1), window_attributes=self.window_attributes,
-                                       sample_rate=fs)
-        X2, P2, F, T = FftUtils.f_stft(self.audio_signal.get_channel(2), window_attributes=self.window_attributes,
-                                       sample_rate=fs)
+        # Compute the stft of the two channel mixtures
+        X1, P1, F, T = spectral_utils.e_stft_plus(self.audio_signal.get_channel(1), L, hop, winType, fs)
+        X2, P2, F, T = spectral_utils.e_stft_plus(self.audio_signal.get_channel(2), L, hop, winType, fs)
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
         X1 = X1[1::, :]
@@ -105,7 +104,7 @@ class Duet(SeparationBase.SeparationBase):
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        R21 = (X2 + Constants.EPSILON) / (X1 + Constants.EPSILON)
+        R21 = (X2 + constants.EPSILON) / (X1 + constants.EPSILON)
         atn = np.abs(R21)  # relative attenuation between the two channels
         alpha = atn - 1 / atn  # symmetric attenuation
         delta = -np.imag(np.log(R21)) / (2 * np.pi * wmat)  # relative delay
@@ -140,6 +139,7 @@ class Duet(SeparationBase.SeparationBase):
         self.a_grid = agrid
         self.d_grid = dgrid
         self.hist = hist
+        self.non_normalized_hist = H[0]
 
         # smooth the histogram - local average 3-by-3 neighboring bins
         hist = self.twoDsmooth(hist, np.array([3]))
@@ -175,9 +175,10 @@ class Duet(SeparationBase.SeparationBase):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, Lt)),
                             (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2) / (1 + atnpeak[i] ** 2) * mask])
-            xi = FftUtils.f_istft(Xm, L, winType, ovp, fs)
+            # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
+            xi = spectral_utils.e_istft(Xm, L, hop, winType)
 
-            xhat[i, :] = np.array(xi)[0, 0:Lx]
+            xhat[i, :] = xi[0:Lx]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]
@@ -345,11 +346,12 @@ class Duet(SeparationBase.SeparationBase):
         """
         signals = []
         for i in range(self.num_sources):
-            cur_signal = AudioSignal.AudioSignal(audio_data_array=self.separated_sources[i])
+            cur_signal = audio_signal.AudioSignal(audio_data_array=self.separated_sources[i],
+                                                  sample_rate=self.sample_rate)
             signals.append(cur_signal)
         return signals
 
-    def plot(self, output_name, three_d_plot=False):
+    def plot(self, output_name, three_d_plot=False, normalize=True):
         """Plots histograms with the results of the DUET algorithm
 
         Parameters:
@@ -361,10 +363,12 @@ class Duet(SeparationBase.SeparationBase):
         AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T
         DD = np.tile(self.d_grid[1::].T, (self.a_num, 1))
 
+        histogram_data = self.hist if normalize else self.non_normalized_hist
+
         # plot the histogram in 2D
         if not three_d_plot:
             plt.figure()
-            plt.pcolormesh(AA, DD, self.hist)
+            plt.pcolormesh(AA, DD, histogram_data)
             plt.xlabel(r'$\alpha$', fontsize=16)
             plt.ylabel(r'$\delta$', fontsize=16)
             plt.title(r'$\alpha-\delta$ Histogram')
@@ -376,7 +380,7 @@ class Duet(SeparationBase.SeparationBase):
             # plot the histogram in 3D
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
-            ax.plot_wireframe(AA, DD, self.hist, rstride=2, cstride=2)
+            ax.plot_wireframe(AA, DD, histogram_data, rstride=2, cstride=2)
             plt.xlabel(r'$\alpha$', fontsize=16)
             plt.ylabel(r'$\delta$', fontsize=16)
             plt.title(r'$\alpha-\delta$ Histogram')

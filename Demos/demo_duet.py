@@ -1,6 +1,5 @@
 import os
-
-from nussl import Duet, AudioSignal, WindowAttributes, WindowType
+from nussl import Duet, AudioSignal
 
 
 def main():
@@ -12,15 +11,9 @@ def main():
     if not os.path.exists(os.path.join('..', 'Output/')):
         os.mkdir(os.path.join('..', 'Output/'))
 
-    # set up window parameters
-    win = WindowAttributes(signal.sample_rate)
-    win.window_length = 4096
-    win.window_type = WindowType.HAMMING
-    win.window_overlap_ratio = 0.5 * win.window_length
-
     # Set up DUET
-    duet = Duet(signal, a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50, threshold=0.2, a_min_distance=5,
-                d_min_distance=5, num_sources=3, window_attributes=win)
+    duet = Duet(signal, 3)
+    # duet.stft_params.hop_length = 200
     # and run
     duet.run()
 

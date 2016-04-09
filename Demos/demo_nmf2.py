@@ -19,9 +19,10 @@ def sine_example():
 
     sines = np.concatenate((sin1, sin2, sin3))
 
-    # load into AudioSignal object and get do_STFT
+    # load into AudioSignal object and get stft
     signal = nussl.AudioSignal(audio_data_array=sines)
-    _, stft, _, _ = signal.do_STFT()
+    signal.stft()
+    stft = signal.get_stft_channel(1)
 
     # Start NMF and time it
     start = time.time()

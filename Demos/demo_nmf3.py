@@ -31,20 +31,20 @@ def audio_example():
     bothNotesPre.write_audio_to_file(os.path.join('..', 'Output', 'combined_preNMF.wav'))
 
     bothNotesForNMF = firstNote + secondNote
-    _, stft, _, _ = bothNotesForNMF.do_STFT()
+    _, stft, _, _ = bothNotesForNMF.stft()
 
     # Make some 'guesses'
     jitter = 0.2
     max = 2 ** 15
     for i, val in np.ndenumerate(firstNote.audio_data):
         firstNote.audio_data[i] += int(float(random.random() * jitter) * max)
-    _, firstStft, _, _ = firstNote.do_STFT()
+    _, firstStft, _, _ = firstNote.stft()
     firstGuessAct = np.sum(firstStft, axis=0)
     firstGuessVec = np.sum(firstStft, axis=1)
 
     for i, val in np.ndenumerate(secondNote.audio_data):
         secondNote.audio_data[i] += int(float(random.random() * jitter) * max)
-    _, secondStft, _, _ = secondNote.do_STFT()
+    _, secondStft, _, _ = secondNote.stft()
     secondGuessAct = np.sum(secondStft, axis=0)
     secondGuessVec = np.sum(secondStft, axis=1)
 
@@ -53,7 +53,7 @@ def audio_example():
     GuessAct = np.array([firstGuessAct, secondGuessAct])
 
     # run NMF
-    nmf = nussl.Nmf(stft, numNotes, activation_matrix=GuessAct, templates=GuessVec)
+    nmf = nussl.Nmf(stft, numNotes)
     nmf.max_num_iterations = 100
     start = time.time()
     nmf.run()
