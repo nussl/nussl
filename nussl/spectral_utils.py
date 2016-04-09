@@ -35,7 +35,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         file_name: (str) path to file that will be output. Will overwrite any file that is already there.
         Uses mat
         title: (string) (Optional) Title to go at top of graph. Defaults to 'Spectrogram of [file_name]'
-        window_length: (int) (Optional) number of samples per window. Defaults to StftParams default.
+        win_length: (int) (Optional) number of samples per window. Defaults to StftParams default.
         hop_length: (int) (Optional) number of samples between the start of adjacent windows, or "hop".
         Defaults to StftParams default.
         sample_rate: (int) (Optional) sample rate of input signal.  Defaults to StftParams default.
@@ -206,7 +206,7 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
         unwindowed_signal = signal[start:end]
         windowed_signal = np.multiply(unwindowed_signal, window)
         fft = scifft.fft(windowed_signal, n=n_fft_bins)
-        stft[hop,] = fft[0:stft_bins]
+        stft[hop, ] = fft[0:stft_bins]
 
     # reshape the 2d array, so it's how we expect it.
     stft = stft.T
@@ -236,7 +236,10 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
         reconstruct_reflection: (bool) (Optional) if True, this will recreate the removed reflection
         data above the Nyquist. If False, this assumes that the input STFT is complete. Default is True.
         remove_padding: (bool) (Optional) if True, this function will remove the first and
-        last (window_length - hop_length) number of samples. Defaults to False.
+            last (window_length - hop_length) number of samples. Defaults to False.
+        use_librosa: (bool) (Optional) This flag bypasses nussl's istft function and will call librosa's istft. nussl
+        will massage the output so that it is in a format that it expects. remove_reflection is still works in this
+        mode. Note: librosa's works differently than nussl's and may produce different output.
 
     Returns:
         1D numpy array containing an audio signal representing the original signal used to make stft
@@ -360,6 +363,7 @@ def make_window(window_type, length):
     else:
         return None
 
+
 def _add_reflection(matrix):
     reflection = matrix[-2:0:-1, :]
     reflection = reflection.conj()
@@ -418,10 +422,7 @@ class StftParams(object):
     is the only way that a top level user has access to the STFT parameter settings that
     all of the separation algorithms are built upon.
     This object will get passed around instead of each of these individual attributes.
-
-    ARE THESE PARAMETERS OBVIOUS? HOW WILL THE DEVELOPER KNOW WHAT PARAMETERS ARE HERE AND WHAT VALUES  ARE ALLOWED?
     """
-
     def __init__(self, sample_rate, window_length=None, hop_length=None, window_type=None, n_fft_bins=None):
         self.sample_rate = sample_rate
 
@@ -450,9 +451,8 @@ class StftParams(object):
         """
         Length of stft window in samples. If window_overlap
         or num_fft are not set manually, then changing this will update them to
-        hop_length = window_length / 2, and and num_fft = window_length
-        :param value: input
-        :return:
+        hop_length = window_length // 2, and and num_fft = window_length
+        This property is settable.
         """
         self._window_length = value
 
@@ -460,7 +460,7 @@ class StftParams(object):
             self._n_fft_bins = value
 
         if self._hop_length_needs_update:
-            self._hop_length = value / 2
+            self._hop_length = value // 2
 
     @property
     def hop_length(self):
@@ -469,35 +469,46 @@ class StftParams(object):
     @hop_length.setter
     def hop_length(self, value):
         """
-
-        Args:
-            value:
-
-        Returns:
-
+        Number of samples that e_stft will jump ahead for every time slice.
+        By default, this is equal to half of self.window_length and will update when you
+        change self.window_length to stay at self.window_length // 2. If you set self.hop_length directly
+        then self.hop_length and self.window_length are unlinked.
+        This property is settable.
         """
         self._hop_length_needs_update = False
         self._hop_length = value
 
     @property
     def n_fft_bins(self):
+        """
+
+        Returns:
+
+        """
         return self._n_fft_bins
 
     @n_fft_bins.setter
     def n_fft_bins(self, value):
         """
-        Number of FFT bins per stft window.
+        Number of fft bins per time slice in the stft. A time slice is of length window length.
         By default the number of FFT bins is equal to window_length (value of window_length),
-        but if this is set manually then when e_stft takes a window of length.
-        This is a property.
-        WHAT HAPPENS IF THIS VALUE IS BELOW THE LENGTH OF THE WINDOW??.
-        Args:
-            value:
+        but if this is set manually then e_stft takes a window of length.
+        If you give it a value lower than self.window_length, self.window_length will be used.
+        This property is settable.
 
         """
+        # TODO: add warning for this
+        if value < self.window_length:
+            value = self.window_length
+
         self._n_fft_bins_needs_update = False
         self._n_fft_bins = value
 
     @property
     def window_overlap(self):
+        """
+        Returns number of samples of overlap between adjacent time slices.
+        This is calculated like self.window_length - self.hop_length
+        This property is not settable.
+        """
         return self.window_length - self.hop_length
