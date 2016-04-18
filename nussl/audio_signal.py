@@ -73,6 +73,11 @@ class AudioSignal(object):
     ##################################################
 
     def plot_time_domain(self):
+        """
+        Not implemented yet -- will raise and exception
+        Returns:
+
+        """
         raise NotImplementedError('Not ready yet!')
 
     _NAME_STEM = 'audio_signal'
@@ -365,7 +370,7 @@ class AudioSignal(object):
 
         self.audio_data = self.audio_data[:, 0: n_samples]
 
-    def trancate_seconds(self, n_seconds):
+    def truncate_seconds(self, n_seconds):
         """ Truncates the signal leaving only the first n_seconds
         """
         if n_seconds > self.signal_duration:
@@ -387,12 +392,12 @@ class AudioSignal(object):
             self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant', constant_values=(0, 0))
 
     def get_channel(self, n):
-        """Gets the n-th channel. 1-based.
+        """Gets the n-th channel from ``self.audio_data``. **1-based.**
 
         Parameters:
-            n (int): index of channel to get 1-based.
+            n (int): index of channel to get. **1-based**
         Returns:
-             n-th channel (np.array): the data in the n-th channel of the signal
+            n-th channel (np.array): the audio data in the n-th channel of the signal
         """
         if n > self.num_channels:
             raise Exception(
@@ -403,27 +408,37 @@ class AudioSignal(object):
 
         return self.audio_data[n - 1, ]
 
-
     def get_stft_channel(self, n):
+        """
+        Returns the n-th channel from ``self.stft_data``. **1-based.**
+        Args:
+            n: (int) index of stft channel to get. **1 based**
 
+        Returns:
+            n-th channel (np.array): the stft data in the n-th channel of the signal
+        """
         if n > self.num_channels:
             raise Exception(
                 'Cannot get channel {1} when this object only has {2} channels!'.format((n, self.num_channels)))
 
         return self.stft_data[:, :, n - 1]
 
-    def peak_normalize(self):
+    def peak_normalize(self, overwrite=True):
         """ Normalizes the whole audio file to 1.0.
-            NOTE: if self.audio_data is not represented as floats this will convert the representation to floats!
+            Notes:
+            **If self.audio_data is not represented as floats this will convert the representation to floats!**
 
         """
         max_val = 1.0
         max_signal = np.max(np.abs(self.audio_data))
         if max_signal > max_val:
-            self.audio_data = self.audio_data.astype('float') / max_signal
+            normalized = self.audio_data.astype('float') / max_signal
+            if overwrite:
+                self.audio_data = normalized
+            return normalized
 
     def add(self, other):
-        """adds two audio signals
+        """Adds two audio signal objects. This does element-wise addition on the ``self.audio_data`` array.
 
         Parameters:
             other (AudioSignal): Other audio signal to add.
@@ -433,7 +448,7 @@ class AudioSignal(object):
         return self + other
 
     def sub(self, other):
-        """subtracts two audio signals
+        """Subtracts two audio signal objects. This does element-wise subtraction on the ``self.audio_data`` array.
 
         Parameters:
             other (AudioSignal): Other audio signal to subtract.
@@ -442,16 +457,50 @@ class AudioSignal(object):
         """
         return self - other
 
+    def audio_data_as_ints(self, bit_depth=constants.DEFAULT_BIT_DEPTH):
+        """
+
+        Args:
+            bit_depth: (int) (Optional)
+
+        Returns: Integer representation of self.audio_data
+
+        """
+        if bit_depth not in [8, 16, 24, 32]:
+            raise TypeError('Cannot convert self.audio_data to integer array of bit depth = {}'.format(bit_depth))
+
+        int_type = 'int' + str(bit_depth)
+
+        return np.multiply(self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype(int_type)
+
+    def rms(self):
+        """
+
+        Returns:
+
+        """
+        return np.sqrt(np.mean(np.square(self.audio_data)))
+
+    def to_mono(self, overwrite=False):
+        """
+
+        Args:
+            overwrite:
+
+        Returns:
+
+        """
+        mono = np.mean(self.audio_data, axis=self._CHAN)
+        if overwrite:
+            self.audio_data = mono
+        return mono
+
     ##################################################
     #              Operator overloading
     ##################################################
 
     def __add__(self, other):
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot add two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot add two signals that have different sample rates!')
+        self._verify_audio(other)
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -465,11 +514,7 @@ class AudioSignal(object):
         return AudioSignal(audio_data_array=combined)
 
     def __sub__(self, other):
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot subtract two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot subtract two signals that have different sample rates!')
+        self._verify_audio(other)
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -481,6 +526,13 @@ class AudioSignal(object):
             combined[0: self.audio_data.size] -= self.audio_data
 
         return AudioSignal(audio_data_array=combined)
+
+    def _verify_audio(self, other):
+        if self.num_channels != other.num_channels:
+            raise Exception('Cannot do operation with two signals that have a different number of channels!')
+
+        if self.sample_rate != other.sample_rate:
+            raise Exception('Cannot do operation with two signals that have different sample rates!')
 
     def __iadd__(self, other):
         return self + other
