@@ -110,6 +110,11 @@ class TestAudioSignal(unittest.TestCase):
         assert (np.isclose(ans, sig.rms(), atol=1e-06))
 
     def test_to_mono(self):
+        """
+        Test functionality and correctness of AudioSignal.to_mono() function.
+        Returns:
+
+        """
         num_samples = nussl.DEFAULT_SAMPLE_RATE  # 1 second
         sin1 = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
 
@@ -132,10 +137,26 @@ class TestAudioSignal(unittest.TestCase):
         assert (np.allclose([0.0] * len(sig2), sig2.audio_data))
 
     def test_stft(self):
-        pass
+        """
+        Test some basic functionality of the STFT interface for the AudioSignal object
+        All verification of the STFT calculation is done in test_spectral_utils file.
+        """
+        signal = nussl.AudioSignal(audio_data_array=self.sine_wave)
 
-    def test_istft(self):
-        pass
+        self.assertTrue(signal.stft_data is None)
+        signal.stft(overwrite=False)
+        self.assertTrue(signal.stft_data is None)
+        stft = signal.stft()
+        self.assertTrue(signal.stft_data is not None)
+        signal.istft(overwrite=False)
+        self.assertTrue(not np.any(signal.audio_data - self.sine_wave)) # check if all are exactly 0
+        signal.istft()
+        # they should not be exactly zero at this point, because overwrite is on
+        self.assertTrue(not np.any(signal.get_channel(1)[0:len(self.sine_wave)] - self.sine_wave))
+
+        # make sure these don't crash or nothing silly
+        signal.stft(use_librosa=True)
+        signal.istft(use_librosa=True)
 
     def test_get_channel(self):
         pass
