@@ -142,14 +142,14 @@ class Repet(separation_base.SeparationBase):
                                        reconstruct_reflection=False, remove_padding=True)
             bkgd[i,] = y[0:M]
 
-        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.sample_rate)
+        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
 
         return self.bkgd
 
     def _compute_spectrum(self):
         self.stft = self.audio_signal.stft(self.stft_params.window_length, self.stft_params.hop_length,
                                            self.stft_params.window_type, self.stft_params.n_fft_bins,
-                                           overwrite=False, remove_reflection=False)
+                                           overwrite=False, remove_reflection=False, use_librosa=False)
 
         self.magnitude_spectrogram = np.abs(self.stft[0:self.stft_params.window_length//2 + 1, :, :])
 
@@ -520,27 +520,39 @@ class Repet(separation_base.SeparationBase):
 
         plot_beat_spectrum = self.repet_type is RepetType.ORIGINAL
         plot_sim_matrix = self.repet_type is RepetType.SIM
+        title = None
 
         if len(kwargs) != 0:
             if kwargs.has_key('plot_beat_spectrum'):
                 plot_beat_spectrum = kwargs['plot_beat_spectrum']
             if kwargs.has_key('plt_sim_matrix'):
                 plot_sim_matrix = kwargs['plot_sim_matrix']
+            if kwargs.has_key('title'):
+                title = kwargs['title']
 
         if plot_beat_spectrum == plot_sim_matrix == True:
             raise AssertionError('Cannot set both plot_beat_spectrum=True and plot_sim_matrix=True!')
 
         if plot_beat_spectrum:
-            plt.plot(self.get_beat_spectrum())
-            plt.title('Beat Spectrum for {}'.format(self.audio_signal.file_name))
+            beat_spec = self.get_beat_spectrum()
+            length = self.audio_signal.signal_duration
+            time_vect = np.linspace(0.0, length, num=len(beat_spec))
+            plt.plot(time_vect, beat_spec)
+            title = title if title is not None else 'Beat Spectrum for {}'.format(self.audio_signal.file_name)
+            plt.title(title)
+
+            # plt.xticks(range(len(beat_spec)), [i * self.audio_signal.time_vector ])
+            plt.xlabel('Time (s)')
             plt.grid('on')
 
         elif plot_sim_matrix:
             plt.pcolormesh(self.get_similarity_matrix())
-            plt.title('Similarity Matrix for {}'.format(self.audio_signal.file_name))
+            title = title if title is not None else 'Similarity Matrix for {}'.format(self.audio_signal.file_name)
+            plt.title(title)
 
         plt.axis('tight')
         plt.savefig(output_file)
+
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals
