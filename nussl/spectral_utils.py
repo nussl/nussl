@@ -296,7 +296,7 @@ def e_istft(stft, window_length, hop_length, window_type,
 
 
 def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
-                n_fft_bins=None, use_librosa=False):
+                n_fft_bins=None, remove_reflection=True, use_librosa=False):
     """
     Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
     the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
@@ -327,12 +327,12 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
     if n_fft_bins is None:
         n_fft_bins = window_length
 
-    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins, use_librosa)
+    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins, remove_reflection, use_librosa)
 
-    if use_librosa:
+    if use_librosa or remove_reflection:
         frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
     else:
-        frequency_vector = sample_rate * np.linspace(0, 1, (n_fft_bins) + 1)
+        frequency_vector = sample_rate * np.linspace(0, 1, n_fft_bins + 1)
 
     time_vector = np.array(range(stft.shape[1]))
     hop_in_secs = hop_length / (1.0 * sample_rate)
