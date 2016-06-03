@@ -328,7 +328,11 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
         n_fft_bins = window_length
 
     stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins, use_librosa)
-    frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
+
+    if use_librosa:
+        frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
+    else:
+        frequency_vector = sample_rate * np.linspace(0, 1, (n_fft_bins) + 1)
 
     time_vector = np.array(range(stft.shape[1]))
     hop_in_secs = hop_length / (1.0 * sample_rate)
