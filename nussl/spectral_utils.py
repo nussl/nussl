@@ -13,26 +13,54 @@ import constants
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
               window_type=None, sample_rate=None, n_fft_bins=None,
-              freq_max=None, show_interactive_plot=False):
-    """ Plots a stft of signal with the given window attributes
-    REWRITE AND ADD A BIT MORE DETAIL. AN EXAMPLE OF HOW YOU WOULD CALL IT WOULD BE GOOD
+              freq_max=None, show_interactive_plot=False, use_librosa=False):
+    """
+    Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
+    You can specify the same all of the same parameters that are in e_stft(). By default, the StftParams defaults
+    are used for any values not provided in (win_length, hop_length, and window_type).
+    Title is settable by user and there is a flag to show an interactive matplotlib graph, as well.
 
-    Parameters:
-        signal (np.array):
-        file_name (str):
-        num_ffts (Optional[int]): min number of desired freq. samples in (-pi,pi]. MUST be >= L. Defaults to
-         int(2 ** np.ceil(np.log2(win_length)))
-        freq_max (int): Max frequency to display
-        window_attributes (Optional[WindowAttributes]): Contains all info about windowing for stft.
-        win_length (Optional[int]): length of one window (in # of samples)
-        window_type (Optional[WindowType]): window type
-        win_overlap (Optional[int]): number of overlapping samples between adjacent windows
-        sample_rate (int): sampling rate of the signal
-        show_interactive_plot (Optional[bool]): Flag indicating if plot should be shown when function is run.
-         Defaults to False
+    Notes:
+        To find out what output formats are available for your machine run the following code:
+        ::
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
 
-    Note:
-         Either stft_params or all of [win_length, window_type, window_overlap, and num_ffts] must be provided.
+        print fig.canvas.get_supported_filetypes()
+
+        (From here: http://stackoverflow.com/a/7608273/5768001)
+
+    Args:
+        signal: (np.array) input time series signal that will be plotted
+        file_name: (str) path to file that will be output. Will overwrite any file that is already there.
+        Uses mat
+        title: (string) (Optional) Title to go at top of graph. Defaults to 'Spectrogram of [file_name]'
+        win_length: (int) (Optional) number of samples per window. Defaults to StftParams default.
+        hop_length: (int) (Optional) number of samples between the start of adjacent windows, or "hop".
+        Defaults to StftParams default.
+        sample_rate: (int) (Optional) sample rate of input signal.  Defaults to StftParams default.
+        window_type: (string) (Optional) type of window to use. Using WindowType object is recommended.
+        Defaults to StftParams default.
+        n_fft_bins: (int) (Optional) number of fft bins per time window.
+        If not specified, defaults to next highest power of 2 above window_length. Defaults to StftParams default.
+        freq_max: (int) Max frequency to display. Defaults to 44100Hz
+        show_interactive_plot: (bool) (Optional) Flag indicating if plot should be shown when function is run.
+        Defaults to False
+
+    Examples:
+    ::
+    # Set up sine wave parameters
+    sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
+    n_sec = 3 # seconds
+    duration = n_sec * sr
+    freq = 300 # Hz
+
+    # Make sine wave array
+    x = np.linspace(0, freq * 2 * np.pi, duration)
+    x = np.sin(x)
+
+    # plot it and save it in path 'path/to/sine_wav.png'
+    nussl.plot_stft(x, 'path/to/sine_wav.png')
 
     """
     sample_rate = constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
@@ -51,7 +79,9 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         hop_length = defaults.hop_length if hop_length is None else hop_length
         window_type = defaults.window_type if window_type is None else window_type
 
-    (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length, window_type, sample_rate, n_fft_bins)
+    (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length,
+                                           window_type, sample_rate, n_fft_bins,
+                                           use_librosa)
 
     plt.close('all')
 
@@ -74,15 +104,20 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         plt.show()
 
 
-def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remove_reflection=True):
+def e_stft(signal, window_length, hop_length, window_type,
+           n_fft_bins=None, remove_reflection=True, use_librosa=False):
     """
     This function computes a short time fourier transform (STFT) of a 1D numpy array input signal.
     This will zero pad the signal by half a hop_length at the beginning to reduce the window
     tapering effect from the first window. It also will zero pad at the end to get an integer number of hops.
+
     By default, this function removes the FFT data that is a reflection from over Nyquist. There is an option
     to suppress this behavior and have this function include data from above Nyquist, but since the
     inverse STFT function, e_istft(), expects data without the reflection, the onus is on the user to remember
     to set the reconstruct_reflection flag in e_istft() input.
+
+    Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
+    multichannel audio. If you want to do an STFT on multichannel audio see the AudioSignal object.
 
     Args:
         signal: 1D numpy array containing audio data. (REAL?COMPLEX?INTEGER?)
@@ -93,6 +128,9 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
         If not specified, defaults to next highest power of 2 above window_length
         remove_reflection: (bool) (Optional) if True, this will remove reflected STFT data above the Nyquist point.
         If not specified, defaults to True.
+        use_librosa: (bool) (Optional) This flag bypasses nussl's stft function and will call librosa's stft. nussl
+        will massage the output so that it is in a format that it expects. remove_reflection is still works in this
+        mode. Note: librosa's works differently than nussl's and may produce different output.
 
     Returns:
         2D  numpy array with complex STFT data.
@@ -132,6 +170,16 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
     if n_fft_bins is None:
         n_fft_bins = int(2 ** np.ceil(np.log2(window_length)))
 
+    if use_librosa:
+        stft = librosa.stft(signal, n_fft_bins, hop_length, window_length,
+                            make_window(window_type, window_length))
+
+        # librosa removes the reflection by default, so we have to reconstruct it in this case
+        if not remove_reflection:
+            stft = _add_reflection(stft)
+
+        return stft
+
     orig_signal_length = len(signal)
 
     # zero-pad the vector at the beginning and end to reduce the window tapering effect
@@ -161,7 +209,7 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
         unwindowed_signal = signal[start:end]
         windowed_signal = np.multiply(unwindowed_signal, window)
         fft = scifft.fft(windowed_signal, n=n_fft_bins)
-        stft[hop,] = fft[0:stft_bins]
+        stft[hop, ] = fft[0:stft_bins]
 
     # reshape the 2d array, so it's how we expect it.
     stft = stft.T
@@ -173,11 +221,15 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
     return stft
 
 
-def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=False):
+def e_istft(stft, window_length, hop_length, window_type,
+            reconstruct_reflection=True, remove_padding=False, use_librosa=False):
     """
     Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
     this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
     reconstruct_reflection flag overrides that behavior.
+
+    Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
+    multichannel audio. If you want to do an iSTFT on multichannel audio see the AudioSignal object.
 
     Args:
         stft: complex valued 2D numpy array containing STFT data
@@ -187,7 +239,10 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
         reconstruct_reflection: (bool) (Optional) if True, this will recreate the removed reflection
         data above the Nyquist. If False, this assumes that the input STFT is complete. Default is True.
         remove_padding: (bool) (Optional) if True, this function will remove the first and
-        last (window_length - hop_length) number of samples. Defaults to False.
+            last (window_length - hop_length) number of samples. Defaults to False.
+        use_librosa: (bool) (Optional) This flag bypasses nussl's istft function and will call librosa's istft. nussl
+        will massage the output so that it is in a format that it expects. remove_reflection is still works in this
+        mode. Note: librosa's works differently than nussl's and may produce different output.
 
     Returns:
         1D numpy array containing an audio signal representing the original signal used to make stft
@@ -214,15 +269,17 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
 
         calculated_signal = nussl.e_istft(stft, win_length, hop_length)
     """
+    if use_librosa:
+        signal = librosa.istft(stft, hop_length, window_length, make_window(window_type, window_length))
+        return signal
+
     n_hops = stft.shape[1]
     signal_length = (n_hops - 1) * hop_length + window_length
     signal = np.zeros(signal_length)
 
     # Add reflection back
     if reconstruct_reflection:
-        reflection = stft[-2:0:-1, :]
-        reflection = reflection.conj()
-        stft = np.vstack((stft, reflection))
+        stft = _add_reflection(stft)
 
     for n in range(n_hops):
         start = n * hop_length
@@ -238,24 +295,39 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     return signal
 
 
-def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_fft_bins=None):
+def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
+                n_fft_bins=None, use_librosa=False):
     """
     Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
-    the power spectral density (PSD), frequency and time vectors for the calculated STFT.
-    :param signal:
-    :param window_length:
-    :param hop_length:
-    :param window_type:
-    :param sample_rate:
-    :param n_fft_bins:
-    :return:
+    the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
+    give you as many options as e_stft() (wrt removing the reflection and using librosa). If you need that
+    flexibility, it is recommended that you either use e_stft() or use an AudioSignal object.
 
-    MAKE MORE LIKE THE AWESOME e_stft DOCUMENTATION
+    Use this is situations where you need more than just the STFT data. For instance, this is used in plot_stft()
+    to get the frequency vector to graph. In situations where you don't need this extra data it is
+    more efficient to use e_stft().
+
+    Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
+    multichannel audio. If you want to do an STFT on multichannel audio see the AudioSignal object.
+
+    Args:
+        signal: 1D numpy array containing audio data. (REAL?COMPLEX?INTEGER?)
+        window_length: (int) number of samples per window
+        hop_length: (int) number of samples between the start of adjacent windows, or "hop"
+        window_type: (string) type of window to use. Using WindowType object is recommended.
+        sample_rate: (int) the intended sample rate, this is used in the calculation of the frequency vector
+        n_fft_bins: (int) (Optional) number of fft bins per time window.
+        If not specified, defaults to next highest power of 2 above window_length
+
+    Returns:
+        stft: (np.ndarray) a 2D matrix short time fourier transform data
+
     """
+
     if n_fft_bins is None:
         n_fft_bins = window_length
 
-    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins)
+    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins, use_librosa)
     frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
 
     time_vector = np.array(range(stft.shape[1]))
@@ -274,11 +346,12 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_f
 def make_window(window_type, length):
     """Returns an np array of type window_type
 
-    Parameters:
+    Args:
         window_type (WindowType): Type of window to create, window_type object
         length (int): length of window
+
     Returns:
-         window (np.array): np array of window_type
+        window (np.array): np array with a window of type window_type
     """
 
     # Generate samples of a normalized window
@@ -295,7 +368,41 @@ def make_window(window_type, length):
         return None
 
 
+def _add_reflection(matrix):
+    reflection = matrix[-2:0:-1, :]
+    reflection = reflection.conj()
+    return np.vstack((matrix, reflection))
+
+
 class WindowType:
+    """
+    The WindowType class provides standardized strings for use in make_window(). Many other things
+    in spectral_utils.py use this class, but they all get bubbled down to make_window().
+    The windows defined are:
+        RECTANGULAR = 'rectangular'
+        HAMMING = 'hamming'
+        HANN = 'hann'
+        BLACKMAN = 'blackman'
+        DEFAULT = HAMMING
+
+    Examples:
+        ::
+        # get a blackman window
+        window_type = nussl.WindowType.BLACKMAN
+        length = 1024
+        blackman = nussl.make_window(window_type, length)
+
+        # Load audio file and take stft with rectangular window
+        audio = nussl.AudioSignal('path/to/signal.wav')
+        audio.stft(window_type = WindowType.RECTANGULAR) # this will only set 'rectangular' window for this call
+
+        # But we can make it so every time anything does an STFT
+        # on the audio object it uses a rectangular window like this:
+        audio.StftParams.window_type = WindowType.RECTANGULAR
+
+        my_stft = audio.stft() # uses rectangular window because we set it in previous line
+
+    """
     RECTANGULAR = 'rectangular'
     HAMMING = 'hamming'
     HANN = 'hann'
@@ -319,10 +426,7 @@ class StftParams(object):
     is the only way that a top level user has access to the STFT parameter settings that
     all of the separation algorithms are built upon.
     This object will get passed around instead of each of these individual attributes.
-
-    ARE THESE PARAMETERS OBVIOUS? HOW WILL THE DEVELOPER KNOW WHAT PARAMETERS ARE HERE AND WHAT VALUES  ARE ALLOWED?
     """
-
     def __init__(self, sample_rate, window_length=None, hop_length=None, window_type=None, n_fft_bins=None):
         self.sample_rate = sample_rate
 
@@ -349,11 +453,10 @@ class StftParams(object):
     @window_length.setter
     def window_length(self, value):
         """
-        Length of window ? WINDOW FOR WHAT? WHAT USES THIS?  in samples. If window_overlap or num_fft are not set manually,
-        then changing this will update them to hop_length = window_length / 2, and
-        and num_fft = window_length
-        :param value:
-        :return:
+        Length of stft window in samples. If window_overlap
+        or num_fft are not set manually, then changing this will update them to
+        hop_length = window_length // 2, and and num_fft = window_length
+        This property is settable.
         """
         self._window_length = value
 
@@ -361,7 +464,7 @@ class StftParams(object):
             self._n_fft_bins = value
 
         if self._hop_length_needs_update:
-            self._hop_length = value / 2
+            self._hop_length = value // 2
 
     @property
     def hop_length(self):
@@ -369,26 +472,47 @@ class StftParams(object):
 
     @hop_length.setter
     def hop_length(self, value):
+        """
+        Number of samples that e_stft will jump ahead for every time slice.
+        By default, this is equal to half of self.window_length and will update when you
+        change self.window_length to stay at self.window_length // 2. If you set self.hop_length directly
+        then self.hop_length and self.window_length are unlinked.
+        This property is settable.
+        """
         self._hop_length_needs_update = False
         self._hop_length = value
 
     @property
     def n_fft_bins(self):
+        """
+
+        Returns:
+
+        """
         return self._n_fft_bins
 
     @n_fft_bins.setter
     def n_fft_bins(self, value):
         """
-        Number of FFT bins per stft window.
+        Number of fft bins per time slice in the stft. A time slice is of length window length.
         By default the number of FFT bins is equal to window_length (value of window_length),
-        but if this is set manually then when e_stft takes a window of length
-        WHAT HAPPENS IF THIS VALUE IS BELOW THE LENGTH OF THE WINDOW??.
-        :param value:
-        :return:
+        but if this is set manually then e_stft takes a window of length.
+        If you give it a value lower than self.window_length, self.window_length will be used.
+        This property is settable.
+
         """
+        # TODO: add warning for this
+        if value < self.window_length:
+            value = self.window_length
+
         self._n_fft_bins_needs_update = False
         self._n_fft_bins = value
 
     @property
     def window_overlap(self):
+        """
+        Returns number of samples of overlap between adjacent time slices.
+        This is calculated like self.window_length - self.hop_length
+        This property is not settable.
+        """
         return self.window_length - self.hop_length
