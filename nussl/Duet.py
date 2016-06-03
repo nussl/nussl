@@ -140,6 +140,7 @@ class Duet(separation_base.SeparationBase):
         self.d_grid = dgrid
         self.hist = hist
         self.non_normalized_hist = H[0]
+        self.smoothed_hist = self.twoDsmooth(self.non_normalized_hist, np.array([3]))
 
         # smooth the histogram - local average 3-by-3 neighboring bins
         hist = self.twoDsmooth(hist, np.array([3]))
@@ -148,11 +149,11 @@ class Duet(separation_base.SeparationBase):
         hist /= hist.max()
 
         # find the location of peaks in the alpha-delta plane
-        pindex = self.find_peaks2(hist, self.threshold,
+        self.peak_indices = self.find_peaks2(hist, self.threshold,
                                   np.array([self.a_min_distance, self.d_min_distance]), self.num_sources)
 
-        alphapeak = agrid[pindex[0, :]]
-        deltapeak = dgrid[pindex[1, :]]
+        alphapeak = agrid[self.peak_indices[0, :]]
+        deltapeak = dgrid[self.peak_indices[1, :]]
 
         ad_est = np.vstack([alphapeak, deltapeak]).T
 
@@ -363,7 +364,7 @@ class Duet(separation_base.SeparationBase):
         AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T
         DD = np.tile(self.d_grid[1::].T, (self.a_num, 1))
 
-        histogram_data = self.hist if normalize else self.non_normalized_hist
+        histogram_data = self.hist if normalize else self.smoothed_hist
 
         # plot the histogram in 2D
         if not three_d_plot:
