@@ -142,14 +142,14 @@ class Repet(separation_base.SeparationBase):
                                        reconstruct_reflection=False, remove_padding=True)
             bkgd[i,] = y[0:M]
 
-        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.sample_rate)
+        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
 
         return self.bkgd
 
     def _compute_spectrum(self):
         self.stft = self.audio_signal.stft(self.stft_params.window_length, self.stft_params.hop_length,
                                            self.stft_params.window_type, self.stft_params.n_fft_bins,
-                                           overwrite=False, remove_reflection=False)
+                                           overwrite=False, remove_reflection=False, use_librosa=False)
 
         self.magnitude_spectrogram = np.abs(self.stft[0:self.stft_params.window_length//2 + 1, :, :])
 
@@ -159,8 +159,8 @@ class Repet(separation_base.SeparationBase):
         Returns:
              similarity_matrix (np.array): similarity matrix for the audio file.
 
-        EXAMPLE:
-            ::
+        EXAMPLE::
+
             # Set up audio signal
             signal = nussl.AudioSignal('path_to_file.wav')
 
@@ -182,8 +182,8 @@ class Repet(separation_base.SeparationBase):
         Returns:
             beat_spectrum (np.array): beat spectrum for the audio file
 
-        EXAMPLE:
-            ::
+        EXAMPLE::
+
             # Set up audio signal
             signal = nussl.AudioSignal('path_to_file.wav')
 
@@ -192,9 +192,10 @@ class Repet(separation_base.SeparationBase):
 
             # I don't have to run repet to get a beat spectrum for signal
             beat_spec = repet.get_beat_spectrum()
+
         """
         self._compute_spectrum()
-        self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram ** 2), axis=2))
+        self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram), axis=2).T)
         return self.beat_spectrum
 
     def _do_repet_sim(self):
@@ -467,89 +468,91 @@ class Repet(separation_base.SeparationBase):
             You cannot set both of these overrides simultaneously.
 
         Parameters:
-            output_file: string representing a path to the desired output file to be created.
-            plot_beat_spectrum: Setting this will force plotting the beat spectrum
-            plot_sim_matrix: Setting this will force plotting the similarity matrix
+            output_file (string) : string representing a path to the desired output file to be created.
+            plot_beat_spectrum (Optional[bool]) : Setting this will force plotting the beat spectrum
+            plot_sim_matrix (Optional[bool]) : Setting this will force plotting the similarity matrix
 
         EXAMPLE:
-            To plot the beat spectrum you have a few options:
-            1) (recommended)
-            ::
+             ::
+            # To plot the beat spectrum you have a few options:
+
+            # 1) (recommended)
             # set up AudioSignal
             signal = nussl.AudioSignal('path_to_file.wav')
 
             # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
-            repet = nussl.Repet(signal)
+            repet1 = nussl.Repet(signal)
 
             # plots beat spectrum by default
-            repet.plot('new_beat_spec_plot.png')
+            repet1.plot('new_beat_spec_plot.png')
 
-            2)
-            ::
-            # set up AudioSignal
-            signal = nussl.AudioSignal('path_to_file.wav')
-
-            # by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix
-            repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
+            # 2)
+            # by giving this Repet object RepetType.SIM, it will default to plotting the similarity matrix
+            repet2 = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
 
             # but we can override this Repet object plotting the similarity matrix with this argument
-            repet.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
+            repet2.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
 
-            To plot the similarity matrix you have a few options:
-            1) (recommended)
-            ::
+            # To plot the similarity matrix you have a few options:
+            # 3) (recommended)
             # set up AudioSignal
             signal = nussl.AudioSignal('path_to_file.wav')
 
             # by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix
-            repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
+            repet3 = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
 
             # plots similarity matrix by default
-            repet.plot('new_sim_matrix_plot.png')
+            repet3.plot('new_sim_matrix_plot.png')
 
-            2)
-            ::
-            # set up AudioSignal
-            signal = nussl.AudioSignal('path_to_file.wav')
-
+            # 4)
             # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
-            repet = nussl.Repet(signal)
+            repet4 = nussl.Repet(signal)
 
-            # override plotting the beat spectrum with this argument
-            repet.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
+            # BUT we can override plotting the beat spectrum with this argument
+            repet4.plot('new_sim_matrix_plot.png', plot_sim_matrix=True)
 
-            NOTE: You cannot do
-            ::
-            repet.plot('new_plot.png', plot_beat_spectrum=True, plot_sim_matrix=True)
-
-            this will cause nussl to throw an exception!
+            # NOTE: You cannot do
+            # repet.plot('new_plot.png', plot_beat_spectrum=True, plot_sim_matrix=True)
+            # this will cause nussl to throw an exception!
         """
         import matplotlib.pyplot as plt
         plt.close('all')
 
         plot_beat_spectrum = self.repet_type is RepetType.ORIGINAL
         plot_sim_matrix = self.repet_type is RepetType.SIM
+        title = None
 
-        if kwargs is not None:
+        if len(kwargs) != 0:
             if kwargs.has_key('plot_beat_spectrum'):
                 plot_beat_spectrum = kwargs['plot_beat_spectrum']
             if kwargs.has_key('plt_sim_matrix'):
                 plot_sim_matrix = kwargs['plot_sim_matrix']
+            if kwargs.has_key('title'):
+                title = kwargs['title']
 
         if plot_beat_spectrum == plot_sim_matrix == True:
             raise AssertionError('Cannot set both plot_beat_spectrum=True and plot_sim_matrix=True!')
 
         if plot_beat_spectrum:
-            plt.plot(self.get_beat_spectrum())
-            plt.title('Beat Spectrum for {}'.format(self.audio_signal.file_name))
+            beat_spec = self.get_beat_spectrum()
+            length = self.audio_signal.signal_duration
+            time_vect = np.linspace(0.0, length, num=len(beat_spec))
+            plt.plot(time_vect, beat_spec)
+            title = title if title is not None else 'Beat Spectrum for {}'.format(self.audio_signal.file_name)
+            plt.title(title)
+
+            # plt.xticks(range(len(beat_spec)), [i * self.audio_signal.time_vector ])
+            plt.xlabel('Time (s)')
             plt.grid('on')
 
         elif plot_sim_matrix:
             plt.pcolormesh(self.get_similarity_matrix())
-            plt.title('Similarity Matrix for {}'.format(self.audio_signal.file_name))
+            title = title if title is not None else 'Similarity Matrix for {}'.format(self.audio_signal.file_name)
+            plt.title(title)
 
         plt.axis('tight')
         plt.savefig(output_file)
+
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals
@@ -561,9 +564,16 @@ class Repet(separation_base.SeparationBase):
                 * fkgd: Audio signal with the calculated foreground track
 
         EXAMPLE:
-            ::
+             ::
             # set up AudioSignal object
-            signal = nussl.
+            signal = nussl.AudioSignal('path_to_file.wav')
+
+            # set up and run repet
+            repet = nussl.Repet(signal)
+            repet.run()
+
+            # get audio signals (AudioSignal objects)
+            background, foreground = repet.make_audio_signals()
         """
         self.fgnd = self.audio_signal - self.bkgd
         return [self.bkgd, self.fgnd]

@@ -58,10 +58,8 @@ class AudioSignal(object):
             self.load_audio_from_array(audio_data_array, sample_rate)
 
         # stft data
-        self.stft_data = np.array([]) if stft is None else stft  # complex spectrogram
+        self.stft_data = stft  # complex spectrogram data
         self.power_spectrum_data = np.array([])  # power spectrogram
-        self.freq_vec = np.array([])  # freq. vector
-        self.time_vec = np.array([])  # time vector
 
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
 
@@ -73,11 +71,16 @@ class AudioSignal(object):
     ##################################################
 
     def plot_time_domain(self):
+        """
+        Not implemented yet -- will raise and exception
+        Returns:
+
+        """
         raise NotImplementedError('Not ready yet!')
 
     _NAME_STEM = 'audio_signal'
 
-    def plot_spectrogram(self, file_name=None, ch=None):
+    def plot_spectrogram(self, file_name=None, ch=None, use_librosa=False):
         # TODO: make other parameters adjustable
         if file_name is None:
             name_stem = self.file_name if self.file_name is not None else self._NAME_STEM
@@ -118,7 +121,7 @@ class AudioSignal(object):
     def signal_length(self):
         """Returns the length of the audio signal represented by this object in samples
         """
-        return self._audio_data.shape[self._LEN]
+        return self.audio_data.shape[self._LEN]
 
     @property
     def signal_duration(self):
@@ -130,7 +133,7 @@ class AudioSignal(object):
     def num_channels(self):
         """The number of channels
         """
-        return self._audio_data.shape[self._CHAN]
+        return self.audio_data.shape[self._CHAN]
 
     @property
     def audio_data(self):
@@ -157,7 +160,19 @@ class AudioSignal(object):
 
     @property
     def time_vector(self):
-        return np.array((1. / self.sample_rate) * np.arange(self.signal_length))
+        return np.linspace(0.0, self.signal_duration, num=self.signal_length)
+
+    @property
+    def freq_vector(self):
+        if self.stft_data is None:
+            raise AttributeError('Cannot calculate freq_vector until self.stft() is run')
+        return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[self._STFT_LEN])
+
+    @property
+    def stft_length(self):
+        if self.stft_data is None:
+            raise AttributeError('Cannot calculate stft_length until self.stft() is run')
+        return self.stft_data.shape[self._STFT_LEN]
 
     ##################################################
     # I/O
@@ -255,17 +270,17 @@ class AudioSignal(object):
 
             wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception, e:
-            print "Cannot write to file, {file}.".format(file=output_file_path)
+            print("Cannot write to file, {file}.".format(file=output_file_path))
             raise e
         if verbose:
-            print "Successfully wrote {file}.".format(file=output_file_path)
+            print("Successfully wrote {file}.".format(file=output_file_path))
 
     ##################################################
     #               STFT Utilities
     ##################################################
 
     def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, remove_reflection=True,
-             overwrite=True):
+             overwrite=True, use_librosa=False):
         """Computes the Short Time Fourier Transform (STFT) of the audio signal
 
         Warning:
@@ -282,7 +297,8 @@ class AudioSignal(object):
         window_type = self.stft_params.window_type if window_type is None else window_type
         n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
 
-        calculated_stft = self._do_stft(window_length, hop_length, window_type, n_fft_bins, remove_reflection)
+        calculated_stft = self._do_stft(window_length, hop_length, window_type,
+                                        n_fft_bins, remove_reflection, use_librosa)
 
         if overwrite:
             self.stft_data = calculated_stft
@@ -290,7 +306,7 @@ class AudioSignal(object):
 
         return calculated_stft
 
-    def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection):
+    def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection, use_librosa):
         if self.audio_data is None:
             raise Exception('Cannot do stft without signal!')
 
@@ -298,12 +314,13 @@ class AudioSignal(object):
 
         for i in range(1, self.num_channels + 1):
             stfts.append(spectral_utils.e_stft(self.get_channel(i), window_length,
-                                               hop_length, window_type, n_fft_bins, remove_reflection))
+                                               hop_length, window_type, n_fft_bins,
+                                               remove_reflection, use_librosa))
 
         return np.array(stfts).transpose((1, 2, 0))
 
     def istft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, overwrite=True,
-              reconstruct_reflection=True):
+              reconstruct_reflection=True, use_librosa=False):
         """Computes and returns the inverse Short Time Fourier Transform (STFT).
 
         Warning:
@@ -320,14 +337,15 @@ class AudioSignal(object):
         window_type = self.stft_params.window_type if window_type is None else window_type
         n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
 
-        calculated_signal = self._do_istft(window_length, hop_length, window_type, n_fft_bins, reconstruct_reflection)
+        calculated_signal = self._do_istft(window_length, hop_length, window_type, n_fft_bins,
+                                           reconstruct_reflection, use_librosa)
 
         if overwrite:
             self.audio_data = calculated_signal
 
         return calculated_signal
 
-    def _do_istft(self, window_length, hop_length, window_type, n_fft_bins, reconstruct_reflection):
+    def _do_istft(self, window_length, hop_length, window_type, n_fft_bins, reconstruct_reflection, use_librosa):
         if self.stft_data.size == 0:
             raise ('Cannot do inverse STFT without self.stft_data!')
 
@@ -335,7 +353,7 @@ class AudioSignal(object):
         for i in range(self.num_channels):
             signals.append(
                 spectral_utils.e_istft(self.get_stft_channel(i + 1), window_length, hop_length, window_type,
-                                       reconstruct_reflection))
+                                       reconstruct_reflection, use_librosa))
 
         return np.array(signals)
 
@@ -365,7 +383,7 @@ class AudioSignal(object):
 
         self.audio_data = self.audio_data[:, 0: n_samples]
 
-    def trancate_seconds(self, n_seconds):
+    def truncate_seconds(self, n_seconds):
         """ Truncates the signal leaving only the first n_seconds
         """
         if n_seconds > self.signal_duration:
@@ -387,12 +405,12 @@ class AudioSignal(object):
             self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant', constant_values=(0, 0))
 
     def get_channel(self, n):
-        """Gets the n-th channel. 1-based.
+        """Gets the n-th channel from ``self.audio_data``. **1-based.**
 
         Parameters:
-            n (int): index of channel to get 1-based.
+            n (int): index of channel to get. **1-based**
         Returns:
-             n-th channel (np.array): the data in the n-th channel of the signal
+            n-th channel (np.array): the audio data in the n-th channel of the signal
         """
         if n > self.num_channels:
             raise Exception(
@@ -401,29 +419,39 @@ class AudioSignal(object):
         if n <= 0:
             raise Exception('Cannot get channel {}. This will cause unexpected results'.format(n))
 
-        return self.audio_data[n - 1, ]
-
+        return self._get_axis(self.audio_data, self._CHAN, n - 1)
 
     def get_stft_channel(self, n):
+        """
+        Returns the n-th channel from ``self.stft_data``. **1-based.**
+        Args:
+            n: (int) index of stft channel to get. **1 based**
 
+        Returns:
+            n-th channel (np.array): the stft data in the n-th channel of the signal
+        """
         if n > self.num_channels:
             raise Exception(
                 'Cannot get channel {1} when this object only has {2} channels!'.format((n, self.num_channels)))
 
-        return self.stft_data[:, :, n - 1]
+        return self._get_axis(self.stft_data, self._STFT_CHAN, n -1)
 
-    def peak_normalize(self):
+    def peak_normalize(self, overwrite=True):
         """ Normalizes the whole audio file to 1.0.
-            NOTE: if self.audio_data is not represented as floats this will convert the representation to floats!
+            Notes:
+            **If self.audio_data is not represented as floats this will convert the representation to floats!**
 
         """
         max_val = 1.0
         max_signal = np.max(np.abs(self.audio_data))
         if max_signal > max_val:
-            self.audio_data = self.audio_data.astype('float') / max_signal
+            normalized = self.audio_data.astype('float') / max_signal
+            if overwrite:
+                self.audio_data = normalized
+            return normalized
 
     def add(self, other):
-        """adds two audio signals
+        """Adds two audio signal objects. This does element-wise addition on the ``self.audio_data`` array.
 
         Parameters:
             other (AudioSignal): Other audio signal to add.
@@ -433,7 +461,7 @@ class AudioSignal(object):
         return self + other
 
     def sub(self, other):
-        """subtracts two audio signals
+        """Subtracts two audio signal objects. This does element-wise subtraction on the ``self.audio_data`` array.
 
         Parameters:
             other (AudioSignal): Other audio signal to subtract.
@@ -442,16 +470,50 @@ class AudioSignal(object):
         """
         return self - other
 
+    def audio_data_as_ints(self, bit_depth=constants.DEFAULT_BIT_DEPTH):
+        """
+
+        Args:
+            bit_depth: (int) (Optional)
+
+        Returns: Integer representation of self.audio_data
+
+        """
+        if bit_depth not in [8, 16, 24, 32]:
+            raise TypeError('Cannot convert self.audio_data to integer array of bit depth = {}'.format(bit_depth))
+
+        int_type = 'int' + str(bit_depth)
+
+        return np.multiply(self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype(int_type)
+
+    def rms(self):
+        """
+
+        Returns:
+
+        """
+        return np.sqrt(np.mean(np.square(self.audio_data)))
+
+    def to_mono(self, overwrite=False):
+        """
+
+        Args:
+            overwrite:
+
+        Returns:
+
+        """
+        mono = np.mean(self.audio_data, axis=self._CHAN)
+        if overwrite:
+            self.audio_data = mono
+        return mono
+
     ##################################################
     #              Operator overloading
     ##################################################
 
     def __add__(self, other):
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot add two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot add two signals that have different sample rates!')
+        self._verify_audio(other)
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -465,11 +527,7 @@ class AudioSignal(object):
         return AudioSignal(audio_data_array=combined)
 
     def __sub__(self, other):
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot subtract two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot subtract two signals that have different sample rates!')
+        self._verify_audio(other)
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -481,6 +539,13 @@ class AudioSignal(object):
             combined[0: self.audio_data.size] -= self.audio_data
 
         return AudioSignal(audio_data_array=combined)
+
+    def _verify_audio(self, other):
+        if self.num_channels != other.num_channels:
+            raise Exception('Cannot do operation with two signals that have a different number of channels!')
+
+        if self.sample_rate != other.sample_rate:
+            raise Exception('Cannot do operation with two signals that have different sample rates!')
 
     def __iadd__(self, other):
         return self + other
@@ -494,3 +559,28 @@ class AudioSignal(object):
 
     def __len__(self):
         return self.signal_length
+
+    ##################################################
+    #              Private utils
+    ##################################################
+
+    @staticmethod
+    def _get_axis(array, axis_num, i):
+        if array.ndim == 2:
+            if axis_num == 0:
+                return array[i, :]
+            elif axis_num == 1:
+                return array[:, i]
+            else:
+                return None
+        elif array.ndim == 3:
+            if axis_num == 0:
+                return array[i, :, :]
+            elif axis_num == 1:
+                return array[:, i, :]
+            elif axis_num == 2:
+                return array[:, :, i]
+            else:
+                return None
+        else:
+            return None
