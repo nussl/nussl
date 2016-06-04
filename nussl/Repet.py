@@ -4,6 +4,7 @@
 import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
+import copy
 
 import spectral_utils
 import separation_base
@@ -48,12 +49,16 @@ class Repet(separation_base.SeparationBase):
     """
     def __init__(self, input_audio_signal=None, sample_rate=None, stft_params=None, repet_type=None,
                  similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
-                 min_period=None, max_period=None, period=None, high_pass_cutoff=None):
+                 min_period=None, max_period=None, period=None, high_pass_cutoff=None, do_mono=False):
         self.__dict__.update(locals())
         super(Repet, self).__init__(input_audio_signal=input_audio_signal,
                                     sample_rate=sample_rate, stft_params=stft_params)
         self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
+
+        if do_mono:
+            self.audio_signal = copy.copy(input_audio_signal)
+            self.audio_signal.to_mono(overwrite=True)
 
         if self.repet_type not in RepetType.all_types:
             raise TypeError('\'repet_type\' in Repet() constructor cannot be {}'.format(repet_type))
