@@ -6,8 +6,9 @@ from constants import *
 from .audio_signal import AudioSignal
 from separation_base import SeparationBase
 from Duet import Duet
-from Nmf import Nmf, DistanceType
+from Nmf import NMF, DistanceType
 from Repet import Repet, RepetType
+from repet_sim import RepetSim
 
 
 __version__ = '0.1.5a3'
