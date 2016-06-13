@@ -12,27 +12,21 @@ from audio_signal import AudioSignal
 
 
 class Repet(separation_base.SeparationBase):
-    """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
+    """Implements the REpeating Pattern Extraction Technique algorithm (Original).
 
     REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
-    audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.
+    audio mixture.
 
     References:
 
         * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14,
           2013
-        * Zafar Rafii and Bryan Pardo. "Music/Voice Separation using the Similarity Matrix," 13th International Society
-          on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.
 
     See Also:
         http://music.eecs.northwestern.edu/research.php?project=repet
 
     Parameters:
             audio_signal (AudioSignal): audio mixture (M by N) containing M channels and N time samples
-            repet_type (RepetType): Variant of Repet algorithm to perform.
-            stft_params (WindowAttributes): WindowAttributes object describing the window used in the repet
-             algorithm
-            sample_rate (int): the sample rate of the audio signal
             similarity_threshold (Optional[int]): Used for RepetType.SIM. Defaults to 0
             min_distance_between_frames (Optional[int]): Used for RepetType.SIM. Defaults to 1
             max_repeating_frames (Optional[int]): Used for RepetType.SIM. Defaults to 10
@@ -46,29 +40,19 @@ class Repet(separation_base.SeparationBase):
     Examples:
         :ref:`The REPET Demo Example <repet_demo>`
     """
-    def __init__(self, input_audio_signal=None, sample_rate=None, stft_params=None, repet_type=None,
-                 similarity_threshold=None, min_distance_between_frames=None, max_repeating_frames=None,
-                 min_period=None, max_period=None, period=None, high_pass_cutoff=None):
+    def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None):
         self.__dict__.update(locals())
-        super(Repet, self).__init__(input_audio_signal=input_audio_signal,
-                                    sample_rate=sample_rate, stft_params=stft_params)
+        super(Repet, self).__init__(input_audio_signal=input_audio_signal)
         self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
+        self.bkgd = None
+        self.fgnd = None
 
         if self.repet_type not in RepetType.all_types:
             raise TypeError('\'repet_type\' in Repet() constructor cannot be {}'.format(repet_type))
 
         if self.repet_type == RepetType.SIM:
-            # if similarity_threshold == 0:
-            #     warnings.warn('Using default value of 1 for similarity_threshold.')
-            # if min_distance_between_frames == 1:
-            #     warnings.warn('Using default value of 0 for min_distance_between_frames.')
-            # if max_repeating_frames == 100:
-            #     warnings.warn('Using default value of 100 for maxRepeating frames.')
-
-            self.similarity_threshold = 0 if similarity_threshold is None else similarity_threshold
-            self.min_distance_between_frames = 1 if min_distance_between_frames is None else min_distance_between_frames
-            self.max_repeating_frames = 10 if max_repeating_frames is None else max_repeating_frames
+            pass
         elif self.repet_type == RepetType.ORIGINAL:
 
             if period is None:
@@ -96,23 +80,21 @@ class Repet(separation_base.SeparationBase):
             signal = nussl.AudioSignal(path_to_input_file='input_name.wav')
 
             # Set up window parameters
-            win = nussl.WindowAttributes(signal.sample_rate)
-            win.window_length = 2048
-            win.window_type = nussl.WindowType.HAMMING
+            signal.stft_params.window_length = 2048
+            signal.stft_params.window_type = nussl.WindowType.HAMMING
 
             # Set up and run Repet
-            repet = nussl.Repet(signal, window_type=nussl.RepetType.SIM, stft_params=win)
-            repet.min_distance_between_frames = 0.1
+            repet = nussl.Repet(signal)
             repet.run()
 
         """
-
         # unpack window parameters
-        win_len, win_type, hop_len, nfft = self.stft_params.window_length, self.stft_params.window_type, \
+        win_len, win_type, hop_len, n_fft = self.stft_params.window_length, self.stft_params.window_type, \
                                            self.stft_params.hop_length, self.stft_params.n_fft_bins
 
         # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
-        self.high_pass_cutoff = np.ceil(float(self.high_pass_cutoff) * (nfft - 1) / self.sample_rate) + 1
+        self.high_pass_cutoff = int(np.ceil(float(self.high_pass_cutoff) * (n_fft - 1)
+                                            / self.audio_signal.sample_rate) + 1)
 
         self._compute_spectrum()
 
@@ -139,7 +121,7 @@ class Repet(separation_base.SeparationBase):
             repeating_mask = np.vstack((repeating_mask, repeating_mask[-2:0:-1, :].conj()))
             stft_with_mask = repeating_mask * self.stft[:, :, i]
             y = spectral_utils.e_istft(stft_with_mask, win_len, hop_len, win_type,
-                                       reconstruct_reflection=False, remove_padding=True)
+                                       reconstruct_reflection=False, remove_padding=False)
             bkgd[i,] = y[0:M]
 
         self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.sample_rate)
@@ -152,29 +134,6 @@ class Repet(separation_base.SeparationBase):
                                            overwrite=False, remove_reflection=False)
 
         self.magnitude_spectrogram = np.abs(self.stft[0:self.stft_params.window_length//2 + 1, :, :])
-
-    def get_similarity_matrix(self):
-        """Calculates and returns the similarity matrix for the audio file associated with this object
-
-        Returns:
-             similarity_matrix (np.array): similarity matrix for the audio file.
-
-        EXAMPLE::
-
-            # Set up audio signal
-            signal = nussl.AudioSignal('path_to_file.wav')
-
-            # Set up a Repet object
-            repet = nussl.Repet(signal)
-
-            # I don't have to run repet to get a similarity matrix for signal
-            sim_mat = repet.get_similarity_matrix()
-
-        """
-        self._compute_spectrum()
-        V = np.mean(self.magnitude_spectrogram, axis=2)
-        self.similarity_matrix = self.compute_similarity_matrix(V)
-        return self.similarity_matrix
 
     def get_beat_spectrum(self):
         """Calculates and returns the beat spectrum for the audio file associated with this object
@@ -205,7 +164,8 @@ class Repet(separation_base.SeparationBase):
         Vavg = np.mean(self.magnitude_spectrogram, axis=2)
         S = self.compute_similarity_matrix(Vavg)
 
-        self.min_distance_between_frames = np.round([self.min_distance_between_frames * self.sample_rate / ovp])
+        self.min_distance_between_frames = np.round([self.min_distance_between_frames
+                                                     * self.audio_signal.sample_rate / ovp])
         S = self.find_similarity_indices(S)
 
         return S
@@ -418,7 +378,7 @@ class Repet(separation_base.SeparationBase):
         """
         p += 1 # this is a kluge to make this implementation match the original MATLAB implementation
         n, m = V.shape
-        r = np.ceil(float(m) / p)
+        r = int(np.ceil(float(m) / p))
         W = np.hstack([V, float('nan') * np.zeros((n, r * p - m))])
         W = np.reshape(W.T, (r, n * p))
         W1 = np.median(W[0:r, 0:n * (m - (r - 1) * p)], axis=0)
@@ -458,7 +418,7 @@ class Repet(separation_base.SeparationBase):
         result = period * self.audio_signal.sample_rate
         result += self.stft_params.window_length / self.stft_params.window_overlap - 1
         result /= self.stft_params.window_overlap
-        return np.ceil(result)
+        return int(np.ceil(result))
 
     def plot(self, output_file, **kwargs):
         """ Creates a plot of either the beat spectrum or similarity matrix for this file and outputs to output_file.
@@ -543,7 +503,8 @@ class Repet(separation_base.SeparationBase):
         plt.savefig(output_file)
 
     def make_audio_signals(self):
-        """ Returns the background and foreground audio signals
+        """ Returns the background and foreground audio signals. You must have run Repet.run() prior
+        to calling this function. This function will return None if run() has not been called.
 
         Returns:
             Audio Signals (List): 2 element list.
@@ -563,6 +524,9 @@ class Repet(separation_base.SeparationBase):
             # get audio signals (AudioSignal objects)
             background, foreground = repet.make_audio_signals()
         """
+        if self.bkgd is None:
+            return None
+
         self.fgnd = self.audio_signal - self.bkgd
         return [self.bkgd, self.fgnd]
 

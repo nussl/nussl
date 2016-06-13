@@ -9,12 +9,11 @@ import audio_signal
 import constants
 
 
-class Nmf(separation_base.SeparationBase):
+class NMF(separation_base.SeparationBase):
     """
     This is an implementation of the Non-negative Matrix Factorization algorithm for
-    source separation. This implementation cannot receive a raw audio signal, rather
-    it only accepts a stft and a number, num_templates, which defines the number of bases
-    vectors.
+    source separation. This implementation receives an audio_signal object
+    and a number, num_templates, which defines the number of bases vectors.
 
     This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
     and also allows the user to define distance measure function.
@@ -28,25 +27,24 @@ class Nmf(separation_base.SeparationBase):
         return "Nmf"
 
     # TODO: Change this so that NMF accepts an AudioSignal object and not a raw stft
-    def __init__(self, stft, num_templates, input_audio_signal=None, sample_rate=None, stft_params=None,
+    def __init__(self, input_audio_signal, num_templates,
                  activation_matrix=None, templates=None, distance_measure=None,
                  should_update_template=None, should_update_activation=None):
         self.__dict__.update(locals())
-        super(Nmf, self).__init__(input_audio_signal=input_audio_signal,
-                                  sample_rate=sample_rate, stft_params=stft_params)
+        super(NMF, self).__init__(input_audio_signal=input_audio_signal)
 
         if num_templates <= 0:
             raise Exception('Need more than 0 bases!')
 
-        if stft.size <= 0:
-            raise Exception('STFT size must be > 0!')
-
-        self.stft = stft  # V, in literature
+        self.stft = self.audio_signal.stft(overwrite=False) # V in literature
         self.num_templates = num_templates
 
+        if self.stft.size <= 0:
+            raise Exception('STFT size must be > 0!')
+
         if activation_matrix is None and templates is None:
-            self.templates = np.zeros((stft.shape[0], num_templates))  # W, in literature
-            self.activation_matrix = np.zeros((num_templates, stft.shape[1]))  # H, in literature
+            self.templates = np.zeros((self.stft.shape[0], num_templates))  # W, in literature
+            self.activation_matrix = np.zeros((num_templates, self.stft.shape[1]))  # H, in literature
             self.randomize_input_matrices()
         elif activation_matrix is not None and templates is not None:
             self.templates = templates
@@ -81,9 +79,9 @@ class Nmf(separation_base.SeparationBase):
             raise Exception('Cannot do NMF with no bases!')
 
         if self.should_use_epsilon:
-            print 'Warning: User is expected to have set stopping_epsilon prior to using' \
-                  ' this function. Expect this to take a long time if you have not set' \
-                  ' a suitable epsilon.'
+            print('Warning: User is expected to have set stopping_epsilon prior to using'
+                  ' this function. Expect this to take a long time if you have not set'
+                  ' a suitable epsilon.')
 
         should_stop = False
         num_iterations = 0
@@ -198,7 +196,7 @@ class Nmf(separation_base.SeparationBase):
         try:
             mixture = np.dot(self.templates, self.activation_matrix)
         except:
-            print self.activation_matrix.shape, self.templates.shape
+            print(self.activation_matrix.shape, self.templates.shape)
             return
 
         if mixture.shape != self.stft.shape:

@@ -196,7 +196,7 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
 
     # figure out size of output stft
     num_blocks = int(((len(signal) - window_length) / hop_length + 1))
-    stft_bins = n_fft_bins / 2 + 1 if remove_reflection else n_fft_bins  # only want just over half of each fft
+    stft_bins = n_fft_bins // 2 + 1 if remove_reflection else n_fft_bins  # only want just over half of each fft
 
     # this is where we do the stft calculation
     stft = np.zeros((num_blocks, stft_bins), dtype=complex)

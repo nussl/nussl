@@ -260,17 +260,17 @@ class AudioSignal(object):
 
             wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception, e:
-            print "Cannot write to file, {file}.".format(file=output_file_path)
+            print("Cannot write to file, {file}.".format(file=output_file_path))
             raise e
         if verbose:
-            print "Successfully wrote {file}.".format(file=output_file_path)
+            print("Successfully wrote {file}.".format(file=output_file_path))
 
     ##################################################
     #               STFT Utilities
     ##################################################
 
     def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, remove_reflection=True,
-             overwrite=True):
+             overwrite=True, use_librosa=False):
         """Computes the Short Time Fourier Transform (STFT) of the audio signal
 
         Warning:
@@ -287,7 +287,8 @@ class AudioSignal(object):
         window_type = self.stft_params.window_type if window_type is None else window_type
         n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
 
-        calculated_stft = self._do_stft(window_length, hop_length, window_type, n_fft_bins, remove_reflection)
+        calculated_stft = self._do_stft(window_length, hop_length, window_type, n_fft_bins,
+                                        remove_reflection, use_librosa)
 
         if overwrite:
             self.stft_data = calculated_stft
@@ -295,7 +296,7 @@ class AudioSignal(object):
 
         return calculated_stft
 
-    def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection):
+    def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection, use_librosa):
         if self.audio_data is None:
             raise Exception('Cannot do stft without signal!')
 
@@ -303,12 +304,12 @@ class AudioSignal(object):
 
         for i in range(1, self.num_channels + 1):
             stfts.append(spectral_utils.e_stft(self.get_channel(i), window_length,
-                                               hop_length, window_type, n_fft_bins, remove_reflection))
+                                               hop_length, window_type, n_fft_bins, remove_reflection, use_librosa))
 
         return np.array(stfts).transpose((1, 2, 0))
 
     def istft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, overwrite=True,
-              reconstruct_reflection=True):
+              reconstruct_reflection=True, use_librosa=False):
         """Computes and returns the inverse Short Time Fourier Transform (STFT).
 
         Warning:
@@ -325,14 +326,15 @@ class AudioSignal(object):
         window_type = self.stft_params.window_type if window_type is None else window_type
         n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
 
-        calculated_signal = self._do_istft(window_length, hop_length, window_type, n_fft_bins, reconstruct_reflection)
+        calculated_signal = self._do_istft(window_length, hop_length, window_type, n_fft_bins,
+                                           reconstruct_reflection, use_librosa)
 
         if overwrite:
             self.audio_data = calculated_signal
 
         return calculated_signal
 
-    def _do_istft(self, window_length, hop_length, window_type, n_fft_bins, reconstruct_reflection):
+    def _do_istft(self, window_length, hop_length, window_type, n_fft_bins, reconstruct_reflection, use_librosa):
         if self.stft_data.size == 0:
             raise ('Cannot do inverse STFT without self.stft_data!')
 
@@ -340,7 +342,7 @@ class AudioSignal(object):
         for i in range(self.num_channels):
             signals.append(
                 spectral_utils.e_istft(self.get_stft_channel(i + 1), window_length, hop_length, window_type,
-                                       reconstruct_reflection))
+                                       reconstruct_reflection, use_librosa))
 
         return np.array(signals)
 
