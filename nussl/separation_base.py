@@ -21,23 +21,20 @@ class SeparationBase(object):
          spectral_utils.StftParams(Constants.DEFAULT_SAMPLE_RATE)
     """
 
-    def __init__(self, input_audio_signal=None, sample_rate=None, stft_params=None):
+    def __init__(self, input_audio_signal):
 
         if input_audio_signal is not None:
             self.audio_signal = input_audio_signal
         else:
             self.audio_signal = audio_signal.AudioSignal()
 
-        if sample_rate is not None:
-            self.sample_rate = sample_rate
-        else:
-            self.sample_rate = constants.DEFAULT_SAMPLE_RATE
+    @property
+    def sample_rate(self):
+        return self.audio_signal.sample_rate
 
-        if stft_params is not None:
-            self.stft_params = stft_params
-        else:
-            self.stft_params = spectral_utils.StftParams(self.sample_rate)
-
+    @property
+    def stft_params(self):
+        return self.audio_signal.stft_params
 
     def plot(self, output_name, **kwargs):
         """Plots relevant data for separation algorithm

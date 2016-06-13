@@ -12,7 +12,7 @@ def main():
         os.mkdir('../Output')
 
     # Set up Repet
-    repet = nussl.Repet(signal)
+    repet = nussl.Repet(signal, do_mono=True)
     L = 2048
     repet.stft_params.window_length = L
     repet.stft_params.window_type = nussl.WindowType.HAMMING
