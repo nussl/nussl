@@ -4,6 +4,7 @@
 import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
+import copy
 
 import spectral_utils
 import separation_base
@@ -12,15 +13,17 @@ from audio_signal import AudioSignal
 
 
 class Repet(separation_base.SeparationBase):
-    """Implements the REpeating Pattern Extraction Technique algorithm (Original).
+    """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
 
     REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
-    audio mixture.
+    audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.
 
     References:
 
         * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14,
           2013
+        * Zafar Rafii and Bryan Pardo. "Music/Voice Separation using the Similarity Matrix," 13th International Society
+          on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.
 
     See Also:
         http://music.eecs.northwestern.edu/research.php?project=repet
@@ -47,6 +50,10 @@ class Repet(separation_base.SeparationBase):
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
         self.bkgd = None
         self.fgnd = None
+
+        if do_mono:
+            self.audio_signal = copy.copy(input_audio_signal)
+            self.audio_signal.to_mono(overwrite=True)
 
         if self.repet_type not in RepetType.all_types:
             raise TypeError('\'repet_type\' in Repet() constructor cannot be {}'.format(repet_type))
@@ -124,14 +131,14 @@ class Repet(separation_base.SeparationBase):
                                        reconstruct_reflection=False, remove_padding=False)
             bkgd[i,] = y[0:M]
 
-        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.sample_rate)
+        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
 
         return self.bkgd
 
     def _compute_spectrum(self):
         self.stft = self.audio_signal.stft(self.stft_params.window_length, self.stft_params.hop_length,
                                            self.stft_params.window_type, self.stft_params.n_fft_bins,
-                                           overwrite=False, remove_reflection=False)
+                                           overwrite=False, remove_reflection=False, use_librosa=False)
 
         self.magnitude_spectrogram = np.abs(self.stft[0:self.stft_params.window_length//2 + 1, :, :])
 
@@ -378,7 +385,7 @@ class Repet(separation_base.SeparationBase):
         """
         p += 1 # this is a kluge to make this implementation match the original MATLAB implementation
         n, m = V.shape
-        r = int(np.ceil(float(m) / p))
+        r = np.ceil(float(m) / p)
         W = np.hstack([V, float('nan') * np.zeros((n, r * p - m))])
         W = np.reshape(W.T, (r, n * p))
         W1 = np.median(W[0:r, 0:n * (m - (r - 1) * p)], axis=0)
@@ -418,7 +425,7 @@ class Repet(separation_base.SeparationBase):
         result = period * self.audio_signal.sample_rate
         result += self.stft_params.window_length / self.stft_params.window_overlap - 1
         result /= self.stft_params.window_overlap
-        return int(np.ceil(result))
+        return np.ceil(result)
 
     def plot(self, output_file, **kwargs):
         """ Creates a plot of either the beat spectrum or similarity matrix for this file and outputs to output_file.
@@ -480,27 +487,39 @@ class Repet(separation_base.SeparationBase):
 
         plot_beat_spectrum = self.repet_type is RepetType.ORIGINAL
         plot_sim_matrix = self.repet_type is RepetType.SIM
+        title = None
 
         if len(kwargs) != 0:
             if kwargs.has_key('plot_beat_spectrum'):
                 plot_beat_spectrum = kwargs['plot_beat_spectrum']
             if kwargs.has_key('plt_sim_matrix'):
                 plot_sim_matrix = kwargs['plot_sim_matrix']
+            if kwargs.has_key('title'):
+                title = kwargs['title']
 
         if plot_beat_spectrum == plot_sim_matrix == True:
             raise AssertionError('Cannot set both plot_beat_spectrum=True and plot_sim_matrix=True!')
 
         if plot_beat_spectrum:
-            plt.plot(self.get_beat_spectrum())
-            plt.title('Beat Spectrum for {}'.format(self.audio_signal.file_name))
+            beat_spec = self.get_beat_spectrum()
+            length = self.audio_signal.signal_duration
+            time_vect = np.linspace(0.0, length, num=len(beat_spec))
+            plt.plot(time_vect, beat_spec)
+            title = title if title is not None else 'Beat Spectrum for {}'.format(self.audio_signal.file_name)
+            plt.title(title)
+
+            # plt.xticks(range(len(beat_spec)), [i * self.audio_signal.time_vector ])
+            plt.xlabel('Time (s)')
             plt.grid('on')
 
         elif plot_sim_matrix:
             plt.pcolormesh(self.get_similarity_matrix())
-            plt.title('Similarity Matrix for {}'.format(self.audio_signal.file_name))
+            title = title if title is not None else 'Similarity Matrix for {}'.format(self.audio_signal.file_name)
+            plt.title(title)
 
         plt.axis('tight')
         plt.savefig(output_file)
+
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run Repet.run() prior
