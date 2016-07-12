@@ -18,7 +18,7 @@ class TestSpectralUtils(unittest.TestCase):
     # pick hop lengths in terms of window length. 1 = one full window. .1 = 1/10th of a window
     hop_length_ratios = [1.0, 0.75, 0.5, 0.3, 0.25, 0.1]
 
-    # figure out what the length a 40 milisecond window would be (in samples). We pick 40 ms because...
+    # figure out what the length a 40 millisecond window would be (in samples). We pick 40 ms because...
     # it is 1/25th of a second. This gives a window length that can hold 1 full cycle of a 25 hz signal
     # Of course, human hearing extends down to 20 Hz....but at least this is lower than the lowest note
     # on a piano (27.5 Hz for equal temperament A440 tuning)
@@ -42,7 +42,7 @@ class TestSpectralUtils(unittest.TestCase):
         for i in range(10):
             np.random.seed(i)
             noise = (np.random.rand(self.n_ch, self.length) * 2) - 1
-            noise = noise[0,]
+            noise = noise[0, ]
 
             for win_length in self.win_lengths:
                 hop_length = win_length
@@ -63,7 +63,7 @@ class TestSpectralUtils(unittest.TestCase):
         for win_length in self.win_lengths:
             hop_length = win_length
             noise = (np.random.rand(self.n_ch, self.length) * 2) - 1
-            noise = noise[0,]
+            noise = noise[0, ]
 
             self.do_stft_istft_assert_allclose(win_length, hop_length, win_type, noise)
 
@@ -188,7 +188,6 @@ class TestSpectralUtils(unittest.TestCase):
 
         stft, p, freq_array, _ = nussl.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
 
-
     def test_librosa_stft(self):
         """
         This test makes sure that librosa's stft functions work without crashing. librosa has it's own tests to verify
@@ -246,7 +245,7 @@ class TestSpectralUtils(unittest.TestCase):
         calculated_signal = calculated_signal[hop_length + min_index:length + min_index]
 
         # useful for debugging:
-        diff = signal_truncated - calculated_signal
+        # diff = signal_truncated - calculated_signal
 
         # leave off comparing the first and last hop to mitigate edge effects
         assert (np.allclose(signal_truncated, calculated_signal))

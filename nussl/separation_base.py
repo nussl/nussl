@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import spectral_utils
-import constants
 import audio_signal
+import copy
 
 
 class SeparationBase(object):
@@ -11,33 +10,33 @@ class SeparationBase(object):
 
     Do not call this. It will not do anything.
 
-    self.audio_signal, self.sample_rate, and self.stft_params are all properties that can have their setters and getters
-    overridden in subclasses.
-
     Parameters:
-        audio_signal (Optional[np.array]): Audio signal in array form. Defaults to AudioSignal.AudioSignal()
-        sample_rate (Optional[int]): Sample rate. Defaults to Constants.DEFAULT_SAMPLE_RATE
-        stft_params (StftParams): STFT parameters for the separation algorithm. Defaults to
-         spectral_utils.StftParams(Constants.DEFAULT_SAMPLE_RATE)
+        input_audio_signal: AudioSignal object. Defaults to a new audio_signal.AudioSignal() object.
+                            This will always make a copy of the provided AudioSignal object.
     """
 
-    def __init__(self, input_audio_signal=None, sample_rate=None, stft_params=None):
+    def __init__(self, input_audio_signal):
 
         if input_audio_signal is not None:
             self.audio_signal = input_audio_signal
         else:
             self.audio_signal = audio_signal.AudioSignal()
 
-        if sample_rate is not None:
-            self.sample_rate = sample_rate
-        else:
-            self.sample_rate = constants.DEFAULT_SAMPLE_RATE
+    @property
+    def sample_rate(self):
+        return self.audio_signal.sample_rate
 
-        if stft_params is not None:
-            self.stft_params = stft_params
-        else:
-            self.stft_params = spectral_utils.StftParams(self.sample_rate)
+    @property
+    def stft_params(self):
+        return self.audio_signal.stft_params
 
+    @property
+    def audio_signal(self):
+        return self.audio_signal
+
+    @audio_signal.setter
+    def audio_signal(self, input_audio_signal):
+        self.audio_signal = copy.copy(input_audio_signal)
 
     def plot(self, output_name, **kwargs):
         """Plots relevant data for separation algorithm
