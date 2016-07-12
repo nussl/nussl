@@ -58,10 +58,8 @@ class AudioSignal(object):
             self.load_audio_from_array(audio_data_array, sample_rate)
 
         # stft data
-        self.stft_data = np.array([]) if stft is None else stft  # complex spectrogram
+        self.stft_data = stft  # complex spectrogram data
         self.power_spectrum_data = np.array([])  # power spectrogram
-        self.freq_vec = np.array([])  # freq. vector
-        self.time_vec = np.array([])  # time vector
 
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
 
@@ -82,7 +80,7 @@ class AudioSignal(object):
 
     _NAME_STEM = 'audio_signal'
 
-    def plot_spectrogram(self, file_name=None, ch=None):
+    def plot_spectrogram(self, file_name=None, ch=None, use_librosa=False):
         # TODO: make other parameters adjustable
         if file_name is None:
             name_stem = self.file_name if self.file_name is not None else self._NAME_STEM
@@ -123,7 +121,7 @@ class AudioSignal(object):
     def signal_length(self):
         """Returns the length of the audio signal represented by this object in samples
         """
-        return self._audio_data.shape[self._LEN]
+        return self.audio_data.shape[self._LEN]
 
     @property
     def signal_duration(self):
@@ -135,7 +133,7 @@ class AudioSignal(object):
     def num_channels(self):
         """The number of channels
         """
-        return self._audio_data.shape[self._CHAN]
+        return self.audio_data.shape[self._CHAN]
 
     @property
     def audio_data(self):
@@ -162,7 +160,19 @@ class AudioSignal(object):
 
     @property
     def time_vector(self):
-        return np.array((1. / self.sample_rate) * np.arange(self.signal_length))
+        return np.linspace(0.0, self.signal_duration, num=self.signal_length)
+
+    @property
+    def freq_vector(self):
+        if self.stft_data is None:
+            raise AttributeError('Cannot calculate freq_vector until self.stft() is run')
+        return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[self._STFT_LEN])
+
+    @property
+    def stft_length(self):
+        if self.stft_data is None:
+            raise AttributeError('Cannot calculate stft_length until self.stft() is run')
+        return self.stft_data.shape[self._STFT_LEN]
 
     ##################################################
     # I/O
@@ -287,8 +297,8 @@ class AudioSignal(object):
         window_type = self.stft_params.window_type if window_type is None else window_type
         n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
 
-        calculated_stft = self._do_stft(window_length, hop_length, window_type, n_fft_bins,
-                                        remove_reflection, use_librosa)
+        calculated_stft = self._do_stft(window_length, hop_length, window_type,
+                                        n_fft_bins, remove_reflection, use_librosa)
 
         if overwrite:
             self.stft_data = calculated_stft
@@ -304,7 +314,8 @@ class AudioSignal(object):
 
         for i in range(1, self.num_channels + 1):
             stfts.append(spectral_utils.e_stft(self.get_channel(i), window_length,
-                                               hop_length, window_type, n_fft_bins, remove_reflection, use_librosa))
+                                               hop_length, window_type, n_fft_bins,
+                                               remove_reflection, use_librosa))
 
         return np.array(stfts).transpose((1, 2, 0))
 
@@ -408,7 +419,7 @@ class AudioSignal(object):
         if n <= 0:
             raise Exception('Cannot get channel {}. This will cause unexpected results'.format(n))
 
-        return self.audio_data[n - 1, ]
+        return self._get_axis(self.audio_data, self._CHAN, n - 1)
 
     def get_stft_channel(self, n):
         """
@@ -423,7 +434,7 @@ class AudioSignal(object):
             raise Exception(
                 'Cannot get channel {1} when this object only has {2} channels!'.format((n, self.num_channels)))
 
-        return self.stft_data[:, :, n - 1]
+        return self._get_axis(self.stft_data, self._STFT_CHAN, n -1)
 
     def peak_normalize(self, overwrite=True):
         """ Normalizes the whole audio file to 1.0.
@@ -548,3 +559,28 @@ class AudioSignal(object):
 
     def __len__(self):
         return self.signal_length
+
+    ##################################################
+    #              Private utils
+    ##################################################
+
+    @staticmethod
+    def _get_axis(array, axis_num, i):
+        if array.ndim == 2:
+            if axis_num == 0:
+                return array[i, :]
+            elif axis_num == 1:
+                return array[:, i]
+            else:
+                return None
+        elif array.ndim == 3:
+            if axis_num == 0:
+                return array[i, :, :]
+            elif axis_num == 1:
+                return array[:, i, :]
+            elif axis_num == 2:
+                return array[:, :, i]
+            else:
+                return None
+        else:
+            return None
