@@ -26,11 +26,12 @@ class Repet(separation_base.SeparationBase):
         http://music.eecs.northwestern.edu/research.php?project=repet
 
     Parameters:
-        input_audio_signal:
-        min_period:
-        max_period:
-        period:
-        high_pass_cutoff: (in Hz)
+        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
+                            audio data that REPET will be run on.
+        min_period: (Optional) (float) minimum time to look for repeating period in terms of seconds.
+        max_period: (Optional) (float) maximum time to look for repeating period in terms of seconds.
+        period: (Optional) (float) exact time that the repeating period is (in seconds).
+        high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
 
     Examples:
         :ref:`The REPET Demo Example <repet_demo>`
@@ -50,6 +51,7 @@ class Repet(separation_base.SeparationBase):
         self.stft = None
         self.repeating_period = None
 
+        #TODO: stereo doesn't do true stereo REPET (see TODO below)
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)
 
