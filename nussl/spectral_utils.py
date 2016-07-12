@@ -105,7 +105,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
 
 
 def e_stft(signal, window_length, hop_length, window_type,
-           n_fft_bins=None, remove_reflection=True, use_librosa=False):
+           n_fft_bins=None, remove_reflection=True, remove_padding=True, use_librosa=False):
     """
     This function computes a short time fourier transform (STFT) of a 1D numpy array input signal.
     This will zero pad the signal by half a hop_length at the beginning to reduce the window
@@ -128,6 +128,8 @@ def e_stft(signal, window_length, hop_length, window_type,
         If not specified, defaults to next highest power of 2 above window_length
         remove_reflection: (bool) (Optional) if True, this will remove reflected STFT data above the Nyquist point.
         If not specified, defaults to True.
+        remove_padding: (bool) (Optional) if True, this will remove the extra padding added when doing the STFT.
+        Defaults to True.
         use_librosa: (bool) (Optional) This flag bypasses nussl's stft function and will call librosa's stft. nussl
         will massage the output so that it is in a format that it expects. remove_reflection is still works in this
         mode. Note: librosa's works differently than nussl's and may produce different output.
@@ -213,7 +215,7 @@ def e_stft(signal, window_length, hop_length, window_type,
 
     # reshape the 2d array, so it's how we expect it.
     stft = stft.T
-    if remove_reflection:
+    if remove_padding:
         first = int(len(zero_pad1) / hop_length)
         last = stft.shape[1] - int((len(zero_pad1) + zero_pad2_len) / hop_length)
         stft = stft[:, first: last]
