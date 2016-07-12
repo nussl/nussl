@@ -13,7 +13,7 @@ import constants
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
               window_type=None, sample_rate=None, n_fft_bins=None,
-              freq_max=None, show_interactive_plot=False):
+              freq_max=None, show_interactive_plot=False, use_librosa=False):
     """
     Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
     You can specify the same all of the same parameters that are in e_stft(). By default, the StftParams defaults
@@ -79,7 +79,9 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         hop_length = defaults.hop_length if hop_length is None else hop_length
         window_type = defaults.window_type if window_type is None else window_type
 
-    (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length, window_type, sample_rate, n_fft_bins)
+    (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length,
+                                           window_type, sample_rate, n_fft_bins,
+                                           use_librosa)
 
     plt.close('all')
 
@@ -102,7 +104,8 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         plt.show()
 
 
-def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remove_reflection=True, use_librosa=False):
+def e_stft(signal, window_length, hop_length, window_type,
+           n_fft_bins=None, remove_reflection=True, use_librosa=False):
     """
     This function computes a short time fourier transform (STFT) of a 1D numpy array input signal.
     This will zero pad the signal by half a hop_length at the beginning to reduce the window
@@ -218,8 +221,8 @@ def e_stft(signal, window_length, hop_length, window_type, n_fft_bins=None, remo
     return stft
 
 
-def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=False,
-            use_librosa=False):
+def e_istft(stft, window_length, hop_length, window_type,
+            reconstruct_reflection=True, remove_padding=False, use_librosa=False):
     """
     Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
     this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
@@ -292,7 +295,8 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     return signal
 
 
-def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_fft_bins=None):
+def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
+                n_fft_bins=None, remove_reflection=True, use_librosa=False):
     """
     Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
     the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
@@ -323,8 +327,12 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate, n_f
     if n_fft_bins is None:
         n_fft_bins = window_length
 
-    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins)
-    frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
+    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins, remove_reflection, use_librosa)
+
+    if use_librosa or remove_reflection:
+        frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
+    else:
+        frequency_vector = sample_rate * np.linspace(0, 1, n_fft_bins + 1)
 
     time_vector = np.array(range(stft.shape[1]))
     hop_in_secs = hop_length / (1.0 * sample_rate)
