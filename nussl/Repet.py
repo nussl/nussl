@@ -4,7 +4,6 @@
 import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
-import copy
 
 import spectral_utils
 import separation_base
@@ -13,68 +12,59 @@ from audio_signal import AudioSignal
 
 
 class Repet(separation_base.SeparationBase):
-    """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
+    """Implements the original REpeating Pattern Extraction Technique algorithm using the beat spectrum.
 
     REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
-    audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.
+    audio mixture.
 
     References:
 
         * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14,
           2013
-        * Zafar Rafii and Bryan Pardo. "Music/Voice Separation using the Similarity Matrix," 13th International Society
-          on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.
 
     See Also:
         http://music.eecs.northwestern.edu/research.php?project=repet
 
     Parameters:
-            audio_signal (AudioSignal): audio mixture (M by N) containing M channels and N time samples
-            similarity_threshold (Optional[int]): Used for RepetType.SIM. Defaults to 0
-            min_distance_between_frames (Optional[int]): Used for RepetType.SIM. Defaults to 1
-            max_repeating_frames (Optional[int]): Used for RepetType.SIM. Defaults to 10
-            period (Optional[float]): Used for RepetType.ORIGINAL. The Period of the repeating part of the signal.
-            min_period (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
-             0.8
-            max_period (Optional[float]): Used for RepetType.ORIGINAL. Only used if Period is not provided. Defaults to
-             min(8, self.Mixture.SignalLength/3)
-            high_pass_cutoff (Optional[int]): Defaults to 100
+        input_audio_signal:
+        min_period:
+        max_period:
+        period:
+        high_pass_cutoff: (in Hz)
 
     Examples:
         :ref:`The REPET Demo Example <repet_demo>`
     """
-    def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None):
+    def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
+                 do_mono=False, use_find_period_complex=False):
         self.__dict__.update(locals())
         super(Repet, self).__init__(input_audio_signal=input_audio_signal)
-        self.repet_type = RepetType.DEFAULT if repet_type is None else repet_type
-        self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
+        self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.bkgd = None
         self.fgnd = None
+        self.beat_spectrum = None
+        self.use_find_period_complex = use_find_period_complex
+
+        self.repeating_period = None
+        self.magnitude_spectrogram = None
+        self.stft = None
+        self.repeating_period = None
 
         if do_mono:
-            self.audio_signal = copy.copy(input_audio_signal)
             self.audio_signal.to_mono(overwrite=True)
 
-        if self.repet_type not in RepetType.all_types:
-            raise TypeError('\'repet_type\' in Repet() constructor cannot be {}'.format(repet_type))
+        if (min_period or max_period) and period:
+            raise ValueError('Cannot set both period and (min_period or max_period)!')
 
-        if self.repet_type == RepetType.SIM:
-            pass
-        elif self.repet_type == RepetType.ORIGINAL:
+        # Set period parameters
+        self.min_period, self.max_period, self.period = None, None, None
+        if period is None:
+            self.min_period = 0.8 if min_period is None else min_period
+            self.max_period = min(8, self.audio_signal.signal_duration / 3) if max_period is None else max_period
+        else:
+            self.period = period
+            self.period = self._update_period(self.period)
 
-            if period is None:
-                self.min_period = 0.8 if min_period is None else min_period
-                self.max_period = min(8, self.audio_signal.signal_duration / 3) if max_period is None else max_period
-            else:
-                self.period = period
-                self.period = self._update_period(self.period)
-
-        elif self.repet_type == RepetType.ADAPTIVE:
-            raise NotImplementedError('Not allowed to do this yet!')
-
-        self.verbose = False
-
-    # @property
     def run(self):
         """Runs the REPET algorithm
 
@@ -95,55 +85,41 @@ class Repet(separation_base.SeparationBase):
             repet.run()
 
         """
-        # unpack window parameters
-        win_len, win_type, hop_len, n_fft = self.stft_params.window_length, self.stft_params.window_type, \
-                                           self.stft_params.hop_length, self.stft_params.n_fft_bins
-
         # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
-        self.high_pass_cutoff = int(np.ceil(float(self.high_pass_cutoff) * (n_fft - 1)
-                                            / self.audio_signal.sample_rate) + 1)
+        self.high_pass_cutoff = int(np.ceil(self.high_pass_cutoff * (self.stft_params.n_fft_bins - 1) /
+                                            self.audio_signal.sample_rate)) + 1
 
         self._compute_spectrum()
-
-        # run the specific algorithm
-        mask = None
-        S = None
-        if self.repet_type == RepetType.SIM:
-            S = self._do_repet_sim()
-            mask = self.compute_repeating_mask_sim
-
-        elif self.repet_type == RepetType.ORIGINAL:
-            S = self._do_repet_original()
-            mask = self.compute_repeating_mask_with_beat_spectrum
-
-        elif self.repet_type == RepetType.ADAPTIVE:
-            raise NotImplementedError('How did you get into this state????')
+        self.repeating_period = self._calculate_repeating_period()
 
         # separate the mixture background by masking
-        N, M = self.audio_signal.audio_data.shape
         bkgd = np.zeros_like(self.audio_signal.audio_data)
-        for i in range(N):
-            repeating_mask = mask(self.magnitude_spectrogram[:, :, i], S)
+        for i in range(self.audio_signal.num_channels):
+            repeating_mask = self._compute_repeating_mask(self.magnitude_spectrogram[:, :, i])
             repeating_mask[1:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
-            repeating_mask = np.vstack((repeating_mask, repeating_mask[-2:0:-1, :].conj()))
+
+            # apply mask
             stft_with_mask = repeating_mask * self.stft[:, :, i]
-            y = spectral_utils.e_istft(stft_with_mask, win_len, hop_len, win_type,
-                                       reconstruct_reflection=False, remove_padding=False)
-            bkgd[i,] = y[0:M]
+
+            y = spectral_utils.e_istft(stft_with_mask, self.stft_params.window_length,
+                                       self.stft_params.hop_length, self.stft_params.window_type,
+                                       reconstruct_reflection=True, remove_padding=False)
+
+            bkgd[i, ] = y[:self.audio_signal.signal_length]
 
         self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
 
         return self.bkgd
 
     def _compute_spectrum(self):
-        self.stft = self.audio_signal.stft(self.stft_params.window_length, self.stft_params.hop_length,
-                                           self.stft_params.window_type, self.stft_params.n_fft_bins,
-                                           overwrite=False, remove_reflection=False, use_librosa=False)
+        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=False)
+        self.magnitude_spectrogram = np.abs(self.stft)
 
-        self.magnitude_spectrogram = np.abs(self.stft[0:self.stft_params.window_length//2 + 1, :, :])
+    def get_beat_spectrum(self, recompute_stft=False):
+        """Calculates and returns the beat spectrum for the audio signal associated with this object
 
-    def get_beat_spectrum(self):
-        """Calculates and returns the beat spectrum for the audio file associated with this object
+        Args:
+            recompute_stft: (Optional) (bool) Recompute the stft for the audio signal
 
         Returns:
             beat_spectrum (np.array): beat spectrum for the audio file
@@ -158,173 +134,68 @@ class Repet(separation_base.SeparationBase):
 
             # I don't have to run repet to get a beat spectrum for signal
             beat_spec = repet.get_beat_spectrum()
-
         """
-        self._compute_spectrum()
-        self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram), axis=2).T)
+        if recompute_stft or self.magnitude_spectrogram is None:
+            self._compute_spectrum()
+
+        # TODO: Make this multi-channel. The np.mean() reduces the n channels to 1.
+        self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram),
+                                                                axis=self.audio_signal._STFT_CHAN).T)
         return self.beat_spectrum
 
-    def _do_repet_sim(self):
-        # unpack window overlap
-        ovp = self.stft_params.window_overlap_samples
+    def _calculate_repeating_period(self):
+        # user provided a period, so no calculations to do
+        if self.period is not None:
+            return self.period
 
-        Vavg = np.mean(self.magnitude_spectrogram, axis=2)
-        S = self.compute_similarity_matrix(Vavg)
+        # get beat spectrum
+        self.beat_spectrum = self.get_beat_spectrum()
 
-        self.min_distance_between_frames = np.round([self.min_distance_between_frames
-                                                     * self.audio_signal.sample_rate / ovp])
-        S = self.find_similarity_indices(S)
-
-        return S
-
-    def _do_repet_original(self):
-        self.min_period = self._update_period(self.min_period)
-        self.max_period = self._update_period(self.max_period)
-        self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram), axis=2).T)
-        self.repeating_period = self.find_repeating_period_simple(self.beat_spectrum, self.min_period, self.max_period)
+        if self.use_find_period_complex:
+            self.repeating_period = self.find_repeating_period_complex(self.beat_spectrum)
+        else:
+            # update the min and max so they're in units of frequency bin indices
+            self.min_period = self._update_period(self.min_period)
+            self.max_period = self._update_period(self.max_period)
+            self.repeating_period = self.find_repeating_period_simple(self.beat_spectrum,
+                                                                      self.min_period, self.max_period)
         return self.repeating_period
 
     @staticmethod
-    def compute_similarity_matrix(X):
-        """Computes the similarity matrix using the cosine similarity for any given input matrix X.
-        
-        Parameters:
-            X (np.array): 2D matrix containing the magnitude spectrogram of the audio signal (Lf by Lt)
-        Returns:
-            S (np.array): similarity matrix (Lt by Lt)
-
-
-        """
-        assert (type(X) == np.ndarray)
-
-        # normalize the columns of the magnitude spectrogram
-        Lt = X.shape[1]
-        X = X.T
-        for i in range(0, Lt):
-            Xi = X[i, :]
-            rowNorm = np.sqrt(np.dot(Xi, Xi))
-            X[i, :] = Xi / (rowNorm + constants.EPSILON)
-
-        # compute the similarity matrix    
-        S = np.dot(X, X.T)
-        return S
-
-    def find_similarity_indices(self, S):
-        """Finds the similarity indices for all time frames from the similarity matrix
-        
-        Parameters:
-            S (np.array): similarity matrix (Lt by Lt)
-                 
-        Returns:
-            I (np.array): similarity indices for all time frames
-        """
-
-        Lt = S.shape[0]
-        I = np.zeros((Lt, self.max_repeating_frames))
-
-        for i in range(0, Lt):
-            pind = self.find_peaks(S[i, :], self.similarity_threshold,
-                                   self.min_distance_between_frames, self.max_repeating_frames)
-            I[i, :] = pind
-
-        return I
-
-    def find_peaks(self, data, min_thr=0.5, min_dist=None, max_num=1):
-        """Finds the peak values and corresponding indices in a vector of real values in [0,1]
-        
-        Parameters:
-            data (np.array): row vector of real values (in [0,1])
-            min_thr: (Optional[float]) minimum threshold (in [0,1]) on data values. Defaults to 0.5
-            min_dist:(Optional[int]) minimum distance (in # of elements) between peaks. Defaults to .25 * data.length
-            max_num: (Optional[int]) maximum number of peaks. Defaults to 1
-        
-        Returns:
-            peak_indices (np.array): sorted array of indices of peaks in the data
-        """
-
-        # make sure data is a Numpy matrix
-        data = np.mat(data)
-
-        lenData = data.shape[1]
-        if min_dist is None:
-            min_dist = np.floor(lenData / 4)
-
-        peak_indices = np.zeros((1, max_num), int)
-
-        data = np.multiply(data, (data >= min_thr))
-        if np.size(np.nonzero(data)) < max_num:
-            raise ValueError('not enough number of peaks! change parameters.')
-        else:
-            i = 0
-            while i < max_num:
-                peak_indices[0, i] = np.argmax(data)
-                data[0, peak_indices[0, i] - min_dist - 1:peak_indices[0, i] + min_dist + 1] = 0
-                i += 1
-                if np.sum(data) == 0:
-                    break
-
-        peak_indices = np.sort(peak_indices)
-
-        return peak_indices
-
-    @staticmethod
-    def compute_repeating_mask_sim(V, I):
-        """Computes the soft mask for the repeating part using the magnitude spectrogram and the similarity indices
-
-        Parameters:
-            V (np.array): 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)
-            I (np.array): array containing similarity indices for all time frames
-        Returns:
-            M (np.array): 2D matrix (Lf by Lt) containing the soft mask for the repeating part. Elements of M take on
-            values in [0,1]
-         """
-
-        Lf, Lt = np.shape(V)
-        W = np.zeros_like(V).T
-        for i in range(0, Lt):
-            pind = I[i, :]
-            W[i, :] = np.median(V.T[pind.astype(int), :], axis=0)
-
-        W = W.T
-        Wrow = np.reshape(W, (1, Lf * Lt))
-        Vrow = np.reshape(V, (1, Lf * Lt))
-        W = np.min(np.vstack([Wrow, Vrow]), axis=0)
-        W = np.reshape(W, (Lf, Lt))
-        M = (W + constants.EPSILON) / (V + constants.EPSILON)
-
-        return M
-
-    @staticmethod
-    def compute_beat_spectrum(X):
-        """Computes the beat spectrum averages (over freq.s) the autocorrelation matrix of a one-sided spectrogram.
+    def compute_beat_spectrum(power_spectrum):
+        """Computes the beat spectrum averages (over freq's) the autocorrelation matrix of a one-sided spectrogram.
 
          The autocorrelation matrix is computed by taking the autocorrelation of each row of the spectrogram and
          dismissing the symmetric half.
 
         Parameters:
-            X (np.array): 2D matrix containing the one-sided power
+            power_spectrum (np.array): 2D matrix containing the one-sided power
             spectrogram of the audio signal (Lf by Lt by num channels)
         Returns:
             b (np.array): array containing the beat spectrum based on the power spectrogram
         """
-        # compute the row-wise autocorrelation of the input spectrogram
-        Lf, Lt = X.shape
-        X = np.vstack([X, np.zeros_like(X)])
-        Fx = scifft.fft(X, axis=0)
-        Ax = np.abs(Fx)
-        Sx = Ax ** 2  # fft over columns (take the fft of each row at a time)
-        Rx = np.real(scifft.ifft(Sx, axis=0)[0:Lf,:])  # ifft over columns
-        NormFactor = np.tile(np.arange(Lf, 0, -1), (Lt, 1)).T  # normalization factor
-        Rx = Rx / NormFactor
+        freq_bins, time_bins = power_spectrum.shape
+
+        # row-wise autocorrelation according to the Wiener-Khinchin theorem
+        power_spectrum = np.vstack([power_spectrum, np.zeros_like(power_spectrum)])
+        fft_power_spec = scifft.fft(power_spectrum, axis=0)
+        abs_fft = np.abs(fft_power_spec) ** 2
+        autocorrelation_rows = np.real(scifft.ifft(abs_fft, axis=0)[:freq_bins, :])  # ifft over columns
+
+        # normalization factor
+        norm_factor = np.tile(np.arange(freq_bins, 0, -1), (time_bins, 1)).T
+        autocorrelation_rows = autocorrelation_rows / norm_factor
 
         # compute the beat spectrum
-        b = np.mean(Rx, axis=1)  # average over frequencies
+        beat_spectrum = np.mean(autocorrelation_rows, axis=1)  # average over frequencies
 
-        return b
+        return beat_spectrum
 
     @staticmethod
     def find_repeating_period_simple(beat_spectrum, min_period, max_period):
-        """Computes the repeating period of the sound signal using the beat spectrum using simple algorithm.
+        """Computes the repeating period of the sound signal using the beat spectrum.
+           This algorithm just looks for the max value in the interval [min_period, max_period] inclusive.
+           It discards the first value, and returns the period in units of stft time bins.
 
         Parameters:
             beat_spectrum (np.array): input beat spectrum array
@@ -333,15 +204,23 @@ class Repet(separation_base.SeparationBase):
         Returns:
              period (int) : The period of the sound signal in stft time bins
         """
-
+        min_period, max_period = int(min_period), int(max_period)
         beat_spectrum = beat_spectrum[1:]  # discard the first element of beat_spectrum (lag 0)
-        beat_spectrum = beat_spectrum[min_period - 1:  max_period]
+        beat_spectrum = beat_spectrum[min_period - 1: max_period]
         period = np.argmax(beat_spectrum) + min_period
 
         return period
 
     @staticmethod
     def find_repeating_period_complex(beat_spectrum):
+        """
+
+        Args:
+            beat_spectrum:
+
+        Returns:
+
+        """
         auto_cosine = np.zeros((len(beat_spectrum), 1))
 
         for i in range(0, len(beat_spectrum) - 1):
@@ -366,41 +245,49 @@ class Repet(separation_base.SeparationBase):
         maxima = np.where(extrema_values >= m)[0]
         maxima = zip(sign_changes[maxima], extrema_values[maxima])
         maxima = maxima[1:]
-        maxima = sorted(maxima, key = lambda x: -x[1])
+        maxima = sorted(maxima, key=lambda x: -x[1])
         period = maxima[0][0]
 
         return period
 
-    @staticmethod
-    def compute_repeating_mask_with_beat_spectrum(V, p):
+    def _compute_repeating_mask(self, magnitude_spectrogram_channel):
         """Computes the soft mask for the repeating part using the magnitude spectrogram and the repeating period
 
         Parameters:
-            V (np.array): 2D matrix containing the magnitude spectrogram of a signal (Lf by Lt)
-            p (int): repeating period measured in # of time frames
+            magnitude_spectrogram_channel (np.array): 2D matrix containing the magnitude spectrogram of a signal
         Returns:
             M (np.array): 2D matrix (Lf by Lt) containing the soft mask for the repeating part, elements of M take on
             values in [0,1]
 
         """
-        p += 1 # this is a kluge to make this implementation match the original MATLAB implementation
-        n, m = V.shape
-        r = np.ceil(float(m) / p)
-        W = np.hstack([V, float('nan') * np.zeros((n, r * p - m))])
-        W = np.reshape(W.T, (r, n * p))
-        W1 = np.median(W[0:r, 0:n * (m - (r - 1) * p)], axis=0)
-        W2 = np.median(W[0:r - 1, n * (m - (r - 1) * p):n * p], axis=0)
-        W = np.hstack([W1, W2])
-        W = np.reshape(np.tile(W, (r, 1)), (r * p, n)).T
-        W = W[:, 0:m]
+        # this +1 is a kluge to make this implementation match the original MATLAB implementation
+        period = self.repeating_period + 1
+        freq_bins, time_bins = magnitude_spectrogram_channel.shape
+        n_repetitions = int(np.ceil(float(time_bins) / period))
+        one_period = freq_bins * period
 
-        Wrow = W.flatten()  # np.reshape(W, (1, Lf * Lt))
-        Vrow = V.flatten()  # np.reshape(V, (1, Lf * Lt))
-        W = np.min(np.vstack([Wrow, Vrow]), axis=0)
-        W = np.reshape(W, (n, m))
-        M = (W + constants.EPSILON) / (V + constants.EPSILON)
+        # Pad to make an integer number of repetitions. Pad with 'nan's to not affect the median.
+        remainder = (period * n_repetitions) % time_bins
+        mask_reshaped = np.hstack([magnitude_spectrogram_channel, float('nan') * np.zeros((freq_bins, remainder))])
 
-        return M
+        # reshape to take the median of each period
+        mask_reshaped = np.reshape(mask_reshaped.T, (n_repetitions, one_period))
+
+        # take median of repeating periods before and after the padding
+        split_point = freq_bins * (time_bins - (n_repetitions - 1) * period)
+        median1 = np.median(mask_reshaped[0:n_repetitions, 0:split_point], axis=0)  # before padding
+        median2 = np.median(mask_reshaped[0:n_repetitions-1, split_point:one_period], axis=0)  # after padding
+        mask_reshaped = np.hstack([median1, median2])  # put them back together
+
+        # reshape to it's original shape
+        mask_reshaped = np.reshape(np.tile(mask_reshaped, (n_repetitions, 1)), (n_repetitions * period, freq_bins)).T
+        mask_reshaped = mask_reshaped[:, 0:time_bins]
+
+        # take minimum of computed mask and original input and scale
+        mask_reshaped = np.minimum(mask_reshaped, magnitude_spectrogram_channel)
+        mask = (mask_reshaped + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
+
+        return mask
 
     def update_periods(self):
         """
@@ -425,7 +312,7 @@ class Repet(separation_base.SeparationBase):
         result = period * self.audio_signal.sample_rate
         result += self.stft_params.window_length / self.stft_params.window_overlap - 1
         result /= self.stft_params.window_overlap
-        return np.ceil(result)
+        return int(np.ceil(result))
 
     def plot(self, output_file, **kwargs):
         """ Creates a plot of either the beat spectrum or similarity matrix for this file and outputs to output_file.
@@ -447,79 +334,31 @@ class Repet(separation_base.SeparationBase):
             # set up AudioSignal
             signal = nussl.AudioSignal('path_to_file.wav')
 
-            # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
             repet1 = nussl.Repet(signal)
 
             # plots beat spectrum by default
             repet1.plot('new_beat_spec_plot.png')
-
-            # 2)
-            # by giving this Repet object RepetType.SIM, it will default to plotting the similarity matrix
-            repet2 = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
-
-            # but we can override this Repet object plotting the similarity matrix with this argument
-            repet2.plot('new_sim_matrix_plot.png', plot_beat_spectrum=True)
-
-            # To plot the similarity matrix you have a few options:
-            # 3) (recommended)
-            # set up AudioSignal
-            signal = nussl.AudioSignal('path_to_file.wav')
-
-            # by giving this Repet object RepetType.SIM, it will default to printing the similarity matrix
-            repet3 = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)
-
-            # plots similarity matrix by default
-            repet3.plot('new_sim_matrix_plot.png')
-
-            # 4)
-            # by default, this Repet object is now set to the original repet (RepetType.ORIGINAL)
-            repet4 = nussl.Repet(signal)
-
-            # BUT we can override plotting the beat spectrum with this argument
-            repet4.plot('new_sim_matrix_plot.png', plot_sim_matrix=True)
-
-            # NOTE: You cannot do
-            # repet.plot('new_plot.png', plot_beat_spectrum=True, plot_sim_matrix=True)
-            # this will cause nussl to throw an exception!
         """
         import matplotlib.pyplot as plt
         plt.close('all')
-
-        plot_beat_spectrum = self.repet_type is RepetType.ORIGINAL
-        plot_sim_matrix = self.repet_type is RepetType.SIM
         title = None
 
         if len(kwargs) != 0:
-            if kwargs.has_key('plot_beat_spectrum'):
-                plot_beat_spectrum = kwargs['plot_beat_spectrum']
-            if kwargs.has_key('plt_sim_matrix'):
-                plot_sim_matrix = kwargs['plot_sim_matrix']
-            if kwargs.has_key('title'):
+            if 'title' in kwargs:
                 title = kwargs['title']
 
-        if plot_beat_spectrum == plot_sim_matrix == True:
-            raise AssertionError('Cannot set both plot_beat_spectrum=True and plot_sim_matrix=True!')
+        beat_spec = self.get_beat_spectrum()
+        time_vect = np.linspace(0.0, self.audio_signal.signal_duration, num=len(beat_spec))
+        plt.plot(time_vect, beat_spec)
+        title = title if title is not None else 'Beat Spectrum for {}'.format(self.audio_signal.file_name)
+        plt.title(title)
 
-        if plot_beat_spectrum:
-            beat_spec = self.get_beat_spectrum()
-            length = self.audio_signal.signal_duration
-            time_vect = np.linspace(0.0, length, num=len(beat_spec))
-            plt.plot(time_vect, beat_spec)
-            title = title if title is not None else 'Beat Spectrum for {}'.format(self.audio_signal.file_name)
-            plt.title(title)
-
-            # plt.xticks(range(len(beat_spec)), [i * self.audio_signal.time_vector ])
-            plt.xlabel('Time (s)')
-            plt.grid('on')
-
-        elif plot_sim_matrix:
-            plt.pcolormesh(self.get_similarity_matrix())
-            title = title if title is not None else 'Similarity Matrix for {}'.format(self.audio_signal.file_name)
-            plt.title(title)
+        plt.xlabel('Time (s)')
+        plt.ylabel('Beat Strength')
+        plt.grid('on')
 
         plt.axis('tight')
         plt.savefig(output_file)
-
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run Repet.run() prior
@@ -548,16 +387,3 @@ class Repet(separation_base.SeparationBase):
 
         self.fgnd = self.audio_signal - self.bkgd
         return [self.bkgd, self.fgnd]
-
-
-class RepetType():
-    """Types of Repet algorithm implementation.
-    """
-    ORIGINAL = 'original'
-    SIM = 'sim'
-    # ADAPTIVE = 'adaptive'
-    DEFAULT = ORIGINAL
-    all_types = [ORIGINAL, SIM]
-
-    def __init__(self):
-        pass
