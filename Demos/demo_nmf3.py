@@ -53,7 +53,7 @@ def audio_example():
     GuessAct = np.array([firstGuessAct, secondGuessAct])
 
     # run NMF
-    nmf = nussl.Nmf(stft, numNotes)
+    nmf = nussl.NMF(numNotes)
     nmf.max_num_iterations = 100
     start = time.time()
     nmf.run()

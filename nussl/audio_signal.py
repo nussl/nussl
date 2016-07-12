@@ -216,10 +216,9 @@ class AudioSignal(object):
 
             self.audio_data = audio_input
 
-        except Exception, e:
-            print "Cannot read from file, {file}".format(file=input_file_path)
-            print "If you are convinced that this audio file should work, please use ffmpeg to reformat it."
-            raise e
+        except Exception:
+            # print("If you are convinced that this audio file should work, please use ffmpeg to reformat it.")
+            raise IOError("Cannot read from file, {file}".format(file=input_file_path))
 
     def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
         """Loads an audio signal from a numpy array. Only accepts float arrays and int arrays of depth 16-bits.
@@ -335,9 +334,8 @@ class AudioSignal(object):
         window_length = self.stft_params.window_length if window_length is None else window_length
         hop_length = self.stft_params.hop_length if hop_length is None else hop_length
         window_type = self.stft_params.window_type if window_type is None else window_type
-        n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
 
-        calculated_signal = self._do_istft(window_length, hop_length, window_type, n_fft_bins,
+        calculated_signal = self._do_istft(window_length, hop_length, window_type,
                                            reconstruct_reflection, use_librosa)
 
         if overwrite:
@@ -345,9 +343,9 @@ class AudioSignal(object):
 
         return calculated_signal
 
-    def _do_istft(self, window_length, hop_length, window_type, n_fft_bins, reconstruct_reflection, use_librosa):
+    def _do_istft(self, window_length, hop_length, window_type, reconstruct_reflection, use_librosa):
         if self.stft_data.size == 0:
-            raise ('Cannot do inverse STFT without self.stft_data!')
+            raise ValueError('Cannot do inverse STFT without self.stft_data!')
 
         signals = []
         for i in range(self.num_channels):
@@ -414,7 +412,7 @@ class AudioSignal(object):
         """
         if n > self.num_channels:
             raise Exception(
-                'Cannot get channel {1} when this object only has {2} channels!'.format((n, self.num_channels)))
+                'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
 
         if n <= 0:
             raise Exception('Cannot get channel {}. This will cause unexpected results'.format(n))
@@ -432,9 +430,9 @@ class AudioSignal(object):
         """
         if n > self.num_channels:
             raise Exception(
-                'Cannot get channel {1} when this object only has {2} channels!'.format((n, self.num_channels)))
+                'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
 
-        return self._get_axis(self.stft_data, self._STFT_CHAN, n -1)
+        return self._get_axis(self.stft_data, self._STFT_CHAN, n - 1)
 
     def peak_normalize(self, overwrite=True):
         """ Normalizes the whole audio file to 1.0.
