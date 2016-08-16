@@ -11,7 +11,7 @@ from repet import Repet
 from repet_sim import RepetSim
 
 
-__version__ = '0.1.5a4'
+__version__ = '0.1.5a5'
 
 __title__ = 'nussl'
 __description__ = 'A flexible sound source separation library.'
