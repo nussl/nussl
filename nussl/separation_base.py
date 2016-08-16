@@ -16,6 +16,7 @@ class SeparationBase(object):
     """
 
     def __init__(self, input_audio_signal):
+        self._audio_signal = None
 
         if input_audio_signal is not None:
             self.audio_signal = input_audio_signal
@@ -32,11 +33,11 @@ class SeparationBase(object):
 
     @property
     def audio_signal(self):
-        return self.audio_signal
+        return self._audio_signal
 
     @audio_signal.setter
     def audio_signal(self, input_audio_signal):
-        self.audio_signal = copy.copy(input_audio_signal)
+        self._audio_signal = copy.copy(input_audio_signal)
 
     def plot(self, output_name, **kwargs):
         """Plots relevant data for separation algorithm
