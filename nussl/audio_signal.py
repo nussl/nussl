@@ -42,12 +42,14 @@ class AudioSignal(object):
   
     """
 
-    def __init__(self, path_to_input_file=None, audio_data_array=None, signal_starting_position=0, signal_length=0,
+    def __init__(self, path_to_input_file=None, audio_data_array=None, signal_starting_position=0, signal_length=None,
                  sample_rate=constants.DEFAULT_SAMPLE_RATE, stft=None, stft_params=None):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
         self.sample_rate = sample_rate
+        self._active_start = None
+        self._active_end = None
 
         if (path_to_input_file is not None) and (audio_data_array is not None):
             raise Exception('Cannot initialize AudioSignal object with a path AND an array!')
@@ -139,7 +141,16 @@ class AudioSignal(object):
     def audio_data(self):
         """A numpy array that represents the audio
         """
-        return self._audio_data
+        start = 0
+        end = self.signal_length
+
+        if self._active_end is not None and self._active_end < end:
+            end = self._active_end
+
+        if self._active_start is not None and self._active_start > 0:
+            start = self._active_start
+
+        return self._audio_data[:, start:end]
 
     @audio_data.setter
     def audio_data(self, value):
@@ -178,7 +189,7 @@ class AudioSignal(object):
     # I/O
     ##################################################
 
-    def load_audio_from_file(self, input_file_path, signal_starting_position=0, signal_length=0):
+    def load_audio_from_file(self, input_file_path, signal_starting_position=0, signal_length=None):
         """Loads an audio signal from a .wav file
 
         Parameters:
@@ -189,16 +200,14 @@ class AudioSignal(object):
              Defaults to 0 seconds
 
         """
+        if signal_length is not None and signal_starting_position >= signal_length:
+            raise IndexError('signal_starting_position cannot be greater than signal_length!')
 
-        self.path_to_input_file = input_file_path
         try:
             with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
                 self.sample_rate = input_file.samplerate
                 file_length = input_file.duration
                 n_ch = input_file.channels
-
-            if signal_length == 0:
-                signal_length = file_length
 
             read_mono = True
             if n_ch != 1:
@@ -206,8 +215,8 @@ class AudioSignal(object):
 
             audio_input, self.sample_rate = librosa.load(input_file_path,
                                                          sr=input_file.samplerate,
-                                                         offset=signal_starting_position,
-                                                         duration=signal_length,
+                                                         offset=0,
+                                                         duration=file_length,
                                                          mono=read_mono)
 
             # Change from fixed point to floating point
@@ -217,8 +226,11 @@ class AudioSignal(object):
             self.audio_data = audio_input
 
         except Exception:
-            # print("If you are convinced that this audio file should work, please use ffmpeg to reformat it.")
             raise IOError("Cannot read from file, {file}".format(file=input_file_path))
+
+        self.path_to_input_file = input_file_path
+        self._active_end = signal_length if signal_length is not None else file_length
+        self._active_start = signal_starting_position
 
     def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
         """Loads an audio signal from a numpy array. Only accepts float arrays and int arrays of depth 16-bits.
@@ -241,6 +253,8 @@ class AudioSignal(object):
 
         self.audio_data = signal
         self.sample_rate = sample_rate
+        self._active_start = 0
+        self._active_end = self.signal_length
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
         """Outputs the audio signal to a .wav file
@@ -273,6 +287,20 @@ class AudioSignal(object):
             raise e
         if verbose:
             print("Successfully wrote {file}.".format(file=output_file_path))
+
+    def set_active_region(self, start, end):
+        """
+
+        Args:
+            start:
+            end:
+
+        Returns:
+
+        """
+        start, end = int(start), int(end)
+        self._active_start = start
+        self._active_end = end
 
     ##################################################
     #               STFT Utilities
