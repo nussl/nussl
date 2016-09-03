@@ -8,9 +8,11 @@ import scipy.io.wavfile as wav
 import librosa
 import numbers
 import audioread
+import json
 
 import spectral_utils
 import constants
+import utils
 
 
 class AudioSignal(object):
@@ -55,7 +57,7 @@ class AudioSignal(object):
             raise Exception('Cannot initialize AudioSignal object with a path AND an array!')
 
         if path_to_input_file is not None:
-            self.load_audio_from_file(self.path_to_input_file, signal_length, signal_starting_position)
+            self.load_audio_from_file(self.path_to_input_file, signal_starting_position, signal_length)
         elif audio_data_array is not None:
             self.load_audio_from_array(audio_data_array, sample_rate)
 
@@ -142,7 +144,7 @@ class AudioSignal(object):
         """A numpy array that represents the audio
         """
         start = 0
-        end = self.signal_length
+        end = self._audio_data.shape[self._LEN]
 
         if self._active_end is not None and self._active_end < end:
             end = self._active_end
@@ -184,6 +186,19 @@ class AudioSignal(object):
         if self.stft_data is None:
             raise AttributeError('Cannot calculate stft_length until self.stft() is run')
         return self.stft_data.shape[self._STFT_LEN]
+
+    @property
+    def active_region_is_default(self):
+        """
+        Returns true if active region is the full length of self.audio_data
+        Returns:
+
+        """
+        return self._active_start == 0 and self._active_end == self.signal_length
+
+    @property
+    def _signal_length(self):
+        return self._audio_data.shape[self._LEN]
 
     ##################################################
     # I/O
@@ -229,7 +244,7 @@ class AudioSignal(object):
             raise IOError("Cannot read from file, {file}".format(file=input_file_path))
 
         self.path_to_input_file = input_file_path
-        self._active_end = signal_length if signal_length is not None else file_length
+        self._active_end = signal_length if signal_length is not None else self._audio_data.shape[self._LEN]
         self._active_start = signal_starting_position
 
     def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
@@ -290,17 +305,36 @@ class AudioSignal(object):
 
     def set_active_region(self, start, end):
         """
+        Determines the bounds of what gets returned when you access my_audio_signal.audio_data.
+        None of the data in my_audio_signal.audio_data gets thrown out when you set the active region, it is just
+        not accessible until you re-set the active region.
 
+        This is useful for reusing a single AudioSignal object to do different operations on different parts of the
+        audio data.
+
+        Warnings:
+            Many functions will raise exceptions while the active region is not default. Be aware that adding,
+            subtracting, concatenating, truncating, and other utilities may not be available.
+        See Also:
+            :ref: set_active_region_to_default
+            :ref: active_region_is_default
         Args:
-            start:
-            end:
-
-        Returns:
+            start: (int) Beginning of active region (in samples). Cannot be less than 0.
+            end: (int) End of active region (in samples). Cannot be larger than self.signal_length.
 
         """
         start, end = int(start), int(end)
-        self._active_start = start
-        self._active_end = end
+        self._active_start = start if start >= 0 else 0
+        self._active_end = end if end < self._signal_length else self._signal_length
+
+    def set_active_region_to_default(self):
+        """
+        Returns the active region of this AudioSignal object to it default value of the entire audio_data array.
+
+        """
+        self._active_start = 0
+        self._active_end = self._signal_length
+
 
     ##################################################
     #               STFT Utilities
@@ -393,11 +427,7 @@ class AudioSignal(object):
         Parameters:
             other (AudioSignal): Audio Signal to concatenate with the current one.
         """
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot concat two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot add two signals that have different sample rates!')
+        self._verify_audio(other, 'concat')
 
         self.audio_data = np.concatenate((self.audio_data, other.audio_data), axis=self._LEN)
 
@@ -407,6 +437,9 @@ class AudioSignal(object):
         if n_samples > self.signal_length:
             raise Exception('n_samples must be less than self.signal_length!')
 
+        if not self.active_region_is_default:
+            raise Exception('Cannot truncate while active region is not set as default!')
+
         self.audio_data = self.audio_data[:, 0: n_samples]
 
     def truncate_seconds(self, n_seconds):
@@ -414,6 +447,9 @@ class AudioSignal(object):
         """
         if n_seconds > self.signal_duration:
             raise Exception('n_seconds must be shorter than self.signal_duration!')
+
+        if not self.active_region_is_default:
+            raise Exception('Cannot truncate while active region is not set as default!')
 
         n_samples = n_seconds * self.sample_rate
         self.truncate_samples(n_samples)
@@ -427,6 +463,9 @@ class AudioSignal(object):
             after: (int) number of zeros to be put after the current contents fo self.audio_data
 
         """
+        if not self.active_region_is_default:
+            raise Exception('Cannot truncate while active region is not set as default!')
+
         for ch in range(1, self.num_channels + 1):
             self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant', constant_values=(0, 0))
 
@@ -512,6 +551,46 @@ class AudioSignal(object):
 
         return np.multiply(self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype(int_type)
 
+    def to_json(self):
+        return json.dumps(self, default=AudioSignal._to_json_helper)
+
+    @staticmethod
+    def _to_json_helper(o):
+        if not isinstance(o, AudioSignal):
+            raise TypeError
+        import copy
+        d = copy.copy(o.__dict__)
+        for k, v in d.items():
+            if isinstance(v, np.ndarray):
+                d[k] = utils.json_ready_numpy_array(v)
+        d['__class__'] = o.__class__.__name__
+        d['__module__'] = o.__module__
+        d['stft_params'] = o.stft_params.to_json()
+        return d
+
+    @staticmethod
+    def from_json(json_string):
+        return json.loads(json_string, object_hook=AudioSignal._from_json_helper)
+
+    @staticmethod
+    def _from_json_helper(json_dict):
+        if '__class__' in json_dict:
+            class_name = json_dict.pop('__class__')
+            module = json_dict.pop('__module__')
+            if class_name != AudioSignal.__name__ or module != AudioSignal.__module__:
+                raise TypeError
+            a = AudioSignal()
+            stft_params = json_dict.pop('stft_params')
+            a.stft_params = spectral_utils.StftParams.from_json(stft_params)
+            for k, v in json_dict.items():
+                if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
+                    a.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
+                else:
+                    a.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
+            return a
+        else:
+            return json_dict
+
     def rms(self):
         """
 
@@ -539,7 +618,7 @@ class AudioSignal(object):
     ##################################################
 
     def __add__(self, other):
-        self._verify_audio(other)
+        self._verify_audio(other, 'add')
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -553,7 +632,7 @@ class AudioSignal(object):
         return AudioSignal(audio_data_array=combined)
 
     def __sub__(self, other):
-        self._verify_audio(other)
+        self._verify_audio(other, 'subtract')
 
         # for ch in range(self.num_channels):
         # TODO: make this work for multiple channels
@@ -566,12 +645,15 @@ class AudioSignal(object):
 
         return AudioSignal(audio_data_array=combined)
 
-    def _verify_audio(self, other):
+    def _verify_audio(self, other, op):
         if self.num_channels != other.num_channels:
-            raise Exception('Cannot do operation with two signals that have a different number of channels!')
+            raise Exception('Cannot ' + op + ' with two signals that have a different number of channels!')
 
         if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot do operation with two signals that have different sample rates!')
+            raise Exception('Cannot' + op + 'with two signals that have different sample rates!')
+
+        if not self.active_region_is_default:
+            raise Exception('Cannot' + op + 'while active region is not set as default!')
 
     def __iadd__(self, other):
         return self + other
@@ -585,6 +667,18 @@ class AudioSignal(object):
 
     def __len__(self):
         return self.signal_length
+
+    def __eq__(self, other):
+        for k, v in self.__dict__.items():
+            if isinstance(v, np.ndarray):
+                if not np.array_equal(v, other.__dict__[k]):
+                    return False
+            elif v != other.__dict__[k]:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self == other
 
     ##################################################
     #              Private utils
