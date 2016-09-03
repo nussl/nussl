@@ -11,7 +11,10 @@ from repet import Repet
 from repet_sim import RepetSim
 
 
-__version__ = '0.1.5a6'
+__version__ = '0.1.5a7'
+
+version = __version__  # aliasing version
+short_version = '.'.join(version.split('.')[:-1])
 
 __title__ = 'nussl'
 __description__ = 'A flexible sound source separation library.'

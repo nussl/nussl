@@ -50,9 +50,17 @@ class Duet(separation_base.SeparationBase):
     def __init__(self, input_audio_signal, num_sources,
                  a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
                  threshold=0.2, a_min_distance=5, d_min_distance=5):
-        # TODO: Is there a better way to do this?
-        self.__dict__.update(locals())
-        super(Duet, self).__init__(input_audio_signal)
+        super(Duet, self).__init__(input_audio_signal=input_audio_signal)
+        self.num_sources = num_sources
+        self.a_min = a_min
+        self.a_max = a_max
+        self.a_num = a_num
+        self.d_min = d_min
+        self.d_max = d_max
+        self.d_num = d_num
+        self.threshold = threshold
+        self.a_min_distance = a_min_distance
+        self.d_min_distance = d_min_distance
         self.separated_sources = None
         self.a_grid = None
         self.d_grid = None
