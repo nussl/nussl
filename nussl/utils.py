@@ -5,6 +5,9 @@ between algorithms.
 """
 import numpy as np
 import warnings
+import base64
+import json
+import constants
 
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
@@ -65,11 +68,11 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
 
         # zero out peak and its surroundings
         if is_1d:
-            lower, upper = _set_array_zeroe_indices(cur_peak_idx, zero_dist, len(input_array))
+            lower, upper = _set_array_zero_indices(cur_peak_idx, zero_dist, len(input_array))
             input_array[lower:upper] = 0
         else:
-            lower0, upper0 = _set_array_zeroe_indices(cur_peak_idx, zero_dist0, input_array.shape[0])
-            lower1, upper1 = _set_array_zeroe_indices(cur_peak_idx, zero_dist1, input_array.shape[1])
+            lower0, upper0 = _set_array_zero_indices(cur_peak_idx, zero_dist0, input_array.shape[0])
+            lower1, upper1 = _set_array_zero_indices(cur_peak_idx, zero_dist1, input_array.shape[1])
             input_array[lower0:upper0, lower1:upper1] = 0
 
         if np.sum(input_array) == 0.0:
@@ -78,7 +81,7 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
     return peak_indices
 
 
-def _set_array_zeroe_indices(index, zero_distance, max_len):
+def _set_array_zero_indices(index, zero_distance, max_len):
     lower = index - zero_distance - 1
     upper = index + zero_distance + 1
     lower = 0 if lower < 0 else lower
@@ -100,3 +103,48 @@ def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshol
 
     """
     return [input_array[i] for i in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
+
+
+def json_ready_numpy_array(array):
+    """
+    Adapted from:
+    http://stackoverflow.com/a/27948073/5768001
+    Args:
+        array: np array to make json ready.
+
+    Returns:
+
+    """
+    if isinstance(array, np.ndarray):
+        data_b64 = base64.b64encode(np.ascontiguousarray(array).data)
+        return {
+                constants.NUMPY_JSON_KEY: {
+                        "__ndarray__": data_b64,
+                        "dtype":  str(array.dtype),
+                        "shape": array.shape
+                    }
+                }
+
+    return None
+
+
+def json_serialize_numpy_array(array):
+    return json.dumps(json_ready_numpy_array(array))
+
+
+def load_numpy_json(array_json):
+    return json.loads(array_json, object_hook=json_numpy_obj_hook)[constants.NUMPY_JSON_KEY]
+
+
+def json_numpy_obj_hook(dct):
+    """
+    Decodes a previously encoded numpy ndarray
+    with proper shape and dtype
+    from: http://stackoverflow.com/a/27948073/5768001
+    :param dct: (dict) json encoded ndarray
+    :return: (ndarray) if input was an encoded ndarray
+    """
+    if isinstance(dct, dict) and '__ndarray__' in dct:
+        data = base64.b64decode(dct['__ndarray__'])
+        return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
+    return dct

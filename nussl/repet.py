@@ -38,7 +38,7 @@ class Repet(separation_base.SeparationBase):
     """
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
                  do_mono=False, use_find_period_complex=False):
-        self.__dict__.update(locals())
+        # self.__dict__.update(locals())
         super(Repet, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.bkgd = None

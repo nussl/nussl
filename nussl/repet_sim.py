@@ -34,6 +34,7 @@ class RepetSim(separation_base.SeparationBase):
 
     def __init__(self, input_audio_signal, similarity_threshold=None, min_distance_between_frames=None,
                  max_repeating_frames=None, high_pass_cutoff=None, do_mono=False):
+        # self.__dict__.update(locals())
         super(RepetSim, self).__init__(input_audio_signal=input_audio_signal)
 
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff

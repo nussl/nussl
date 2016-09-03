@@ -7,6 +7,7 @@ import scipy.fftpack as scifft
 from scipy.signal import hamming, hann, blackman
 import os.path
 import librosa
+import json
 
 import constants
 
@@ -522,3 +523,39 @@ class StftParams(object):
         This property is not settable.
         """
         return self.window_length - self.hop_length
+
+    def to_json(self):
+        return json.dumps(self, default=self._to_json_helper)
+
+    def _to_json_helper(self, o):
+        if not isinstance(o, StftParams):
+            raise TypeError
+        d = {'__class__': o.__class__.__name__,
+             '__module__': o.__module__}
+        d.update(o.__dict__)
+        return d
+
+    @staticmethod
+    def from_json(json_string):
+        return json.loads(json_string, object_hook=StftParams._from_json_helper)
+
+    @staticmethod
+    def _from_json_helper(json_dict):
+        if '__class__' in json_dict:
+            class_name = json_dict.pop('__class__')
+            module = json_dict.pop('__module__')
+            if class_name != StftParams.__name__ or module != StftParams.__module__:
+                raise TypeError
+            sr = json_dict['sample_rate']
+            s = StftParams(sr)
+            for k, v in json_dict.items():
+                s.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
+            return s
+        else:
+            return json_dict
+
+    def __eq__(self, other):
+        return all([v == other.__dict__[k] for k, v in self.__dict__.items()])
+
+    def __ne__(self, other):
+        return not self == other
