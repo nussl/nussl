@@ -105,7 +105,7 @@ class Repet(separation_base.SeparationBase):
 
             y = spectral_utils.e_istft(stft_with_mask, self.stft_params.window_length,
                                        self.stft_params.hop_length, self.stft_params.window_type,
-                                       reconstruct_reflection=True, remove_padding=False)
+                                       reconstruct_reflection=True, remove_padding=True)
 
             bkgd[i, ] = y[:self.audio_signal.signal_length]
 
