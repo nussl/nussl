@@ -12,15 +12,38 @@ import constants
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
     """
+    This function will find the indices of the peaks of an input n-dimensional numpy array.
+    This can be configured to find max or min peak indices, distance between the peaks, and
+    a lower bound, at which the algorithm will stop searching for peaks (or upper bound if
+    searching for max). Use exactly the same as find_peak_values().
+
+    This function currently only accepts 1-D and 2-D numpy arrays.
+
+    Notes:
+        * This function only returns the indices of peaks. If you want to find peak values,
+        use find_peak_values().
+
+        * min_dist can be an int or a tuple of length 2.
+            If input_array is 1-D, min_dist must be an integer.
+            If input_array is 2-D, min_dist can be an integer, in which case the minimum
+            distance in both dimensions will be equal. min_dist can also be a tuple if
+            you want each dimension to have a different minimum distance between peaks.
+            In that case, the 0th value in the tuple represents the first dimension, and
+            the 1st value represents the second dimension in the numpy array.
+
+
+    See Also:
+        :: find_peak_values() ::
 
     Args:
-        input_array: a 1- or 2- dimensional array that will be inspected
+        input_array: a 1- or 2- dimensional numpy array that will be inspected.
         n_peaks: (int) maximum number of peaks to find
         min_dist: (int) minimum distance between peaks. Default value: len(input_array) / 4
-        do_min: (bool) finds minimum values instead of maximums
-        threshold: (float)
+        do_min: (bool) if True, finds indices at minimum value instead of maximum
+        threshold: (float) the value (scaled between 0.0 and 1.0)
 
     Returns:
+        peak_indices: (list) list of the indices of the peak values
 
     """
     input_array = np.array(input_array, dtype=float)
@@ -29,7 +52,8 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
         raise ValueError('Cannot find peak indices on data greater than 2 dimensions!')
 
     is_1d = input_array.ndim == 1
-    zero_dist = zero_dist0 = zero_dist1 = 0
+    zero_dist = zero_dist0 = zero_dist1 = None
+    min_dist = len(input_array) // 4 if min_dist is None else min_dist
 
     if is_1d:
         zero_dist = min_dist
@@ -91,15 +115,41 @@ def _set_array_zero_indices(index, zero_distance, max_len):
 
 def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
     """
+    Finds the values of the peaks in a 1-D or 2-D numpy array. Use exactly the same as
+    find_peak_indices(). This function will find the values of the peaks of an input
+    n-dimensional numpy array.
+
+    This can be configured to find max or min peak values, distance between the peaks, and
+    a lower bound, at which the algorithm will stop searching for peaks (or upper bound if
+    searching for max).
+
+    This function currently only accepts 1-D and 2-D numpy arrays.
+
+    Notes:
+        * This function only returns the indices of peaks. If you want to find peak values,
+        use find_peak_values().
+
+        * min_dist can be an int or a tuple of length 2.
+            If input_array is 1-D, min_dist must be an integer.
+            If input_array is 2-D, min_dist can be an integer, in which case the minimum
+            distance in both dimensions will be equal. min_dist can also be a tuple if
+            you want each dimension to have a different minimum distance between peaks.
+            In that case, the 0th value in the tuple represents the first dimension, and
+            the 1st value represents the second dimension in the numpy array.
+
+
+    See Also:
+        :: find_peak_indices() ::
 
     Args:
-        input_array:
-        n_peaks:
-        min_dist:
-        do_min:
-        threshold:
+        input_array: a 1- or 2- dimensional numpy array that will be inspected.
+        n_peaks: (int) maximum number of peaks to find
+        min_dist: (int) minimum distance between peaks. Default value: len(input_array) / 4
+        do_min: (bool) if True, finds indices at minimum value instead of maximum
+        threshold: (float) the value (scaled between 0.0 and 1.0)
 
     Returns:
+        peak_values: (list) list of the values of the peak values
 
     """
     return [input_array[i] for i in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
@@ -129,10 +179,40 @@ def json_ready_numpy_array(array):
 
 
 def json_serialize_numpy_array(array):
+    """
+    Returns a JSON string of the numpy array.
+
+    Notes:
+        The generated JSON strings can be converted back to numpy arrays with load_numpy_json()
+
+    Args:
+        array: (numpy array) any numpy array to convert to JSON
+
+    Returns:
+        (string) JSON-ified numpy array.
+
+    See Also:
+        load_numpy_json()
+    """
     return json.dumps(json_ready_numpy_array(array))
 
 
 def load_numpy_json(array_json):
+    """
+    Turns a JSON-ified numpy array back into a regular numpy array.
+
+    Notes:
+        This function is only guaranteed to work with JSON generated by json_serialize_numpy_array()
+
+    Args:
+        array_json: (string) JSON-ified nump array
+
+    Returns:
+        (numpy array) numpy array from the input JSON string
+
+    See Also:
+        json_serialize_numpy_array()
+    """
     return json.loads(array_json, object_hook=json_numpy_obj_hook)[constants.NUMPY_JSON_KEY]
 
 
