@@ -21,21 +21,11 @@ class AudioSignal(object):
     Parameters:
         path_to_input_file (string): string specifying path to file. Either this or timeSeries must be provided
         audio_data_array (np.array): Numpy matrix containing a time series of a signal
-        signalStartingPosition (Optional[int]): Starting point of the section to be extracted in seconds. Defaults to 0
-        signalLength (Optional[int]): Length of the signal to be extracted. Defaults to full length of the signal
-        SampleRate (Optional[int]): sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE
-        stft (Optional[np.array]): Optional pre-coumputed complex spectrogram data.
-
-    Attributes:
-        window_type(WindowType): type of window to use in operations on the signal. Defaults to WindowType.DEFAULT
-        window_length (int): Length of window in ms. Defaults to 0.06 * SampleRate
-        num_fft_bins (int): Number of bins for fft. Defaults to windowLength
-        overlap_ratio (float): Ratio of window that overlaps in [0,1). Defaults to 0.5
-        stft_data (np.array): complex spectrogram of the data
-        power_spectrum_data (np.array): power spectrogram of the data
-        Fvec (np.array): frequency vector for stft
-        Tvec (np.array): time vector for stft
-        sample_rate (int): sampling frequency
+        signal_starting_position (Optional[int]): Starting point of the section to be extracted in seconds. Defaults to 0
+        signal_length (Optional[int]): Length of the signal to be extracted. Defaults to full length of the signal
+        sample_rate (Optional[int]): sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE
+        stft (Optional[np.array]): Optional pre-computed complex spectrogram data.
+        stft_params (Optional [StftParams object]):
   
     Examples:
         * create a new signal object:     ``sig=AudioSignal('sample_audio_file.wav')``
@@ -63,8 +53,7 @@ class AudioSignal(object):
 
         # stft data
         self.stft_data = stft  # complex spectrogram data
-        self.power_spectrum_data = np.array([])  # power spectrogram
-
+        self.power_spectrum_data = None  # power spectrogram
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
 
     def __str__(self):
@@ -123,25 +112,31 @@ class AudioSignal(object):
 
     @property
     def signal_length(self):
-        """Returns the length of the audio signal represented by this object in samples
+        """
+        Returns: (int) The length of the audio signal represented by this object in samples
         """
         return self.audio_data.shape[self._LEN]
 
     @property
     def signal_duration(self):
-        """Returns the length of the audio signal represented by this object in seconds
+        """
+        Returns: (float) The length of the audio signal represented by this object in seconds
         """
         return self.signal_length / self.sample_rate
 
     @property
     def num_channels(self):
-        """The number of channels
+        """
+        The number of channels.
+        Returns: (int) number of channels
         """
         return self.audio_data.shape[self._CHAN]
 
     @property
     def audio_data(self):
-        """A numpy array that represents the audio
+        """
+        A 2-D numpy array that represents the audio in the time domain.
+
         """
         start = 0
         end = self._audio_data.shape[self._LEN]
@@ -165,7 +160,10 @@ class AudioSignal(object):
 
     @property
     def file_name(self):
-        """The name of the file wth extension, NOT the full path
+        """
+        Returns: The name of the file wth extension, NOT the full path
+        See Also:
+            :ref: self.path_to_input_file
         """
         if self.path_to_input_file is not None:
             return os.path.split(self.path_to_input_file)[1]
@@ -173,16 +171,29 @@ class AudioSignal(object):
 
     @property
     def time_vector(self):
+        """
+        Returns: A 1-D numpy array with timestamps (in seconds) for each sample in the time domain.
+
+        """
         return np.linspace(0.0, self.signal_duration, num=self.signal_length)
 
     @property
     def freq_vector(self):
+        """
+        Returns: A 1-D numpy array with frequency values that correspond to each frequency bin (vertical axis)
+        for the STFT.
+        Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.
+        """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate freq_vector until self.stft() is run')
         return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[self._STFT_LEN])
 
     @property
     def stft_length(self):
+        """
+        Returns: (int) The number of time windows the STFT has.
+        Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.
+        """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate stft_length until self.stft() is run')
         return self.stft_data.shape[self._STFT_LEN]
@@ -190,8 +201,10 @@ class AudioSignal(object):
     @property
     def active_region_is_default(self):
         """
-        Returns true if active region is the full length of self.audio_data
-        Returns:
+        Returns: Returns true if active region is the full length of self.audio_data
+        See Also:
+            :ref: self.set_active_region
+            :ref: self.set_active_region_to_default
 
         """
         return self._active_start == 0 and self._active_end == self.signal_length
@@ -200,11 +213,25 @@ class AudioSignal(object):
     def _signal_length(self):
         return self._audio_data.shape[self._LEN]
 
+    @property
+    def power_spectrogram_data(self):
+        """
+        The power spectrogram is defined as Re(STFT)^2, where ^2 is element-wise squaring of entries of the STFT.
+        Same size as self.stft_data.
+        Returns: Real valued 2-D np.array with power spectrogram data.
+        Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.
+
+        """
+        if self.stft_data is None:
+            raise AttributeError('Cannot calculate power_spectrogram_data until self.stft() is run')
+        return np.abs(self.stft_data) ** 2
+
     ##################################################
     # I/O
     ##################################################
 
     def load_audio_from_file(self, input_file_path, signal_starting_position=0, signal_length=None):
+        # type: (unicode, integer, integer) -> None
         """Loads an audio signal from a .wav file
 
         Parameters:
@@ -335,7 +362,6 @@ class AudioSignal(object):
         self._active_start = 0
         self._active_end = self._signal_length
 
-
     ##################################################
     #               STFT Utilities
     ##################################################
@@ -361,7 +387,7 @@ class AudioSignal(object):
         calculated_stft = self._do_stft(window_length, hop_length, window_type,
                                         n_fft_bins, remove_reflection, use_librosa)
 
-        if overwrite:
+        if overwrite or self.stft_data is None:
             self.stft_data = calculated_stft
         self.power_spectrum_data = np.array([])
 
@@ -400,7 +426,7 @@ class AudioSignal(object):
         calculated_signal = self._do_istft(window_length, hop_length, window_type,
                                            reconstruct_reflection, use_librosa)
 
-        if overwrite:
+        if overwrite or self.audio_data is None:
             self.audio_data = calculated_signal
 
         return calculated_signal
@@ -422,7 +448,8 @@ class AudioSignal(object):
     ##################################################
 
     def concat(self, other):
-        """ Add two AudioSignal objects (by adding self.audio_data) temporally.
+        """
+        Add two AudioSignal objects (by adding self.audio_data) temporally.
 
         Parameters:
             other (AudioSignal): Audio Signal to concatenate with the current one.
@@ -432,7 +459,12 @@ class AudioSignal(object):
         self.audio_data = np.concatenate((self.audio_data, other.audio_data), axis=self._LEN)
 
     def truncate_samples(self, n_samples):
-        """ Truncates the signal leaving only the first n_samples number of samples.
+        """
+        Truncates the signal leaving only the first n_samples in number of samples. This can only be done
+        if self.active_region_is_default is True.
+        Args:
+            n_samples: (int) number of samples that will be left.
+
         """
         if n_samples > self.signal_length:
             raise Exception('n_samples must be less than self.signal_length!')
@@ -443,7 +475,12 @@ class AudioSignal(object):
         self.audio_data = self.audio_data[:, 0: n_samples]
 
     def truncate_seconds(self, n_seconds):
-        """ Truncates the signal leaving only the first n_seconds
+        """
+        Truncates the signal leaving only the first n_seconds. This can only be done
+        if self.active_region_is_default is True.
+        Args:
+            n_seconds: (float) number of seconds to truncate self.audio_data.
+
         """
         if n_seconds > self.signal_duration:
             raise Exception('n_seconds must be shorter than self.signal_duration!')
@@ -464,7 +501,7 @@ class AudioSignal(object):
 
         """
         if not self.active_region_is_default:
-            raise Exception('Cannot truncate while active region is not set as default!')
+            raise Exception('Cannot zero-pad while active region is not set as default!')
 
         for ch in range(1, self.num_channels + 1):
             self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant', constant_values=(0, 0))
@@ -500,6 +537,22 @@ class AudioSignal(object):
                 'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
 
         return self._get_axis(self.stft_data, self._STFT_CHAN, n - 1)
+
+    def get_power_spectrogram_channel(self, n):
+        """
+        Returns the n-th channel from ``self.power_spectrogram_data``. **1-based.**
+        Args:
+            n: (int) index of power spectrogram channel to get. **1 based**
+
+        Returns:
+            n-th channel (np.array): the power spectrogram data in the n-th channel of the signal
+        """
+        if n > self.num_channels:
+            raise Exception(
+                'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
+
+        # np.array helps with duck typing
+        return self._get_axis(np.array(self.power_spectrogram_data), self._STFT_CHAN, n - 1)
 
     def peak_normalize(self, overwrite=True):
         """ Normalizes the whole audio file to 1.0.
@@ -537,11 +590,13 @@ class AudioSignal(object):
 
     def audio_data_as_ints(self, bit_depth=constants.DEFAULT_BIT_DEPTH):
         """
-
+        Returns self.audio_data as a numpy array of ints with a specified bit depth.
+        Notes:
+            self.audio_data is regularly stored as an array of floats. This will not affect self.audio_data.
         Args:
-            bit_depth: (int) (Optional)
+            bit_depth: (int) (Optional) Bit depth of the integer array that will be returned
 
-        Returns: Integer representation of self.audio_data
+        Returns: (numpy array) Integer representation of self.audio_data
 
         """
         if bit_depth not in [8, 16, 24, 32]:
@@ -552,6 +607,13 @@ class AudioSignal(object):
         return np.multiply(self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype(int_type)
 
     def to_json(self):
+        """
+        Converts this AudioSignal object to json.
+        Returns: (string) json representation of the current AudioSignal object.
+        See Also:
+            :ref: self.from_json
+
+        """
         return json.dumps(self, default=AudioSignal._to_json_helper)
 
     @staticmethod
@@ -570,6 +632,16 @@ class AudioSignal(object):
 
     @staticmethod
     def from_json(json_string):
+        """
+        Creates a new AudioSignal object from a json encoded AudioSignal string.
+        Args:
+            json_string: (string) a json encoded AudioSignal string
+
+        Returns: (AudioSignal) a new AudioSignal object based on the parameters
+        See Also:
+            :ref: self.to_json
+
+        """
         return json.loads(json_string, object_hook=AudioSignal._from_json_helper)
 
     @staticmethod
@@ -593,8 +665,8 @@ class AudioSignal(object):
 
     def rms(self):
         """
-
-        Returns:
+        Calculates the root-mean-square of self.audio_data.
+        Returns: (float) root-mean-square of self.audio_data.
 
         """
         return np.sqrt(np.mean(np.square(self.audio_data)))
@@ -620,28 +692,24 @@ class AudioSignal(object):
     def __add__(self, other):
         self._verify_audio(other, 'add')
 
-        # for ch in range(self.num_channels):
-        # TODO: make this work for multiple channels
-        if self.audio_data.size > other.audio_data.size:
+        if self.signal_length > other.signal_length:
             combined = np.copy(self.audio_data)
-            combined[0: other.audio_data.size] += other.audio_data
+            combined[:, :other.signal_length] += other.audio_data
         else:
             combined = np.copy(other.audio_data)
-            combined[0: self.audio_data.size] += self.audio_data
+            combined[:, :self.signal_length] += self.audio_data
 
         return AudioSignal(audio_data_array=combined)
 
     def __sub__(self, other):
         self._verify_audio(other, 'subtract')
 
-        # for ch in range(self.num_channels):
-        # TODO: make this work for multiple channels
-        if self.audio_data.size > other.audio_data.size:
+        if self.signal_length > other.signal_length:
             combined = np.copy(self.audio_data)
-            combined[0: other.audio_data.size] -= other.audio_data
+            combined[:, :other.audio_data.size] -= other.audio_data
         else:
             combined = np.copy(other.audio_data)
-            combined[0: self.audio_data.size] -= self.audio_data
+            combined[:, :self.audio_data.size] -= self.audio_data
 
         return AudioSignal(audio_data_array=combined)
 
