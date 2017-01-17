@@ -41,8 +41,8 @@ class Repet(separation_base.SeparationBase):
         # self.__dict__.update(locals())
         super(Repet, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
-        self.bkgd = None
-        self.fgnd = None
+        self.background = None
+        self.foreground = None
         self.beat_spectrum = None
         self.use_find_period_complex = use_find_period_complex
 
@@ -109,9 +109,9 @@ class Repet(separation_base.SeparationBase):
 
             bkgd[i, ] = y[:self.audio_signal.signal_length]
 
-        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
+        self.background = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
 
-        return self.bkgd
+        return self.background
 
     def _compute_spectrum(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=False)
@@ -276,14 +276,10 @@ class Repet(separation_base.SeparationBase):
         mask_reshaped = np.reshape(mask_reshaped.T, (n_repetitions, one_period))
 
         # take median of repeating periods before and after the padding
-        split_point = freq_bins * (time_bins - (n_repetitions - 1) * period)
-        median1 = np.median(mask_reshaped[0:n_repetitions, 0:split_point], axis=0)  # before padding
-        median2 = np.median(mask_reshaped[0:n_repetitions-1, split_point:one_period], axis=0)  # after padding
-        mask_reshaped = np.hstack([median1, median2])  # put them back together
+        mask_reshaped = np.nanmedian(mask_reshaped, axis=0)
 
         # reshape to it's original shape
-        mask_reshaped = np.reshape(np.tile(mask_reshaped, (n_repetitions, 1)), (n_repetitions * period, freq_bins)).T
-        mask_reshaped = mask_reshaped[:, 0:time_bins]
+        mask_reshaped = np.reshape(mask_reshaped[~np.isnan(mask_reshaped)], (time_bins, freq_bins)).T
 
         # take minimum of computed mask and original input and scale
         mask_reshaped = np.minimum(mask_reshaped, magnitude_spectrogram_channel)
@@ -384,8 +380,9 @@ class Repet(separation_base.SeparationBase):
             # get audio signals (AudioSignal objects)
             background, foreground = repet.make_audio_signals()
         """
-        if self.bkgd is None:
+        if self.background is None:
             return None
 
-        self.fgnd = self.audio_signal - self.bkgd
-        return [self.bkgd, self.fgnd]
+        self.foreground = self.audio_signal - self.background
+        self.foreground.sample_rate = self.audio_signal.sample_rate
+        return [self.background, self.foreground]
