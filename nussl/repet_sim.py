@@ -33,8 +33,8 @@ class RepetSim(separation_base.SeparationBase):
     """
 
     def __init__(self, input_audio_signal, similarity_threshold=None, min_distance_between_frames=None,
-                 max_repeating_frames=None, high_pass_cutoff=None, do_mono=False):
-        # self.__dict__.update(locals())
+                 max_repeating_frames=None, high_pass_cutoff=None, do_mono=False,
+                 use_librosa_stft=constants.USE_LIBROSA_STFT, matlab_fidelity=False):
         super(RepetSim, self).__init__(input_audio_signal=input_audio_signal)
 
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
@@ -44,11 +44,16 @@ class RepetSim(separation_base.SeparationBase):
 
         self.verbose = False
         self.similarity_matrix = None
-        self.bkgd = None
-        self.fgnd = None
+        self.background = None
+        self.foreground = None
         self.similarity_indices = None
         self.magnitude_spectrogram = None
         self.stft = None
+        self.use_librosa_stft = use_librosa_stft
+        self.matlab_fidelity = matlab_fidelity
+
+        if self.matlab_fidelity:
+            self.use_librosa_stft = False
 
         self.do_mono = do_mono
 
@@ -57,6 +62,8 @@ class RepetSim(separation_base.SeparationBase):
 
     def run(self):
         """
+        Runs REPET-SIM, a variant of REPET using the cosine similarity matrix to find similar
+        frames to do median filtering.
 
         Returns:
 
@@ -65,27 +72,29 @@ class RepetSim(separation_base.SeparationBase):
         self.high_pass_cutoff = int(np.ceil(float(self.high_pass_cutoff) *
                                             (self.stft_params.n_fft_bins - 1) /
                                             self.audio_signal.sample_rate) + 1)
+        low = 1 if self.matlab_fidelity else 0
         self._compute_spectrum()
         self.similarity_indices = self._get_similarity_indices()
 
-        bkgd = np.zeros_like(self.audio_signal.audio_data)
-
+        background_stft = []
         for i in range(self.audio_signal.num_channels):
             repeating_mask = self._compute_mask(self.magnitude_spectrogram[:, :, i])
-            repeating_mask[1:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+
+            repeating_mask[low:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
 
             stft_with_mask = repeating_mask * self.stft[:, :, i]
+            background_stft.append(stft_with_mask)
 
-            y = spectral_utils.e_istft(stft_with_mask, self.stft_params.window_length,
-                                       self.stft_params.hop_length, self.stft_params.n_fft_bins,
-                                       reconstruct_reflection=True, remove_padding=True)
+        background_stft = np.array(background_stft).transpose((1, 2, 0))
+        self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
+        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length,
+                              self.stft_params.window_type, overwrite=True,
+                              use_librosa=self.use_librosa_stft)
 
-            bkgd[i, ] = y[:self.audio_signal.signal_length]
-
-        self.bkgd = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
+        return self.background
 
     def _compute_spectrum(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=False)
+        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         self.magnitude_spectrogram = np.abs(self.stft)
 
     def _get_similarity_indices(self):
@@ -223,11 +232,12 @@ class RepetSim(separation_base.SeparationBase):
             # get audio signals (AudioSignal objects)
             background, foreground = repet.make_audio_signals()
         """
-        if self.bkgd is None:
+        if self.background is None:
             return None
 
-        self.fgnd = self.audio_signal - self.bkgd
-        return [self.bkgd, self.fgnd]
+        self.foreground = self.audio_signal - self.background
+        self.foreground.sample_rate = self.audio_signal.sample_rate
+        return [self.background, self.foreground]
 
     def plot(self, output_file, **kwargs):
         import matplotlib.pyplot as plt

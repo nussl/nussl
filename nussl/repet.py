@@ -14,7 +14,7 @@ from audio_signal import AudioSignal
 class Repet(separation_base.SeparationBase):
     """Implements the original REpeating Pattern Extraction Technique algorithm using the beat spectrum.
 
-    REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
+    REPET is a simple method for separating a repeating background from a non-repeating foreground in an
     audio mixture.
 
     References:
@@ -32,26 +32,37 @@ class Repet(separation_base.SeparationBase):
         max_period: (Optional) (float) maximum time to look for repeating period in terms of seconds.
         period: (Optional) (float) exact time that the repeating period is (in seconds).
         high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
+        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
+                        input AudioSignal object)
+        use_find_period_complex: (Optional) (bool) Will use a more complex peak picker to find the repeating period
+        use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
+        matlab_fidelity: (Optional) (bool) If True, does repet with the same settings as the original MATLAB
+                        implementation of REPET, warts and all. This will override use_librosa_stft and set it to False
 
     Examples:
         :ref:`The REPET Demo Example <repet_demo>`
     """
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
-                 do_mono=False, use_find_period_complex=False):
-        # self.__dict__.update(locals())
+                 do_mono=False, use_find_period_complex=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
+                 matlab_fidelity=False):
         super(Repet, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None
         self.foreground = None
         self.beat_spectrum = None
         self.use_find_period_complex = use_find_period_complex
+        self.use_librosa_stft = use_librosa_stft
 
         self.repeating_period = None
         self.magnitude_spectrogram = None
         self.stft = None
         self.repeating_period = None
+        self.matlab_fidelity = matlab_fidelity
 
-        #TODO: stereo doesn't do true stereo REPET (see TODO below)
+        if self.matlab_fidelity:
+            self.use_librosa_stft = False
+
+        # TODO: stereo doesn't do true stereo REPET (see TODO below)
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)
 
@@ -68,53 +79,59 @@ class Repet(separation_base.SeparationBase):
             self.period = self._update_period(self.period)
 
     def run(self):
-        """Runs the REPET algorithm
+        """
+        Runs the original REPET algorithm
 
         Returns:
-            y (AudioSignal): repeating background (M by N) containing M channels and N time samples
-            (the corresponding non-repeating foreground is equal to x-y)
+            background (AudioSignal): An AudioSignal object with repeating background in background.audio_data
+            (to get the corresponding non-repeating foreground run self.make_audio_signals())
 
         Example:
              ::
             signal = nussl.AudioSignal(path_to_input_file='input_name.wav')
 
-            # Set up window parameters
-            signal.stft_params.window_length = 2048
-            signal.stft_params.window_type = nussl.WindowType.HAMMING
-
             # Set up and run Repet
             repet = nussl.Repet(signal)
-            repet.run()
+            repet.run() # or repet()
+
+            # Get audio signals
+            background, foreground = repet.make_audio_signals()
+
+            # output the background
+            background.write_
 
         """
         # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
         self.high_pass_cutoff = int(np.ceil(self.high_pass_cutoff * (self.stft_params.n_fft_bins - 1) /
                                             self.audio_signal.sample_rate)) + 1
 
+        # the MATLAB implementation had
+        low = 1 if self.matlab_fidelity else 0
+
         self._compute_spectrum()
         self.repeating_period = self._calculate_repeating_period()
 
         # separate the mixture background by masking
-        bkgd = np.zeros_like(self.audio_signal.audio_data)
+        background_stft = []
         for i in range(self.audio_signal.num_channels):
             repeating_mask = self._compute_repeating_mask(self.magnitude_spectrogram[:, :, i])
-            repeating_mask[1:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+
+            repeating_mask[low:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
 
             # apply mask
             stft_with_mask = repeating_mask * self.stft[:, :, i]
+            background_stft.append(stft_with_mask)
 
-            y = spectral_utils.e_istft(stft_with_mask, self.stft_params.window_length,
-                                       self.stft_params.hop_length, self.stft_params.window_type,
-                                       reconstruct_reflection=True, remove_padding=True)
-
-            bkgd[i, ] = y[:self.audio_signal.signal_length]
-
-        self.background = AudioSignal(audio_data_array=bkgd, sample_rate=self.audio_signal.sample_rate)
+        background_stft = np.array(background_stft).transpose((1, 2, 0))
+        self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
+        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length,
+                              self.stft_params.window_type, overwrite=True,
+                              use_librosa=self.use_librosa_stft)
 
         return self.background
 
     def _compute_spectrum(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=False)
+        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         self.magnitude_spectrogram = np.abs(self.stft)
 
     def get_beat_spectrum(self, recompute_stft=False):
@@ -276,14 +293,15 @@ class Repet(separation_base.SeparationBase):
         mask_reshaped = np.reshape(mask_reshaped.T, (n_repetitions, one_period))
 
         # take median of repeating periods before and after the padding
-        mask_reshaped = np.nanmedian(mask_reshaped, axis=0)
+        median_mask = np.nanmedian(mask_reshaped, axis=0)
 
         # reshape to it's original shape
-        mask_reshaped = np.reshape(mask_reshaped[~np.isnan(mask_reshaped)], (time_bins, freq_bins)).T
+        median_mask = np.reshape(np.tile(median_mask, (n_repetitions, 1)), (n_repetitions * period, freq_bins)).T
+        median_mask = median_mask[:, :time_bins]
 
         # take minimum of computed mask and original input and scale
-        mask_reshaped = np.minimum(mask_reshaped, magnitude_spectrogram_channel)
-        mask = (mask_reshaped + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
+        min_median_mask = np.minimum(median_mask, magnitude_spectrogram_channel)
+        mask = (min_median_mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
 
         return mask
 
@@ -313,16 +331,17 @@ class Repet(separation_base.SeparationBase):
         return int(np.ceil(result))
 
     def plot(self, output_file, **kwargs):
-        """ Creates a plot of either the beat spectrum or similarity matrix for this file and outputs to output_file.
-            By default, the repet_type is used to determine which to plot,
-            (original -> beat spectrum. sim -> similarity matrix)
-            You can override this by passing in plot_beat_spectrum=True or plot_sim_matrix=True as parameters.
-            You cannot set both of these overrides simultaneously.
+        """
+        Creates a plot of the beat spectrum and outputs to output_file.
+
+
+
 
         Parameters:
             output_file (string) : string representing a path to the desired output file to be created.
-            plot_beat_spectrum (Optional[bool]) : Setting this will force plotting the beat spectrum
-            plot_sim_matrix (Optional[bool]) : Setting this will force plotting the similarity matrix
+            title: (string) Title to put on the plot
+            show_repeating_period: (bool) if True, then adds a vertical line where repet things
+                                the repeating period is (if the repeating period has been computed already)
 
         EXAMPLE:
              ::
@@ -340,14 +359,25 @@ class Repet(separation_base.SeparationBase):
         import matplotlib.pyplot as plt
         plt.close('all')
         title = None
+        show_repeating_period = False
 
         if len(kwargs) != 0:
             if 'title' in kwargs:
                 title = kwargs['title']
+            if 'show_repeating_period' in kwargs:
+                show_repeating_period = kwargs['show_repeating_period']
 
         beat_spec = self.get_beat_spectrum()
         time_vect = np.linspace(0.0, self.audio_signal.signal_duration, num=len(beat_spec))
         plt.plot(time_vect, beat_spec)
+
+        if self.repeating_period is not None and show_repeating_period:
+            stft_vector = np.linspace(0.0, self.audio_signal.signal_duration, self.audio_signal.stft_length)
+            rep = stft_vector[self.repeating_period]
+            plt.plot((rep, rep), (0, np.max(beat_spec)), 'g--', label='Repeating period')
+            # plt.plot((self.repeating_period, self.repeating_period), (-1e20, 1e20), 'g--')
+            plt.ylim((0.0, np.max(beat_spec) * 1.1))
+
         title = title if title is not None else 'Beat Spectrum for {}'.format(self.audio_signal.file_name)
         plt.title(title)
 

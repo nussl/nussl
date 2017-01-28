@@ -55,6 +55,7 @@ class AudioSignal(object):
         self.stft_data = stft  # complex spectrogram data
         self.power_spectrum_data = None  # power spectrogram
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
+        self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
         return 'AudioSignal'
@@ -73,7 +74,9 @@ class AudioSignal(object):
 
     _NAME_STEM = 'audio_signal'
 
-    def plot_spectrogram(self, file_name=None, ch=None, use_librosa=False):
+    def plot_spectrogram(self, file_name=None, ch=None, use_librosa=constants.USE_LIBROSA_STFT):
+        # TODO: use self.stft_data if not None
+        # TODO: flatten to mono be default
         # TODO: make other parameters adjustable
         if file_name is None:
             name_stem = self.file_name if self.file_name is not None else self._NAME_STEM
@@ -88,15 +91,18 @@ class AudioSignal(object):
                 for i in range(1, self.num_channels+1):
                     name = name_stem + '_ch{}.png'.format(i)
                     spectral_utils.plot_stft(self.get_channel(i), name,
-                                             sample_rate=self.sample_rate)
+                                             sample_rate=self.sample_rate,
+                                             use_librosa=use_librosa)
             else:
                 name = name_stem + '.png'
                 spectral_utils.plot_stft(self.get_channel(1), name,
-                                         sample_rate=self.sample_rate)
+                                         sample_rate=self.sample_rate,
+                                         use_librosa=use_librosa)
         else:
             name = name_stem + '_ch{}.png'.format(ch)
             spectral_utils.plot_stft(self.get_channel(ch), name,
-                                     sample_rate=self.sample_rate)
+                                     sample_rate=self.sample_rate,
+                                     use_librosa=use_librosa)
 
     ##################################################
     # Properties
@@ -106,8 +112,8 @@ class AudioSignal(object):
     _LEN = 1
     _CHAN = 0
 
-    _STFT_LEN = 1
     _STFT_BINS = 0
+    _STFT_LEN = 1
     _STFT_CHAN = 2
 
     @property
@@ -115,6 +121,8 @@ class AudioSignal(object):
         """
         Returns: (int) The length of the audio signal represented by this object in samples
         """
+        if self.audio_data is None:
+            return None
         return self.audio_data.shape[self._LEN]
 
     @property
@@ -122,6 +130,8 @@ class AudioSignal(object):
         """
         Returns: (float) The length of the audio signal represented by this object in seconds
         """
+        if self.signal_length is None:
+            return None
         return self.signal_length / self.sample_rate
 
     @property
@@ -130,7 +140,12 @@ class AudioSignal(object):
         The number of channels.
         Returns: (int) number of channels
         """
-        return self.audio_data.shape[self._CHAN]
+        # TODO: what if about a mismatch between audio_data and stft_data
+        if self.audio_data is not None:
+            return self.audio_data.shape[self._CHAN]
+        if self.stft_data is not None:
+            return self.stft_data.shape[self._STFT_CHAN]
+        return None
 
     @property
     def audio_data(self):
@@ -138,6 +153,9 @@ class AudioSignal(object):
         A 2-D numpy array that represents the audio in the time domain.
 
         """
+        if self._audio_data is None:
+            return None
+
         start = 0
         end = self._audio_data.shape[self._LEN]
 
@@ -175,6 +193,8 @@ class AudioSignal(object):
         Returns: A 1-D numpy array with timestamps (in seconds) for each sample in the time domain.
 
         """
+        if self.signal_duration is None:
+            return None
         return np.linspace(0.0, self.signal_duration, num=self.signal_length)
 
     @property
@@ -186,7 +206,7 @@ class AudioSignal(object):
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate freq_vector until self.stft() is run')
-        return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[self._STFT_LEN])
+        return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[self._STFT_BINS])
 
     @property
     def stft_length(self):
@@ -197,6 +217,16 @@ class AudioSignal(object):
         if self.stft_data is None:
             raise AttributeError('Cannot calculate stft_length until self.stft() is run')
         return self.stft_data.shape[self._STFT_LEN]
+
+    @property
+    def num_fft_bins(self):
+        """
+        Returns: (int) Number of FFT bins in self.stft_data
+        Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.
+        """
+        if self.stft_data is None:
+            raise AttributeError('Cannot calculate num_fft_bins until self.stft() is run')
+        return self.stft_data.shape[self._STFT_BINS]
 
     @property
     def active_region_is_default(self):
@@ -211,6 +241,8 @@ class AudioSignal(object):
 
     @property
     def _signal_length(self):
+        if self._audio_data is None:
+            return None
         return self._audio_data.shape[self._LEN]
 
     @property
@@ -304,7 +336,7 @@ class AudioSignal(object):
         Parameters:
             output_file_path (str): Filename where waveform will be saved
             sample_rate (Optional[int]): The sample rate to write the file at. Default is AudioSignal.SampleRate, which
-            is the samplerate of the original signal.
+            is the sample rate of the original signal.
             verbose (Optional[bool]): Flag controlling printing when writing the file.
         """
         if self.audio_data is None:
@@ -324,7 +356,7 @@ class AudioSignal(object):
                 audio_output = np.multiply(audio_output, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
 
             wav.write(output_file_path, sample_rate, audio_output.T)
-        except Exception, e:
+        except Exception as e:
             print("Cannot write to file, {file}.".format(file=output_file_path))
             raise e
         if verbose:
@@ -367,17 +399,17 @@ class AudioSignal(object):
     ##################################################
 
     def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, remove_reflection=True,
-             overwrite=True, use_librosa=False):
+             overwrite=True, use_librosa=constants.USE_LIBROSA_STFT):
         """Computes the Short Time Fourier Transform (STFT) of the audio signal
 
         Warning:
             If overwrite=True (default) this will overwrite any data in self.stft_data!
 
         Returns:
-            * **stfts** (*np.array*) - complex stft data
+            * **calculated_stft** (*np.array*) - complex stft data
         """
-        if self.audio_data is None:
-            raise Exception("No self.audio_data (time domain) to make STFT from!")
+        if self.audio_data is None or self.audio_data.size == 0:
+            raise Exception("No time domain signal (self.audio_data) to make STFT from!")
 
         window_length = self.stft_params.window_length if window_length is None else window_length
         hop_length = self.stft_params.hop_length if hop_length is None else hop_length
@@ -389,25 +421,26 @@ class AudioSignal(object):
 
         if overwrite or self.stft_data is None:
             self.stft_data = calculated_stft
-        self.power_spectrum_data = np.array([])
 
         return calculated_stft
 
     def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection, use_librosa):
-        if self.audio_data is None:
+        if self.audio_data is None or self.audio_data.size == 0:
             raise Exception('Cannot do stft without signal!')
 
         stfts = []
 
+        stft_func = spectral_utils.librosa_stft_wrapper if use_librosa else spectral_utils.e_stft
+
         for i in range(1, self.num_channels + 1):
-            stfts.append(spectral_utils.e_stft(self.get_channel(i), window_length,
-                                               hop_length, window_type, n_fft_bins,
-                                               remove_reflection, use_librosa))
+            stfts.append(stft_func(signal=self.get_channel(i), window_length=window_length,
+                                   hop_length=hop_length, window_type=window_type,
+                                   n_fft_bins=n_fft_bins,remove_reflection=remove_reflection))
 
         return np.array(stfts).transpose((1, 2, 0))
 
-    def istft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, overwrite=True,
-              reconstruct_reflection=True, use_librosa=False):
+    def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True,
+              reconstruct_reflection=False, use_librosa=constants.USE_LIBROSA_STFT):
         """Computes and returns the inverse Short Time Fourier Transform (STFT).
 
         Warning:
@@ -416,11 +449,12 @@ class AudioSignal(object):
         Returns:
              * **calculated_signal** (np.array): time-domain audio signal
         """
-        if self.stft_data.size == 0:
+        if self.stft_data is None or self.stft_data.size == 0:
             raise Exception('Cannot do inverse STFT without self.stft_data!')
 
         window_length = self.stft_params.window_length if window_length is None else window_length
         hop_length = self.stft_params.hop_length if hop_length is None else hop_length
+        # TODO: bubble up center
         window_type = self.stft_params.window_type if window_type is None else window_type
 
         calculated_signal = self._do_istft(window_length, hop_length, window_type,
@@ -436,10 +470,12 @@ class AudioSignal(object):
             raise ValueError('Cannot do inverse STFT without self.stft_data!')
 
         signals = []
-        for i in range(self.num_channels):
-            signals.append(
-                spectral_utils.e_istft(self.get_stft_channel(i + 1), window_length, hop_length, window_type,
-                                       reconstruct_reflection, use_librosa))
+
+        istft_func = spectral_utils.librosa_istft_wrapper if use_librosa else spectral_utils.e_istft
+
+        for i in range(1, self.num_channels + 1):
+            signals.append(istft_func(stft=self.get_stft_channel(i), window_length=window_length,
+                                      hop_length=hop_length, window_type=window_type))
 
         return np.array(signals)
 
