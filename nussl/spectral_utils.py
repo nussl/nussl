@@ -4,17 +4,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fftpack as scifft
-from scipy.signal import hamming, hann, blackman
+import scipy.signal
 import os.path
 import librosa
 import json
+import warnings
 
 import constants
 
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
               window_type=None, sample_rate=None, n_fft_bins=None,
-              freq_max=None, show_interactive_plot=False, use_librosa=False):
+              freq_max=None, show_interactive_plot=False, use_librosa=constants.USE_LIBROSA_STFT):
     """
     Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
     You can specify the same all of the same parameters that are in e_stft(). By default, the StftParams defaults
@@ -106,7 +107,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
 
 
 def e_stft(signal, window_length, hop_length, window_type,
-           n_fft_bins=None, remove_reflection=True, remove_padding=True, use_librosa=False):
+           n_fft_bins=None, remove_reflection=True, remove_padding=False):
     """
     This function computes a short time fourier transform (STFT) of a 1D numpy array input signal.
     This will zero pad the signal by half a hop_length at the beginning to reduce the window
@@ -131,9 +132,6 @@ def e_stft(signal, window_length, hop_length, window_type,
         If not specified, defaults to True.
         remove_padding: (bool) (Optional) if True, this will remove the extra padding added when doing the STFT.
         Defaults to True.
-        use_librosa: (bool) (Optional) This flag bypasses nussl's stft function and will call librosa's stft. nussl
-        will massage the output so that it is in a format that it expects. remove_reflection is still works in this
-        mode. Note: librosa's works differently than nussl's and may produce different output.
 
     Returns:
         2D  numpy array with complex STFT data.
@@ -173,32 +171,10 @@ def e_stft(signal, window_length, hop_length, window_type,
     if n_fft_bins is None:
         n_fft_bins = int(2 ** np.ceil(np.log2(window_length)))
 
-    if use_librosa:
-        stft = librosa.stft(signal, n_fft_bins, hop_length, window_length,
-                            make_window(window_type, window_length))
-
-        # librosa removes the reflection by default, so we have to reconstruct it in this case
-        if not remove_reflection:
-            stft = _add_reflection(stft)
-
-        return stft
-
-    orig_signal_length = len(signal)
-
-    # zero-pad the vector at the beginning and end to reduce the window tapering effect
-    if window_length % 2 == 0:
-        zero_pad1 = np.zeros(window_length / 2)
-    else:
-        zero_pad1 = np.zeros((window_length - 1) / 2)
-    signal = np.concatenate((zero_pad1, signal, zero_pad1))
-
-    # another zero pad if not integer multiple of hop_length
-    zero_pad2_len = 0
-    if orig_signal_length % hop_length != 0:
-        zero_pad2_len = hop_length - (orig_signal_length % hop_length)
-        signal = np.concatenate((signal, np.zeros(zero_pad2_len)))
-
+    window_type = constants.WINDOW_DEFAULT if window_type is None else window_type
     window = make_window(window_type, window_length)
+
+    signal, zero_pad1, zero_pad2 = _add_zero_padding(signal, window_length, hop_length)
 
     # figure out size of output stft
     num_blocks = int(((len(signal) - window_length) / hop_length + 1))
@@ -216,16 +192,47 @@ def e_stft(signal, window_length, hop_length, window_type,
 
     # reshape the 2d array, so it's how we expect it.
     stft = stft.T
-    if remove_padding:
-        first = int(len(zero_pad1) / hop_length)
-        last = stft.shape[1] - int((len(zero_pad1) + zero_pad2_len) / hop_length)
-        stft = stft[:, first: last]
+    stft = _remove_stft_padding(stft, zero_pad1, zero_pad2, hop_length) if remove_padding else stft
 
     return stft
 
 
-def e_istft(stft, window_length, hop_length, window_type,
-            reconstruct_reflection=True, remove_padding=False, use_librosa=False):
+def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, remove_reflection=True,
+                         remove_padding=True, center=True, n_fft_bins=None):
+    """
+
+    Args:
+        signal:
+        window_length:
+        hop_length:
+        window_type:
+        remove_reflection:
+        remove_padding:
+        center:
+        n_fft_bins:
+
+    Returns:
+
+    """
+
+    if window_type is not None and n_fft_bins is not None:
+        warnings.warn('n_fft_bins ignored. Librosa\'s stft uses window_length as n_fft_bins')
+
+    signal, zero_pad1, zero_pad2 = _add_zero_padding(signal, window_length, hop_length)
+
+    window = make_window(window_type, window_length) if window_type is not None else None
+
+    stft = librosa.stft(signal, n_fft=window_length, hop_length=hop_length, win_length=window_length,
+                        window=window, center=center)
+
+    stft = stft if remove_reflection else _add_reflection(stft)
+
+    stft = _remove_stft_padding(stft, zero_pad1, zero_pad2, hop_length) if remove_padding else stft
+
+    return stft
+
+
+def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=False):
     """
     Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
     this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
@@ -243,7 +250,6 @@ def e_istft(stft, window_length, hop_length, window_type,
         data above the Nyquist. If False, this assumes that the input STFT is complete. Default is True.
         remove_padding: (bool) (Optional) if True, this function will remove the first and
             last (window_length - hop_length) number of samples. Defaults to False.
-        use_librosa: (bool) (Optional) This flag bypasses nussl's istft function and will call librosa's istft. nussl
         will massage the output so that it is in a format that it expects. remove_reflection is still works in this
         mode. Note: librosa's works differently than nussl's and may produce different output.
 
@@ -272,11 +278,9 @@ def e_istft(stft, window_length, hop_length, window_type,
 
         calculated_signal = nussl.e_istft(stft, win_length, hop_length)
     """
-    if use_librosa:
-        signal = librosa.istft(stft, hop_length, window_length, make_window(window_type, window_length))
-        return signal
 
     n_hops = stft.shape[1]
+    signal_length = ((n_hops - 1) * hop_length) - window_length # ?
     signal_length = (n_hops - 1) * hop_length + window_length
     signal = np.zeros(signal_length)
 
@@ -298,8 +302,43 @@ def e_istft(stft, window_length, hop_length, window_type,
     return signal
 
 
+def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
+                          remove_reflection=False, remove_padding=False, center=True):
+    """
+
+    Args:
+        stft:
+        window_length:
+        hop_length:
+        window_type:
+        remove_reflection:
+        remove_padding:
+
+    Returns:
+
+    """
+    window = get_window_function(window_type) if window_type is not None else None
+
+    if remove_reflection:
+        n_fft = stft.shape[0]
+        n_fft -= 1 if n_fft % 2 == 0 else 0
+        stft = stft[:n_fft, :]
+
+    signal = librosa.istft(stft, hop_length, window_length, window, center)
+
+    # remove zero-padding
+    if remove_padding:
+        start = window_length - hop_length
+        n_hops = stft.shape[1]
+        signal_length = (n_hops - 1) * hop_length + window_length
+        stop = signal_length - (window_length - hop_length)
+        signal = signal[start:stop]
+
+    return signal
+
+
 def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
-                n_fft_bins=None, remove_reflection=True, use_librosa=False):
+                n_fft_bins=None, remove_reflection=True, use_librosa=constants.USE_LIBROSA_STFT):
     """
     Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
     the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
@@ -341,6 +380,7 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
     hop_in_secs = hop_length / (1.0 * sample_rate)
     time_vector = np.multiply(hop_in_secs, time_vector)
 
+    window_type = constants.WINDOW_DEFAULT if window_type is None else window_type
     window = make_window(window_type, window_length)
     win_dot = np.dot(window, window.T)
     psd = np.zeros_like(stft, dtype=float)
@@ -350,11 +390,56 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
     return stft, psd, frequency_vector, time_vector
 
 
+def _add_zero_padding(signal, window_length, hop_length):
+    """
+
+    Args:
+        signal:
+        window_length:
+        hop_length:
+
+    Returns:
+
+    """
+    orig_signal_length = len(signal)
+
+    # zero-pad the vector at the beginning and end to reduce the window tapering effect
+    window_length -= 1 if window_length % 2 != 0 else 0 # subtract 1 if window_length is an odd number
+    zero_pad1_len = window_length // 2
+    signal = np.lib.pad(signal, (zero_pad1_len, zero_pad1_len), 'constant', constant_values=(0, 0))
+
+    # another zero pad at the end if not integer multiple of hop_length
+    zero_pad2_len = 0
+    if orig_signal_length % hop_length != 0:
+        zero_pad2_len = hop_length - (orig_signal_length % hop_length)
+        signal = np.lib.pad(signal, (0, zero_pad2_len), 'constant', constant_values=(0, 0))
+
+    return signal, zero_pad1_len, zero_pad2_len
+
+
+def _remove_stft_padding(stft, zero_pad1_len, zero_pad2_len, hop_length):
+    """
+
+    Args:
+        stft:
+        zero_pad1_len:
+        zero_pad2_len:
+        hop_length:
+
+    Returns:
+
+    """
+    first = zero_pad1_len // hop_length
+    last = stft.shape[1] - (zero_pad1_len + zero_pad2_len) // hop_length
+    stft = stft[:, first: last]
+    return stft
+
+
 def make_window(window_type, length):
     """Returns an np array of type window_type
 
     Args:
-        window_type (WindowType): Type of window to create, window_type object
+        window_type (basestring): Type of window to create, string can be
         length (int): length of window
 
     Returns:
@@ -362,64 +447,33 @@ def make_window(window_type, length):
     """
 
     # Generate samples of a normalized window
-    if window_type == WindowType.RECTANGULAR:
+    if window_type == constants.WINDOW_RECTANGULAR:
         return np.ones(length)
-    elif window_type == WindowType.HANN:
-        return hann(length, False)
-    elif window_type == WindowType.BLACKMAN:
-        return blackman(length, False)
-    elif window_type == WindowType.HAMMING:
-        # return np.hamming(length)
-        return hamming(length, False)
+    elif window_type == constants.WINDOW_HANN:
+        return scipy.signal.hann(length, False)
+    elif window_type == constants.WINDOW_BLACKMAN:
+        return scipy.signal.blackman(length, False)
+    elif window_type == constants.WINDOW_HAMMING:
+        return scipy.signal.hamming(length, False)
     else:
         return None
 
+
+def get_window_function(window_type):
+    """
+    Gets a window function from scipy.signal
+    Args:
+        window_type: (string) name of the window function from scipy.signal
+
+    Returns: callable window function from scipy.signal
+
+    """
+    return getattr(scipy.signal, window_type)
 
 def _add_reflection(matrix):
     reflection = matrix[-2:0:-1, :]
     reflection = reflection.conj()
     return np.vstack((matrix, reflection))
-
-
-class WindowType:
-    """
-    The WindowType class provides standardized strings for use in make_window(). Many other things
-    in spectral_utils.py use this class, but they all get bubbled down to make_window().
-    The windows defined are:
-        RECTANGULAR = 'rectangular'
-        HAMMING = 'hamming'
-        HANN = 'hann'
-        BLACKMAN = 'blackman'
-        DEFAULT = HAMMING
-
-    Examples:
-        ::
-        # get a blackman window
-        window_type = nussl.WindowType.BLACKMAN
-        length = 1024
-        blackman = nussl.make_window(window_type, length)
-
-        # Load audio file and take stft with rectangular window
-        audio = nussl.AudioSignal('path/to/signal.wav')
-        audio.stft(window_type = WindowType.RECTANGULAR) # this will only set 'rectangular' window for this call
-
-        # But we can make it so every time anything does an STFT
-        # on the audio object it uses a rectangular window like this:
-        audio.StftParams.window_type = WindowType.RECTANGULAR
-
-        my_stft = audio.stft() # uses rectangular window because we set it in previous line
-
-    """
-    RECTANGULAR = 'rectangular'
-    HAMMING = 'hamming'
-    HANN = 'hann'
-    BLACKMAN = 'blackman'
-    DEFAULT = HAMMING
-
-    all_types = [RECTANGULAR, HAMMING, HANN, BLACKMAN]
-
-    def __init__(self):
-        pass
 
 
 class StftParams(object):
@@ -441,7 +495,7 @@ class StftParams(object):
         default_win_len = int(2 ** (np.ceil(np.log2(constants.DEFAULT_WIN_LEN_PARAM * sample_rate))))
         self._window_length = default_win_len if window_length is None else window_length
         self._hop_length = self._window_length / 2 if hop_length is None else hop_length
-        self.window_type = WindowType.DEFAULT if window_type is None else window_type
+        self.window_type = constants.WINDOW_DEFAULT if window_type is None else window_type
         self._n_fft_bins = self._window_length if n_fft_bins is None else n_fft_bins
 
         self._hop_length_needs_update = True
