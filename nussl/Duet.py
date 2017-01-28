@@ -10,6 +10,7 @@ import spectral_utils
 import separation_base
 import audio_signal
 import constants
+import utils
 
 
 class Duet(separation_base.SeparationBase):
@@ -98,8 +99,10 @@ class Duet(separation_base.SeparationBase):
         fs = self.sample_rate
 
         # Compute the stft of the two channel mixtures
-        stft1, psd1, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(1), L, hop, winType, fs, use_librosa=True)
-        stft2, psd2, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(2), L, hop, winType, fs, use_librosa=True)
+        stft1, psd1, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(1),
+                                                                                L, hop, winType, fs, use_librosa=True)
+        stft2, psd2, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(2),
+                                                                                L, hop, winType, fs, use_librosa=True)
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
         stft1 = stft1[1::, :]
@@ -178,8 +181,7 @@ class Duet(separation_base.SeparationBase):
             bestsofar[mask] = score[mask]
 
         # demix with ML alignment and convert to time domain
-        Lx = self.audio_signal.signal_length
-        xhat = np.zeros((self.num_sources, Lx))
+        xhat = np.zeros((self.num_sources, self.audio_signal.signal_length))
         for i in range(0, self.num_sources):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, num_time_bins)),
@@ -187,7 +189,7 @@ class Duet(separation_base.SeparationBase):
             # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
             xi = spectral_utils.e_istft(Xm, L, hop, winType)
 
-            xhat[i, :] = xi[0:Lx]
+            xhat[i, :] = utils.add_mismatched_arrays(xhat[i, ], xi)[:self.audio_signal.signal_length]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]

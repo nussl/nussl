@@ -89,7 +89,7 @@ class TestAudioSignal(unittest.TestCase):
         a = nussl.AudioSignal(audio_data_array=self.sine_wave)
 
         # complete OLA
-        a.stft_params.window_type = nussl.WindowType.RECTANGULAR
+        a.stft_params.window_type = nussl.constants.WINDOW_RECTANGULAR
         a.stft_params.hop_length = a.stft_params.window_length
 
         a.stft()

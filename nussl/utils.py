@@ -228,3 +228,42 @@ def json_numpy_obj_hook(dct):
         data = base64.b64decode(dct['__ndarray__'])
         return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
     return dct
+
+
+def add_mismatched_arrays(array1, array2, truncate=False):
+    """
+    Will add two 1-D numpy arrays of different length. If truncate is false, it will expand
+    the resultant array to the larger of the two, if True it will truncate the resultant
+    array to the smaller of the two.
+
+    Args:
+        array1: (np.array) 1-D numeric array
+        array2: (np.array) 1-D numeric array
+        truncate: (Bool) If True, will truncate the resultant array to the smaller of the two
+
+    Returns:
+        One array added from the two input arrays
+
+    """
+    # Cast these arrays to the largest common type
+    array1 = np.array(array1, dtype=np.promote_types(array1.dtype, array2.dtype))
+    array2 = np.array(array2, dtype=np.promote_types(array1.dtype, array2.dtype))
+
+    # TODO: find a more elegant way to do this whole function
+
+    if truncate:
+        if len(array1) < len(array2):
+            result = array1.copy()
+            result += array2[:len(array1)]
+        else:
+            result = array2.copy()
+            result += array1[:len(array2)]
+    else:
+        if len(array1) < len(array2):
+            result = array2.copy()
+            result[:len(array1)] += array1
+        else:
+            result = array1.copy()
+            result[:len(array2)] += array2
+
+    return result
