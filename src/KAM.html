@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +6,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>KAM Class &mdash; nussl 0.1.3 documentation</title>
+  <title>KAM Class &mdash; nussl 0.1.5a9 documentation</title>
   
 
   
@@ -30,10 +28,7 @@
   
 
   
-    <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
-        <link rel="up" title="nussl" href="modules.html"/>
-        <link rel="next" title="Nmf Class" href="Nmf.html"/>
-        <link rel="prev" title="Duet Class" href="Duet.html"/> 
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -83,20 +78,11 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet Class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">KAM Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils Module</a></li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classes.html">nussl Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">nussl Modules</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
@@ -122,15 +108,13 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-          <li><a href="modules.html">nussl</a> &raquo;</li>
       
     <li>KAM Class</li>
       <li class="wy-breadcrumbs-aside">
@@ -167,75 +151,6 @@ Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.</dd>
 <p>Required modules:
 1. f_stft
 2. f_istft</p>
-<dl class="class">
-<dt id="KAM.Kernel">
-<em class="property">class </em><code class="descclassname">KAM.</code><code class="descname">Kernel</code><span class="sig-paren">(</span><em>Type=''</em>, <em>ParamVal=matrix([]</em>, <em>shape=(1</em>, <em>0)</em>, <em>dtype=float64)</em>, <em>Nhood=None</em>, <em>Wfunc=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel" title="Permalink to this definition">¶</a></dt>
-<dd><p>The class Kernel defines the properties of the time-freq proximity kernel. The weight values of
-the proximity kernel over time-frequecy bins that are considered as neighbours are given
-by a pre-defined or a user-defined function. The value of the proximity kernel is zero over
-time-frequency bins outside the neighbourhood.</p>
-<p>Properties:</p>
-<dl class="docutils">
-<dt>-kType: (string) determines whether the kernel is one of the pre-defined kernel types</dt>
-<dd>or a user-defined lambda function.
-Predefined choices are: &#8216;cross&#8217;,&#8217;horizontal&#8217;,&#8217;vertical&#8217;,&#8217;periodic&#8217;
-To define a new kernel type, kType should be set to: &#8216;userdef&#8217;</dd>
-<dt>-kParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any</dt>
-<dd><p class="first">of the pre-defined kernel type is selected, the parameter values should be provided
-through kParamVal. Parameters corresponding to the pre-defined kernels are:
-Cross: (neighbourhood width along the freq. axis in # of freq. bins, neighbour width</p>
-<blockquote>
-<div>along the time axis in # of time frames)</div></blockquote>
-<p>Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
-Horizontal: (neighbourhood width along the time axis in # of time frames)
-Periodic: (period in # of time frames,# of periods along the time axis)</p>
-<dl class="last docutils">
-<dt>Note: neighbourhood width is measured in only one direction, e.g. only to the</dt>
-<dd>right of a time-freq bin in the case of a horizontal kernel, so the whole
-length of the neighbourhood would be twice the specified width.</dd>
-</dl>
-</dd>
-<dt>-kNhood: logical lambda funcion which receives the coordinates of two time-frequency</dt>
-<dd>bins and determines whether they are neighbours (outputs TRUE if neighbour).</dd>
-<dt>-kWfunc: lambda function which receives the coordinates of two time-frequency bins that are</dt>
-<dd>considered neighbours by kNhood and computes the weight value at the second bin given
-its distance from the first bin. The weight values fall in the interval [0,1] with
-1 indicating zero-distance or equivalently perfect similarity.
-Default: all ones over the neighbourhood (binary kernel)</dd>
-</dl>
-<p>EXAMPLE:</p>
-<p>FF,TT=np.meshgrid(np.arange(5),np.arange(7))
-TFcoords1=np.mat(&#8216;2,3&#8217;)
-TFcoords2=np.mat(np.zeros((35,2)))
-TFcoords2[:,0]=np.mat(np.asarray(FF.T).reshape(-1)).T
-TFcoords2[:,1]=np.mat(np.asarray(TT.T).reshape(-1)).T</p>
-<p>W=lambda TFcoords1,TFcoords2: np.exp(-(TFcoords1-TFcoords2)*(TFcoords1-TFcoords2).T)
-k_cross=Kernel(&#8216;cross&#8217;,np.mat([3,2]),W)
-simVal_cross=np.reshape(k_cross.sim(TFcoords1,TFcoords2),(5,7))</p>
-<dl class="method">
-<dt id="KAM.Kernel.gen_predef_kernel">
-<code class="descname">gen_predef_kernel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel.gen_predef_kernel" title="Permalink to this definition">¶</a></dt>
-<dd><p>generates the pre-defined kernel object given the parameters</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="KAM.Kernel.sim">
-<code class="descname">sim</code><span class="sig-paren">(</span><em>TFcoords1</em>, <em>TFcoords2</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel.sim" title="Permalink to this definition">¶</a></dt>
-<dd><p>Measures the similarity between a series of new time-freq points and the kernel central point.</p>
-<p>Inputs:
-TFcoords1: N1 by 2 Numpy matrix containing coordinates of N1 time-frequency bins.</p>
-<blockquote>
-<div>Each row contains the coordinates of a single bin.</div></blockquote>
-<p>TFcoords2: N2 by 2 Numpy matrix containing coordinates of N2 time-frequency bins.</p>
-<p>Output:
-simVal: N1 by N2 Numby matrix of similarity values. Similarity values fall in the interval [0,1].</p>
-<blockquote>
-<div>The value of the (i,j) element in simVal determines the amountof similarity (or closeness)
-between the i-th time-frequency bin in TFcoords1 and j-th time-frequency bin in TFcoords2.</div></blockquote>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="function">
 <dt id="KAM.kam">
 <code class="descclassname">KAM.</code><code class="descname">kam</code><span class="sig-paren">(</span><em>Inputfile</em>, <em>SourceKernels</em>, <em>Numit=1</em>, <em>SpecParams=array([]</em>, <em>dtype=float64)</em>, <em>FullKernel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.kam" title="Permalink to this definition">¶</a></dt>
@@ -416,6 +331,75 @@ S: Numpy array (K by K) containing singular values
 V: Numpy array (n by K) containing basis vectors in C^n</p>
 </dd></dl>
 
+<dl class="class">
+<dt id="KAM.Kernel">
+<em class="property">class </em><code class="descclassname">KAM.</code><code class="descname">Kernel</code><span class="sig-paren">(</span><em>Type=''</em>, <em>ParamVal=matrix([]</em>, <em>shape=(1</em>, <em>0)</em>, <em>dtype=float64)</em>, <em>Nhood=None</em>, <em>Wfunc=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class Kernel defines the properties of the time-freq proximity kernel. The weight values of
+the proximity kernel over time-frequecy bins that are considered as neighbours are given
+by a pre-defined or a user-defined function. The value of the proximity kernel is zero over
+time-frequency bins outside the neighbourhood.</p>
+<p>Properties:</p>
+<dl class="docutils">
+<dt>-kType: (string) determines whether the kernel is one of the pre-defined kernel types</dt>
+<dd>or a user-defined lambda function.
+Predefined choices are: &#8216;cross&#8217;,&#8217;horizontal&#8217;,&#8217;vertical&#8217;,&#8217;periodic&#8217;
+To define a new kernel type, kType should be set to: &#8216;userdef&#8217;</dd>
+<dt>-kParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any</dt>
+<dd><p class="first">of the pre-defined kernel type is selected, the parameter values should be provided
+through kParamVal. Parameters corresponding to the pre-defined kernels are:
+Cross: (neighbourhood width along the freq. axis in # of freq. bins, neighbour width</p>
+<blockquote>
+<div>along the time axis in # of time frames)</div></blockquote>
+<p>Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
+Horizontal: (neighbourhood width along the time axis in # of time frames)
+Periodic: (period in # of time frames,# of periods along the time axis)</p>
+<dl class="last docutils">
+<dt>Note: neighbourhood width is measured in only one direction, e.g. only to the</dt>
+<dd>right of a time-freq bin in the case of a horizontal kernel, so the whole
+length of the neighbourhood would be twice the specified width.</dd>
+</dl>
+</dd>
+<dt>-kNhood: logical lambda funcion which receives the coordinates of two time-frequency</dt>
+<dd>bins and determines whether they are neighbours (outputs TRUE if neighbour).</dd>
+<dt>-kWfunc: lambda function which receives the coordinates of two time-frequency bins that are</dt>
+<dd>considered neighbours by kNhood and computes the weight value at the second bin given
+its distance from the first bin. The weight values fall in the interval [0,1] with
+1 indicating zero-distance or equivalently perfect similarity.
+Default: all ones over the neighbourhood (binary kernel)</dd>
+</dl>
+<p>EXAMPLE:</p>
+<p>FF,TT=np.meshgrid(np.arange(5),np.arange(7))
+TFcoords1=np.mat(&#8216;2,3&#8217;)
+TFcoords2=np.mat(np.zeros((35,2)))
+TFcoords2[:,0]=np.mat(np.asarray(FF.T).reshape(-1)).T
+TFcoords2[:,1]=np.mat(np.asarray(TT.T).reshape(-1)).T</p>
+<p>W=lambda TFcoords1,TFcoords2: np.exp(-(TFcoords1-TFcoords2)*(TFcoords1-TFcoords2).T)
+k_cross=Kernel(&#8216;cross&#8217;,np.mat([3,2]),W)
+simVal_cross=np.reshape(k_cross.sim(TFcoords1,TFcoords2),(5,7))</p>
+<dl class="method">
+<dt id="KAM.Kernel.gen_predef_kernel">
+<code class="descname">gen_predef_kernel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel.gen_predef_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates the pre-defined kernel object given the parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="KAM.Kernel.sim">
+<code class="descname">sim</code><span class="sig-paren">(</span><em>TFcoords1</em>, <em>TFcoords2</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel.sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measures the similarity between a series of new time-freq points and the kernel central point.</p>
+<p>Inputs:
+TFcoords1: N1 by 2 Numpy matrix containing coordinates of N1 time-frequency bins.</p>
+<blockquote>
+<div>Each row contains the coordinates of a single bin.</div></blockquote>
+<p>TFcoords2: N2 by 2 Numpy matrix containing coordinates of N2 time-frequency bins.</p>
+<p>Output:
+simVal: N1 by N2 Numby matrix of similarity values. Similarity values fall in the interval [0,1].</p>
+<blockquote>
+<div>The value of the (i,j) element in simVal determines the amountof similarity (or closeness)
+between the i-th time-frequency bin in TFcoords1 and j-th time-frequency bin in TFcoords2.</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -423,21 +407,12 @@ V: Numpy array (n by K) containing basis vectors in C^n</p>
           </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="Nmf.html" class="btn btn-neutral float-right" title="Nmf Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="Duet.html" class="btn btn-neutral" title="Duet Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Interactive Audio Lab.
+        &copy; Copyright 2017, Interactive Audio Lab.
 
     </p>
   </div>
@@ -459,7 +434,7 @@ V: Numpy array (n by K) containing basis vectors in C^n</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.3',
+            VERSION:'0.1.5a9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

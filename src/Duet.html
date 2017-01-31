@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +6,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Duet Class &mdash; nussl 0.1.3 documentation</title>
+  <title>Duet Class &mdash; nussl 0.1.5a9 documentation</title>
   
 
   
@@ -30,10 +28,10 @@
   
 
   
-    <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
-        <link rel="up" title="nussl" href="modules.html"/>
-        <link rel="next" title="KAM Class" href="KAM.html"/>
-        <link rel="prev" title="Constants module" href="Constants.html"/> 
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+        <link rel="up" title="nussl Classes" href="classes.html"/>
+        <link rel="next" title="nussl Modules" href="modules.html"/>
+        <link rel="prev" title="RepetSim Class" href="repet_sim.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -83,20 +81,18 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Duet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Nmf.html">Nmf Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils Module</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="classes.html">nussl Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="separation_base.html">SepararationBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet.html">REPET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet_sim.html">REPET-SIM</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">DUET</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">nussl Modules</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
@@ -122,7 +118,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -130,13 +126,13 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
       
-          <li><a href="modules.html">nussl</a> &raquo;</li>
+          <li><a href="classes.html">nussl Classes</a> &raquo;</li>
       
     <li>Duet Class</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/src/Duet.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/src/duet.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -150,8 +146,8 @@
 <span id="duet-class"></span><h1>Duet Class<a class="headerlink" href="#module-Duet" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="Duet.Duet">
-<em class="property">class </em><code class="descclassname">Duet.</code><code class="descname">Duet</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_sources</em>, <em>sample_rate=None</em>, <em>stft_params=None</em>, <em>a_min=-3</em>, <em>a_max=3</em>, <em>a_num=50</em>, <em>d_min=-3</em>, <em>d_max=3</em>, <em>d_num=50</em>, <em>threshold=0.2</em>, <em>a_min_distance=5</em>, <em>d_min_distance=5</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></p>
+<em class="property">class </em><code class="descclassname">Duet.</code><code class="descname">Duet</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_sources</em>, <em>a_min=-3</em>, <em>a_max=3</em>, <em>a_num=50</em>, <em>d_min=-3</em>, <em>d_max=3</em>, <em>d_num=50</em>, <em>threshold=0.2</em>, <em>a_min_distance=5</em>, <em>d_min_distance=5</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="separation_base.html#separation_base.SeparationBase" title="separation_base.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></a></p>
 <p>Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.</p>
 <p>The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
 and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.</p>
@@ -187,26 +183,34 @@ WindowAttributes.WindowAttributes(self.sample_rate)</li>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<p><a class="reference internal" href="../examples/duet_demo.html#duet-demo"><span>The DUET Demo Example</span></a></p>
-<dl class="staticmethod">
-<dt id="Duet.Duet.find_peaks">
-<em class="property">static </em><code class="descname">find_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_num=1</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.find_peaks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Receives a row vector of positive values (in [0,1]) and finds the peak values and corresponding indices.</p>
+<p><a class="reference internal" href="../examples/duet_demo.html#duet-demo"><span class="std std-ref">The DUET Demo Example</span></a></p>
+<dl class="method">
+<dt id="Duet.Duet.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>np.array</em>) &#8211; a 2D Numpy matrix containing real values (in [0,1])</li>
-<li><strong>min_thr</strong> (<em>Optional[float]</em>) &#8211; minimum threshold (in [0,1]) on data values. Defaults to 0.5</li>
-<li><strong>min_dist</strong> (<em>Optional[np.array]</em>) &#8211; 1 by 2 matrix containing minimum distances (in # of time elements) between
-peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
-<li><strong>max_peaks</strong> &#8211; maximum number of peaks in the whole matrix. Defaults to 1</li>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>xhat</strong> (<em>np.array</em>) - an N-row matrix containing time-domain estimates of sources</li>
+<li><strong>ad_est</strong> (<em>np.array</em>) - N by 2 Numpy matrix containing estimated attenuation and delay values
+corresponding to N sources</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">input_file_name</span> <span class="o">=</span> <span class="s1">&#39;../Input/dev1_female3_inst_mix.wav&#39;</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_file_name</span><span class="p">)</span>
+
+<span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -226,74 +230,32 @@ peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>peakIndex</strong> (<em>np.array</em>) &#8211;
-a two-row Numpy matrix containing peaks and their indices</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>peakIndex</strong> (<em>np.array</em>) &#8211; a two-row Numpy matrix containing peaks and their indices</p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="Duet.Duet.make_audio_signals">
-<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.make_audio_signals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the extracted signals</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>signals</strong> (<em>List[AudioSignal]</em>) &#8211;
-List of AudioSignals extracted using DUET.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="Duet.Duet.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>three_d_plot=False</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots histograms with the results of the DUET algorithm</p>
+<dl class="staticmethod">
+<dt id="Duet.Duet.find_peaks">
+<em class="property">static </em><code class="descname">find_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_num=1</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.find_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receives a row vector of positive values (in [0,1]) and finds the peak values and corresponding indices.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>output_name</strong> (<em>str</em>) &#8211; path to save plot as</li>
-<li><strong>three_d_plot</strong> (<em>Optional[bool]</em>) &#8211; Flags whether or not to plot in 3d. Defaults to False</li>
+<li><strong>data</strong> (<em>np.array</em>) &#8211; a 2D Numpy matrix containing real values (in [0,1])</li>
+<li><strong>min_thr</strong> (<em>Optional[float]</em>) &#8211; minimum threshold (in [0,1]) on data values. Defaults to 0.5</li>
+<li><strong>min_dist</strong> (<em>Optional[np.array]</em>) &#8211; 1 by 2 matrix containing minimum distances (in # of time elements) between
+peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
+<li><strong>max_peaks</strong> &#8211; maximum number of peaks in the whole matrix. Defaults to 1</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="Duet.Duet.run">
-<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
-<li><strong>xhat</strong> (<em>np.array</em>) - an N-row matrix containing time-domain estimates of sources</li>
-<li><strong>ad_est</strong> (<em>np.array</em>) - N by 2 Numpy matrix containing estimated attenuation and delay values
-corresponding to N sources</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">input_file_name</span> <span class="o">=</span> <span class="s">&#39;../Input/dev1_female3_inst_mix.wav&#39;</span>
-<span class="n">signal</span> <span class="o">=</span> <span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_file_name</span><span class="p">)</span>
-
-<span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-<span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-
-<span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="method">
@@ -324,6 +286,38 @@ averaging kernel</p>
 </dl>
 </dd></dl>
 
+<dl class="method">
+<dt id="Duet.Duet.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the extracted signals</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>signals</strong> (<em>List[AudioSignal]</em>) &#8211; List of AudioSignals extracted using DUET.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Duet.Duet.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>three_d_plot=False</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#Duet.Duet.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots histograms with the results of the DUET algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_name</strong> (<em>str</em>) &#8211; path to save plot as</li>
+<li><strong>three_d_plot</strong> (<em>Optional[bool]</em>) &#8211; Flags whether or not to plot in 3d. Defaults to False</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -335,10 +329,10 @@ averaging kernel</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="KAM.html" class="btn btn-neutral float-right" title="KAM Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="nussl Modules" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="Constants.html" class="btn btn-neutral" title="Constants module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="repet_sim.html" class="btn btn-neutral" title="RepetSim Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -347,7 +341,7 @@ averaging kernel</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Interactive Audio Lab.
+        &copy; Copyright 2017, Interactive Audio Lab.
 
     </p>
   </div>
@@ -369,7 +363,7 @@ averaging kernel</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.3',
+            VERSION:'0.1.5a9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

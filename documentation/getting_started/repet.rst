@@ -1,0 +1,103 @@
+.. _repet:
+
+===========
+Using REPET
+===========
+
+*nussl* contains many source separation algorithms. Here will demonstrate how to use *nussl* to run REPET. The basic
+principles outlined here work across all of the source separation algorithms in *nussl*.
+
+Introduction
+------------
+
+The REpeating Pattern Extraction Technique, or REPET, is source separation algorithm that separates a repeating
+"background" from a non-repeating "foreground". REPET finds the repeating period in an audio signal, slices the signal
+into "frames" of the same length of the repeating period and "overlays" those frames. Once the frames are overlayed,
+REPET extracts the non-repeating part by filtering out values that are far from the median value at each frame.
+
+In order to run REPET in *nussl*, we first must create an ``AudioSignal`` object. We're going to load a file as before.
+
+>>> import nussl
+>>> history = nussl.AudioSignal('HistoryRepeatingPropellerHeads.wav')
+
+Neat. Now, we need to instantiate a ``Repet`` object. **Like all source separation algorithms** in *nussl*, ``Repet``
+needs an ``AudioSignal`` object as its first parameter when we initialize it.
+
+>>> repet = nussl.Repet(history)
+
+Again, **like all other algorithms in** *nussl*, ``Repet`` **has made its own copy of our** ``history`` object that it
+will manipulate, so we can reuse ``history`` again if we want to.
+
+Repeating Period
+----------------
+
+If we know exactly what the repeating period is, we can give that ``Repet`` or if we kind of know where it is we can
+give it some estimates. Say I think the repeating period is about 3.5 seconds.
+
+>>> repet_exact_period = nussl.Repet(history, period=3.5)  # exact period
+>>> repet_period_guess = nussl.Repet(history, min_period=3.4, max_period=3.6)  # guess the period
+
+But! If we have no clue, then ``Repet`` will try to find the repeating period for us, automatically. So we're back to
+this:
+
+>>> repet = nussl.Repet(history)
+
+Running Repet
+-------------
+
+Now, we can run the algorithm, and **all nussl algorithms**, in one of two ways:
+
+>>> repet.run()
+>>> repet()
+
+Both do the same thing. Now Repet has been run (twice). We can check out properties of ``Repet``.
+
+>>> repet.repeating_period  # gets repeating period in integer multiples of hop (stft time bins)
+88
+>>> repet.beat_spectrum  # this is a 1-D np array representing beat strength
+array([  9.64896795e+04,   4.99998429e+04,   3.75931435e+04,
+         3.38020910e+04,   3.17312478e+04,   3.03712653e+04,
+         2.92616252e+04,   3.05355762e+04,   4.01459695e+04,
+         ...
+         7.48095401e+02,   6.56239875e+02,   5.53445200e+02,
+         9.16959708e+02,   1.63284254e+03,   6.62180164e+03,
+         4.62078346e+03,   3.22329084e+02,   1.38383443e+00])
+
+If we hadn't run ``Repet`` we could still get the beat spectrum. We can also compute a beat spectrum of an
+arbitrary 2-D real valued matrix (as a np.array)
+
+>>> repet2 = nussl.Repet(histoy)
+>>> history_beat_spectrum = repet2.get_beat_spectrum()
+>>> random_beat_spectrum = repet2.compute_beat_spectrum(np.random.uniform(size=(1025, 100)))
+
+Getting the results
+-------------------
+
+Okay, okay, okay. Now that we've run ``Repet`` let's get the results and output them to a file. We get results from
+all of our algorithms in *nussl* the same way, by calling ``make_audio_signals()``:
+
+>>> background, foreground = repet.make_audio_signals()
+>>> type(background), type(foreground)
+nussl.audio_signal.AudioSignal, nussl.audio_signal.AudioSignal
+
+We can see that ``make_audio_signals()`` produces two new ``AudioSignal`` objects. Why two? One for each source. Other
+algorithms (like DUET) may produce different numbers of ``AudioSignal`` objects.
+
+Now, we can use these just like before. So let's write our results to files:
+
+>>> background.write_audio_to_file('history_background.wav')
+>>> foreground.write_audio_to_file('history_foreground.wav')
+
+Tying it all together
+---------------------
+
+Here's what the basics of ``Repet`` look like all at once:
+
+>>> history = nussl.AudioSignal('HistoryRepeatingPropellerHeads.wav')
+>>> repet = nussl.Repet(history)
+>>> repet()
+>>> background, foreground = repet.make_audio_signals()
+>>> background.write_audio_to_file('history_background.wav')
+>>> foreground.write_audio_to_file('history_foreground.wav')
+
+`That's pretty neat! <https://youtu.be/OXZt4-LTtHw>`_

@@ -32,14 +32,29 @@ class SeparationBase(object):
 
     @property
     def sample_rate(self):
+        """Sample rate of the AudioSignal object associated with this SeparationBase object
+
+        Returns: (int) Sample rate of the AudioSignal object
+
+        """
         return self.audio_signal.sample_rate
 
     @property
     def stft_params(self):
+        """StftParams object
+
+        Returns:
+
+        """
         return self.audio_signal.stft_params
 
     @property
     def audio_signal(self):
+        """A local copy of the AudioSignal object passed in on init
+
+        Returns: (:obj:`AudioSignal`) copy of AudioSignal object
+
+        """
         return self._audio_signal
 
     @audio_signal.setter
@@ -71,6 +86,11 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def to_json(self):
+        """Creates JSON-ified string from this SeparationBase object
+
+        Returns: (str) JSON populated with data from this SeparationBase object
+
+        """
         return json.dumps(self, default=SeparationBase._to_json_helper)
 
     @staticmethod
@@ -94,6 +114,14 @@ class SeparationBase(object):
 
     @classmethod
     def from_json(cls, json_string):
+        """Instantiates a new SeparationBase object from the JSON string
+
+        Args:
+            json_string: (str) JSON string
+
+        Returns: (:obj:`SeparationBase`) new SeparationBase object populated from provided JSON string
+
+        """
         sep_decoder = SeparationBaseDecoder(cls)
         return sep_decoder.decode(json_string)
 
@@ -118,7 +146,7 @@ class SeparationBase(object):
 class SeparationBaseDecoder(json.JSONDecoder):
     """
     Object to decode a SeparationBase object from a json serialization.
-    You should never have to instantiate this obecjt
+    You should never have to instantiate this object directly.
     """
 
     def __init__(self, separation_class):

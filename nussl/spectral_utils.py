@@ -464,40 +464,12 @@ def make_window(window_type, length):
 
 def get_window_function(window_type):
     """
-<<<<<<< .merge_file_FhuypF
-    The WindowType class provides standardized strings for use in make_window(). Many other things
-    in spectral_utils.py use this class, but they all get bubbled down to make_window().
-    The windows defined are:
-        * ``RECTANGULAR = 'rectangular'``
-        * ``HAMMING = 'hamming'``
-        * ``HANN = 'hann'``
-        * ``BLACKMAN = 'blackman'``
-        * ``DEFAULT = HAMMING``
-
-    Examples::
-
-        # get a blackman window
-        window_type = nussl.WindowType.BLACKMAN
-        length = 1024
-        blackman = nussl.make_window(window_type, length)
-
-        # Load audio file and take stft with rectangular window
-        audio = nussl.AudioSignal('path/to/signal.wav')
-        audio.stft(window_type = WindowType.RECTANGULAR) # this will only set 'rectangular' window for this call
-
-        # But we can make it so every time anything does an STFT
-        # on the audio object it uses a rectangular window like this:
-        audio.StftParams.window_type = WindowType.RECTANGULAR
-=======
-    Gets a window function from scipy.signal
-    Args:
-        window_type: (string) name of the window function from scipy.signal
->>>>>>> .merge_file_Wi3qX7
 
     Returns: callable window function from scipy.signal
 
     """
     return getattr(scipy.signal, window_type)
+
 
 def _add_reflection(matrix):
     reflection = matrix[-2:0:-1, :]
@@ -507,6 +479,11 @@ def _add_reflection(matrix):
 
 class StftParams(object):
     """
+    .. _stft_params:
+
+    StftParams
+    ----------
+
     The StftParams class is a container for information needed to run an STFT or iSTFT.
     This is meant as a convenience and does not actually perform any calculations within. It should
     get "decomposed" by the time e_stft() or e_istft() are called, so that every attribute in this
@@ -516,6 +493,8 @@ class StftParams(object):
     is the only way that a top level user has access to the STFT parameter settings that
     all of the separation algorithms are built upon.
     This object will get passed around instead of each of these individual attributes.
+
+
     """
     def __init__(self, sample_rate, window_length=None, hop_length=None, window_type=None, n_fft_bins=None):
         self.sample_rate = sample_rate

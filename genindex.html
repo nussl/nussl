@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -9,7 +6,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; nussl 0.1.3 documentation</title>
+  <title>Index &mdash; nussl 0.1.5a9 documentation</title>
   
 
   
@@ -31,7 +28,7 @@
   
 
   
-    <link rel="top" title="nussl 0.1.3 documentation" href="index.html"/> 
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -81,10 +78,11 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="src/modules.html">NUSSL Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/classes.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/modules.html">Modules</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Code Examples</a></li>
@@ -135,7 +133,6 @@
 
 <div class="genindex-jumpbox">
  <a href="#A"><strong>A</strong></a>
- | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
@@ -143,6 +140,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -161,41 +159,43 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.add">add() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.active_region_is_default">active_region_is_default (audio_signal.AudioSignal attribute)</a>
   </dt>
 
       
-  <dt><a href="src/Repet.html#Repet.RepetType.all_types">all_types (Repet.RepetType attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.add">add() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/utils.html#utils.add_mismatched_arrays">add_mismatched_arrays() (in module utils)</a>
+  </dt>
+
+      
+  <dt><a href="src/repet.html#Repet.RepetType.all_types">all_types (Repet.RepetType attribute)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.audio_data">audio_data (audio_signal.AudioSignal attribute)</a>, <a href="src/audio_signal.html#audio_signal.AudioSignal.audio_data">[1]</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.audio_data_as_ints">audio_data_as_ints() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#module-audio_signal">audio_signal (module)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="src/spectral_utils.html#spectral_utils.WindowType.all_types">(spectral_utils.WindowType attribute)</a>
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.audio_signal">(separation_base.SeparationBase attribute)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.audio_data">audio_data (audio_signal.AudioSignal attribute)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="src/AudioSignal.html#module-audio_signal">audio_signal (module)</a>
-  </dt>
-
-      
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal">AudioSignal (class in audio_signal)</a>
-  </dt>
-
-  </dl></td>
-</tr></table>
-
-<h2 id="B">B</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="src/spectral_utils.html#spectral_utils.WindowType.BLACKMAN">BLACKMAN (spectral_utils.WindowType attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal">AudioSignal (class in audio_signal)</a>
   </dt>
 
   </dl></td>
@@ -205,29 +205,25 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Repet.html#Repet.Repet.compute_beat_spectrum">compute_beat_spectrum() (Repet.Repet static method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.compute_beat_spectrum">compute_beat_spectrum() (Repet.Repet static method)</a>
   </dt>
 
       
-  <dt><a href="src/Repet.html#Repet.Repet.compute_repeating_mask_sim">compute_repeating_mask_sim() (Repet.Repet static method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.compute_repeating_mask_sim">compute_repeating_mask_sim() (Repet.Repet static method)</a>
   </dt>
 
       
-  <dt><a href="src/Repet.html#Repet.Repet.compute_repeating_mask_with_beat_spectrum">compute_repeating_mask_with_beat_spectrum() (Repet.Repet static method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.compute_repeating_mask_with_beat_spectrum">compute_repeating_mask_with_beat_spectrum() (Repet.Repet static method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Repet.html#Repet.Repet.compute_similarity_matrix">compute_similarity_matrix() (Repet.Repet static method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.compute_similarity_matrix">compute_similarity_matrix() (Repet.Repet static method)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.concat">concat() (audio_signal.AudioSignal method)</a>
-  </dt>
-
-      
-  <dt><a href="src/Constants.html#module-Constants">Constants (module)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.concat">concat() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
@@ -242,11 +238,7 @@
 
       <dd><dl>
         
-  <dt><a href="src/Repet.html#Repet.RepetType.DEFAULT">(Repet.RepetType attribute)</a>
-  </dt>
-
-        
-  <dt><a href="src/spectral_utils.html#spectral_utils.WindowType.DEFAULT">(spectral_utils.WindowType attribute)</a>
+  <dt><a href="src/repet.html#Repet.RepetType.DEFAULT">(Repet.RepetType attribute)</a>
   </dt>
 
       </dl></dd>
@@ -261,12 +253,12 @@
   </dt>
 
       
-  <dt><a href="src/Duet.html#Duet.Duet">Duet (class in Duet)</a>
+  <dt><a href="src/duet.html#Duet.Duet">Duet (class in Duet)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="src/Duet.html#module-Duet">(module)</a>
+  <dt><a href="src/duet.html#module-Duet">(module)</a>
   </dt>
 
       </dl></dd>
@@ -301,41 +293,63 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.file_name">file_name (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.file_name">file_name (audio_signal.AudioSignal attribute)</a>
   </dt>
 
       
-  <dt><a href="src/Duet.html#Duet.Duet.find_peaks">find_peaks() (Duet.Duet static method)</a>
+  <dt><a href="src/utils.html#utils.find_peak_indices">find_peak_indices() (in module utils)</a>
+  </dt>
+
+      
+  <dt><a href="src/utils.html#utils.find_peak_values">find_peak_values() (in module utils)</a>
+  </dt>
+
+      
+  <dt><a href="src/duet.html#Duet.Duet.find_peaks">find_peaks() (Duet.Duet static method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="src/Repet.html#Repet.Repet.find_peaks">(Repet.Repet method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.find_peaks">(Repet.Repet method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="src/Duet.html#Duet.Duet.find_peaks2">find_peaks2() (Duet.Duet static method)</a>
-  </dt>
-
-      
-  <dt><a href="src/Repet.html#Repet.Repet.find_repeating_period_complex">find_repeating_period_complex() (Repet.Repet static method)</a>
+  <dt><a href="src/duet.html#Duet.Duet.find_peaks2">find_peaks2() (Duet.Duet static method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Repet.html#Repet.Repet.find_repeating_period_simple">find_repeating_period_simple() (Repet.Repet static method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.find_repeating_period_complex">find_repeating_period_complex() (Repet.Repet static method)</a>
   </dt>
 
       
-  <dt><a href="src/Repet.html#Repet.Repet.find_similarity_indices">find_similarity_indices() (Repet.Repet method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.find_repeating_period_simple">find_repeating_period_simple() (Repet.Repet static method)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.Fvec">Fvec (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/repet.html#Repet.Repet.find_similarity_indices">find_similarity_indices() (Repet.Repet method)</a>
   </dt>
 
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.freq_vector">freq_vector (audio_signal.AudioSignal attribute)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.from_json">from_json() (audio_signal.AudioSignal static method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.from_json">(separation_base.SeparationBase class method)</a>
+  </dt>
+
+        
+  <dt><a href="src/spectral_utils.html#spectral_utils.StftParams.from_json">(spectral_utils.StftParams static method)</a>
+  </dt>
+
+      </dl></dd>
   </dl></td>
 </tr></table>
 
@@ -347,21 +361,29 @@
   </dt>
 
       
-  <dt><a href="src/Repet.html#Repet.Repet.get_beat_spectrum">get_beat_spectrum() (Repet.Repet method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.get_beat_spectrum">get_beat_spectrum() (Repet.Repet method)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.get_channel">get_channel() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.get_channel">get_channel() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.get_power_spectrogram_channel">get_power_spectrogram_channel() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Repet.html#Repet.Repet.get_similarity_matrix">get_similarity_matrix() (Repet.Repet method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.get_similarity_matrix">get_similarity_matrix() (Repet.Repet method)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.get_stft_channel">get_stft_channel() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.get_stft_channel">get_stft_channel() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/spectral_utils.html#spectral_utils.get_window_function">get_window_function() (in module spectral_utils)</a>
   </dt>
 
   </dl></td>
@@ -369,16 +391,6 @@
 
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="src/spectral_utils.html#spectral_utils.WindowType.HAMMING">HAMMING (spectral_utils.WindowType attribute)</a>
-  </dt>
-
-      
-  <dt><a href="src/spectral_utils.html#spectral_utils.WindowType.HANN">HANN (spectral_utils.WindowType attribute)</a>
-  </dt>
-
-  </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="src/spectral_utils.html#spectral_utils.StftParams.hop_length">hop_length (spectral_utils.StftParams attribute)</a>
@@ -391,7 +403,31 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.istft">istft() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.istft">istft() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="src/utils.html#utils.json_numpy_obj_hook">json_numpy_obj_hook() (in module utils)</a>
+  </dt>
+
+      
+  <dt><a href="src/utils.html#utils.json_ready_numpy_array">json_ready_numpy_array() (in module utils)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="src/separation_base.html#separation_base.SeparationBaseDecoder.json_separation_decoder">json_separation_decoder() (separation_base.SeparationBaseDecoder method)</a>
+  </dt>
+
+      
+  <dt><a href="src/utils.html#utils.json_serialize_numpy_array">json_serialize_numpy_array() (in module utils)</a>
   </dt>
 
   </dl></td>
@@ -425,13 +461,25 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.load_audio_from_array">load_audio_from_array() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/spectral_utils.html#spectral_utils.librosa_istft_wrapper">librosa_istft_wrapper() (in module spectral_utils)</a>
+  </dt>
+
+      
+  <dt><a href="src/spectral_utils.html#spectral_utils.librosa_stft_wrapper">librosa_stft_wrapper() (in module spectral_utils)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.load_audio_from_array">load_audio_from_array() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.load_audio_from_file">load_audio_from_file() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.load_audio_from_file">load_audio_from_file() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/utils.html#utils.load_numpy_json">load_numpy_json() (in module utils)</a>
   </dt>
 
   </dl></td>
@@ -441,16 +489,20 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Duet.html#Duet.Duet.make_audio_signals">make_audio_signals() (Duet.Duet method)</a>
+  <dt><a href="src/duet.html#Duet.Duet.make_audio_signals">make_audio_signals() (Duet.Duet method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="src/Nmf.html#Nmf.Nmf.make_audio_signals">(Nmf.Nmf method)</a>
+  <dt><a href="src/Nmf.html#Nmf.NMF.make_audio_signals">(Nmf.NMF method)</a>
   </dt>
 
         
-  <dt><a href="src/Repet.html#Repet.Repet.make_audio_signals">(Repet.Repet method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.make_audio_signals">(Repet.Repet method)</a>
+  </dt>
+
+        
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.make_audio_signals">(separation_base.SeparationBase method)</a>
   </dt>
 
       </dl></dd>
@@ -471,23 +523,21 @@
   </dt>
 
       
-  <dt><a href="src/Nmf.html#Nmf.Nmf">Nmf (class in Nmf)</a>
+  <dt><a href="src/Nmf.html#Nmf.NMF">NMF (class in Nmf)</a>
   </dt>
 
-      <dd><dl>
-        
-  <dt><a href="src/Nmf.html#module-Nmf">(module)</a>
+      
+  <dt><a href="src/Nmf.html#module-Nmf">Nmf (module)</a>
   </dt>
 
-      </dl></dd>
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.num_channels">num_channels (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.num_channels">num_channels (audio_signal.AudioSignal attribute)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.num_fft_bins">num_fft_bins (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.num_fft_bins">num_fft_bins (audio_signal.AudioSignal attribute)</a>
   </dt>
 
   </dl></td>
@@ -497,13 +547,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Repet.html#Repet.RepetType.ORIGINAL">ORIGINAL (Repet.RepetType attribute)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.overlap_ratio">overlap_ratio (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/repet.html#Repet.RepetType.ORIGINAL">ORIGINAL (Repet.RepetType attribute)</a>
   </dt>
 
   </dl></td>
@@ -513,25 +557,29 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.peak_normalize">peak_normalize() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.peak_normalize">peak_normalize() (audio_signal.AudioSignal method)</a>
   </dt>
 
       
-  <dt><a href="src/Duet.html#Duet.Duet.plot">plot() (Duet.Duet method)</a>
+  <dt><a href="src/duet.html#Duet.Duet.plot">plot() (Duet.Duet method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="src/Nmf.html#Nmf.Nmf.plot">(Nmf.Nmf method)</a>
+  <dt><a href="src/Nmf.html#Nmf.NMF.plot">(Nmf.NMF method)</a>
   </dt>
 
         
-  <dt><a href="src/Repet.html#Repet.Repet.plot">(Repet.Repet method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.plot">(Repet.Repet method)</a>
+  </dt>
+
+        
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.plot">(separation_base.SeparationBase method)</a>
   </dt>
 
       </dl></dd>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.plot_spectrogram">plot_spectrogram() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.plot_spectrogram">plot_spectrogram() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
@@ -541,11 +589,11 @@
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.plot_time_domain">plot_time_domain() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.plot_time_domain">plot_time_domain() (audio_signal.AudioSignal method)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.power_spectrum_data">power_spectrum_data (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.power_spectrogram_data">power_spectrogram_data (audio_signal.AudioSignal attribute)</a>
   </dt>
 
   </dl></td>
@@ -555,7 +603,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Nmf.html#Nmf.Nmf.randomize_input_matrices">randomize_input_matrices() (Nmf.Nmf method)</a>
+  <dt><a href="src/Nmf.html#Nmf.NMF.randomize_input_matrices">randomize_input_matrices() (Nmf.NMF method)</a>
   </dt>
 
       
@@ -563,40 +611,44 @@
   </dt>
 
       
-  <dt><a href="src/Nmf.html#Nmf.Nmf.recombine_calculated_matrices">recombine_calculated_matrices() (Nmf.Nmf method)</a>
+  <dt><a href="src/Nmf.html#Nmf.NMF.recombine_calculated_matrices">recombine_calculated_matrices() (Nmf.NMF method)</a>
   </dt>
 
       
-  <dt><a href="src/spectral_utils.html#spectral_utils.WindowType.RECTANGULAR">RECTANGULAR (spectral_utils.WindowType attribute)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="src/Repet.html#Repet.Repet">Repet (class in Repet)</a>
+  <dt><a href="src/repet.html#Repet.Repet">Repet (class in Repet)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="src/Repet.html#module-Repet">(module)</a>
+  <dt><a href="src/repet.html#module-Repet">(module)</a>
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Repet.html#Repet.RepetType">RepetType (class in Repet)</a>
+  <dt><a href="src/repet.html#Repet.RepetType">RepetType (class in Repet)</a>
   </dt>
 
       
-  <dt><a href="src/Duet.html#Duet.Duet.run">run() (Duet.Duet method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.rms">rms() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/duet.html#Duet.Duet.run">run() (Duet.Duet method)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="src/Nmf.html#Nmf.Nmf.run">(Nmf.Nmf method)</a>
+  <dt><a href="src/Nmf.html#Nmf.NMF.run">(Nmf.NMF method)</a>
   </dt>
 
         
-  <dt><a href="src/Repet.html#Repet.Repet.run">(Repet.Repet method)</a>
+  <dt><a href="src/repet.html#Repet.Repet.run">(Repet.Repet method)</a>
+  </dt>
+
+        
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.run">(separation_base.SeparationBase method)</a>
   </dt>
 
       </dl></dd>
@@ -607,37 +659,65 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.sample_rate">sample_rate (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.sample_rate">sample_rate (separation_base.SeparationBase attribute)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.signal_duration">signal_duration (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/separation_base.html#module-separation_base">separation_base (module)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.signal_length">signal_length (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase">SeparationBase (class in separation_base)</a>
   </dt>
 
       
-  <dt><a href="src/Repet.html#Repet.RepetType.SIM">SIM (Repet.RepetType attribute)</a>
+  <dt><a href="src/separation_base.html#separation_base.SeparationBaseDecoder">SeparationBaseDecoder (class in separation_base)</a>
   </dt>
 
       
-  <dt><a href="src/KAM.html#KAM.Kernel.sim">sim() (KAM.Kernel method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.set_active_region">set_active_region() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.set_active_region_to_default">set_active_region_to_default() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.signal_duration">signal_duration (audio_signal.AudioSignal attribute)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.signal_length">signal_length (audio_signal.AudioSignal attribute)</a>
+  </dt>
+
+      
+  <dt><a href="src/repet.html#Repet.RepetType.SIM">SIM (Repet.RepetType attribute)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="src/KAM.html#KAM.Kernel.sim">sim() (KAM.Kernel method)</a>
+  </dt>
+
+      
   <dt><a href="src/spectral_utils.html#module-spectral_utils">spectral_utils (module)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.stft">stft() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.stft">stft() (audio_signal.AudioSignal method)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.stft_data">stft_data (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.stft_data">stft_data (audio_signal.AudioSignal attribute)</a>
+  </dt>
+
+      
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.stft_length">stft_length (audio_signal.AudioSignal attribute)</a>
+  </dt>
+
+      
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.stft_params">stft_params (separation_base.SeparationBase attribute)</a>
   </dt>
 
       
@@ -645,7 +725,7 @@
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.sub">sub() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.sub">sub() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
@@ -655,25 +735,39 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.time_vector">time_vector (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.time_vector">time_vector (audio_signal.AudioSignal attribute)</a>
   </dt>
 
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.trancate_seconds">trancate_seconds() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.to_json">to_json() (audio_signal.AudioSignal method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="src/separation_base.html#separation_base.SeparationBase.to_json">(separation_base.SeparationBase method)</a>
+  </dt>
+
+        
+  <dt><a href="src/spectral_utils.html#spectral_utils.StftParams.to_json">(spectral_utils.StftParams method)</a>
+  </dt>
+
+      </dl></dd>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.truncate_samples">truncate_samples() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.to_mono">to_mono() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.Tvec">Tvec (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.truncate_samples">truncate_samples() (audio_signal.AudioSignal method)</a>
   </dt>
 
       
-  <dt><a href="src/Duet.html#Duet.Duet.twoDsmooth">twoDsmooth() (Duet.Duet method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.truncate_seconds">truncate_seconds() (audio_signal.AudioSignal method)</a>
+  </dt>
+
+      
+  <dt><a href="src/duet.html#Duet.Duet.twoDsmooth">twoDsmooth() (Duet.Duet method)</a>
   </dt>
 
   </dl></td>
@@ -683,13 +777,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Nmf.html#Nmf.Nmf.update">update() (Nmf.Nmf method)</a>
+  <dt><a href="src/Nmf.html#Nmf.NMF.update">update() (Nmf.NMF method)</a>
+  </dt>
+
+      
+  <dt><a href="src/repet.html#Repet.Repet.update_periods">update_periods() (Repet.Repet method)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/Repet.html#Repet.Repet.update_periods">update_periods() (Repet.Repet method)</a>
+  <dt><a href="src/utils.html#module-utils">utils (module)</a>
   </dt>
 
   </dl></td>
@@ -699,31 +797,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.window_length">window_length (audio_signal.AudioSignal attribute)</a>
+  <dt><a href="src/spectral_utils.html#spectral_utils.StftParams.window_length">window_length (spectral_utils.StftParams attribute)</a>
   </dt>
 
-      <dd><dl>
-        
-  <dt><a href="src/spectral_utils.html#spectral_utils.StftParams.window_length">(spectral_utils.StftParams attribute)</a>
-  </dt>
-
-      </dl></dd>
       
   <dt><a href="src/spectral_utils.html#spectral_utils.StftParams.window_overlap">window_overlap (spectral_utils.StftParams attribute)</a>
-  </dt>
-
-      
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.window_type">window_type (audio_signal.AudioSignal attribute)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/spectral_utils.html#spectral_utils.WindowType">WindowType (class in spectral_utils)</a>
-  </dt>
-
-      
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.write_audio_to_file">write_audio_to_file() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.write_audio_to_file">write_audio_to_file() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
@@ -733,7 +817,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="src/AudioSignal.html#audio_signal.AudioSignal.zero_pad">zero_pad() (audio_signal.AudioSignal method)</a>
+  <dt><a href="src/audio_signal.html#audio_signal.AudioSignal.zero_pad">zero_pad() (audio_signal.AudioSignal method)</a>
   </dt>
 
   </dl></td>
@@ -750,7 +834,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Interactive Audio Lab.
+        &copy; Copyright 2017, Interactive Audio Lab.
 
     </p>
   </div>
@@ -772,7 +856,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1.3',
+            VERSION:'0.1.5a9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

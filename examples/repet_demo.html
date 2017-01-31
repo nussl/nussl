@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +6,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>REPET example &mdash; nussl 0.1.3 documentation</title>
+  <title>REPET example &mdash; nussl 0.1.5a9 documentation</title>
   
 
   
@@ -30,9 +28,10 @@
   
 
   
-    <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
         <link rel="up" title="nussl Examples" href="examples.html"/>
-        <link rel="prev" title="DUET example" href="duet_demo.html"/> 
+        <link rel="next" title="Finding the repeating period of a song using REPET" href="repet_find_repeating_demo.html"/>
+        <link rel="prev" title="AduioSignal example" href="audio_signal_demo.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -82,15 +81,19 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../src/modules.html">NUSSL Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/classes.html">nussl Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/modules.html">nussl Modules</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Code Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audio_signal_demo.html">AudioSignal</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">REPET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet_find_repeating_demo.html">Finding the repeating period with REPET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet_sim_demo.html">REPET-SIM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="duet_demo.html">Duet</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">REPET</a></li>
 </ul>
 </li>
 </ul>
@@ -115,7 +118,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -141,50 +144,40 @@
             
   <div class="section" id="repet-example">
 <span id="repet-demo"></span><h1>REPET example<a class="headerlink" href="#repet-example" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+
 <span class="kn">import</span> <span class="nn">nussl</span>
 
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="c"># input audio file</span>
-    <span class="n">input_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Input&#39;</span><span class="p">,</span><span class="s">&#39;mix3.wav&#39;</span><span class="p">)</span>
+    <span class="c1"># input audio file</span>
+    <span class="n">input_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Input&#39;</span><span class="p">,</span><span class="s1">&#39;guitar2__cowbell1_none_0.0.wav&#39;</span><span class="p">)</span>
     <span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_name</span><span class="p">)</span>
 
-    <span class="c"># make a directory to store output if needed</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s">&#39;../Output/&#39;</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s">&#39;../Output&#39;</span><span class="p">)</span>
+    <span class="c1"># make a directory to store output if needed</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;Output/&#39;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;Output/&#39;</span><span class="p">)</span>
 
-    <span class="c"># Set up Repet</span>
+    <span class="c1"># Set up Repet</span>
     <span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
-    <span class="n">L</span> <span class="o">=</span> <span class="mi">2048</span>
-    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="n">L</span>
-    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HAMMING</span>
-    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">=</span> <span class="n">L</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="n">repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">n_fft_bins</span> <span class="o">=</span> <span class="n">L</span>
-    <span class="c"># and Run</span>
+
+    <span class="c1"># and Run</span>
     <span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-    <span class="c"># Get foreground and backgroun audio signals</span>
+    <span class="c1"># Get foreground and backgroun audio signals</span>
     <span class="n">bkgd</span><span class="p">,</span> <span class="n">fgnd</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
 
-    <span class="c"># and write out to files</span>
-    <span class="n">bkgd</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output&#39;</span><span class="p">,</span> <span class="s">&#39;repet_background.wav&#39;</span><span class="p">))</span>
-    <span class="n">fgnd</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;..&#39;</span><span class="p">,</span> <span class="s">&#39;Output&#39;</span><span class="p">,</span> <span class="s">&#39;repet_foreground.wav&#39;</span><span class="p">))</span>
-
-    <span class="c"># Set up Repet</span>
-    <span class="c"># repet = nussl.Repet(signal, repet_type=nussl.RepetType.SIM)</span>
-    <span class="c"># # and Run</span>
-    <span class="c"># # repet.run()</span>
-    <span class="c">#</span>
-    <span class="c"># # Get foreground and backgroun audio signals</span>
-    <span class="c"># bkgd, fgnd = repet.make_audio_signals()</span>
-    <span class="c">#</span>
-    <span class="c"># # and write out to files</span>
-    <span class="c"># bkgd.write_audio_to_file(os.path.join(&#39;..&#39;, &#39;Output&#39;, &#39;repet_background_SIM.wav&#39;))</span>
-    <span class="c"># fgnd.write_audio_to_file(os.path.join(&#39;..&#39;, &#39;Output&#39;, &#39;repet_foreground_SIM.wav&#39;))</span>
+    <span class="c1"># and write out to files</span>
+    <span class="n">bkgd</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Output&#39;</span><span class="p">,</span> <span class="s1">&#39;cowbell1_guitar_background_lib2.wav&#39;</span><span class="p">))</span>
+    <span class="n">fgnd</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Output&#39;</span><span class="p">,</span> <span class="s1">&#39;cowbell1_guitar_foreground_lib2.wav&#39;</span><span class="p">))</span>
 
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -197,8 +190,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="repet_find_repeating_demo.html" class="btn btn-neutral float-right" title="Finding the repeating period of a song using REPET" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="duet_demo.html" class="btn btn-neutral" title="DUET example" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="audio_signal_demo.html" class="btn btn-neutral" title="AduioSignal example" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -207,7 +202,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Interactive Audio Lab.
+        &copy; Copyright 2017, Interactive Audio Lab.
 
     </p>
   </div>
@@ -229,7 +224,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.3',
+            VERSION:'0.1.5a9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

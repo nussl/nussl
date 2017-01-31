@@ -114,7 +114,7 @@ Let's eliminate all frequencies above about 400 Hz in our signal.
 >>> lp_cutoff = 400  # Hz
 >>> frequency_vector = signal1.freq_vector  # a vector of frequency values for each FFT bin
 >>> idx = (np.abs(frequency_vector - lp_cutoff)).argmin()  # trick to find the index of the closest value to 400 Hz
->>> lp_stft[idx:, :, :] = 0.0j
+>>> lp_stft[idx:, :, :] = 0.0j  # every freq above ~400 Hz is 0 now
 
 Okay, so now we have low passed STFT data in the numpy array ``lp_stft``. Now we are going to see how we can initialize
 a new ``AudioSignal`` object using this data.
@@ -164,6 +164,11 @@ there are so many possibilities, *nussl* assumes the user will know what the cor
 iSTFT correctly. E.g., if you do not remove the FFT reflection when doing an STFT, *nussl* will not automatically
 know not to reconstruct the reflection when doing an inverse STFT. It is the user's responsibility to do this
 kind of bookkeeping.
+
+StftParams Object
+^^^^^^^^^^^^^^^^^
+
+The Stft
 
 .. rubric:: Footnotes
 

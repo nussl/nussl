@@ -80,7 +80,7 @@ Alright, alright, alright [#f1]_.
 Other basic manipulations
 -------------------------
 
-Now let’s add these two signals, signal1 and signal2:
+If we want to add the audio data in these two signals, it's simple. But there are some gotchas:
 
 >>> signal3 = signal1 + signal2
 Exception: Cannot add with two signals that have a different number of channels!

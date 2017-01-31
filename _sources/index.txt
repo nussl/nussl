@@ -3,25 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-NUSSL
+nussl
 =====
-nussl (pronounced "nuzzle") is a flexible python audio source separation library created by the Interactive Audio Lab at
-Northwestern University. It provides implementations of common source separation algorithms in addition to an easy
-framework for adding new algorithms.
+*nussl* (pronounced `nuzzle <http://www.thefreedictionary.com/nuzzle>`_) is a flexible, object oriented python audio
+source separation library created by the `Interactive Audio Lab <music.cs.northwestern.edu>`_ at Northwestern University.
+At its core, *nussl* provides implementations of common source separation algorithms as well as an easy-to-use
+framework for prototyping and adding new algorithms. The aim of *nussl* is to create a low barrier to entry for using
+popular source separation algorithms, while also allowing the user fine tuned control of low-level parameters.
 
-Installation
-------------
+First Steps
+-----------
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
-    install
+    Getting Started </getting_started/getting_started>
 
-Module Documentation
---------------------
+nussl Documentation
+-------------------
 .. toctree::
    :maxdepth: 2
 
-   NUSSL Modules </src/modules>
+   Classes </src/classes>
+   Modules </src/modules>
 
 
 Code Examples
@@ -38,7 +41,7 @@ For bug reports and issues with this code, please see the `github issues page
 
 Contact
 -------
-Contact Ethan Manilow <ethanmanilow2015[at]u.northwestern.edu) with any questions.
+Contact Ethan Manilow <ethanmanilow[at]u.northwestern[dot]edu) with any questions.
 
 Indices and tables
 ==================

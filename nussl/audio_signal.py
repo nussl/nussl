@@ -16,21 +16,33 @@ import utils
 
 
 class AudioSignal(object):
-    """Defines properties of an audio signal and performs basic operations such as Wav loading and STFT/iSTFT.
+    """AudioSignal is the main entry point for the user or source separation algorithm to manipulate audio.
+
+    The AudioSignal class is a container for all things related to audio data. It contains utilities for
+    I/O, time-series and frequency domain manipulation, plotting, and much more. The AudioSignal class is used
+    in all source separation objects in *nussl*.
+
+    See Also:
+        For a walk-through of AudioSignal features, see :ref:`audio_signal_basics` and :ref:`audio_signal_stft`.
+
+    Attributes:
+        audio_data (:obj:`np.ndarray`): real-valued time-series representation of audio
+            ``None`` by default, this can be initialized at instantiation
+        stft_data (:obj:`np.ndarray`): complex-valued frequency domain representation of audio, ``None`` by default
 
     Parameters:
-        path_to_input_file (string): string specifying path to file. Either this or timeSeries must be provided
-        audio_data_array (np.array): Numpy matrix containing a time series of a signal
-        signal_starting_position (Optional[int]): Starting point of the section to be extracted in seconds. Defaults to 0
-        signal_length (Optional[int]): Length of the signal to be extracted. Defaults to full length of the signal
-        sample_rate (Optional[int]): sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE
-        stft (Optional[np.array]): Optional pre-computed complex spectrogram data.
-        stft_params (Optional [StftParams object]):
+        path_to_input_file (str, optional): Path to an input file to open upon initialization.
+        audio_data_array (:obj:`np.ndarray`, optional): Numpy array containing a time-series
+        signal_starting_position (int, optional): Starting point of the section to be extracted in seconds. Defaults to 0
+        signal_length (int, optional): Length of the signal to be extracted. Defaults to full length of the signal
+        sample_rate (int, optional): sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE
+        stft (:obj:`np.ndarray`, optional): Optional pre-computed complex spectrogram data.
+        stft_params (:obj:`StftParams`, optional):
   
     Examples:
-        * create a new signal object:     ``sig=AudioSignal('sample_audio_file.wav')``
-        * compute the spectrogram of the new signal object:   ``sigSpec,sigPow,F,T=sig.STFT()``
-        * compute the inverse stft of a spectrogram:          ``sigrec,tvec=sig.iSTFT()``
+        * create a new signal object:     ``signal=nussl.AudioSignal('sample_audio_file.wav')``
+        * compute the spectrogram of the new signal object:   ``signal.stft()``
+        * compute the inverse stft of a spectrogram:          ``sig.istft()``
   
     """
 
@@ -53,7 +65,6 @@ class AudioSignal(object):
 
         # stft data
         self.stft_data = stft  # complex spectrogram data
-        self.power_spectrum_data = None  # power spectrogram
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
         self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
@@ -435,7 +446,7 @@ class AudioSignal(object):
         for i in range(1, self.num_channels + 1):
             stfts.append(stft_func(signal=self.get_channel(i), window_length=window_length,
                                    hop_length=hop_length, window_type=window_type,
-                                   n_fft_bins=n_fft_bins,remove_reflection=remove_reflection))
+                                   n_fft_bins=n_fft_bins, remove_reflection=remove_reflection))
 
         return np.array(stfts).transpose((1, 2, 0))
 
@@ -564,11 +575,6 @@ class AudioSignal(object):
         Returns the n-th channel from ``self.stft_data``. **1-based.**
         Args:
             n: (int) index of stft channel to get. **1 based**
-<<<<<<< .merge_file_rjNu2f
-
-        Returns:
-            n-th channel (np.array): the stft data in the n-th channel of the signal
-=======
 
         Returns:
             n-th channel (np.array): the stft data in the n-th channel of the signal
@@ -587,7 +593,6 @@ class AudioSignal(object):
 
         Returns:
             n-th channel (np.array): the power spectrogram data in the n-th channel of the signal
->>>>>>> .merge_file_jjFG09
         """
         if n > self.num_channels:
             raise Exception(
@@ -732,17 +737,9 @@ class AudioSignal(object):
     ##################################################
 
     def __add__(self, other):
-<<<<<<< .merge_file_rjNu2f
-        self._verify_audio(other)
-
-        # for ch in range(self.num_channels):
-        # TODO: make this work for multiple channels
-        if self.audio_data.size > other.audio_data.size:
-=======
         self._verify_audio(other, 'add')
 
         if self.signal_length > other.signal_length:
->>>>>>> .merge_file_jjFG09
             combined = np.copy(self.audio_data)
             combined[:, :other.signal_length] += other.audio_data
         else:
@@ -752,17 +749,9 @@ class AudioSignal(object):
         return AudioSignal(audio_data_array=combined)
 
     def __sub__(self, other):
-<<<<<<< .merge_file_rjNu2f
-        self._verify_audio(other)
-
-        # for ch in range(self.num_channels):
-        # TODO: make this work for multiple channels
-        if self.audio_data.size > other.audio_data.size:
-=======
         self._verify_audio(other, 'subtract')
 
         if self.signal_length > other.signal_length:
->>>>>>> .merge_file_jjFG09
             combined = np.copy(self.audio_data)
             combined[:, :other.audio_data.size] -= other.audio_data
         else:
@@ -771,14 +760,6 @@ class AudioSignal(object):
 
         return AudioSignal(audio_data_array=combined)
 
-<<<<<<< .merge_file_rjNu2f
-    def _verify_audio(self, other):
-        if self.num_channels != other.num_channels:
-            raise Exception('Cannot subtract two signals that have a different number of channels!')
-
-        if self.sample_rate != other.sample_rate:
-            raise Exception('Cannot subtract two signals that have different sample rates!')
-=======
     def _verify_audio(self, other, op):
         if self.num_channels != other.num_channels:
             raise Exception('Cannot ' + op + ' with two signals that have a different number of channels!')
@@ -788,7 +769,6 @@ class AudioSignal(object):
 
         if not self.active_region_is_default:
             raise Exception('Cannot' + op + 'while active region is not set as default!')
->>>>>>> .merge_file_jjFG09
 
     def __iadd__(self, other):
         return self + other

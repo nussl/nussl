@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -8,7 +6,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Nmf Class &mdash; nussl 0.1.3 documentation</title>
+  <title>Nmf Class &mdash; nussl 0.1.5a9 documentation</title>
   
 
   
@@ -30,10 +28,7 @@
   
 
   
-    <link rel="top" title="nussl 0.1.3 documentation" href="../index.html"/>
-        <link rel="up" title="nussl" href="modules.html"/>
-        <link rel="next" title="Repet Class" href="Repet.html"/>
-        <link rel="prev" title="KAM Class" href="KAM.html"/> 
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -83,20 +78,11 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">NUSSL Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="AudioSignal.html">AudioSignal Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Constants.html">Constants module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Duet.html">Duet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="KAM.html">KAM Class</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Nmf Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Repet.html">Repet Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="SeparationBase.html">SeparationBase Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils Module</a></li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classes.html">nussl Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">nussl Modules</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
@@ -122,15 +108,13 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-          <li><a href="modules.html">nussl</a> &raquo;</li>
       
     <li>Nmf Class</li>
       <li class="wy-breadcrumbs-aside">
@@ -149,33 +133,12 @@
   <div class="section" id="module-Nmf">
 <span id="nmf-class"></span><h1>Nmf Class<a class="headerlink" href="#module-Nmf" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="Nmf.DistanceType">
-<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">DistanceType</code><a class="headerlink" href="#Nmf.DistanceType" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="Nmf.DistanceType.DEFAULT">
-<code class="descname">DEFAULT</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.DEFAULT" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="Nmf.DistanceType.DIVERGENCE">
-<code class="descname">DIVERGENCE</code><em class="property"> = 'divergence'</em><a class="headerlink" href="#Nmf.DistanceType.DIVERGENCE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="Nmf.DistanceType.EUCLIDEAN">
-<code class="descname">EUCLIDEAN</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.EUCLIDEAN" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="Nmf.Nmf">
-<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">Nmf</code><span class="sig-paren">(</span><em>stft</em>, <em>num_templates</em>, <em>input_audio_signal=None</em>, <em>sample_rate=None</em>, <em>stft_params=None</em>, <em>activation_matrix=None</em>, <em>templates=None</em>, <em>distance_measure=None</em>, <em>should_update_template=None</em>, <em>should_update_activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></p>
+<dt id="Nmf.NMF">
+<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">NMF</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_templates</em>, <em>activation_matrix=None</em>, <em>templates=None</em>, <em>distance_measure=None</em>, <em>should_update_template=None</em>, <em>should_update_activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="separation_base.html#separation_base.SeparationBase" title="separation_base.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></a></p>
 <p>This is an implementation of the Non-negative Matrix Factorization algorithm for
-source separation. This implementation cannot receive a raw audio signal, rather
-it only accepts a stft and a number, num_templates, which defines the number of bases
-vectors.</p>
+source separation. This implementation receives an audio_signal object
+and a number, num_templates, which defines the number of bases vectors.</p>
 <p>This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
 and also allows the user to define distance measure function.</p>
 <p>References:
@@ -183,28 +146,8 @@ and also allows the user to define distance measure function.</p>
 <blockquote>
 <div>Advances in neural information processing systems. 2001.</div></blockquote>
 <dl class="method">
-<dt id="Nmf.Nmf.make_audio_signals">
-<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf.make_audio_signals" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Nmf.Nmf.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf.plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Nmf.Nmf.randomize_input_matrices">
-<code class="descname">randomize_input_matrices</code><span class="sig-paren">(</span><em>shouldNormalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf.randomize_input_matrices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Nmf.Nmf.recombine_calculated_matrices">
-<code class="descname">recombine_calculated_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf.recombine_calculated_matrices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Nmf.Nmf.run">
-<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf.run" title="Permalink to this definition">¶</a></dt>
+<dt id="Nmf.NMF.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>This runs the NMF separation algorithm. This function assumes that all
 parameters have been set prior to running.</p>
 <p>No inputs. do_STFT and N must be set prior to calling this function.</p>
@@ -213,11 +156,51 @@ and a set of template vectors (also 2d numpy array).</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="Nmf.Nmf.update">
-<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.Nmf.update" title="Permalink to this definition">¶</a></dt>
+<dt id="Nmf.NMF.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a single update using the update function specified.
 :return: nothing</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.recombine_calculated_matrices">
+<code class="descname">recombine_calculated_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.recombine_calculated_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.randomize_input_matrices">
+<code class="descname">randomize_input_matrices</code><span class="sig-paren">(</span><em>shouldNormalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.randomize_input_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Nmf.DistanceType">
+<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">DistanceType</code><a class="headerlink" href="#Nmf.DistanceType" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="Nmf.DistanceType.EUCLIDEAN">
+<code class="descname">EUCLIDEAN</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.EUCLIDEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Nmf.DistanceType.DIVERGENCE">
+<code class="descname">DIVERGENCE</code><em class="property"> = 'divergence'</em><a class="headerlink" href="#Nmf.DistanceType.DIVERGENCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Nmf.DistanceType.DEFAULT">
+<code class="descname">DEFAULT</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.DEFAULT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -228,21 +211,12 @@ and a set of template vectors (also 2d numpy array).</p>
           </div>
           <footer>
   
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="Repet.html" class="btn btn-neutral float-right" title="Repet Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="KAM.html" class="btn btn-neutral" title="KAM Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Interactive Audio Lab.
+        &copy; Copyright 2017, Interactive Audio Lab.
 
     </p>
   </div>
@@ -264,7 +238,7 @@ and a set of template vectors (also 2d numpy array).</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.3',
+            VERSION:'0.1.5a9',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

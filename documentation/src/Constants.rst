@@ -1,7 +1,6 @@
-Constants module
-================
+constants.py
+============
 
 .. automodule:: Constants
     :members:
     :undoc-members:
-    :show-inheritance:

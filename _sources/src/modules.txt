@@ -1,14 +1,9 @@
-nussl
-=====
+Modules
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   AudioSignal
-   Constants
-   Duet
-   KAM
-   Nmf
-   Repet
-   SeparationBase
+   constants
    spectral_utils
+   utils
