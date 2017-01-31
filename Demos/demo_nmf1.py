@@ -16,7 +16,7 @@ def simple_example():
 
     # Set up NU NMF
     nBases = 2
-    nmf = nussl.Nmf(mixture, nBases)
+    nmf = nussl.NMF(nBases)
     nmf.should_use_epsilon = False
     nmf.max_num_iterations = 100
     nmf.distance_measure = nussl.DistanceType.EUCLIDEAN

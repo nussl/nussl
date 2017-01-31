@@ -10,6 +10,7 @@ import spectral_utils
 import separation_base
 import audio_signal
 import constants
+import utils
 
 
 class Duet(separation_base.SeparationBase):
@@ -47,12 +48,20 @@ class Duet(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal, num_sources, sample_rate=None, stft_params=None,
+    def __init__(self, input_audio_signal, num_sources,
                  a_min=-3, a_max=3, a_num=50, d_min=-3, d_max=3, d_num=50,
                  threshold=0.2, a_min_distance=5, d_min_distance=5):
-        # TODO: Is there a better way to do this?
-        self.__dict__.update(locals())
-        super(Duet, self).__init__(input_audio_signal, sample_rate, stft_params)
+        super(Duet, self).__init__(input_audio_signal=input_audio_signal)
+        self.num_sources = num_sources
+        self.a_min = a_min
+        self.a_max = a_max
+        self.a_num = a_num
+        self.d_min = d_min
+        self.d_max = d_max
+        self.d_num = d_num
+        self.threshold = threshold
+        self.a_min_distance = a_min_distance
+        self.d_min_distance = d_min_distance
         self.separated_sources = None
         self.a_grid = None
         self.d_grid = None
@@ -90,21 +99,23 @@ class Duet(separation_base.SeparationBase):
         fs = self.sample_rate
 
         # Compute the stft of the two channel mixtures
-        X1, P1, F, T = spectral_utils.e_stft_plus(self.audio_signal.get_channel(1), L, hop, winType, fs)
-        X2, P2, F, T = spectral_utils.e_stft_plus(self.audio_signal.get_channel(2), L, hop, winType, fs)
+        stft1, psd1, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(1),
+                                                                                L, hop, winType, fs, use_librosa=True)
+        stft2, psd2, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(2),
+                                                                                L, hop, winType, fs, use_librosa=True)
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
-        X1 = X1[1::, :]
-        X2 = X2[1::, :]
-        Lf = len(F)
-        Lt = len(T)
+        stft1 = stft1[1::, :]
+        stft2 = stft2[1::, :]
+        num_frequency_bins = len(frequency_vector)
+        num_time_bins = len(time_vector)
 
         # Compute the freq. matrix for later use in phase calculations
-        wmat = np.array(np.tile(np.mat(F[1::]).T, (1, Lt))) * (2 * np.pi / fs)  # WTF?
+        wmat = np.array(np.tile(np.mat(frequency_vector[1::]).T, (1, num_time_bins))) * (2 * np.pi / fs)  # WTF?
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        R21 = (X2 + constants.EPSILON) / (X1 + constants.EPSILON)
+        R21 = (stft2 + constants.EPSILON) / (stft1 + constants.EPSILON)
         atn = np.abs(R21)  # relative attenuation between the two channels
         alpha = atn - 1 / atn  # symmetric attenuation
         delta = -np.imag(np.log(R21)) / (2 * np.pi * wmat)  # relative delay
@@ -114,7 +125,7 @@ class Duet(separation_base.SeparationBase):
         # calculate the weighted histogram
         p = 1
         q = 0
-        tfw = (np.abs(X1) * np.abs(X2)) ** p * (np.abs(wmat)) ** q  # time-freq weights
+        tfw = (np.abs(stft1) * np.abs(stft2)) ** p * (np.abs(wmat)) ** q  # time-freq weights
 
         # only consider time-freq. points yielding estimates in bounds
         a_premask = np.logical_and(self.a_min < alpha, alpha < self.a_max)
@@ -140,6 +151,7 @@ class Duet(separation_base.SeparationBase):
         self.d_grid = dgrid
         self.hist = hist
         self.non_normalized_hist = H[0]
+        self.smoothed_hist = self.twoDsmooth(self.non_normalized_hist, np.array([3]))
 
         # smooth the histogram - local average 3-by-3 neighboring bins
         hist = self.twoDsmooth(hist, np.array([3]))
@@ -148,11 +160,11 @@ class Duet(separation_base.SeparationBase):
         hist /= hist.max()
 
         # find the location of peaks in the alpha-delta plane
-        pindex = self.find_peaks2(hist, self.threshold,
+        self.peak_indices = self.find_peaks2(hist, self.threshold,
                                   np.array([self.a_min_distance, self.d_min_distance]), self.num_sources)
 
-        alphapeak = agrid[pindex[0, :]]
-        deltapeak = dgrid[pindex[1, :]]
+        alphapeak = agrid[self.peak_indices[0, :]]
+        deltapeak = dgrid[self.peak_indices[1, :]]
 
         ad_est = np.vstack([alphapeak, deltapeak]).T
 
@@ -160,25 +172,24 @@ class Duet(separation_base.SeparationBase):
         atnpeak = (alphapeak + np.sqrt(alphapeak ** 2 + 4)) / 2
 
         # compute masks for separation
-        bestsofar = np.inf * np.ones((Lf - 1, Lt))
-        bestind = np.zeros((Lf - 1, Lt), int)
+        bestsofar = np.inf * np.ones((num_frequency_bins - 1, num_time_bins))
+        bestind = np.zeros((num_frequency_bins - 1, num_time_bins), int)
         for i in range(0, self.num_sources):
-            score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * X1 - X2) ** 2 / (1 + atnpeak[i] ** 2)
+            score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * stft1 - stft2) ** 2 / (1 + atnpeak[i] ** 2)
             mask = (score < bestsofar)
             bestind[mask] = i
             bestsofar[mask] = score[mask]
 
         # demix with ML alignment and convert to time domain
-        Lx = self.audio_signal.signal_length
-        xhat = np.zeros((self.num_sources, Lx))
+        xhat = np.zeros((self.num_sources, self.audio_signal.signal_length))
         for i in range(0, self.num_sources):
             mask = (bestind == i)
-            Xm = np.vstack([np.zeros((1, Lt)),
-                            (X1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * X2) / (1 + atnpeak[i] ** 2) * mask])
+            Xm = np.vstack([np.zeros((1, num_time_bins)),
+                            (stft1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * stft2) / (1 + atnpeak[i] ** 2) * mask])
             # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
             xi = spectral_utils.e_istft(Xm, L, hop, winType)
 
-            xhat[i, :] = xi[0:Lx]
+            xhat[i, :] = utils.add_mismatched_arrays(xhat[i, ], xi)[:self.audio_signal.signal_length]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]
@@ -363,7 +374,7 @@ class Duet(separation_base.SeparationBase):
         AA = np.tile(self.a_grid[1::], (self.d_num, 1)).T
         DD = np.tile(self.d_grid[1::].T, (self.a_num, 1))
 
-        histogram_data = self.hist if normalize else self.non_normalized_hist
+        histogram_data = self.hist if normalize else self.smoothed_hist
 
         # plot the histogram in 2D
         if not three_d_plot:

@@ -2,7 +2,7 @@ import nussl
 import numpy as np
 
 def main():
-    win_type = nussl.WindowType.HANN
+    win_type = nussl.constants.WINDOW_HANN
     sample_rate = nussl.DEFAULT_SAMPLE_RATE
 
     # Plot a simple sine wave at 5kHz
