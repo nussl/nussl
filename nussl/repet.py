@@ -58,6 +58,7 @@ class Repet(separation_base.SeparationBase):
         self.stft = None
         self.repeating_period = None
         self.matlab_fidelity = matlab_fidelity
+        self._is_period_converted_to_hops = False
 
         if self.matlab_fidelity:
             self.use_librosa_stft = False
@@ -76,7 +77,10 @@ class Repet(separation_base.SeparationBase):
             self.max_period = min(8, self.audio_signal.signal_duration / 3) if max_period is None else max_period
         else:
             self.period = period
-            self.period = self._update_period(self.period)
+            if not self._is_period_converted_to_hops:
+                self.period = self._update_period(self.period)
+                self._is_period_converted_to_hops = True
+
 
     def run(self):
         """
@@ -174,10 +178,14 @@ class Repet(separation_base.SeparationBase):
             self.repeating_period = self.find_repeating_period_complex(self.beat_spectrum)
         else:
             # update the min and max so they're in units of frequency bin indices
-            self.min_period = self._update_period(self.min_period)
-            self.max_period = self._update_period(self.max_period)
+            if not self._is_period_converted_to_hops:
+                self.min_period = self._update_period(self.min_period)
+                self.max_period = self._update_period(self.max_period)
+                self._is_period_converted_to_hops = True
+
             self.repeating_period = self.find_repeating_period_simple(self.beat_spectrum,
                                                                       self.min_period, self.max_period)
+
         return self.repeating_period
 
     @staticmethod
@@ -319,9 +327,11 @@ class Repet(separation_base.SeparationBase):
             repeating_period = r.find_repeating_period_simple(beat_spectrum, r.min_period, r.max_period)
 
         """
-        self.period = self._update_period(self.period) if self.period is not None else None
-        self.min_period = self._update_period(self.min_period) if self.min_period is not None else None
-        self.max_period = self._update_period(self.max_period) if self.max_period is not None else None
+        if self._is_period_converted_to_hops:
+            self.period = self._update_period(self.period) if self.period is not None else None
+            self.min_period = self._update_period(self.min_period) if self.min_period is not None else None
+            self.max_period = self._update_period(self.max_period) if self.max_period is not None else None
+            self._is_period_converted_to_hops = True
 
     def _update_period(self, period):
         period = float(period)
