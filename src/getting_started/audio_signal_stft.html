@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Spectrograms and STFTs &mdash; nussl 0.1.3 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.3 documentation" href="../../index.html"/>
+        <link rel="up" title="The AudioSignal Object" href="audio_signal.html"/>
+        <link rel="next" title="nussl" href="../modules.html"/>
+        <link rel="prev" title="AudioSignal Basics" href="audio_signal_basics.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="audio_signal.html">The AudioSignal Object</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="audio_signal_basics.html">AudioSignal Basics</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Spectrograms and STFTs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#stft-basics">STFT Basics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#inverse-stfts">Inverse STFTs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stft-parameters">STFT Parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">nussl Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="getting_started.html">Getting Started</a> &raquo;</li>
+      
+          <li><a href="audio_signal.html">The AudioSignal Object</a> &raquo;</li>
+      
+    <li>Spectrograms and STFTs</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/src/getting_started/audio_signal_stft.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="spectrograms-and-stfts">
+<span id="audio-signal-stft"></span><h1>Spectrograms and STFTs<a class="headerlink" href="#spectrograms-and-stfts" title="Permalink to this headline">¶</a></h1>
+<p>Most, if not all, source separation algorithms do not their operations in the time domain, but rather in the frequency
+domain. For this, <em>nussl</em> provides an interface for working with <a class="reference external" href="https://en.wikipedia.org/wiki/Short-time_Fourier_transform">Short-Time Fourier Transform (STFT)</a>
+data.</p>
+<div class="section" id="stft-basics">
+<h2>STFT Basics<a class="headerlink" href="#stft-basics" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s reinitialize <code class="docutils literal"><span class="pre">signal1</span></code> from the previous page. We should be able to get frequency domain data by looking
+at <code class="docutils literal"><span class="pre">signal1.stft_data</span></code>. Let&#8217;s try that.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+<p>Whoops! Because this object was initialized from a .wav file (i.e., time-series data), this <code class="docutils literal"><span class="pre">AudioSignal</span></code> object has
+no frequency domain data by default. To populate it with frequency data we do thusly:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Aha! Now we can examine how STFT data is stored in the <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. Similar to <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>,
+STFT data is stored in a (complex-valued) numpy array called <code class="docutils literal"><span class="pre">signal1.stft_data</span></code> <a class="footnote-reference" href="#f1" id="id1">[1]</a>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span>
+<span class="go">array([[[  5.65585184e+00 -0.00000000e+00j,</span>
+<span class="go">           9.01010437e+01 -0.00000000e+00j],</span>
+<span class="go">        [ -2.49999994e-03 -3.83490305e-06j,</span>
+<span class="go">          -2.49999994e-03 -3.83490305e-06j],</span>
+<span class="go">        [ -2.49999994e-03 -3.83490305e-06j,</span>
+<span class="go">          -2.49999994e-03 -3.83490305e-06j],</span>
+<span class="go">        [ -2.49999994e-03 -3.83490305e-06j,</span>
+<span class="go">          -2.49999994e-03 -3.83490305e-06j],</span>
+<span class="go">        [ -4.15182253e-03 -3.05598299e-03j,</span>
+<span class="go">          -5.95030794e-03 -6.10865979e-03j],</span>
+<span class="go">        [  7.39212409e-02 +2.67153326e-02j,</span>
+<span class="go">           1.48953497e-01 +5.34350201e-02j]],</span>
+<span class="go">       ...,</span>
+<span class="go">      [[ -1.25701912e-03 -3.83491215e-06j,</span>
+<span class="go">           6.89334124e-02 +2.11507810e-04j],</span>
+<span class="go">        [ -2.49999994e-03 -7.66982430e-06j,</span>
+<span class="go">          -2.49999994e-03 -7.66982430e-06j],</span>
+<span class="go">        [ -2.49999994e-03 -7.66982430e-06j,</span>
+<span class="go">          -2.49999994e-03 -7.66982430e-06j],</span>
+<span class="go">        [ -2.49999994e-03 -7.66982430e-06j,</span>
+<span class="go">          -2.49999994e-03 -7.66982430e-06j],</span>
+<span class="go">        [ -2.51177116e-03 -5.69828972e-03j,</span>
+<span class="go">          -2.67004268e-03 -1.13899261e-02j],</span>
+<span class="go">        [ -4.96160686e-02 -4.97913919e-02j,</span>
+<span class="go">          -1.36735573e-01 -0.00000000e+00j]]], dtype=complex64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1025, 88, 2)</span>
+</pre></div>
+</div>
+<p>By inspecting the shape we see that the first dimension represents the number of FFT bins taken at each hop,
+the second represents the length of our signal (in hops), and the third dimension is number of channels. There is
+an easy way to get all of this data from our <code class="docutils literal"><span class="pre">AudioSignal</span></code> object without having to do array indexing:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_length</span>
+<span class="go">88</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">num_fft_bins</span>
+<span class="go">1025</span>
+</pre></div>
+</div>
+<p>We can get a single STFT channel like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">get_stft_channel</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># see footnote 2 on AudioSignal Basics page</span>
+<span class="go">array([[ 1.23336256 -0.00000000e+00j,  0.03598116 -0.00000000e+00j,</span>
+<span class="go">         0.10520950 -0.00000000e+00j, ...,  0.06182364 -0.00000000e+00j,</span>
+<span class="go">        -1.39272857 -0.00000000e+00j, -0.27395117 -0.00000000e+00j],</span>
+<span class="go">       [-1.45443594 +2.95939099e-04j,  0.03598259 +4.79334674e-04j,</span>
+<span class="go">         0.10521182 +1.84503690e-04j, ...,  0.06182393 -5.87543298e-04j,</span>
+<span class="go">         1.07824659 +5.23063958e-01j, -0.26018760 -6.48025423e-02j],</span>
+<span class="go">       [ 1.23345983 +5.91909746e-04j,  0.03598688 +9.58720455e-04j,</span>
+<span class="go">         0.10521877 +3.69027053e-04j, ...,  0.06182481 -1.17514888e-03j,</span>
+<span class="go">        -0.96882135 -9.56665993e-01j, -0.22125557 -1.18454359e-01j],</span>
+<span class="go">       ...,</span>
+<span class="go">       [-0.19744445 -8.19548659e-05j, -0.04824998 -1.32742891e-04j,</span>
+<span class="go">        -0.03122028 -5.10948921e-05j, ...,  0.04447741 +1.62709228e-04j,</span>
+<span class="go">         0.13960634 -1.32384062e-01j,  0.00856382 -1.65341552e-02j],</span>
+<span class="go">       [ 0.17461725 -4.09772983e-05j, -0.04824989 -6.63712271e-05j,</span>
+<span class="go">        -0.03122014 -2.55473606e-05j, ...,  0.04447743 +8.13543447e-05j,</span>
+<span class="go">        -0.14375341 +7.24206716e-02j,  0.01395597 -9.03958548e-03j],</span>
+<span class="go">       [-0.19744259 -0.00000000e+00j, -0.04824987 -0.00000000e+00j,</span>
+<span class="go">        -0.03122010 -0.00000000e+00j, ...,  0.04447743 -0.00000000e+00j,</span>
+<span class="go">         0.19829373 -0.00000000e+00j,  0.01586237 -0.00000000e+00j]], dtype=complex64)</span>
+</pre></div>
+</div>
+<p>We can also get power spectrogram data from our signal as well. As we would expect, this is the same
+shape as <code class="docutils literal"><span class="pre">signal1.stft_data</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">power_spectrogram_data</span>  <span class="c1"># np.abs(signal1.stft_data) ** 2</span>
+<span class="go">array([[[  1.52118325e+00],</span>
+<span class="go">        [  1.29464362e-03],</span>
+<span class="go">        [  1.10690389e-02],</span>
+<span class="go">        ...,</span>
+<span class="go">        [  1.97824207e-03],</span>
+<span class="go">        [  3.93204018e-02],</span>
+<span class="go">        [  2.51614663e-04]]], dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">power_spectrogram_data</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1025, 88, 2)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="inverse-stfts">
+<h2>Inverse STFTs<a class="headerlink" href="#inverse-stfts" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s do something a little more interesting with our <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. Since <code class="docutils literal"><span class="pre">signal1.stft_data</span></code> is just
+a regular numpy array, we can access and manipulate it as such. So let&#8217;s implement a low pass filter by creating a
+new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object and leaving <code class="docutils literal"><span class="pre">signal1</span></code> unaltered.</p>
+<p>Let&#8217;s eliminate all frequencies above about 400 Hz in our signal.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lp_stft</span> <span class="o">=</span> <span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lp_cutoff</span> <span class="o">=</span> <span class="mi">400</span>  <span class="c1"># Hz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frequency_vector</span> <span class="o">=</span> <span class="n">signal1</span><span class="o">.</span><span class="n">freq_vector</span>  <span class="c1"># a vector of frequency values for each FFT bin</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">frequency_vector</span> <span class="o">-</span> <span class="n">lp_cutoff</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>  <span class="c1"># trick to find the index of the closest value to 400 Hz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lp_stft</span><span class="p">[</span><span class="n">idx</span><span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span>
+</pre></div>
+</div>
+<p>Okay, so now we have low passed STFT data in the numpy array <code class="docutils literal"><span class="pre">lp_stft</span></code>. Now we are going to see how we can initialize
+a new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object using this data.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">stft</span><span class="o">=</span><span class="n">lp_stft</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Easy-peasy! Now <code class="docutils literal"><span class="pre">signal1_lp</span></code> is a new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object that has been initialized with STFT data instead of
+time series data. Before we can write this to a file, we need to do an Inverse STFT to get back time-series data.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">audio_data</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">istft</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;path/to/signal1_lowpass.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Cool beans!</p>
+</div>
+<div class="section" id="stft-parameters">
+<h2>STFT Parameters<a class="headerlink" href="#stft-parameters" title="Permalink to this headline">¶</a></h2>
+<p>I wanted to make a few quick notes about <em>nussl</em>&#8216;s parameter settings for STFTs and iSTFTs. Let&#8217;s have a quick look
+at the function signature for <code class="docutils literal"><span class="pre">AudioSignal.stft()</span></code> and <code class="docutils literal"><span class="pre">AudioSignal.istft()</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">stft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hop_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_fft_bins</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+         <span class="n">remove_reflection</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">use_librosa</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="o">...</span>
+
+<span class="k">def</span> <span class="nf">istft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hop_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_fft_bins</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+          <span class="n">reconstruct_reflection</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">use_librosa</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>Almost all low level parameters are accessible through this interface and can be adjusted accordingly.</p>
+<p>As with <code class="docutils literal"><span class="pre">to_mono()</span></code> on the previous page, <code class="docutils literal"><span class="pre">stft()</span></code> and <code class="docutils literal"><span class="pre">istft()</span></code> have parameters to overwrite the internal
+data representations. By default they are true, be sure to set them to false when needed.</p>
+<p>While <em>nussl</em> does have its own STFT and iSTFT implementations, it also contains wrappers for
+<a class="reference external" href="https://librosa.github.io/librosa/generated/librosa.core.stft.html#librosa.core.stft">librosa&#8217;s</a> STFT and iSTFT
+functions. There is a trade off to both: based on our tests <em>librosa&#8217;s</em> is faster, but <em>nussl&#8217;s</em> produces more accurate signal
+reconstruction. Some algorithms produce artifacts with <em>nussl&#8217;s</em> STFTs, so <em>nussl</em> defaults to using librosa STFT functions <a class="footnote-reference" href="#f2" id="id2">[2]</a>.</p>
+<p>The default
+settings for forward and inverse STFTs are guaranteed to produce invertible results without crashing. But because
+there are so many possibilities, <em>nussl</em> assumes the user will know what the correct way to compute both STFT and
+iSTFT correctly. E.g., if you do not remove the FFT reflection when doing an STFT, <em>nussl</em> will not automatically
+know not to reconstruct the reflection when doing an inverse STFT. It is the user&#8217;s responsibility to do this
+kind of bookkeeping.</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>All of the python console output on this page has been truncated for brevity.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>This may change in a future release.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../modules.html" class="btn btn-neutral float-right" title="nussl" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="audio_signal_basics.html" class="btn btn-neutral" title="AudioSignal Basics" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.3',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

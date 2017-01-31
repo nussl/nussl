@@ -1,0 +1,11 @@
+.. _troubleshooting:
+
+Troubleshooting
+===============
+
+Installation issues
+-------------------
+
+Matplotlib issues
+-----------------
+
