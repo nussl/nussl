@@ -4,7 +4,7 @@ from nussl import Duet, AudioSignal
 
 def main():
     # Load input file
-    input_file_name = '../Input/dev1_female3_inst_mix.wav'
+    input_file_name = '../input/dev1_female3_inst_mix.wav'
     signal = AudioSignal(path_to_input_file=input_file_name)
 
     # make a directory to store output if needed

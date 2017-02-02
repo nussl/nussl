@@ -14,7 +14,7 @@ def load_audio(audio_file):
     audio_signal.write_audio_to_file('demo_mixture.wav')
     return audio_signal
 
-mixture = load_audio('../Input/mixture.wav')
+mixture = load_audio('../input/mixture.wav')
 rpca = nussl.RPCA(mixture, verbose = True)
 rpca.run()
 bg, fg = rpca.make_audio_signals()
