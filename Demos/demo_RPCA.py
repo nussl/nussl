@@ -13,7 +13,7 @@ plt.close('all')
 
 # load the audio file
 #fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/Sample2.wav')
-fs,x = read('/Users/fpishdadian/SourceSeparation/Audio Samples/Input/mix5.wav')
+fs,x = read('../Input/mixture.wav')
 x=np.array(x,ndmin=2)
 
 # scale to -1.0 to 1.0
