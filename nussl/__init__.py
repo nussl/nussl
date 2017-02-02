@@ -11,6 +11,7 @@ from Nmf import NMF, DistanceType
 from repet import Repet
 from repet_sim import RepetSim
 from ft2d import FT2D
+from overlap_add import OverlapAdd
 
 __version__ = '0.1.5a9'
 
