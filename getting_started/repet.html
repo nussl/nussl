@@ -1,0 +1,320 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Using REPET &mdash; nussl 0.1.5a9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+        <link rel="up" title="Getting Started" href="getting_started.html"/>
+        <link rel="next" title="nussl Classes" href="../src/classes.html"/>
+        <link rel="prev" title="Spectrograms and STFTs" href="audio_signal_stft.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">The AudioSignal Object</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Using REPET</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#repeating-period">Repeating Period</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-repet">Running Repet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-the-results">Getting the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tying-it-all-together">Tying it all together</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../src/classes.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="getting_started.html">Getting Started</a> &raquo;</li>
+      
+    <li>Using REPET</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/getting_started/repet.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="using-repet">
+<span id="repet"></span><h1>Using REPET<a class="headerlink" href="#using-repet" title="Permalink to this headline">¶</a></h1>
+<p><em>nussl</em> contains many source separation algorithms. Here will demonstrate how to use <em>nussl</em> to run REPET. The basic
+principles outlined here work across all of the source separation algorithms in <em>nussl</em>.</p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The REpeating Pattern Extraction Technique, or REPET, is source separation algorithm that separates a repeating
+&#8220;background&#8221; from a non-repeating &#8220;foreground&#8221;. REPET finds the repeating period in an audio signal, slices the signal
+into &#8220;frames&#8221; of the same length of the repeating period and &#8220;overlays&#8221; those frames. Once the frames are overlayed,
+REPET extracts the non-repeating part by filtering out values that are far from the median value at each frame.</p>
+<p>In order to run REPET in <em>nussl</em>, we first must create an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. We&#8217;re going to load a file as before.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;HistoryRepeatingPropellerHeads.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Neat. Now, we need to instantiate a <code class="docutils literal"><span class="pre">Repet</span></code> object. <strong>Like all source separation algorithms</strong> in <em>nussl</em>, <code class="docutils literal"><span class="pre">Repet</span></code>
+needs an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object as its first parameter when we initialize it.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Again, <strong>like all other algorithms in</strong> <em>nussl</em>, <code class="docutils literal"><span class="pre">Repet</span></code> <strong>has made its own copy of our</strong> <code class="docutils literal"><span class="pre">history</span></code> object that it
+will manipulate, so we can reuse <code class="docutils literal"><span class="pre">history</span></code> again if we want to.</p>
+</div>
+<div class="section" id="repeating-period">
+<h2>Repeating Period<a class="headerlink" href="#repeating-period" title="Permalink to this headline">¶</a></h2>
+<p>If we know exactly what the repeating period is, we can give that <code class="docutils literal"><span class="pre">Repet</span></code> or if we kind of know where it is we can
+give it some estimates. Say I think the repeating period is about 3.5 seconds.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet_exact_period</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mf">3.5</span><span class="p">)</span>  <span class="c1"># exact period</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repet_period_guess</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">min_period</span><span class="o">=</span><span class="mf">3.4</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="mf">3.6</span><span class="p">)</span>  <span class="c1"># guess the period</span>
+</pre></div>
+</div>
+<p>But! If we have no clue, then <code class="docutils literal"><span class="pre">Repet</span></code> will try to find the repeating period for us, automatically. So we&#8217;re back to
+this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-repet">
+<h2>Running Repet<a class="headerlink" href="#running-repet" title="Permalink to this headline">¶</a></h2>
+<p>Now, we can run the algorithm, and <strong>all nussl algorithms</strong>, in one of two ways:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>OR</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Both do the same thing. Now Repet has been run (twice). We can check out properties of <code class="docutils literal"><span class="pre">Repet</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span><span class="o">.</span><span class="n">repeating_period</span>  <span class="c1"># gets repeating period in integer multiples of hop (stft time bins)</span>
+<span class="go">88</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span><span class="o">.</span><span class="n">beat_spectrum</span>  <span class="c1"># this is a 1-D np array representing beat strength</span>
+<span class="go">array([  9.64896795e+04,   4.99998429e+04,   3.75931435e+04,</span>
+<span class="go">         3.38020910e+04,   3.17312478e+04,   3.03712653e+04,</span>
+<span class="go">         2.92616252e+04,   3.05355762e+04,   4.01459695e+04,</span>
+<span class="go">         ...</span>
+<span class="go">         7.48095401e+02,   6.56239875e+02,   5.53445200e+02,</span>
+<span class="go">         9.16959708e+02,   1.63284254e+03,   6.62180164e+03,</span>
+<span class="go">         4.62078346e+03,   3.22329084e+02,   1.38383443e+00])</span>
+</pre></div>
+</div>
+<p>If we hadn&#8217;t run <code class="docutils literal"><span class="pre">Repet</span></code> we could still get the beat spectrum. We can also compute a beat spectrum of an
+arbitrary 2-D real valued matrix (as a np.array)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet2</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">histoy</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">history_beat_spectrum</span> <span class="o">=</span> <span class="n">repet2</span><span class="o">.</span><span class="n">get_beat_spectrum</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random_beat_spectrum</span> <span class="o">=</span> <span class="n">repet2</span><span class="o">.</span><span class="n">compute_beat_spectrum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1025</span><span class="p">,</span> <span class="mi">100</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="getting-the-results">
+<h2>Getting the results<a class="headerlink" href="#getting-the-results" title="Permalink to this headline">¶</a></h2>
+<p>Okay, okay, okay. Now that we&#8217;ve run <code class="docutils literal"><span class="pre">Repet</span></code> let&#8217;s get the results and output them to a file. We get results from
+all of our algorithms in <em>nussl</em> the same way, by calling <code class="docutils literal"><span class="pre">make_audio_signals()</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">background</span><span class="p">,</span> <span class="n">foreground</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">background</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">foreground</span><span class="p">)</span>
+<span class="go">nussl.audio_signal.AudioSignal, nussl.audio_signal.AudioSignal</span>
+</pre></div>
+</div>
+<p>We can see that <code class="docutils literal"><span class="pre">make_audio_signals()</span></code> produces two new <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects. Why two? One for each source. Other
+algorithms (like DUET) may produce different numbers of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects.</p>
+<p>Now, we can use these just like before. So let&#8217;s write our results to files:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">background</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;history_background.wav&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foreground</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;history_foreground.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tying-it-all-together">
+<h2>Tying it all together<a class="headerlink" href="#tying-it-all-together" title="Permalink to this headline">¶</a></h2>
+<p>Here&#8217;s what the basics of <code class="docutils literal"><span class="pre">Repet</span></code> look like all at once:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;HistoryRepeatingPropellerHeads.wav&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">background</span><span class="p">,</span> <span class="n">foreground</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">background</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;history_background.wav&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foreground</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;history_foreground.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="https://youtu.be/OXZt4-LTtHw">That&#8217;s pretty neat!</a></p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../src/classes.html" class="btn btn-neutral float-right" title="nussl Classes" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="audio_signal_stft.html" class="btn btn-neutral" title="Spectrograms and STFTs" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5a9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

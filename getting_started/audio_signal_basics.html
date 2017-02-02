@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>AudioSignal Basics &mdash; nussl 0.1.5a9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+        <link rel="up" title="The AudioSignal Object" href="audio_signal.html"/>
+        <link rel="next" title="Spectrograms and STFTs" href="audio_signal_stft.html"/>
+        <link rel="prev" title="The AudioSignal Object" href="audio_signal.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="audio_signal.html">The AudioSignal Object</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">AudioSignal Basics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#initialization-from-a-file">Initialization from a file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#initialization-from-a-numpy-array">Initialization from a numpy array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-basic-manipulations">Other basic manipulations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="audio_signal_stft.html">Spectrograms and STFTs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repet.html">Using REPET</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../src/classes.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="getting_started.html">Getting Started</a> &raquo;</li>
+      
+          <li><a href="audio_signal.html">The AudioSignal Object</a> &raquo;</li>
+      
+    <li>AudioSignal Basics</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/getting_started/audio_signal_basics.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="audiosignal-basics">
+<span id="audio-signal-basics"></span><h1>AudioSignal Basics<a class="headerlink" href="#audiosignal-basics" title="Permalink to this headline">¶</a></h1>
+<p>The AudioSignal object is the main container for all things related to your audio data. It provides a lot of
+helpful utilities to make it easy to manipulate your audio. Because it is at the heart of all of the source separation
+algorithms in <em>nussl</em>, it is crucial to understand how it works. Here we provide a brief introduction to many common
+tasks.</p>
+<div class="section" id="initialization-from-a-file">
+<h2>Initialization from a file<a class="headerlink" href="#initialization-from-a-file" title="Permalink to this headline">¶</a></h2>
+<p>It is easy to initialize an AudioSignal object by loading an audio file from a path</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_file_path</span> <span class="o">=</span> <span class="s1">&#39;path/to/input.wav&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now the AudioSignal object is ready with all of the information about our the signal.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Hz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">signal1</span><span class="o">.</span><span class="n">sample_rate</span><span class="p">))</span>  <span class="c1"># This is determined by our input file</span>
+<span class="go">44100 Hz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">num_channels</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">signal1</span><span class="o">.</span><span class="n">signal_duration</span><span class="p">))</span>
+<span class="go">2 seconds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> samples&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">signal1</span><span class="o">.</span><span class="n">signal_length</span><span class="p">))</span>  <span class="c1"># Two seconds at 44.1 kHz means...</span>
+<span class="go">88200 samples</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">file_name</span>  <span class="c1"># just get the file name</span>
+<span class="go">&#39;input.wav&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">path_to_input_file</span>  <span class="c1"># this is the full path</span>
+<span class="go">&#39;path/to/input.wav&#39;</span>
+</pre></div>
+</div>
+<p>The actual signal data is in <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>. It’s just a numpy array, so we can use it as such:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">audio_data</span>
+<span class="go">array([[  0.00000000e+00,   0.00000000e+00,   6.10351562e-05, ...,</span>
+<span class="go">          2.47192383e-03,   1.04370117e-02,   1.83410645e-02],</span>
+<span class="go">       [  0.00000000e+00,   0.00000000e+00,   6.10351562e-05, ...,</span>
+<span class="go">          2.47192383e-03,   1.04370117e-02,   1.83410645e-02]], dtype=float32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">audio_data</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2, 88200)</span>
+</pre></div>
+</div>
+<p>A few things to note here:</p>
+<ol class="arabic simple">
+<li>When AudioSignal loads a file, it converts the data to floats between [-1, 1]</li>
+<li>The number of channels is the first dimension, the number of samples is the second.</li>
+</ol>
+</div>
+<div class="section" id="initialization-from-a-numpy-array">
+<h2>Initialization from a numpy array<a class="headerlink" href="#initialization-from-a-numpy-array" title="Permalink to this headline">¶</a></h2>
+<p>Another common way to initialize an AudioSignal object is by passing in a numpy array. Let’s first
+make a single channel signal within a numpy array.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">44100</span>  <span class="c1"># Hz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dt</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">sample_rate</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dur</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1"># seconds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">freq</span> <span class="o">=</span> <span class="mi">5000</span>  <span class="c1"># Hz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Cool! Now let’s put this into a new AudioSignal object.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal2</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">audio_data_array</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="n">signal2</span><span class="o">.</span><span class="n">signal_length</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal2</span><span class="p">)</span>  <span class="c1"># These are all the same thing, right?</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal2</span><span class="o">.</span><span class="n">rms</span><span class="p">()</span>  <span class="c1"># Root-mean-square of audio_data in signal2</span>
+<span class="go">0.70710678118654524</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal2</span><span class="o">.</span><span class="n">time_vector</span>  <span class="c1"># This is a vector with timestamps at each sample</span>
+<span class="go">array([  0.00000000e+00,   2.26759941e-05,   4.53519881e-05, ...,</span>
+<span class="go">         1.99995465e+00,   1.99997732e+00,   2.00000000e+00])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal2</span><span class="o">.</span><span class="n">audio_data_as_ints</span><span class="p">()</span>  <span class="c1"># Get signal2.audio_data as ints</span>
+<span class="go">array([[     0,  21418,  32419, ..., -27651, -32419, -21418]], dtype=int16)</span>
+</pre></div>
+</div>
+<p>Alright, alright, alright <a class="footnote-reference" href="#f1" id="id1">[1]</a>.</p>
+</div>
+<div class="section" id="other-basic-manipulations">
+<h2>Other basic manipulations<a class="headerlink" href="#other-basic-manipulations" title="Permalink to this headline">¶</a></h2>
+<p>If we want to add the audio data in these two signals, it&#8217;s simple. But there are some gotchas:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span> <span class="o">=</span> <span class="n">signal1</span> <span class="o">+</span> <span class="n">signal2</span>
+<span class="go">Exception: Cannot add with two signals that have a different number of channels!</span>
+</pre></div>
+</div>
+<p>Uh oh! I guess it doesn’t make sense to add a stereo signal (<code class="docutils literal"><span class="pre">signal1</span></code>) and mono signal (<code class="docutils literal"><span class="pre">signal2</span></code>).
+But if we really want to add these two signals, we have a few options.</p>
+<p>First, we can just get one of the channels like this <a class="footnote-reference" href="#f2" id="id2">[2]</a>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another option we have is to we can make <code class="docutils literal"><span class="pre">signal1</span></code> mono. <em>nussl</em> does this by simply averaging the
+two channels at every sample. We have to explicitly tell <em>nussl</em> that we are okay with <code class="docutils literal"><span class="pre">to_mono()</span></code>
+changing <code class="docutils literal"><span class="pre">audio_data</span></code>. We do that like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If we hadn’t set <code class="docutils literal"><span class="pre">overwrite=True</span></code> then <code class="docutils literal"><span class="pre">to_mono()</span></code> would just return a np array of mono-ed <code class="docutils literal"><span class="pre">audio_data</span></code> and
+not change the representation of <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>. You will see this pattern come up again. In certain
+places, <code class="docutils literal"><span class="pre">AudioSignal</span></code>&#8216;s default behavior is to overwrite its internal data, and in other places the default is to
+<strong>not</strong> overwrite data. See the reference pages for more info.</p>
+<p>Now, we can add the two signals as before:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span> <span class="o">=</span> <span class="n">signal1</span> <span class="o">+</span> <span class="n">signal2</span>
+</pre></div>
+</div>
+<p>No exceptions this time! Great! <code class="docutils literal"><span class="pre">signal3</span></code> is now a new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. We can similarly subtract two signals.</p>
+<p>Let’s write this to a file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;path/to/output.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Awesome! Now lets see how we can manipulate the audio in the frequency domain...</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Here, <code class="docutils literal"><span class="pre">signal2</span></code> has no value for <code class="docutils literal"><span class="pre">file_name</span></code> or <code class="docutils literal"><span class="pre">path_to_input_file</span></code>. They are <code class="docutils literal"><span class="pre">None</span></code>.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>This is currently 1-based, but <a class="reference external" href="https://github.com/interactiveaudiolab/nussl/issues/58">will be 0-based in an upcoming release.</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="audio_signal_stft.html" class="btn btn-neutral float-right" title="Spectrograms and STFTs" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="audio_signal.html" class="btn btn-neutral" title="The AudioSignal Object" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5a9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
