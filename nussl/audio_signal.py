@@ -526,6 +526,21 @@ class AudioSignal(object):
 
         n_samples = n_seconds * self.sample_rate
         self.truncate_samples(n_samples)
+    
+    def crop_signal(self, before, after):
+        """
+        Get rid of samples before and after the signal on all channels. Contracts the length
+        of self.audio_data by before + after. Useful to get rid of zero padding after the fact.
+        Args:
+            before: (int) number of samples to remove at beginning of self.audio_data
+            after: (int) number of samples to remove at end of self.audio_data
+
+        """
+        if not self.active_region_is_default:
+            raise Exception('Cannot crop signal while active region is not set as default!')
+        num_samples = self.signal_length
+        print before, after
+        self.audio_data = self.audio_data[:, before:num_samples - after]
 
     def zero_pad(self, before, after):
         """
