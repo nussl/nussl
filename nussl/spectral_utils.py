@@ -470,6 +470,7 @@ def get_window_function(window_type):
     """
     return getattr(scipy.signal, window_type)
 
+
 def _add_reflection(matrix):
     reflection = matrix[-2:0:-1, :]
     reflection = reflection.conj()
