@@ -15,7 +15,7 @@ def load_audio(audio_file):
     audio_signal.stft_params.window_length = 4096
     return audio_signal
 
-mixture = load_audio('../Input/mixture.wav')
+mixture = load_audio('../input/mixture.wav')
 overlap_add = nussl.OverlapAdd(mixture, separation_method = 'REPET')
 overlap_add.run()
 bg, fg = overlap_add.make_audio_signals()
