@@ -75,7 +75,6 @@ class RPCA(separation_base.SeparationBase):
     
     def _compute_spectrum(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
-        print self.stft.shape
         self.magnitude_spectrogram = np.abs(self.stft)
 
     def compute_rpca_mask(self, magnitude_spectrogram):
@@ -86,8 +85,6 @@ class RPCA(separation_base.SeparationBase):
     def decompose(self, magnitude_spectrogram):
         #compute rule of thumb values of lagrange multiplier and svd-threshold
         _lambda = 1 / np.sqrt(np.max(magnitude_spectrogram.shape))
-        print _lambda, magnitude_spectrogram.shape
-        print np.min(magnitude_spectrogram), np.max(magnitude_spectrogram)
         
         #initialize low rank and sparse matrices to all zeros
         low_rank = np.zeros(magnitude_spectrogram.shape)
@@ -97,12 +94,10 @@ class RPCA(separation_base.SeparationBase):
         two_norm = np.linalg.svd(magnitude_spectrogram, full_matrices = False, compute_uv = False)[0]
         inf_norm = np.linalg.norm(magnitude_spectrogram.flatten(), np.inf) / _lambda
         dual_norm = np.max([two_norm, inf_norm])
-        print inf_norm, dual_norm, two_norm
         residuals = magnitude_spectrogram / dual_norm
 
         #tunable parameters
         mu = 1.25 / two_norm
-        print mu
         mu_bar = mu * 1e7
         rho = 1.5
 
@@ -111,8 +106,6 @@ class RPCA(separation_base.SeparationBase):
         num_iteration = 0
         
         while not converged and num_iteration < self.num_iterations:
-            print num_iteration
-            print error, self.epsilon
             num_iteration += 1
             low_rank = self.svd_threshold(magnitude_spectrogram - sparse_matrix + residuals / mu, 1 / mu)
             sparse_matrix = self.shrink(magnitude_spectrogram - low_rank + residuals / mu, _lambda / mu)
