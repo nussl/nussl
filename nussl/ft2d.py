@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import scipy.fftpack as scifft
-import scipy.spatial.distance
 
 import spectral_utils
 import separation_base
