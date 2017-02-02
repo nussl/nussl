@@ -6,7 +6,7 @@
 nussl
 =====
 *nussl* (pronounced `nuzzle <http://www.thefreedictionary.com/nuzzle>`_) is a flexible, object oriented python audio
-source separation library created by the `Interactive Audio Lab <http://www.music.cs.northwestern.edu>`_ at Northwestern University.
+source separation library created by the `Interactive Audio Lab <http://music.cs.northwestern.edu>`_ at Northwestern University.
 At its core, *nussl* provides implementations of common source separation algorithms as well as an easy-to-use
 framework for prototyping and adding new algorithms. The aim of *nussl* is to create a low barrier to entry for using
 popular source separation algorithms, while also allowing the user fine tuned control of low-level parameters.
