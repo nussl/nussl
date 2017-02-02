@@ -1,0 +1,466 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>KAM Class &mdash; nussl 0.1.5a9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="classes.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>KAM Class</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/src/KAM.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-KAM">
+<span id="kam-class"></span><h1>KAM Class<a class="headerlink" href="#module-KAM" title="Permalink to this headline">¶</a></h1>
+<p>This module implements the Kernel Additive Modeling (KAM) algorithm and its light
+version (KAML) for source separation.</p>
+<p>References:
+[1] Liutkus, Antoine, et al. &#8220;Kernel additive models for source separation.&#8221;</p>
+<blockquote>
+<div>Signal Processing, IEEE Transactions on 62.16 (2014): 4298-4310.</div></blockquote>
+<dl class="docutils">
+<dt>[2] Liutkus, Antoine, Derry Fitzgerald, and Zafar Rafii. &#8220;Scalable audio</dt>
+<dd>separation with light kernel additive modelling.&#8221; IEEE International
+Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.</dd>
+</dl>
+<p>Required packages:
+1. Numpy
+2. Scipy
+3. Matplotlib
+4. Scikits Audiolab</p>
+<p>Required modules:
+1. f_stft
+2. f_istft</p>
+<dl class="function">
+<dt id="KAM.kam">
+<code class="descclassname">KAM.</code><code class="descname">kam</code><span class="sig-paren">(</span><em>Inputfile</em>, <em>SourceKernels</em>, <em>Numit=1</em>, <em>SpecParams=array([]</em>, <em>dtype=float64)</em>, <em>FullKernel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.kam" title="Permalink to this definition">¶</a></dt>
+<dd><p>The &#8216;kam&#8217; function implements the kernel backfitting algorithm to extract
+J audio sources from I channel mixtures.</p>
+<p>Inputs:
+Inputfile: (list) It can contain either:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Up to 3 elements: A string indicating the path of the .wav file containing
+the I-channel audio mixture as the first element. The second (optional)
+element indicates the length of the portion of the signal to be extracted
+in seconds(defult is the full lengths of the siganl) The third (optional)
+element indicates the starting point of the portion of the signal to be
+extracted (default is 0 sec).</li>
+</ul>
+<p>OR
+- 2 elements: An I-column Numpy matrix containing samples of the time-domain</p>
+<blockquote>
+<div>mixture as the first element and the sampling rate as the second element.</div></blockquote>
+</div></blockquote>
+<dl class="docutils">
+<dt>SourceKernels: a list containg J sub-lists, each of which contains properties of</dt>
+<dd><p class="first">one of source kernels. Kernel properties are:
+-kernel type: (string) determines whether the kernel is one of the</p>
+<blockquote>
+<div>pre-defined kernel types or a user-defined lambda function.
+Choices are: &#8216;cross&#8217;,&#8217;horizontal&#8217;,&#8217;vertical&#8217;,&#8217;periodic&#8217;,&#8217;userdef&#8217;</div></blockquote>
+<dl class="last docutils">
+<dt>-kparams (for pre-defined kernels): a Numpy matrix containing the numerical</dt>
+<dd>values of the kernel parameters.</dd>
+<dt>-knhood (for user-defined kernels): logical lambda function which defines</dt>
+<dd>receives the coordinates of two time-frequency bins and determines
+whether they are neighbours (outputs TRUE if neighbour).</dd>
+<dt>-kwfunc (optional): lambda function which receives the coordinates of two</dt>
+<dd>neighbouring time-frequency bins and computes the weight value at
+the second bin given its distance from the first bin. The weight
+values fall in the interval [0,1]. Default: all ones over the
+neighbourhood (binary kernel).</dd>
+</dl>
+</dd>
+</dl>
+<p>Numit: (optional) number of iterations of the backfitting algorithm - default: 1</p>
+<dl class="docutils">
+<dt>SpecParams: (optional) structured containing spectrogram parameters including:</dt>
+<dd><ul class="first simple">
+<li>windowtype (default is Hamming)</li>
+<li>windowlength (default is 60 ms)</li>
+<li>overlap_samples in [0,windowlength] (default is widowlength/2)</li>
+<li>num_fft_bins (default is windowlength)</li>
+<li>makeplot in {0,1} (default is 0)</li>
+<li>fmaxplot in Hz (default is fs/2)</li>
+</ul>
+<p>example:
+SpecParams=np.zeros(1,dtype=[(&#8216;windowtype&#8217;,&#8217;<a href="#id1"><span class="problematic" id="id2">|</span></a>S1&#8217;),</p>
+<blockquote>
+<div>(&#8216;windowlength&#8217;,int),
+(&#8216;overlap_samples&#8217;,int),
+(&#8216;num_fft_bins&#8217;,int),
+(&#8216;makeplot&#8217;,int),
+(&#8216;fmaxplot&#8217;,float)])</div></blockquote>
+<p class="last">SpecParams[&#8216;windowlength&#8217;]=1024</p>
+</dd>
+<dt>FullKernel: (optional) binary input which determines the method used for median filtering.</dt>
+<dd>If the kernel has a limited support and the same shape over all time-freq. bins,
+then instead of the full kernel method a sliding window can be used in the median
+filtering stage in order to make the algorithm run faster (linear computational
+complexity). The default value is False.
+A True value means implementing the case where the similarity measure is
+computed for all possible combinations of TF bins, resulting in quadratic
+computational complexity, and hence longer running time.</dd>
+</dl>
+<p>Outputs:
+shat: a Ls by I by J Numpy array containing J time-domain source images on I channels
+fhat: a LF by LT by J Numpy array containing J power spectral dencities</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="KAM.kaml">
+<code class="descclassname">KAM.</code><code class="descname">kaml</code><span class="sig-paren">(</span><em>Inputfile</em>, <em>SourceKernels</em>, <em>AlgParams=array([10</em>, <em>1])</em>, <em>Numit=1</em>, <em>SpecParams=array([]</em>, <em>dtype=float64)</em>, <em>FullKernel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.kaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>The &#8216;kaml&#8217; function implements a computationally less expensive version of the
+kernel backfitting algorithm. The KBF algorithm extracts J audio sources from
+I channel mixtures.</p>
+<p>Inputs:
+Inputfile: (list) It can contain either:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Up to 3 elements: A string indicating the path of the .wav file containing
+the I-channel audio mixture as the first element. The second (optional)
+element indicates the length of the portion of the signal to be extracted
+in seconds(defult is the full lengths of the siganl) The third (optional)
+element indicates the starting point of the portion of the signal to be
+extracted (default is 0 sec).</li>
+</ul>
+<p>OR
+- 2 elements: An I-column Numpy matrix containing samples of the time-domain</p>
+<blockquote>
+<div>mixture as the first element and the sampling rate as the second element.</div></blockquote>
+</div></blockquote>
+<dl class="docutils">
+<dt>SourceKernels: a list containg J sub-lists, each of which contains properties of</dt>
+<dd><p class="first">one of source kernels. Kernel properties are:
+-kernel type: (string) determines whether the kernel is one of the</p>
+<blockquote>
+<div>pre-defined kernel types or a user-defined lambda function.
+Choices are: &#8216;cross&#8217;,&#8217;horizontal&#8217;,&#8217;vertical&#8217;,&#8217;periodic&#8217;,&#8217;userdef&#8217;</div></blockquote>
+<dl class="last docutils">
+<dt>-kparams (for pre-defined kernels): a Numpy matrix containing the numerical</dt>
+<dd>values of the kernel parameters.</dd>
+<dt>-knhood (for user-defined kernels): logical lambda function which defines</dt>
+<dd>receives the coordinates of two time-frequency bins and determines
+whether they are neighbours (outputs TRUE if neighbour).</dd>
+<dt>-kwfunc (optional): lambda function which receives the coordinates of two</dt>
+<dd>neighbouring time-frequency bins and computes the weight value at
+the second bin given its distance from the first bin. The weight
+values fall in the interval [0,1]. Default: all ones over the
+neighbourhood (binary kernel).</dd>
+</dl>
+</dd>
+<dt>AlgParams: Numpy array of length 2, containing algorithm parameters. The first element is</dt>
+<dd>the number of components or equivalently the rank of the mixture PSD, K, (default: 10),
+and the second element the compression exponent gamma (default: 1).</dd>
+</dl>
+<p>Numit: (optional) number of iterations of the backfitting algorithm - default: 1</p>
+<dl class="docutils">
+<dt>SpecParams: (optional) structured containing spectrogram parameters including:</dt>
+<dd><ul class="first simple">
+<li>windowtype (default is Hamming)</li>
+<li>windowlength (default is 60 ms)</li>
+<li>overlap_samples in [0,windowlength] (default is widowlength/2)</li>
+<li>num_fft_bins (default is windowlength)</li>
+<li>makeplot in {0,1} (default is 0)</li>
+<li>fmaxplot in Hz (default is fs/2)</li>
+</ul>
+<p>example:
+SpecParams=np.zeros(1,dtype=[(&#8216;windowtype&#8217;,&#8217;<a href="#id3"><span class="problematic" id="id4">|</span></a>S1&#8217;),</p>
+<blockquote>
+<div>(&#8216;windowlength&#8217;,int),
+(&#8216;overlap_samples&#8217;,int),
+(&#8216;num_fft_bins&#8217;,int),
+(&#8216;makeplot&#8217;,int),
+(&#8216;fmaxplot&#8217;,float)])</div></blockquote>
+<p class="last">SpecParams[&#8216;windowlength&#8217;]=1024</p>
+</dd>
+<dt>FullKernel: (optional) binary input which determines the method used for median filtering.</dt>
+<dd>If the kernel has a limited support and the same shape over all time-freq. bins,
+then instead of the full kernel method a sliding window can be used in the median
+filtering stage in order to make the algorithm run faster (linear computational
+complexity). The default value is False.
+A True value means implementing the case where the similarity measure is
+computed for all possible combinations of TF bins, resulting in quadratic
+computational complexity, and hence longer running time.</dd>
+</dl>
+<p>Outputs:
+shat: a Ls by I by J Numpy array containing J time-domain source images on I channels
+fhat: a LF by LT by J Numpy array containing J power spectral dencities</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="KAM.randSVD">
+<code class="descclassname">KAM.</code><code class="descname">randSVD</code><span class="sig-paren">(</span><em>A</em>, <em>K</em>, <em>mode='normal'</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.randSVD" title="Permalink to this definition">¶</a></dt>
+<dd><p>The function randSVD implements the randomized computation of truncated SVD
+of K components over a m by n matrix A.
+Inputs:
+A: Numpy array (m by n)
+K: number of components
+mode: one of three cases</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;normal&#8217; (default): S is a K by K diagonal matrix</li>
+<li>&#8216;diagonal&#8217;: S is the K by 1 vector containing the singular values</li>
+<li>&#8216;compact&#8217;: U and V are both multiplied by sqrt(S), and S is set to 1.</li>
+</ul>
+</div></blockquote>
+<p>Outputs:
+U: Numpy array (m by K) containing basis vectors in C^m
+S: Numpy array (K by K) containing singular values
+V: Numpy array (n by K) containing basis vectors in C^n</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="KAM.Kernel">
+<em class="property">class </em><code class="descclassname">KAM.</code><code class="descname">Kernel</code><span class="sig-paren">(</span><em>Type=''</em>, <em>ParamVal=matrix([]</em>, <em>shape=(1</em>, <em>0)</em>, <em>dtype=float64)</em>, <em>Nhood=None</em>, <em>Wfunc=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class Kernel defines the properties of the time-freq proximity kernel. The weight values of
+the proximity kernel over time-frequecy bins that are considered as neighbours are given
+by a pre-defined or a user-defined function. The value of the proximity kernel is zero over
+time-frequency bins outside the neighbourhood.</p>
+<p>Properties:</p>
+<dl class="docutils">
+<dt>-kType: (string) determines whether the kernel is one of the pre-defined kernel types</dt>
+<dd>or a user-defined lambda function.
+Predefined choices are: &#8216;cross&#8217;,&#8217;horizontal&#8217;,&#8217;vertical&#8217;,&#8217;periodic&#8217;
+To define a new kernel type, kType should be set to: &#8216;userdef&#8217;</dd>
+<dt>-kParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any</dt>
+<dd><p class="first">of the pre-defined kernel type is selected, the parameter values should be provided
+through kParamVal. Parameters corresponding to the pre-defined kernels are:
+Cross: (neighbourhood width along the freq. axis in # of freq. bins, neighbour width</p>
+<blockquote>
+<div>along the time axis in # of time frames)</div></blockquote>
+<p>Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
+Horizontal: (neighbourhood width along the time axis in # of time frames)
+Periodic: (period in # of time frames,# of periods along the time axis)</p>
+<dl class="last docutils">
+<dt>Note: neighbourhood width is measured in only one direction, e.g. only to the</dt>
+<dd>right of a time-freq bin in the case of a horizontal kernel, so the whole
+length of the neighbourhood would be twice the specified width.</dd>
+</dl>
+</dd>
+<dt>-kNhood: logical lambda funcion which receives the coordinates of two time-frequency</dt>
+<dd>bins and determines whether they are neighbours (outputs TRUE if neighbour).</dd>
+<dt>-kWfunc: lambda function which receives the coordinates of two time-frequency bins that are</dt>
+<dd>considered neighbours by kNhood and computes the weight value at the second bin given
+its distance from the first bin. The weight values fall in the interval [0,1] with
+1 indicating zero-distance or equivalently perfect similarity.
+Default: all ones over the neighbourhood (binary kernel)</dd>
+</dl>
+<p>EXAMPLE:</p>
+<p>FF,TT=np.meshgrid(np.arange(5),np.arange(7))
+TFcoords1=np.mat(&#8216;2,3&#8217;)
+TFcoords2=np.mat(np.zeros((35,2)))
+TFcoords2[:,0]=np.mat(np.asarray(FF.T).reshape(-1)).T
+TFcoords2[:,1]=np.mat(np.asarray(TT.T).reshape(-1)).T</p>
+<p>W=lambda TFcoords1,TFcoords2: np.exp(-(TFcoords1-TFcoords2)*(TFcoords1-TFcoords2).T)
+k_cross=Kernel(&#8216;cross&#8217;,np.mat([3,2]),W)
+simVal_cross=np.reshape(k_cross.sim(TFcoords1,TFcoords2),(5,7))</p>
+<dl class="method">
+<dt id="KAM.Kernel.gen_predef_kernel">
+<code class="descname">gen_predef_kernel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel.gen_predef_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates the pre-defined kernel object given the parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="KAM.Kernel.sim">
+<code class="descname">sim</code><span class="sig-paren">(</span><em>TFcoords1</em>, <em>TFcoords2</em><span class="sig-paren">)</span><a class="headerlink" href="#KAM.Kernel.sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measures the similarity between a series of new time-freq points and the kernel central point.</p>
+<p>Inputs:
+TFcoords1: N1 by 2 Numpy matrix containing coordinates of N1 time-frequency bins.</p>
+<blockquote>
+<div>Each row contains the coordinates of a single bin.</div></blockquote>
+<p>TFcoords2: N2 by 2 Numpy matrix containing coordinates of N2 time-frequency bins.</p>
+<p>Output:
+simVal: N1 by N2 Numby matrix of similarity values. Similarity values fall in the interval [0,1].</p>
+<blockquote>
+<div>The value of the (i,j) element in simVal determines the amountof similarity (or closeness)
+between the i-th time-frequency bin in TFcoords1 and j-th time-frequency bin in TFcoords2.</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5a9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

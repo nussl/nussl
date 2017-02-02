@@ -1,8 +1,7 @@
-AudioMix module
-===============
+Duet Class
+==========
 
-.. automodule:: AudioMix
+.. automodule:: Duet
     :members:
     :undoc-members:
     :show-inheritance:
-

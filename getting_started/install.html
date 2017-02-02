@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation &mdash; nussl 0.1.5a9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+        <link rel="up" title="Getting Started" href="getting_started.html"/>
+        <link rel="next" title="The AudioSignal Object" href="audio_signal.html"/>
+        <link rel="prev" title="Getting Started" href="getting_started.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pip-install">pip install</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-from-source-and-downloading">Installing from source and downloading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#making-sure-you-have-the-correct-version">Making sure you have the correct version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pip-issues-with-anaconda">pip issues with anaconda</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#matplotlib-issues">Matplotlib issues</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#contact">Contact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">The AudioSignal Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet.html">Using REPET</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../src/classes.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="getting_started.html">Getting Started</a> &raquo;</li>
+      
+    <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/getting_started/install.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installation">
+<span id="installation-instructions"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p><strong>It is highly recommended to install</strong> <em>nussl</em> <strong>inside a</strong>
+<a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a> <strong>because it is under active development.</strong>
+We also recommend installing <a class="reference external" href="https://www.continuum.io/">anaconda</a> prior to using this package.</p>
+<div class="section" id="pip-install">
+<h2>pip install<a class="headerlink" href="#pip-install" title="Permalink to this headline">¶</a></h2>
+<p>Installing <em>nussl</em> is easy using pip and the Python Package Index. This will install all required dependencies alongside the
+<em>nussl</em> installation. Use the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span>
+</pre></div>
+</div>
+<p>to install.</p>
+</div>
+<div class="section" id="installing-from-source-and-downloading">
+<h2>Installing from source and downloading<a class="headerlink" href="#installing-from-source-and-downloading" title="Permalink to this headline">¶</a></h2>
+<p>Alternatively, you may download the source code from <a class="reference external" href="https://github.com/interactiveaudiolab/nussl">github</a>
+and install with the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">nussl</span>
+</pre></div>
+</div>
+<p>It is also possible to download from github and copy the <em>nussl</em> folder into your working directory and
+directly import the modules in your python code.</p>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p><em>nussl</em> requires:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">python</span> <span class="pre">2.7</span></code></li>
+<li><code class="docutils literal"><span class="pre">numpy</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">1.8.0</span></code></li>
+<li><code class="docutils literal"><span class="pre">scipy</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">0.13.0</span></code></li>
+<li><code class="docutils literal"><span class="pre">matplotlib</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">1.3.1</span></code></li>
+<li><code class="docutils literal"><span class="pre">audioread</span> <span class="pre">&gt;=</span> <span class="pre">2.1.2</span></code></li>
+<li><code class="docutils literal"><span class="pre">librosa</span> <span class="pre">&gt;=</span> <span class="pre">0.4.1</span></code></li>
+</ul>
+<p>The first four are satisfied by <a class="reference external" href="https://www.continuum.io/">anaconda</a>.</p>
+</div>
+<div class="section" id="troubleshooting">
+<span id="id2"></span><h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="making-sure-you-have-the-correct-version">
+<h3>Making sure you have the correct version<a class="headerlink" href="#making-sure-you-have-the-correct-version" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes issues arise that can be fixed by making sure you version of <em>nussl</em> is up to date. To check if you have the
+most up-to-date version of nussl, check the version number here: <a class="reference external" href="https://pypi.python.org/pypi/nussl">https://pypi.python.org/pypi/nussl</a> and compare it with
+the one you are accessing in your python like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">version</span>
+<span class="go">0.1.5a9</span>
+</pre></div>
+</div>
+<p>If the version numbers match then you&#8217;re set. If not you can get the most recent version in a few ways. From the
+terminal, the command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">nussl</span>
+</pre></div>
+</div>
+<p>will force pip to install the newest version of nussl and all of its dependencies.</p>
+<p>In the case that this fails, you can force pip to install a specific version like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span><span class="o">==</span><span class="p">[</span><span class="n">version</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>So if I find that version 0.1.5a9 is the most recent (by checking PyPI), my command would look like the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span><span class="o">==</span><span class="mf">0.1</span><span class="o">.</span><span class="mi">5</span><span class="n">a9</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pip-issues-with-anaconda">
+<h3>pip issues with anaconda<a class="headerlink" href="#pip-issues-with-anaconda" title="Permalink to this headline">¶</a></h3>
+<p>If you have anaconda installed on your machine and after a <code class="docutils literal"><span class="pre">pip</span></code> install doing <code class="docutils literal"><span class="pre">import</span> <span class="pre">nussl</span></code> is crashing, it might
+be the case that pip is installing <em>nussl</em> to a (non-anaconda) python binary elsewhere on your machine.
+You can target the directory where pip installs <em>nussl</em> by adding this flag to your pip command:
+<code class="docutils literal"><span class="pre">--target=d:\somewhere\other\than\the\default</span></code>. See: <a class="reference external" href="http://stackoverflow.com/q/2915471/5768001">http://stackoverflow.com/q/2915471/5768001</a>
+If you find your anaconda (or anaconda2) folder on your machine, the directory to target should be
+<code class="docutils literal"><span class="pre">anaconda2/lib/python2.7/site-packages</span></code>.</p>
+<p>The more inelegant solution is to find your pre-existing <em>nussl</em>
+installation, which means locating two directories named <code class="docutils literal"><span class="pre">nussl</span></code> and <code class="docutils literal"><span class="pre">nussl-[version].dist-info</span></code> (where [version]
+is the version string as above). These are usually in a directory structure like <code class="docutils literal"><span class="pre">lib/python2.7/site-packages</span></code>
+as above, but not anaconda related, presumably where pip installed them. Once you find those two folders copy and paste
+them to the anaconda directory above.</p>
+</div>
+<div class="section" id="matplotlib-issues">
+<h3>Matplotlib issues<a class="headerlink" href="#matplotlib-issues" title="Permalink to this headline">¶</a></h3>
+<p>If you get this issue:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;//anaconda/lib/python2.7/site-packages/matplotlib-1.3.1-py2.7-macosx-10.5-x86_64.egg/matplotlib/pyplot.py&quot;</span>, line <span class="m">98</span>, in <span class="n">&lt;module&gt;</span>
+    <span class="n">_backend_mod</span><span class="p">,</span> <span class="n">new_figure_manager</span><span class="p">,</span> <span class="n">draw_if_interactive</span><span class="p">,</span> <span class="n">_show</span> <span class="o">=</span> <span class="n">pylab_setup</span><span class="p">()</span>
+  File <span class="nb">&quot;//anaconda/lib/python2.7/site-packages/matplotlib-1.3.1-py2.7-macosx-10.5-x86_64.egg/matplotlib/backends/__init__.py&quot;</span>, line <span class="m">28</span>, in <span class="n">pylab_setup</span>
+    <span class="nb">globals</span><span class="p">(),</span><span class="nb">locals</span><span class="p">(),[</span><span class="n">backend_name</span><span class="p">],</span><span class="mi">0</span><span class="p">)</span>
+  File <span class="nb">&quot;//anaconda/lib/python2.7/site-packages/matplotlib-1.3.1-py2.7-macosx-10.5-x86_64.egg/matplotlib/backends/backend_macosx.py&quot;</span>, line <span class="m">21</span>, in <span class="n">&lt;module&gt;</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.backends</span> <span class="k">import</span> <span class="n">_macosx</span>
+<span class="gr">**RuntimeError**</span>: <span class="n">Python is not installed as a framework. The Mac OS X backend will not be able to function correctly if Python is not installed as a framework. See the Python documentation for more information on installing Python as a framework on Mac OS X. Please either reinstall Python as a framework, or try one of the other backends.</span>
+</pre></div>
+</div>
+<p>Then there is an issue with your <a class="reference external" href="http://matplotlib.org/1.3.0/faq/usage_faq.html#what-is-a-backend">matplotlib backend renderer</a>.
+This is an easy fix. There is a <a class="reference external" href="http://stackoverflow.com/q/21784641/5768001">stack overflow post here</a> about it.</p>
+<p>The solution is to create a matplotlib config file here: <code class="docutils literal"><span class="pre">~/.matplotlib/matplotlibrc</span></code> and add this line to it:
+<code class="docutils literal"><span class="pre">backend:</span> <span class="pre">TkAgg</span></code>.</p>
+<p>You might get some warnings now when you <code class="docutils literal"><span class="pre">import</span> <span class="pre">nussl</span></code> but this is fine. You can also switch to another backend.
+To see what backends are available, run this code:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">get_supported_filetypes</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="contact">
+<h3>Contact<a class="headerlink" href="#contact" title="Permalink to this headline">¶</a></h3>
+<p>Please get in contact or open a github issue if you encounter any installation issues.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="audio_signal.html" class="btn btn-neutral float-right" title="The AudioSignal Object" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="getting_started.html" class="btn btn-neutral" title="Getting Started" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5a9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

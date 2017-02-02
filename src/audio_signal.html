@@ -1,0 +1,664 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>AudioSignal Class &mdash; nussl 0.1.5a9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+        <link rel="up" title="nussl Classes" href="classes.html"/>
+        <link rel="next" title="SeparationBase Class" href="separation_base.html"/>
+        <link rel="prev" title="nussl Classes" href="classes.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="classes.html">Classes</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AudioSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="separation_base.html">SepararationBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet.html">REPET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet_sim.html">REPET-SIM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="duet.html">DUET</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="classes.html">nussl Classes</a> &raquo;</li>
+      
+    <li>AudioSignal Class</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/src/audio_signal.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-audio_signal">
+<span id="audiosignal-class"></span><h1>AudioSignal Class<a class="headerlink" href="#module-audio_signal" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="audio_signal.AudioSignal">
+<em class="property">class </em><code class="descclassname">audio_signal.</code><code class="descname">AudioSignal</code><span class="sig-paren">(</span><em>path_to_input_file=None</em>, <em>audio_data_array=None</em>, <em>signal_starting_position=0</em>, <em>signal_length=None</em>, <em>sample_rate=44100</em>, <em>stft=None</em>, <em>stft_params=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines properties of an audio signal and performs basic operations such as Wav loading and STFT/iSTFT.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>path_to_input_file</strong> (<em>string</em>) &#8211; string specifying path to file. Either this or timeSeries must be provided</li>
+<li><strong>audio_data_array</strong> (<em>np.array</em>) &#8211; Numpy matrix containing a time series of a signal</li>
+<li><strong>signal_starting_position</strong> (<em>Optional[int]</em>) &#8211; Starting point of the section to be extracted in seconds. Defaults to 0</li>
+<li><strong>signal_length</strong> (<em>Optional[int]</em>) &#8211; Length of the signal to be extracted. Defaults to full length of the signal</li>
+<li><strong>sample_rate</strong> (<em>Optional[int]</em>) &#8211; sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE</li>
+<li><strong>stft</strong> (<em>Optional[np.array]</em>) &#8211; Optional pre-computed complex spectrogram data.</li>
+<li><strong>stft_params</strong> (<em>Optional [StftParams object]</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<ul class="simple">
+<li>create a new signal object:     <code class="docutils literal"><span class="pre">sig=AudioSignal('sample_audio_file.wav')</span></code></li>
+<li>compute the spectrogram of the new signal object:   <code class="docutils literal"><span class="pre">sigSpec,sigPow,F,T=sig.STFT()</span></code></li>
+<li>compute the inverse stft of a spectrogram:          <code class="docutils literal"><span class="pre">sigrec,tvec=sig.iSTFT()</span></code></li>
+</ul>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.plot_time_domain">
+<code class="descname">plot_time_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_time_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented yet &#8211; will raise and exception
+Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.plot_spectrogram">
+<code class="descname">plot_spectrogram</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>ch=None</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_spectrogram" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.signal_length">
+<code class="descname">signal_length</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_length" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; (int) The length of the audio signal represented by this object in samples</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.signal_duration">
+<code class="descname">signal_duration</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_duration" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; (float) The length of the audio signal represented by this object in seconds</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.num_channels">
+<code class="descname">num_channels</code><a class="headerlink" href="#audio_signal.AudioSignal.num_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of channels.
+Returns: (int) number of channels</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.audio_data">
+<code class="descname">audio_data</code><a class="headerlink" href="#audio_signal.AudioSignal.audio_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 2-D numpy array that represents the audio in the time domain.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.file_name">
+<code class="descname">file_name</code><a class="headerlink" href="#audio_signal.AudioSignal.file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; The name of the file wth extension, NOT the full path
+.. seealso:: :ref: self.path_to_input_file</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.time_vector">
+<code class="descname">time_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.time_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; A 1-D numpy array with timestamps (in seconds) for each sample in the time domain.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.freq_vector">
+<code class="descname">freq_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.freq_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; A 1-D numpy array with frequency values that correspond to each frequency bin (vertical axis)
+for the STFT.
+Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.stft_length">
+<code class="descname">stft_length</code><a class="headerlink" href="#audio_signal.AudioSignal.stft_length" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; (int) The number of time windows the STFT has.
+Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.num_fft_bins">
+<code class="descname">num_fft_bins</code><a class="headerlink" href="#audio_signal.AudioSignal.num_fft_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; (int) Number of FFT bins in self.stft_data
+Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.active_region_is_default">
+<code class="descname">active_region_is_default</code><a class="headerlink" href="#audio_signal.AudioSignal.active_region_is_default" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em> &#8211; Returns true if active region is the full length of self.audio_data
+.. seealso:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">:</span><span class="n">ref</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_active_region</span>
+<span class="p">:</span><span class="n">ref</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_active_region_to_default</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.power_spectrogram_data">
+<code class="descname">power_spectrogram_data</code><a class="headerlink" href="#audio_signal.AudioSignal.power_spectrogram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>The power spectrogram is defined as Re(STFT)^2, where ^2 is element-wise squaring of entries of the STFT.
+Same size as self.stft_data.
+Returns: Real valued 2-D np.array with power spectrogram data.
+Raises: AttributeError if self.stft_data is None. Run self.stft() before accessing this.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.load_audio_from_file">
+<code class="descname">load_audio_from_file</code><span class="sig-paren">(</span><em>input_file_path</em>, <em>signal_starting_position=0</em>, <em>signal_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.load_audio_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an audio signal from a .wav file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_file_path</strong> &#8211; path to input file.</li>
+<li><strong>signal_length</strong> (<em>Optional[int]</em>) &#8211; Length of signal to load. signal_length of 0 means read the whole file
+Defaults to the full length of the signal</li>
+<li><strong>signal_starting_position</strong> (<em>Optional[int]</em>) &#8211; The starting point of the section to be extracted (seconds).
+Defaults to 0 seconds</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.load_audio_from_array">
+<code class="descname">load_audio_from_array</code><span class="sig-paren">(</span><em>signal</em>, <em>sample_rate=44100</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.load_audio_from_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an audio signal from a numpy array. Only accepts float arrays and int arrays of depth 16-bits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>signal</strong> (<em>np.array</em>) &#8211; np.array containing the audio file signal sampled at sampleRate</li>
+<li><strong>sample_rate</strong> (<em>Optional[int]</em>) &#8211; the sample rate of signal. Default is Constants.DEFAULT_SAMPLE_RATE (44.1kHz)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.write_audio_to_file">
+<code class="descname">write_audio_to_file</code><span class="sig-paren">(</span><em>output_file_path</em>, <em>sample_rate=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.write_audio_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs the audio signal to a .wav file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_file_path</strong> (<em>str</em>) &#8211; Filename where waveform will be saved</li>
+<li><strong>sample_rate</strong> (<em>Optional[int]</em>) &#8211; The sample rate to write the file at. Default is AudioSignal.SampleRate, which</li>
+<li><strong>the sample rate of the original signal.</strong> (<em>is</em>) &#8211; </li>
+<li><strong>verbose</strong> (<em>Optional[bool]</em>) &#8211; Flag controlling printing when writing the file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.set_active_region">
+<code class="descname">set_active_region</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.set_active_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the bounds of what gets returned when you access my_audio_signal.audio_data.
+None of the data in my_audio_signal.audio_data gets thrown out when you set the active region, it is just
+not accessible until you re-set the active region.</p>
+<p>This is useful for reusing a single AudioSignal object to do different operations on different parts of the
+audio data.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Many functions will raise exceptions while the active region is not default. Be aware that adding,
+subtracting, concatenating, truncating, and other utilities may not be available.</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<table class="last docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">ref:</th><td class="field-body">set_active_region_to_default</td>
+</tr>
+<tr class="field-even field"><th class="field-name">ref:</th><td class="field-body">active_region_is_default</td>
+</tr>
+</tbody>
+</table>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>start</strong> &#8211; (int) Beginning of active region (in samples). Cannot be less than 0.</li>
+<li><strong>end</strong> &#8211; (int) End of active region (in samples). Cannot be larger than self.signal_length.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.set_active_region_to_default">
+<code class="descname">set_active_region_to_default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.set_active_region_to_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the active region of this AudioSignal object to it default value of the entire audio_data array.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.stft">
+<code class="descname">stft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em>, <em>overwrite=True</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.stft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Short Time Fourier Transform (STFT) of the audio signal</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If overwrite=True (default) this will overwrite any data in self.stft_data!</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>calculated_stft</strong> (<em>np.array</em>) - complex stft data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.istft">
+<code class="descname">istft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>overwrite=True</em>, <em>reconstruct_reflection=False</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.istft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and returns the inverse Short Time Fourier Transform (STFT).</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If overwrite=True (default) this will overwrite any data in self.audio_data!</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>* **calculated_signal**</strong> (<em>np.array</em>) &#8211; time-domain audio signal</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.concat">
+<code class="descname">concat</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.concat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add two AudioSignal objects (by adding self.audio_data) temporally.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><em>AudioSignal</em></a>) &#8211; Audio Signal to concatenate with the current one.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.truncate_samples">
+<code class="descname">truncate_samples</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.truncate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncates the signal leaving only the first n_samples in number of samples. This can only be done
+if self.active_region_is_default is True.
+:param n_samples: (int) number of samples that will be left.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.truncate_seconds">
+<code class="descname">truncate_seconds</code><span class="sig-paren">(</span><em>n_seconds</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.truncate_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncates the signal leaving only the first n_seconds. This can only be done
+if self.active_region_is_default is True.
+:param n_seconds: (float) number of seconds to truncate self.audio_data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.zero_pad">
+<code class="descname">zero_pad</code><span class="sig-paren">(</span><em>before</em>, <em>after</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.zero_pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds zeros before and after the signal to all channels. Extends the length
+of self.audio_data by before + after.
+:param before: (int) number of zeros to be put before the current contents of self.audio_data
+:param after: (int) number of zeros to be put after the current contents fo self.audio_data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_channel">
+<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the n-th channel from <code class="docutils literal"><span class="pre">self.audio_data</span></code>. <strong>1-based.</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>int</em>) &#8211; index of channel to get. <strong>1-based</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>n-th channel</strong> (<em>np.array</em>) &#8211; the audio data in the n-th channel of the signal</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_stft_channel">
+<code class="descname">get_stft_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.stft_data</span></code>. <strong>1-based.</strong>
+:param n: (int) index of stft channel to get. <strong>1 based</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>n-th channel</strong> (<em>np.array</em>) &#8211; the stft data in the n-th channel of the signal</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_power_spectrogram_channel">
+<code class="descname">get_power_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_power_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.power_spectrogram_data</span></code>. <strong>1-based.</strong>
+:param n: (int) index of power spectrogram channel to get. <strong>1 based</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>n-th channel</strong> (<em>np.array</em>) &#8211; the power spectrogram data in the n-th channel of the signal</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.peak_normalize">
+<code class="descname">peak_normalize</code><span class="sig-paren">(</span><em>overwrite=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.peak_normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes the whole audio file to 1.0.
+Notes:
+<strong>If self.audio_data is not represented as floats this will convert the representation to floats!</strong></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds two audio signal objects. This does element-wise addition on the <code class="docutils literal"><span class="pre">self.audio_data</span></code> array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><em>AudioSignal</em></a>) &#8211; Other audio signal to add.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>sum</strong> (<em>AudioSignal</em>) &#8211; AudioSignal with the sum of the current object and other.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.sub">
+<code class="descname">sub</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subtracts two audio signal objects. This does element-wise subtraction on the <code class="docutils literal"><span class="pre">self.audio_data</span></code> array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><em>AudioSignal</em></a>) &#8211; Other audio signal to subtract.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>diff</strong> (<em>AudioSignal</em>) &#8211; AudioSignal with the difference of the current object and other.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.audio_data_as_ints">
+<code class="descname">audio_data_as_ints</code><span class="sig-paren">(</span><em>bit_depth=16</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.audio_data_as_ints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns self.audio_data as a numpy array of ints with a specified bit depth.
+.. rubric:: Notes</p>
+<p>self.audio_data is regularly stored as an array of floats. This will not affect self.audio_data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bit_depth</strong> &#8211; (int) (Optional) Bit depth of the integer array that will be returned</td>
+</tr>
+</tbody>
+</table>
+<p>Returns: (numpy array) Integer representation of self.audio_data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts this AudioSignal object to json.
+Returns: (string) json representation of the current AudioSignal object.
+.. seealso:: :ref: self.from_json</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="audio_signal.AudioSignal.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new AudioSignal object from a json encoded AudioSignal string.
+:param json_string: (string) a json encoded AudioSignal string</p>
+<p>Returns: (AudioSignal) a new AudioSignal object based on the parameters
+.. seealso:: :ref: self.to_json</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.rms">
+<code class="descname">rms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.rms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the root-mean-square of self.audio_data.
+Returns: (float) root-mean-square of self.audio_data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.to_mono">
+<code class="descname">to_mono</code><span class="sig-paren">(</span><em>overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.to_mono" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>overwrite</strong> &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="separation_base.html" class="btn btn-neutral float-right" title="SeparationBase Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="classes.html" class="btn btn-neutral" title="nussl Classes" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5a9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

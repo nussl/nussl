@@ -1,7 +1,7 @@
-FftUtils module
-===============
+Nmf Class
+=========
 
-.. automodule:: FftUtils
+.. automodule:: Nmf
     :members:
     :undoc-members:
     :show-inheritance:

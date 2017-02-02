@@ -1,0 +1,462 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Repet Class &mdash; nussl 0.1.5a9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+        <link rel="up" title="nussl Classes" href="classes.html"/>
+        <link rel="next" title="RepetSim Class" href="repet_sim.html"/>
+        <link rel="prev" title="SeparationBase Class" href="separation_base.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="classes.html">Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="separation_base.html">SepararationBase</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">REPET</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet_sim.html">REPET-SIM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="duet.html">DUET</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="classes.html">nussl Classes</a> &raquo;</li>
+      
+    <li>Repet Class</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/src/repet.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-repet">
+<span id="repet-class"></span><h1>Repet Class<a class="headerlink" href="#module-repet" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="repet.Repet">
+<em class="property">class </em><code class="descclassname">repet.</code><code class="descname">Repet</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>min_period=None</em>, <em>max_period=None</em>, <em>period=None</em>, <em>high_pass_cutoff=None</em>, <em>do_mono=False</em>, <em>use_find_period_complex=False</em>, <em>use_librosa_stft=True</em>, <em>matlab_fidelity=False</em><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="separation_base.html#separation_base.SeparationBase" title="separation_base.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></a></p>
+<p>Implements the original REpeating Pattern Extraction Technique algorithm using the beat spectrum.</p>
+<p>REPET is a simple method for separating a repeating background from a non-repeating foreground in an
+audio mixture.</p>
+<p class="rubric">References</p>
+<ul class="simple">
+<li>Zafar Rafii and Bryan Pardo. &#8220;Audio Separation System and Method,&#8221; US20130064379 A1, US 13/612,413, March 14,
+2013</li>
+</ul>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="http://music.eecs.northwestern.edu/research.php?project=repet">http://music.eecs.northwestern.edu/research.php?project=repet</a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_audio_signal</strong> &#8211; (AudioSignal object) The AudioSignal object that has the
+audio data that REPET will be run on.</li>
+<li><strong>min_period</strong> &#8211; (Optional) (float) minimum time to look for repeating period in terms of seconds.</li>
+<li><strong>max_period</strong> &#8211; (Optional) (float) maximum time to look for repeating period in terms of seconds.</li>
+<li><strong>period</strong> &#8211; (Optional) (float) exact time that the repeating period is (in seconds).</li>
+<li><strong>high_pass_cutoff</strong> &#8211; (Optional) (float) value (in Hz) for the high pass cutoff filter.</li>
+<li><strong>do_mono</strong> &#8211; (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
+input AudioSignal object)</li>
+<li><strong>use_find_period_complex</strong> &#8211; (Optional) (bool) Will use a more complex peak picker to find the repeating period</li>
+<li><strong>use_librosa_stft</strong> &#8211; (Optional) (bool) Calls librosa&#8217;s stft function instead of nussl&#8217;s</li>
+<li><strong>matlab_fidelity</strong> &#8211; (Optional) (bool) If True, does repet with the same settings as the original MATLAB
+implementation of REPET, warts and all. This will override use_librosa_stft and set it to False</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p><a class="reference internal" href="../examples/repet_demo.html#repet-demo"><span class="std std-ref">The REPET Demo Example</span></a></p>
+<dl class="method">
+<dt id="repet.Repet.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the original REPET algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>background</strong> (<em>AudioSignal</em>) &#8211; An AudioSignal object with repeating background in background.audio_data
+(to get the corresponding non-repeating foreground run self.make_audio_signals())</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="s1">&#39;input_name.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># Set up and run Repet</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+<span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span> <span class="c1"># or repet()</span>
+
+<span class="c1"># Get audio signals</span>
+<span class="n">background</span><span class="p">,</span> <span class="n">foreground</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+
+<span class="c1"># output the background</span>
+<span class="n">background</span><span class="o">.</span><span class="n">write_</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="repet.Repet.get_beat_spectrum">
+<code class="descname">get_beat_spectrum</code><span class="sig-paren">(</span><em>recompute_stft=False</em><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.get_beat_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns the beat spectrum for the audio signal associated with this object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>recompute_stft</strong> &#8211; (Optional) (bool) Recompute the stft for the audio signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>beat_spectrum</strong> (<em>np.array</em>) &#8211; beat spectrum for the audio file</td>
+</tr>
+</tbody>
+</table>
+<p>EXAMPLE:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Set up audio signal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># Set up a Repet object</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+<span class="c1"># I don&#39;t have to run repet to get a beat spectrum for signal</span>
+<span class="n">beat_spec</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">get_beat_spectrum</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="repet.Repet.compute_beat_spectrum">
+<em class="property">static </em><code class="descname">compute_beat_spectrum</code><span class="sig-paren">(</span><em>power_spectrum</em><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.compute_beat_spectrum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the beat spectrum averages (over freq&#8217;s) the autocorrelation matrix of a one-sided spectrogram.</p>
+<blockquote>
+<div>The autocorrelation matrix is computed by taking the autocorrelation of each row of the spectrogram and
+dismissing the symmetric half.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>power_spectrum</strong> (<em>np.array</em>) &#8211; 2D matrix containing the one-sided power</li>
+<li><strong>of the audio signal</strong> (<em>spectrogram</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>b</strong> (<em>np.array</em>) &#8211; array containing the beat spectrum based on the power spectrogram</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="repet.Repet.find_repeating_period_simple">
+<em class="property">static </em><code class="descname">find_repeating_period_simple</code><span class="sig-paren">(</span><em>beat_spectrum</em>, <em>min_period</em>, <em>max_period</em><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.find_repeating_period_simple" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Computes the repeating period of the sound signal using the beat spectrum.</dt>
+<dd>This algorithm just looks for the max value in the interval [min_period, max_period] inclusive.
+It discards the first value, and returns the period in units of stft time bins.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>beat_spectrum</strong> (<em>np.array</em>) &#8211; input beat spectrum array</li>
+<li><strong>min_period</strong> (<em>int</em>) &#8211; minimum possible period value</li>
+<li><strong>max_period</strong> (<em>int</em>) &#8211; maximum possible period value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>period</strong> (<em>int</em>) &#8211; The period of the sound signal in stft time bins</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="repet.Repet.find_repeating_period_complex">
+<em class="property">static </em><code class="descname">find_repeating_period_complex</code><span class="sig-paren">(</span><em>beat_spectrum</em><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.find_repeating_period_complex" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>beat_spectrum</strong> &#8211; </td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="repet.Repet.update_periods">
+<code class="descname">update_periods</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.update_periods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will update periods for use with self.find_repeating_period_simple(). Updates from seconds to stft bin values.
+Call this if you haven&#8217;t done self.run() or else you won&#8217;t get good results
+.. rubric:: Examples</p>
+<p>::
+a = nussl.AudioSignal(&#8216;path/to/file.wav&#8217;)
+r = nussl.Repet(a)</p>
+<p>beat_spectrum = r.get_beat_spectrum()
+r.update_periods()
+repeating_period = r.find_repeating_period_simple(beat_spectrum, r.min_period, r.max_period)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="repet.Repet.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_file</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a plot of the beat spectrum and outputs to output_file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_file</strong> (<em>string</em>) &#8211; string representing a path to the desired output file to be created.</li>
+<li><strong>title</strong> &#8211; (string) Title to put on the plot</li>
+<li><strong>show_repeating_period</strong> &#8211; (bool) if True, then adds a vertical line where repet things
+the repeating period is (if the repeating period has been computed already)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># To plot the beat spectrum you have a few options:</span>
+
+<span class="c1"># 1) (recommended)</span>
+<span class="c1"># set up AudioSignal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="n">repet1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+<span class="c1"># plots beat spectrum by default</span>
+<span class="n">repet1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;new_beat_spec_plot.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="repet.Repet.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#repet.Repet.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the background and foreground audio signals. You must have run Repet.run() prior
+to calling this function. This function will return None if run() has not been called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>Audio Signals</strong> (<em>List</em>) &#8211;<p>2 element list.</p>
+<blockquote>
+<div><ul class="simple">
+<li>bkgd: Audio signal with the calculated background track</li>
+<li>fkgd: Audio signal with the calculated foreground track</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># set up AudioSignal object</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># set up and run repet</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+<span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1"># get audio signals (AudioSignal objects)</span>
+<span class="n">background</span><span class="p">,</span> <span class="n">foreground</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="repet_sim.html" class="btn btn-neutral float-right" title="RepetSim Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="separation_base.html" class="btn btn-neutral" title="SeparationBase Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5a9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
