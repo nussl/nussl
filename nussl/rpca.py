@@ -21,19 +21,21 @@ class RPCA(separation_base.SeparationBase):
 
     """
     def __init__(self, input_audio_signal, high_pass_cutoff=None, num_iterations=None, epsilon=None,
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT):
+                 do_mono=False, verbose=None, use_librosa_stft=constants.USE_LIBROSA_STFT):
         super(RPCA, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
-        self.background = None
-        self.foreground = None
         self.use_librosa_stft = use_librosa_stft
 
-        self.stft = None
-        self.magnitude_spectrogram = None
         self.epsilon = 1e-7 if epsilon is None else epsilon
         self.num_iterations = 100 if num_iterations is None else num_iterations
         self.gain = 1
+        self.verbose = False if verbose is None else verbose
+
         self.error = None
+        self.stft = None
+        self.magnitude_spectrogram = None
+        self.background = None
+        self.foreground = None
 
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)
@@ -106,6 +108,8 @@ class RPCA(separation_base.SeparationBase):
         num_iteration = 0
         
         while not converged and num_iteration < self.num_iterations:
+            if self.verbose:
+                print num_iteration, error
             num_iteration += 1
             low_rank = self.svd_threshold(magnitude_spectrogram - sparse_matrix + residuals / mu, 1 / mu)
             sparse_matrix = self.shrink(magnitude_spectrogram - low_rank + residuals / mu, _lambda / mu)
