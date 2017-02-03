@@ -757,10 +757,10 @@ class AudioSignal(object):
 
         if self.signal_length > other.signal_length:
             combined = np.copy(self.audio_data)
-            combined[:, :other.audio_data.size] -= other.audio_data
+            combined[:, :other.signal_length] -= other.audio_data
         else:
             combined = np.copy(other.audio_data)
-            combined[:, :self.audio_data.size] -= self.audio_data
+            combined[:, :self.signal_length] -= self.audio_data
 
         return AudioSignal(audio_data_array=combined)
 

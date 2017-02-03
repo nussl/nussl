@@ -412,7 +412,6 @@ class Repet(separation_base.SeparationBase):
         """
         if self.background is None:
             return None
-
         self.foreground = self.audio_signal - self.background
         self.foreground.sample_rate = self.audio_signal.sample_rate
         return [self.background, self.foreground]
