@@ -32,7 +32,7 @@
   
     <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
         <link rel="up" title="nussl Classes" href="classes.html"/>
-        <link rel="next" title="Repet Class" href="repet.html"/>
+        <link rel="next" title="RepetSim Class" href="repet_sim.html"/>
         <link rel="prev" title="AudioSignal Class" href="audio_signal.html"/> 
 
   
@@ -89,7 +89,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="classes.html">Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">SeparationBase</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repet.html">Repet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="repet_sim.html">RepetSim</a></li>
 <li class="toctree-l2"><a class="reference internal" href="duet.html">Duet</a></li>
 </ul>
@@ -149,31 +148,35 @@
 <dl class="class">
 <dt id="separation_base.SeparationBase">
 <em class="property">class </em><code class="descclassname">separation_base.</code><code class="descname">SeparationBase</code><span class="sig-paren">(</span><em>input_audio_signal</em><span class="sig-paren">)</span><a class="headerlink" href="#separation_base.SeparationBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for all separation algorithms.</p>
+<dd><p>Base class for all separation algorithms in nussl.</p>
 <p>Do not call this. It will not do anything.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_audio_signal</strong> &#8211; AudioSignal object. Defaults to a new audio_signal.AudioSignal() object.
-This will always make a copy of the provided AudioSignal object.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_audio_signal</strong> (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) &#8211; This will always make a copy of the provided AudioSignal object.</td>
 </tr>
 </tbody>
 </table>
 <dl class="attribute">
 <dt id="separation_base.SeparationBase.sample_rate">
 <code class="descname">sample_rate</code><a class="headerlink" href="#separation_base.SeparationBase.sample_rate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p><em>(int)</em> &#8211; Sample rate of <code class="docutils literal"><span class="pre">self.audio_signal</span></code>.
+Literally <code class="docutils literal"><span class="pre">self.audio_signal.sample_rate</span></code>.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="separation_base.SeparationBase.stft_params">
 <code class="descname">stft_params</code><a class="headerlink" href="#separation_base.SeparationBase.stft_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">StftParams</span></code>) &#8211; <code class="docutils literal"><span class="pre">StftParams</span></code> of <code class="docutils literal"><span class="pre">self.audio_signal</span></code>
+Literally <code class="docutils literal"><span class="pre">self.audio_signal.stft_params</span></code>.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="separation_base.SeparationBase.audio_signal">
 <code class="descname">audio_signal</code><a class="headerlink" href="#separation_base.SeparationBase.audio_signal" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) &#8211; Copy of the <code class="docutils literal"><span class="pre">AudioSignal</span></code> object passed in upon initialization.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="separation_base.SeparationBase.plot">
@@ -192,7 +195,7 @@ This will always make a copy of the provided AudioSignal object.</td>
 <dl class="method">
 <dt id="separation_base.SeparationBase.run">
 <code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation_base.SeparationBase.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>run separation algorithm</p>
+<dd><p>Runs separation algorithm</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -206,7 +209,7 @@ This will always make a copy of the provided AudioSignal object.</td>
 <dl class="method">
 <dt id="separation_base.SeparationBase.make_audio_signals">
 <code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation_base.SeparationBase.make_audio_signals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes AudioSignal objects after separation algorithm is run</p>
+<dd><p>Makes <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects after separation algorithm is run</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -232,8 +235,8 @@ This will always make a copy of the provided AudioSignal object.</td>
 <dl class="class">
 <dt id="separation_base.SeparationBaseDecoder">
 <em class="property">class </em><code class="descclassname">separation_base.</code><code class="descname">SeparationBaseDecoder</code><span class="sig-paren">(</span><em>separation_class</em><span class="sig-paren">)</span><a class="headerlink" href="#separation_base.SeparationBaseDecoder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Object to decode a SeparationBase object from a json serialization.
-You should never have to instantiate this obecjt</p>
+<dd><p>Object to decode a <code class="docutils literal"><span class="pre">SeparationBase</span></code>-derived object from JSON serialization.
+You should never have to instantiate this object by hand.</p>
 <dl class="method">
 <dt id="separation_base.SeparationBaseDecoder.json_separation_decoder">
 <code class="descname">json_separation_decoder</code><span class="sig-paren">(</span><em>json_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#separation_base.SeparationBaseDecoder.json_separation_decoder" title="Permalink to this definition">¶</a></dt>
@@ -250,7 +253,7 @@ You should never have to instantiate this obecjt</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="repet.html" class="btn btn-neutral float-right" title="Repet Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="repet_sim.html" class="btn btn-neutral float-right" title="RepetSim Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="audio_signal.html" class="btn btn-neutral" title="AudioSignal Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
