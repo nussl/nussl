@@ -13,12 +13,12 @@ import inspect
 
 
 class SeparationBase(object):
-    """Base class for all separation algorithms.
+    """Base class for all separation algorithms in nussl.
 
     Do not call this. It will not do anything.
 
     Parameters:
-        input_audio_signal: AudioSignal object. Defaults to a new audio_signal.AudioSignal() object.
+        input_audio_signal (:obj:`AudioSignal`). ``AudioSignal`` object.
                             This will always make a copy of the provided AudioSignal object.
     """
 
@@ -32,14 +32,22 @@ class SeparationBase(object):
 
     @property
     def sample_rate(self):
+        """(int): Sample rate of ``self.audio_signal``.
+        Literally ``self.audio_signal.sample_rate``.
+        """
         return self.audio_signal.sample_rate
 
     @property
     def stft_params(self):
+        """(:obj:`StftParams`): ``StftParams`` of ``self.audio_signal``
+        Literally ``self.audio_signal.stft_params``.
+        """
         return self.audio_signal.stft_params
 
     @property
     def audio_signal(self):
+        """(:obj:`AudioSignal`): Copy of the ``AudioSignal`` object passed in upon initialization.
+        """
         return self._audio_signal
 
     @audio_signal.setter
@@ -55,7 +63,7 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def run(self):
-        """run separation algorithm
+        """Runs separation algorithm
 
         Raises:
             NotImplementedError: Cannot call base class
@@ -63,7 +71,7 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def make_audio_signals(self):
-        """Makes AudioSignal objects after separation algorithm is run
+        """Makes ``AudioSignal`` objects after separation algorithm is run
 
         Raises:
             NotImplementedError: Cannot call base class
@@ -116,9 +124,8 @@ class SeparationBase(object):
 
 
 class SeparationBaseDecoder(json.JSONDecoder):
-    """
-    Object to decode a SeparationBase object from a json serialization.
-    You should never have to instantiate this obecjt
+    """ Object to decode a ``SeparationBase``-derived object from JSON serialization.
+    You should never have to instantiate this object by hand.
     """
 
     def __init__(self, separation_class):
