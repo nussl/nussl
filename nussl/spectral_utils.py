@@ -169,31 +169,29 @@ def e_stft(signal, window_length, hop_length, window_type,
         # stft_more_bins has shape (num_bins // 2 + 1, duration / hop_length)
     """
     if n_fft_bins is None:
-        n_fft_bins = int(2 ** np.ceil(np.log2(window_length)))
-
+        n_fft_bins=window_length
     window_type = constants.WINDOW_DEFAULT if window_type is None else window_type
     window = make_window(window_type, window_length)
-
-    signal, zero_pad1, zero_pad2 = _add_zero_padding(signal, window_length, hop_length)
-
-    # figure out size of output stft
-    num_blocks = int(((len(signal) - window_length) / hop_length + 1))
+    
+    orig_signal_length=len(signal)
+    signal, zero_pad1, zero_pad2,num_blocks= _add_zero_padding(signal, window_length, hop_length)
+    # figure out size of output stft    
     stft_bins = n_fft_bins // 2 + 1 if remove_reflection else n_fft_bins  # only want just over half of each fft
-
+    
     # this is where we do the stft calculation
     stft = np.zeros((num_blocks, stft_bins), dtype=complex)
     for hop in range(num_blocks):
         start = hop * hop_length
         end = start + window_length
         unwindowed_signal = signal[start:end]
-        windowed_signal = np.multiply(unwindowed_signal, window)
+        windowed_signal = np.multiply(unwindowed_signal, window)        
         fft = scifft.fft(windowed_signal, n=n_fft_bins)
         stft[hop, ] = fft[0:stft_bins]
-
     # reshape the 2d array, so it's how we expect it.
     stft = stft.T
-    stft = _remove_stft_padding(stft, zero_pad1, zero_pad2, hop_length) if remove_padding else stft
-
+    
+    stft = _remove_stft_padding(stft,orig_signal_length ,window_length, hop_length) if remove_padding else stft
+    
     return stft
 
 
@@ -232,7 +230,7 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
     return stft
 
 
-def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=False):
+def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=True):
     """
     Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
     this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
@@ -280,26 +278,37 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     """
 
     n_hops = stft.shape[1]
-    signal_length = ((n_hops - 1) * hop_length) - window_length # ?
-    signal_length = (n_hops - 1) * hop_length + window_length
+    overlap=window_length-hop_length
+    signal_length = (n_hops* hop_length) + overlap
     signal = np.zeros(signal_length)
-
+    
+    norm_window=np.zeros(signal_length)
+    window = make_window(window_type, window_length)
     # Add reflection back
     if reconstruct_reflection:
         stft = _add_reflection(stft)
-
     for n in range(n_hops):
         start = n * hop_length
         end = start + window_length
-        signal[start:end] = signal[start:end] + np.real(scifft.ifft(stft[:, n]))
-
+        inv_sig_temp=np.real(scifft.ifft(stft[:, n]))
+        signal[start:end] = signal[start:end] + inv_sig_temp[0:window_length]
+        norm_window[start:end]=norm_window[start:end]+window
+                   
+    signal_norm=signal/norm_window               
     # remove zero-padding
     if remove_padding:
-        start = window_length - hop_length
-        stop = signal_length - (window_length - hop_length)
-        signal = signal[start:stop]
-
-    return signal
+        if overlap>=hop_length:
+            ovp_hop_ratio=int(np.ceil(overlap/float(hop_length)))
+            z_start=ovp_hop_ratio*hop_length
+            z_end=signal_length-overlap
+           
+            signal_norm=signal_norm[z_start:z_end]
+           
+        elif overlap<hop_length:
+            z_start=hop_length
+            signal_norm=signal_norm[z_start::]
+           
+    return signal_norm
 
 
 def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
@@ -392,32 +401,39 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
 
 def _add_zero_padding(signal, window_length, hop_length):
     """
-
     Args:
         signal:
         window_length:
         hop_length:
-
     Returns:
-
     """
-    orig_signal_length = len(signal)
+    original_signal_length = len(signal)
+    
+    overlap = window_length - hop_length
 
-    # zero-pad the vector at the beginning and end to reduce the window tapering effect
-    window_length -= 1 if window_length % 2 != 0 else 0 # subtract 1 if window_length is an odd number
-    zero_pad1_len = window_length // 2
-    signal = np.lib.pad(signal, (zero_pad1_len, zero_pad1_len), 'constant', constant_values=(0, 0))
+    if overlap >= hop_length:
+       overlap_hop_ratio = np.ceil(overlap / float(hop_length))
+       num_blocks = np.ceil(original_signal_length / float(hop_length))
+       
+       before = int(overlap_hop_ratio * hop_length)       
+       after = int((num_blocks * hop_length + overlap) - original_signal_length) 
+                           
+       signal = np.pad(signal, (before, after), 'constant', constant_values = (0, 0))
+       num_blocks = int(np.floor((len(signal) - overlap) / float(hop_length)))
+        
+    elif overlap<hop_length:
+       num_blocks = np.ceil(original_signal_length / float(hop_length))
+       
+       before = int(hop_length)
+       after = int((num_blocks * hop_length + overlap) - original_signal_length) 
+       
+       signal = np.pad(signal, (before, after), 'constant', constant_values = (0, 0))
+       num_blocks = int(np.floor((len(signal) - window_length) / float(hop_length)))
+              
+    return signal, before, after, num_blocks
 
-    # another zero pad at the end if not integer multiple of hop_length
-    zero_pad2_len = 0
-    if orig_signal_length % hop_length != 0:
-        zero_pad2_len = hop_length - (orig_signal_length % hop_length)
-        signal = np.lib.pad(signal, (0, zero_pad2_len), 'constant', constant_values=(0, 0))
 
-    return signal, zero_pad1_len, zero_pad2_len
-
-
-def _remove_stft_padding(stft, zero_pad1_len, zero_pad2_len, hop_length):
+def _remove_stft_padding(stft, original_signal_length, window_length, hop_length):
     """
 
     Args:
@@ -429,11 +445,11 @@ def _remove_stft_padding(stft, zero_pad1_len, zero_pad2_len, hop_length):
     Returns:
 
     """
-    first = zero_pad1_len // hop_length
-    last = stft.shape[1] - (zero_pad1_len + zero_pad2_len) // hop_length
-    stft = stft[:, first: last]
-    return stft
-
+    overlap = window_length - hop_length
+    first = int(np.ceil(overlap / float(hop_length)))
+    num_col = int(np.ceil((original_signal_length - window_length) / float(hop_length)))
+    stft_cut = stft[:, first:first+num_col]
+    return stft_cut
 
 def make_window(window_type, length):
     """Returns an np array of type window_type
