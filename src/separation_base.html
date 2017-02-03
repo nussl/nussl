@@ -32,7 +32,7 @@
   
     <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
         <link rel="up" title="nussl Classes" href="classes.html"/>
-        <link rel="next" title="RepetSim Class" href="repet_sim.html"/>
+        <link rel="next" title="Repet Class" href="repet.html"/>
         <link rel="prev" title="AudioSignal Class" href="audio_signal.html"/> 
 
   
@@ -88,8 +88,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="classes.html">Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">SepararationBase</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repet_sim.html">REPET-SIM</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SeparationBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet.html">Repet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="repet_sim.html">RepetSim</a></li>
+<li class="toctree-l2"><a class="reference internal" href="duet.html">Duet</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
@@ -147,8 +149,7 @@
 <dl class="class">
 <dt id="separation_base.SeparationBase">
 <em class="property">class </em><code class="descclassname">separation_base.</code><code class="descname">SeparationBase</code><span class="sig-paren">(</span><em>input_audio_signal</em><span class="sig-paren">)</span><a class="headerlink" href="#separation_base.SeparationBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Base class for all separation algorithms.</p>
+<dd><p>Base class for all separation algorithms.</p>
 <p>Do not call this. It will not do anything.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -231,8 +232,7 @@ This will always make a copy of the provided AudioSignal object.</td>
 <dl class="class">
 <dt id="separation_base.SeparationBaseDecoder">
 <em class="property">class </em><code class="descclassname">separation_base.</code><code class="descname">SeparationBaseDecoder</code><span class="sig-paren">(</span><em>separation_class</em><span class="sig-paren">)</span><a class="headerlink" href="#separation_base.SeparationBaseDecoder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">json.decoder.JSONDecoder</span></code></p>
-<p>Object to decode a SeparationBase object from a json serialization.
+<dd><p>Object to decode a SeparationBase object from a json serialization.
 You should never have to instantiate this obecjt</p>
 <dl class="method">
 <dt id="separation_base.SeparationBaseDecoder.json_separation_decoder">
@@ -250,7 +250,7 @@ You should never have to instantiate this obecjt</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="repet_sim.html" class="btn btn-neutral float-right" title="RepetSim Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="repet.html" class="btn btn-neutral float-right" title="Repet Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="audio_signal.html" class="btn btn-neutral" title="AudioSignal Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

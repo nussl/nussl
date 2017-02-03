@@ -4,6 +4,6 @@ Modules
 .. toctree::
    :maxdepth: 4
 
-   constants
-   spectral_utils
-   utils
+   constants.py <constants>
+   spectral_utils.py <spectral_utils>
+   utils.py <utils>
