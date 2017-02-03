@@ -1,7 +1,7 @@
-FftUtils module
-===============
+Duet Class
+==========
 
-.. automodule:: FftUtils
+.. automodule:: Duet
     :members:
     :undoc-members:
     :show-inheritance:
