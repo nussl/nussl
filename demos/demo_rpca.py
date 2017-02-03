@@ -1,11 +1,16 @@
 import librosa
 import numpy as np
 import sys
+import os
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if not path in sys.path:
+    sys.path.insert(1, path)
+
 import nussl
 
 def load_audio(audio_file):
     print 'Loading %s' % audio_file
-    audio, sr = librosa.load(audio_file, sr=None, mono=True, offset = 90, duration = 30)
+    audio, sr = librosa.load(audio_file, sr=None, mono=False, offset = 90, duration = 10)
     pad_length = (audio.shape[-1] / 1024.0 % 1) * 1024
     #audio = np.pad(np.array(audio), ((0, int(pad_length))), 'constant', constant_values = (0, 0))
     audio_signal = nussl.AudioSignal(audio_data_array = audio, sample_rate = sr)

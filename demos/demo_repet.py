@@ -11,18 +11,14 @@ import numpy as np
 
 def main():
     # input audio file
-    input_name = os.path.join('..', 'input','mix1.wav')
+    input_name = os.path.join('..', 'input','demo_mixture.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_name)
+    #signal.to_mono(overwrite = True)
     original_length = signal.signal_length
     signal.stft_params.window_length = 2048
     signal.stft_params.n_fft_bins = 2048
-    signal.stft_params.hop_length = 1024
-    original_audio = np.copy(signal.audio_data)
-    signal.stft() 
-    print signal.stft().shape
-    signal.istft()
-    print signal.signal_length
-    print np.sum(np.abs(original_audio - signal.audio_data))
+    signal.stft_params.hop_length = 512
+    print signal.num_channels
     # make a directory to store output if needed
     if not os.path.exists('output/'):
         os.mkdir('output/')
@@ -35,7 +31,7 @@ def main():
 
     # Get foreground and backgroun audio signals
     bkgd, fgnd = repet.make_audio_signals()
-    print original_length, bkgd.signal_length, fgnd.signal_length
+    print original_length, signal.signal_length, bkgd.signal_length, fgnd.signal_length
     # and write out to files
     bkgd.write_audio_to_file(os.path.join('output', 'mix1_bg.wav'))
     fgnd.write_audio_to_file(os.path.join('output', 'mix1_fg.wav'))
