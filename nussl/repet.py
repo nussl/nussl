@@ -127,7 +127,9 @@ class Repet(separation_base.SeparationBase):
         self.background.istft(self.stft_params.window_length, self.stft_params.hop_length,
                               self.stft_params.window_type, overwrite=True,
                               use_librosa=self.use_librosa_stft)
-
+        if self.background.signal_length > self.audio_signal.signal_length:
+            self.background.set_active_region_to_default()
+            self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
         return self.background
 
     def _compute_spectrum(self):

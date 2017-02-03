@@ -35,7 +35,10 @@ def main():
     # and write out to files
     bkgd.write_audio_to_file(os.path.join('output', 'mix1_bg.wav'))
     fgnd.write_audio_to_file(os.path.join('output', 'mix1_fg.wav'))
-
+    print bkgd._active_start, fgnd._active_start
+    print bkgd._active_end, fgnd._active_end
+    audio_sum =  bkgd + fgnd
+    audio_sum.write_audio_to_file(os.path.join('output', 'sum.wav'))
 
 if __name__ == '__main__':
     main()

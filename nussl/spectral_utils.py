@@ -217,13 +217,11 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
         warnings.warn('n_fft_bins ignored. Librosa\'s stft uses window_length as n_fft_bins')
 
     window = make_window(window_type, window_length) if window_type is not None else None
-
+    signal = librosa.util.fix_length(signal, len(signal) + hop_length)
     stft = librosa.stft(signal, n_fft=window_length, hop_length=hop_length, win_length=window_length,
                         window=window, center=center)
 
     stft = stft if remove_reflection else _add_reflection(stft)
-
-    stft = _remove_stft_padding(stft, zero_pad1, zero_pad2, hop_length) if remove_padding else stft
 
     return stft
 
@@ -310,7 +308,7 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
 
 
 def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
-                          remove_reflection=False, remove_padding=False, center=True):
+                          remove_reflection=False, remove_padding=True, center=True, original_signal_length = None):
     """
 
     Args:
@@ -334,12 +332,8 @@ def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
     signal = librosa.istft(stft, hop_length, window_length, window, center)
 
     # remove zero-padding
-    if remove_padding:
-        start = window_length - hop_length
-        n_hops = stft.shape[1]
-        signal_length = (n_hops - 1) * hop_length + window_length
-        stop = signal_length - (window_length - hop_length)
-        signal = signal[start:stop]
+    if remove_padding and original_signal_length is not None:
+        signal = librosa.util.fix_length(signal, original_signal_length)
 
     return signal
 
