@@ -1,8 +1,7 @@
-AudioMix module
-===============
+Repet Class
+===========
 
-.. automodule:: AudioMix
+.. automodule:: repet
     :members:
     :undoc-members:
     :show-inheritance:
-
