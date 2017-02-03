@@ -15,10 +15,12 @@ class Repet(separation_base.SeparationBase):
     """Implements the original REpeating Pattern Extraction Technique algorithm using the beat spectrum.
 
     REPET is a simple method for separating a repeating background from a non-repeating foreground in an
-    audio mixture.
+    audio mixture. It assumes a single repeating period over the whole signal duration, and finds that
+    period based on finding a peak in the beat spectrum. The period can also be provided exactly, or you
+    can give ``Repet`` a guess of the min and max period. Once it has a period, it "overlays" spectrogram
+    sections of length ``period`` to create a median model (the background).
 
     References:
-
         * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14,
           2013
 
@@ -26,21 +28,29 @@ class Repet(separation_base.SeparationBase):
         http://music.eecs.northwestern.edu/research.php?project=repet
 
     Parameters:
-        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that REPET will be run on.
-        min_period: (Optional) (float) minimum time to look for repeating period in terms of seconds.
-        max_period: (Optional) (float) maximum time to look for repeating period in terms of seconds.
-        period: (Optional) (float) exact time that the repeating period is (in seconds).
-        high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
-        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
-                        input AudioSignal object)
-        use_find_period_complex: (Optional) (bool) Will use a more complex peak picker to find the repeating period
-        use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
-        matlab_fidelity: (Optional) (bool) If True, does repet with the same settings as the original MATLAB
-                        implementation of REPET, warts and all. This will override use_librosa_stft and set it to False
+        input_audio_signal (:obj:`AudioSignal`): The ``AudioSignal`` object that REPET will be run on.
+            This makes a copy of ``input_audio_signal``
+        min_period (float, optional): minimum time to look for repeating period in terms of seconds.
+        max_period (float, optional): maximum time to look for repeating period in terms of seconds.
+        period (float, optional): exact time that the repeating period is (in seconds).
+        high_pass_cutoff (float, optional): value (in Hz) for the high pass cutoff filter.
+        do_mono (bool, optional): Flattens ``AudioSignal`` to mono before running the algorithm (does not effect the
+                        input ``AudioSignal`` object)
+        use_find_period_complex (bool, optional): Will use a more complex peak picker to find the repeating period
+        use_librosa_stft (bool, optional): Calls librosa's stft function instead of nussl's
+        matlab_fidelity (bool, optional): If True, does repet with the same settings as the original MATLAB
+                        implementation of REPET, warts and all. This will override ``use_librosa_stft`` and set
+                        it to ``False``.
 
     Examples:
         :ref:`The REPET Demo Example <repet_demo>`
+
+    Attributes:
+        background (:obj:`AudioSignal`): Calculated background. This is ``None`` until ``run()`` is called.
+        foreground (:obj:`AudioSignal`): Calculated foreground. This is ``None`` until ``make_audio_signals()``
+            is called.
+        beat_spectrum (:obj:`np.array`): Beat spectrum calculated by Repet.
+
     """
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
                  do_mono=False, use_find_period_complex=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
@@ -83,8 +93,7 @@ class Repet(separation_base.SeparationBase):
 
 
     def run(self):
-        """
-        Runs the original REPET algorithm
+        """ Runs the original REPET algorithm
 
         Returns:
             background (AudioSignal): An AudioSignal object with repeating background in background.audio_data
@@ -199,7 +208,7 @@ class Repet(separation_base.SeparationBase):
             power_spectrum (np.array): 2D matrix containing the one-sided power
             spectrogram of the audio signal (Lf by Lt by num channels)
         Returns:
-            b (np.array): array containing the beat spectrum based on the power spectrogram
+            (np.array): array containing the beat spectrum based on the power spectrogram
         """
         freq_bins, time_bins = power_spectrum.shape
 
@@ -314,9 +323,11 @@ class Repet(separation_base.SeparationBase):
         return mask
 
     def update_periods(self):
-        """
-        Will update periods for use with self.find_repeating_period_simple(). Updates from seconds to stft bin values.
-        Call this if you haven't done self.run() or else you won't get good results
+        """ Will update periods for use with ``self.find_repeating_period_simple()``.
+
+        Updates from seconds to stft bin values.
+        Call this if you haven't done ``self.run()`` or else you won't get good results.
+
         Examples:
             ::
             a = nussl.AudioSignal('path/to/file.wav')
@@ -345,8 +356,6 @@ class Repet(separation_base.SeparationBase):
         Creates a plot of the beat spectrum and outputs to output_file.
 
 
-
-
         Parameters:
             output_file (string) : string representing a path to the desired output file to be created.
             title: (string) Title to put on the plot
@@ -355,16 +364,11 @@ class Repet(separation_base.SeparationBase):
 
         EXAMPLE:
              ::
-            # To plot the beat spectrum you have a few options:
 
-            # 1) (recommended)
-            # set up AudioSignal
-            signal = nussl.AudioSignal('path_to_file.wav')
+            signal = nussl.AudioSignal('Sample.wav')
+            repet = nussl.Repet(signal)
 
-            repet1 = nussl.Repet(signal)
-
-            # plots beat spectrum by default
-            repet1.plot('new_beat_spec_plot.png')
+            repet.plot('new_beat_spec_plot.png', title="Beat Spectrum of Sample.wav", show_repeating_period=True)
         """
         import matplotlib.pyplot as plt
         plt.close('all')
