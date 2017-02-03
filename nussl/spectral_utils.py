@@ -218,8 +218,6 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
     if window_type is not None and n_fft_bins is not None:
         warnings.warn('n_fft_bins ignored. Librosa\'s stft uses window_length as n_fft_bins')
 
-    signal, zero_pad1, zero_pad2 = _add_zero_padding(signal, window_length, hop_length)
-
     window = make_window(window_type, window_length) if window_type is not None else None
 
     stft = librosa.stft(signal, n_fft=window_length, hop_length=hop_length, win_length=window_length,
@@ -291,7 +289,7 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     for n in range(n_hops):
         start = n * hop_length
         end = start + window_length
-        signal[start:end] = signal[start:end] + np.real(scifft.ifft(stft[:, n]))
+        signal[start:end] += np.real(scifft.ifft(stft[:, n]))
 
     # remove zero-padding
     if remove_padding:
