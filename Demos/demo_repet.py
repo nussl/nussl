@@ -10,12 +10,12 @@ import nussl
 
 def main():
     # input audio file
-    input_name = os.path.join('..', 'Input','guitar2__cowbell1_none_0.0.wav')
+    input_name = os.path.join('..', 'Input','Sample1.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_name)
 
     # make a directory to store output if needed
-    if not os.path.exists('Output/'):
-        os.mkdir('Output/')
+    if not os.path.exists(os.path.join('..', 'Output')):
+        os.mkdir(os.path.join('..', 'Output'))
 
     # Set up Repet
     repet = nussl.Repet(signal)
@@ -23,12 +23,12 @@ def main():
     # and Run
     repet.run()
 
-    # Get foreground and backgroun audio signals
+    # Get foreground and background audio signals
     bkgd, fgnd = repet.make_audio_signals()
 
     # and write out to files
-    bkgd.write_audio_to_file(os.path.join('..', 'Output', 'cowbell1_guitar_background_lib2.wav'))
-    fgnd.write_audio_to_file(os.path.join('..', 'Output', 'cowbell1_guitar_foreground_lib2.wav'))
+    bkgd.write_audio_to_file(os.path.join('..', 'Output', 'Sample1_background.wav'))
+    fgnd.write_audio_to_file(os.path.join('..', 'Output', 'Sample1_foreground.wav'))
 
 
 if __name__ == '__main__':
