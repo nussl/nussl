@@ -1,7 +1,7 @@
 RepetSim Class
 ==============
 
-.. automodule:: repet_im
+.. automodule:: repet_sim
     :members:
     :undoc-members:
     :show-inheritance:

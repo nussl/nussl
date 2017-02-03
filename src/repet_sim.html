@@ -32,8 +32,8 @@
   
     <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
         <link rel="up" title="nussl Classes" href="classes.html"/>
-        <link rel="next" title="Duet Class" href="duet.html"/>
-        <link rel="prev" title="Repet Class" href="repet.html"/> 
+        <link rel="next" title="Modules" href="modules.html"/>
+        <link rel="prev" title="SeparationBase Class" href="separation_base.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -89,9 +89,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="classes.html">Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="separation_base.html">SepararationBase</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repet.html">REPET</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">REPET-SIM</a></li>
-<li class="toctree-l2"><a class="reference internal" href="duet.html">DUET</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
@@ -144,8 +142,119 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="repetsim-class">
-<h1>RepetSim Class<a class="headerlink" href="#repetsim-class" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-repet_sim">
+<span id="repetsim-class"></span><h1>RepetSim Class<a class="headerlink" href="#module-repet_sim" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="repet_sim.RepetSim">
+<em class="property">class </em><code class="descclassname">repet_sim.</code><code class="descname">RepetSim</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>similarity_threshold=None</em>, <em>min_distance_between_frames=None</em>, <em>max_repeating_frames=None</em>, <em>high_pass_cutoff=None</em>, <em>do_mono=False</em>, <em>use_librosa_stft=True</em>, <em>matlab_fidelity=False</em><span class="sig-paren">)</span><a class="headerlink" href="#repet_sim.RepetSim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="separation_base.html#separation_base.SeparationBase" title="separation_base.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">separation_base.SeparationBase</span></code></a></p>
+<p>Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).</p>
+<p>REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
+audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.</p>
+<p class="rubric">References</p>
+<ul class="simple">
+<li>Zafar Rafii and Bryan Pardo. &#8220;Audio Separation System and Method,&#8221; US20130064379 A1, US 13/612,413, March 14,
+2013</li>
+<li>Zafar Rafii and Bryan Pardo. &#8220;Music/Voice Separation using the Similarity Matrix,&#8221; 13th International Society
+on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.</li>
+</ul>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference external" href="http://music.eecs.northwestern.edu/research.php?project=repet">http://music.eecs.northwestern.edu/research.php?project=repet</a></p>
+</div>
+<p>Parameters:</p>
+<p class="rubric">Examples</p>
+<p><a class="reference internal" href="../examples/repet_demo.html#repet-demo"><span class="std std-ref">The REPET Demo Example</span></a></p>
+<dl class="method">
+<dt id="repet_sim.RepetSim.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#repet_sim.RepetSim.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs REPET-SIM, a variant of REPET using the cosine similarity matrix to find similar
+frames to do median filtering.</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="repet_sim.RepetSim.compute_similarity_matrix">
+<em class="property">static </em><code class="descname">compute_similarity_matrix</code><span class="sig-paren">(</span><em>matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#repet_sim.RepetSim.compute_similarity_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the cosine similarity matrix using the cosine similarity for any given input matrix X.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix</strong> (<em>np.array</em>) &#8211; 2D matrix containing the magnitude spectrogram of the audio signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>S</strong> (<em>np.array</em>) &#8211; 2D similarity matrix</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="repet_sim.RepetSim.get_similarity_matrix">
+<code class="descname">get_similarity_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#repet_sim.RepetSim.get_similarity_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates and returns the similarity matrix for the audio file associated with this object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>similarity_matrix</strong> (<em>np.array</em>) &#8211; similarity matrix for the audio file.</td>
+</tr>
+</tbody>
+</table>
+<p>EXAMPLE:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Set up audio signal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># Set up a Repet object</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+<span class="c1"># I don&#39;t have to run repet to get a similarity matrix for signal</span>
+<span class="n">sim_mat</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">get_similarity_matrix</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="repet_sim.RepetSim.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#repet_sim.RepetSim.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the background and foreground audio signals. You must have run Repet.run() prior
+to calling this function. This function will return None if run() has not been called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>Audio Signals</strong> (<em>List</em>) &#8211;<p>2 element list.</p>
+<blockquote>
+<div><ul class="simple">
+<li>bkgd: Audio signal with the calculated background track</li>
+<li>fkgd: Audio signal with the calculated foreground track</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">EXAMPLE</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># set up AudioSignal object</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># set up and run repet</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+<span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1"># get audio signals (AudioSignal objects)</span>
+<span class="n">background</span><span class="p">,</span> <span class="n">foreground</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="repet_sim.RepetSim.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_file</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#repet_sim.RepetSim.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -155,10 +264,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="duet.html" class="btn btn-neutral float-right" title="Duet Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="Modules" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="repet.html" class="btn btn-neutral" title="Repet Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="separation_base.html" class="btn btn-neutral" title="SeparationBase Class" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

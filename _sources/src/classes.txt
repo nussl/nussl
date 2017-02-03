@@ -2,10 +2,10 @@ nussl Classes
 =============
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    AudioSignal <audio_signal>
-   SepararationBase <separation_base>
-   REPET <repet>
-   REPET-SIM <repet_sim>
-   DUET <duet>
+   SeparationBase <separation_base>
+   Repet <repet>
+   RepetSim <repet_sim>
+   Duet <duet>
