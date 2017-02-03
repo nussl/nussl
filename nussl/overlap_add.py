@@ -2,15 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import scipy.fftpack as scifft
-import scipy.spatial.distance
 from scipy.signal import triang
 
 import spectral_utils
 import separation_base
 import constants
 from audio_signal import AudioSignal
-from scipy.ndimage.filters import maximum_filter, minimum_filter
 from repet import Repet
 from repet_sim import RepetSim
 from ft2d import FT2D
