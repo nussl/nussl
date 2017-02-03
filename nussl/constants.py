@@ -20,5 +20,5 @@ WINDOW_BLACKMAN = scipy.signal.blackman.__name__  # 'blackman'
 
 WINDOW_DEFAULT = WINDOW_HAMMING
 
-USE_LIBROSA_STFT = False  # TODO: put this in a config file
+USE_LIBROSA_STFT = True  # TODO: put this in a config file
 NUMPY_JSON_KEY = "py/numpy.ndarray"

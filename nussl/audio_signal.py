@@ -475,7 +475,7 @@ class AudioSignal(object):
 
         for i in range(1, self.num_channels + 1):
             signals.append(istft_func(stft=self.get_stft_channel(i), window_length=window_length,
-                                      hop_length=hop_length, window_type=window_type))
+                                      hop_length=hop_length, window_type=window_type, original_signal_length = self.signal_length))
 
         return np.array(signals)
 
@@ -539,8 +539,8 @@ class AudioSignal(object):
         if not self.active_region_is_default:
             raise Exception('Cannot crop signal while active region is not set as default!')
         num_samples = self.signal_length
-        print before, after
         self.audio_data = self.audio_data[:, before:num_samples - after]
+        self.set_active_region_to_default()
 
     def zero_pad(self, before, after):
         """
@@ -556,6 +556,7 @@ class AudioSignal(object):
 
         for ch in range(1, self.num_channels + 1):
             self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant', constant_values=(0, 0))
+        self.set_active_region_to_default()
 
     def get_channel(self, n):
         """Gets the n-th channel from ``self.audio_data``. **1-based.**
