@@ -451,15 +451,15 @@ class AudioSignal(object):
         if self.audio_data is None or self.audio_data.size == 0:
             raise Exception("No time domain signal (self.audio_data) to make STFT from!")
 
-        window_length = self.stft_params.window_length if window_length is None else window_length
-        hop_length = self.stft_params.hop_length if hop_length is None else hop_length
+        window_length = self.stft_params.window_length if window_length is None else int(window_length)
+        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
         window_type = self.stft_params.window_type if window_type is None else window_type
-        n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
+        n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else int(n_fft_bins)
 
         calculated_stft = self._do_stft(window_length, hop_length, window_type,
                                         n_fft_bins, remove_reflection, use_librosa)
 
-        if overwrite or self.stft_data is None:
+        if overwrite:
             self.stft_data = calculated_stft
 
         return calculated_stft
@@ -505,8 +505,8 @@ class AudioSignal(object):
         if self.stft_data is None or self.stft_data.size == 0:
             raise Exception('Cannot do inverse STFT without self.stft_data!')
 
-        window_length = self.stft_params.window_length if window_length is None else window_length
-        hop_length = self.stft_params.hop_length if hop_length is None else hop_length
+        window_length = self.stft_params.window_length if window_length is None else int(window_length)
+        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
         # TODO: bubble up center
         window_type = self.stft_params.window_type if window_type is None else window_type
 
@@ -526,9 +526,16 @@ class AudioSignal(object):
 
         istft_func = spectral_utils.librosa_istft_wrapper if use_librosa else spectral_utils.e_istft
 
+        original_length = None if self.signal_length is None else self.signal_length
+
         for i in range(1, self.num_channels + 1):
-            signals.append(istft_func(stft=self.get_stft_channel(i), window_length=window_length,
-                                      hop_length=hop_length, window_type=window_type))
+            calculated_signal = istft_func(stft=self.get_stft_channel(i), window_length=window_length,
+                                           hop_length=hop_length, window_type=window_type)
+
+            if original_length is not None:
+                calculated_signal = calculated_signal[:original_length]
+
+            signals.append(calculated_signal)
 
         return np.array(signals)
 
