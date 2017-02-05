@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; nussl 0.1.5a9 documentation</title>
+  <title>Installation &mdash; nussl 0.1.5a10 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/>
         <link rel="up" title="Getting Started" href="getting_started.html"/>
         <link rel="next" title="The AudioSignal Object" href="audio_signal.html"/>
         <link rel="prev" title="Getting Started" href="getting_started.html"/> 
@@ -85,9 +85,10 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#making-an-anaconda-env-recommended">Making an anaconda env (Recommended)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pip-install">pip install</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installing-from-source-and-downloading">Installing from source and downloading</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#making-sure-you-have-the-correct-version">Making sure you have the correct version</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pip-issues-with-anaconda">pip issues with anaconda</a></li>
@@ -156,13 +157,74 @@
             
   <div class="section" id="installation">
 <span id="installation-instructions"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p><strong>It is highly recommended to install</strong> <em>nussl</em> <strong>inside a</strong>
-<a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a> <strong>because it is under active development.</strong>
-We also recommend installing <a class="reference external" href="https://www.continuum.io/">anaconda</a> prior to using this package.</p>
+<p>There are many ways to install <em>nussl</em>. The easiest way is to use the Python Package Index (PyPI), also known as
+<a class="reference external" href="https://en.wikipedia.org/wiki/Pip_(package_manager)">pip</a>. pip comes pre-installed with most python distributions
+and will automatically install <em>nussl&#8217;s</em> required dependencies.</p>
+<p><strong>It is highly recommended to install</strong> <em>nussl</em> <strong>inside a virtual environment because it is under active development.</strong>
+We also recommend installing <a class="reference external" href="https://www.continuum.io/">anaconda</a> and setting up an anaconda virtual environment
+(see <a class="reference internal" href="#anaconda-env"><span class="std std-ref">Making an anaconda env</span></a>) prior to using this package.</p>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>Before we get started installing, <em>nussl</em> requires the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="mf">2.7</span>
+<span class="n">numpy</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="mf">1.8</span><span class="o">.</span><span class="mi">0</span>
+<span class="n">scipy</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="mf">0.13</span><span class="o">.</span><span class="mi">0</span>
+<span class="n">matplotlib</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="mf">1.3</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">audioread</span> <span class="o">&gt;=</span> <span class="mf">2.1</span><span class="o">.</span><span class="mi">2</span>
+<span class="n">librosa</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="o">.</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>These will be installed automatically with pip, but if you are installing from source then you will need to
+get these manually.</p>
+</div>
+<div class="section" id="making-an-anaconda-env-recommended">
+<span id="anaconda-env"></span><h2>Making an anaconda env (Recommended)<a class="headerlink" href="#making-an-anaconda-env-recommended" title="Permalink to this headline">¶</a></h2>
+<p>If you have <a class="reference external" href="https://www.continuum.io/">anaconda</a>, it is easy to make a separate environment to sandbox work with
+<em>nussl</em>. Follow these instructions (adopted from <a class="reference external" href="https://conda.io/docs/using/envs.html">here</a>):</p>
+<ol class="arabic">
+<li><p class="first">First, create the <code class="docutils literal"><span class="pre">conda</span></code> env:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda create --name new_nussl_env numpy scipy matplotlib
+
+. . .
+
+Proceed ([y]/n)? y
+
+. . .
+
+#
+# To activate this environment, use:
+# $ source activate new_nussl_env
+#
+# To deactivate this environment, use:
+# $ source deactivate
+#
+$
+</pre></div>
+</div>
+</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">conda</span></code> will create a new env named <code class="docutils literal"><span class="pre">new_nussl_env</span></code> with <code class="docutils literal"><span class="pre">numpy</span></code>, <code class="docutils literal"><span class="pre">scipy</span></code>, and <code class="docutils literal"><span class="pre">matplotlib</span></code> installed in it.
+For full output, see <a class="reference internal" href="conda_env_output.html#conda-env-output"><span class="std std-ref">conda env setup output</span></a> .</p>
+<p>Note that we don&#8217;t have <code class="docutils literal"><span class="pre">conda</span></code> install <code class="docutils literal"><span class="pre">librosa</span></code>, <code class="docutils literal"><span class="pre">audioread</span></code>, or <code class="docutils literal"><span class="pre">nussl</span></code> yet because these packages will be
+pip installed (next section).</p>
+<ol class="arabic" start="2">
+<li><p class="first">Now, we need to activate the env. Run the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ source activate new_nussl_env
+(new_nussl_env) $
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Now we&#8217;re in the <code class="docutils literal"><span class="pre">conda</span></code> env. We can exit it with the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>(new_nussl_env) $ source deactivate
+</pre></div>
+</div>
+<p>From within the <code class="docutils literal"><span class="pre">conda</span></code> env, you can do a regular pip install; proceed to the next section.</p>
+</div>
 <div class="section" id="pip-install">
 <h2>pip install<a class="headerlink" href="#pip-install" title="Permalink to this headline">¶</a></h2>
-<p>Installing <em>nussl</em> is easy using pip and the Python Package Index. This will install all required dependencies alongside the
-<em>nussl</em> installation. Use the following command:</p>
+<p>Installing <em>nussl</em> is easy using pip and the Python Package Index. This will install all required dependencies alongside
+the <em>nussl</em> installation. Use the following command:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span>
 </pre></div>
 </div>
@@ -182,19 +244,6 @@ and install with the following command:</p>
 <p>It is also possible to download from github and copy the <em>nussl</em> folder into your working directory and
 directly import the modules in your python code.</p>
 </div>
-<div class="section" id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p><em>nussl</em> requires:</p>
-<ul class="simple">
-<li><code class="docutils literal"><span class="pre">python</span> <span class="pre">2.7</span></code></li>
-<li><code class="docutils literal"><span class="pre">numpy</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">1.8.0</span></code></li>
-<li><code class="docutils literal"><span class="pre">scipy</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">0.13.0</span></code></li>
-<li><code class="docutils literal"><span class="pre">matplotlib</span> <span class="pre">version</span> <span class="pre">&gt;=</span> <span class="pre">1.3.1</span></code></li>
-<li><code class="docutils literal"><span class="pre">audioread</span> <span class="pre">&gt;=</span> <span class="pre">2.1.2</span></code></li>
-<li><code class="docutils literal"><span class="pre">librosa</span> <span class="pre">&gt;=</span> <span class="pre">0.4.1</span></code></li>
-</ul>
-<p>The first four are satisfied by <a class="reference external" href="https://www.continuum.io/">anaconda</a>.</p>
-</div>
 <div class="section" id="troubleshooting">
 <span id="id2"></span><h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="making-sure-you-have-the-correct-version">
@@ -204,7 +253,7 @@ most up-to-date version of nussl, check the version number here: <a class="refer
 the one you are accessing in your python like so:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">version</span>
-<span class="go">0.1.5a9</span>
+<span class="go">0.1.5a10</span>
 </pre></div>
 </div>
 <p>If the version numbers match then you&#8217;re set. If not you can get the most recent version in a few ways. From the
@@ -217,8 +266,8 @@ terminal, the command:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span><span class="o">==</span><span class="p">[</span><span class="n">version</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>So if I find that version 0.1.5a9 is the most recent (by checking PyPI), my command would look like the following:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span><span class="o">==</span><span class="mf">0.1</span><span class="o">.</span><span class="mi">5</span><span class="n">a9</span>
+<p>So if I find that version 0.1.5a10 is the most recent (by checking PyPI), my command would look like the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nussl</span><span class="o">==</span><span class="mf">0.1</span><span class="o">.</span><span class="mi">5</span><span class="n">a10</span>
 </pre></div>
 </div>
 </div>
@@ -230,8 +279,8 @@ You can target the directory where pip installs <em>nussl</em> by adding this fl
 <code class="docutils literal"><span class="pre">--target=d:\somewhere\other\than\the\default</span></code>. See: <a class="reference external" href="http://stackoverflow.com/q/2915471/5768001">http://stackoverflow.com/q/2915471/5768001</a>
 If you find your anaconda (or anaconda2) folder on your machine, the directory to target should be
 <code class="docutils literal"><span class="pre">anaconda2/lib/python2.7/site-packages</span></code>.</p>
-<p>The more inelegant solution is to find your pre-existing <em>nussl</em>
-installation, which means locating two directories named <code class="docutils literal"><span class="pre">nussl</span></code> and <code class="docutils literal"><span class="pre">nussl-[version].dist-info</span></code> (where [version]
+<p>The more inelegant solution is to find your pre-existing <em>nussl</em> installation and move them, which means
+locating two directories named <code class="docutils literal"><span class="pre">nussl</span></code> and <code class="docutils literal"><span class="pre">nussl-[version].dist-info</span></code> (where [version]
 is the version string as above). These are usually in a directory structure like <code class="docutils literal"><span class="pre">lib/python2.7/site-packages</span></code>
 as above, but not anaconda related, presumably where pip installed them. Once you find those two folders copy and paste
 them to the anaconda directory above.</p>
@@ -265,7 +314,7 @@ To see what backends are available, run this code:</p>
 </div>
 <div class="section" id="contact">
 <h3>Contact<a class="headerlink" href="#contact" title="Permalink to this headline">¶</a></h3>
-<p>Please get in contact or open a github issue if you encounter any installation issues.</p>
+<p>Please get in contact or open a <a class="reference external" href="https://github.com/interactiveaudiolab/nussl/issues">github issue</a> if you encounter any installation issues.</p>
 </div>
 </div>
 </div>
@@ -311,7 +360,7 @@ To see what backends are available, run this code:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5a9',
+            VERSION:'0.1.5a10',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

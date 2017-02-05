@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>spectral_utils.py &mdash; nussl 0.1.5a9 documentation</title>
+  <title>spectral_utils.py &mdash; nussl 0.1.5a10 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/>
         <link rel="up" title="Modules" href="modules.html"/>
         <link rel="next" title="utils.py" href="utils.html"/>
         <link rel="prev" title="constants.py" href="constants.html"/> 
@@ -146,7 +146,7 @@
 <span id="spectral-utils-py"></span><h1>spectral_utils.py<a class="headerlink" href="#module-spectral_utils" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="spectral_utils.plot_stft">
-<code class="descclassname">spectral_utils.</code><code class="descname">plot_stft</code><span class="sig-paren">(</span><em>signal</em>, <em>file_name</em>, <em>title=None</em>, <em>win_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>sample_rate=None</em>, <em>n_fft_bins=None</em>, <em>freq_max=None</em>, <em>show_interactive_plot=False</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.plot_stft" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">spectral_utils.</code><code class="descname">plot_stft</code><span class="sig-paren">(</span><em>signal</em>, <em>file_name</em>, <em>title=None</em>, <em>win_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>sample_rate=None</em>, <em>n_fft_bins=None</em>, <em>freq_max=None</em>, <em>show_interactive_plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.plot_stft" title="Permalink to this definition">¶</a></dt>
 <dd><p>Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
 You can specify the same all of the same parameters that are in e_stft(). By default, the StftParams defaults
 are used for any values not provided in (win_length, hop_length, and window_type).
@@ -214,7 +214,7 @@ multichannel audio. If you want to do an STFT on multichannel audio see the Audi
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>signal</strong> &#8211; 1D numpy array containing audio data. (REAL?COMPLEX?INTEGER?)</li>
+<li><strong>signal</strong> &#8211; 1D numpy array containing audio data. (REAL)</li>
 <li><strong>window_length</strong> &#8211; (int) number of samples per window</li>
 <li><strong>hop_length</strong> &#8211; (int) number of samples between the start of adjacent windows, or &#8220;hop&#8221;</li>
 <li><strong>window_type</strong> &#8211; (string) type of window to use. Using WindowType object is recommended.</li>
@@ -262,7 +262,7 @@ stft_more_bins = e_stft(x, win_length, hop_length, win_type, n_fft_bins=num_bins
 
 <dl class="function">
 <dt id="spectral_utils.librosa_stft_wrapper">
-<code class="descclassname">spectral_utils.</code><code class="descname">librosa_stft_wrapper</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type=None</em>, <em>remove_reflection=True</em>, <em>remove_padding=True</em>, <em>center=True</em>, <em>n_fft_bins=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_stft_wrapper" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">spectral_utils.</code><code class="descname">librosa_stft_wrapper</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type=None</em>, <em>remove_reflection=True</em>, <em>center=True</em>, <em>n_fft_bins=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_stft_wrapper" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -273,7 +273,6 @@ stft_more_bins = e_stft(x, win_length, hop_length, win_type, n_fft_bins=num_bins
 <li><strong>hop_length</strong> &#8211; </li>
 <li><strong>window_type</strong> &#8211; </li>
 <li><strong>remove_reflection</strong> &#8211; </li>
-<li><strong>remove_padding</strong> &#8211; </li>
 <li><strong>center</strong> &#8211; </li>
 <li><strong>n_fft_bins</strong> &#8211; </li>
 </ul>
@@ -286,7 +285,7 @@ stft_more_bins = e_stft(x, win_length, hop_length, win_type, n_fft_bins=num_bins
 
 <dl class="function">
 <dt id="spectral_utils.e_istft">
-<code class="descclassname">spectral_utils.</code><code class="descname">e_istft</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>reconstruct_reflection=True</em>, <em>remove_padding=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_istft" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">spectral_utils.</code><code class="descname">e_istft</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>reconstruct_reflection=True</em>, <em>remove_padding=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_istft" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
 this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
 reconstruct_reflection flag overrides that behavior.</p>
@@ -336,8 +335,9 @@ stft = nussl.e_stft(x, win_length, hop_length, win_type)</p>
 
 <dl class="function">
 <dt id="spectral_utils.librosa_istft_wrapper">
-<code class="descclassname">spectral_utils.</code><code class="descname">librosa_istft_wrapper</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>remove_reflection=False</em>, <em>remove_padding=False</em>, <em>center=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_istft_wrapper" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<code class="descclassname">spectral_utils.</code><code class="descname">librosa_istft_wrapper</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>remove_reflection=False</em>, <em>center=True</em>, <em>original_signal_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_istft_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for calling into librosa&#8217;s istft function.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -347,7 +347,8 @@ stft = nussl.e_stft(x, win_length, hop_length, win_type)</p>
 <li><strong>hop_length</strong> &#8211; </li>
 <li><strong>window_type</strong> &#8211; </li>
 <li><strong>remove_reflection</strong> &#8211; </li>
-<li><strong>remove_padding</strong> &#8211; </li>
+<li><strong>center</strong> &#8211; </li>
+<li><strong>original_signal_length</strong> &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -358,7 +359,7 @@ stft = nussl.e_stft(x, win_length, hop_length, win_type)</p>
 
 <dl class="function">
 <dt id="spectral_utils.e_stft_plus">
-<code class="descclassname">spectral_utils.</code><code class="descname">e_stft_plus</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>sample_rate</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_stft_plus" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">spectral_utils.</code><code class="descname">e_stft_plus</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>sample_rate</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_stft_plus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
 the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
 give you as many options as e_stft() (wrt removing the reflection and using librosa). If you need that
@@ -380,6 +381,7 @@ multichannel audio. If you want to do an STFT on multichannel audio see the Audi
 <li><strong>sample_rate</strong> &#8211; (int) the intended sample rate, this is used in the calculation of the frequency vector</li>
 <li><strong>n_fft_bins</strong> &#8211; (int) (Optional) number of fft bins per time window.</li>
 <li><strong>not specified, defaults to next highest power of 2 above window_length</strong> (<em>If</em>) &#8211; </li>
+<li><strong>remove_reflection</strong> (<em>bool</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -509,7 +511,7 @@ This property is not settable.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5a9',
+            VERSION:'0.1.5a10',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

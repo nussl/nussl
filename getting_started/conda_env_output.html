@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>conda env setup output &mdash; nussl 0.1.5a10 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../src/classes.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">nussl</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>conda env setup output</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/getting_started/conda_env_output.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="conda-env-setup-output">
+<span id="conda-env-output"></span><h1>conda env setup output<a class="headerlink" href="#conda-env-setup-output" title="Permalink to this headline">¶</a></h1>
+<p>Here is the full output for installing <em>nussl</em> inside a <code class="docutils literal"><span class="pre">conda</span></code> env. See <a class="reference internal" href="install.html#installation-instructions"><span class="std std-ref">Installation</span></a>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ conda create --name my_nussl_env numpy scipy matplotlib
+Fetching package metadata .......
+Solving package specifications: ..........
+
+Package plan for installation in environment /anaconda2/envs/my_nussl_env:
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    mkl-2017.0.1               |                0       110.8 MB
+    openssl-1.0.2k             |                0         3.0 MB
+    python-2.7.13              |                0         9.1 MB
+    numpy-1.11.3               |           py27_0         3.2 MB
+    setuptools-27.2.0          |           py27_0         522 KB
+    subprocess32-3.2.7         |           py27_0          39 KB
+    pip-9.0.1                  |           py27_1         1.6 MB
+    python-dateutil-2.6.0      |           py27_0         232 KB
+    scipy-0.18.1               |      np111py27_1        13.7 MB
+    matplotlib-2.0.0           |      np111py27_0         8.7 MB
+    ------------------------------------------------------------
+                                           Total:       150.9 MB
+
+The following NEW packages will be INSTALLED:
+
+    cycler:          0.10.0-py27_0
+    freetype:        2.5.5-2
+    functools32:     3.2.3.2-py27_0
+    icu:             54.1-0
+    libpng:          1.6.27-0
+    matplotlib:      2.0.0-np111py27_0
+    mkl:             2017.0.1-0
+    numpy:           1.11.3-py27_0
+    openssl:         1.0.2k-0
+    pip:             9.0.1-py27_1
+    pyparsing:       2.1.4-py27_0
+    pyqt:            5.6.0-py27_2
+    python:          2.7.13-0
+    python-dateutil: 2.6.0-py27_0
+    pytz:            2016.10-py27_0
+    qt:              5.6.2-0
+    readline:        6.2-2
+    scipy:           0.18.1-np111py27_1
+    setuptools:      27.2.0-py27_0
+    sip:             4.18-py27_0
+    six:             1.10.0-py27_0
+    sqlite:          3.13.0-0
+    subprocess32:    3.2.7-py27_0
+    tk:              8.5.18-0
+    wheel:           0.29.0-py27_0
+    zlib:            1.2.8-3
+
+Proceed ([y]/n)? y
+
+Fetching packages ...
+mkl-2017.0.1-0 100% |############################################################################################| Time: 0:00:04  24.72 MB/s
+openssl-1.0.2k 100% |############################################################################################| Time: 0:00:00  14.59 MB/s
+python-2.7.13- 100% |############################################################################################| Time: 0:00:00  20.91 MB/s
+numpy-1.11.3-p 100% |############################################################################################| Time: 0:00:00  15.49 MB/s
+setuptools-27. 100% |############################################################################################| Time: 0:00:00   7.36 MB/s
+subprocess32-3 100% |############################################################################################| Time: 0:00:00   2.66 MB/s
+pip-9.0.1-py27 100% |############################################################################################| Time: 0:00:00  11.33 MB/s
+python-dateuti 100% |############################################################################################| Time: 0:00:00   5.03 MB/s
+scipy-0.18.1-n 100% |############################################################################################| Time: 0:00:00  26.11 MB/s
+matplotlib-2.0 100% |############################################################################################| Time: 0:00:00  21.35 MB/s
+Extracting packages ...
+[      COMPLETE      ]|###############################################################################################################| 100%
+Linking packages ...
+[      COMPLETE      ]|###############################################################################################################| 100%
+#
+# To activate this environment, use:
+# $ source activate my_nussl_env
+#
+# To deactivate this environment, use:
+# $ source deactivate
+#
+
+$ source activate my_nussl_env
+(my_nussl_env) $ pip install nussl==0.1.5a10
+Collecting nussl==0.1.5a10
+  Downloading nussl-0.1.5a10-py2-none-any.whl (50kB)
+    100% |████████████████████████████████| 51kB 1.6MB/s
+Requirement already satisfied: numpy&gt;=1.7.0 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from nussl==0.1.5a10)
+Requirement already satisfied: matplotlib&gt;=1.3.0 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from nussl==0.1.5a10)
+Requirement already satisfied: librosa&gt;=0.4.1 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from nussl==0.1.5a10)
+Requirement already satisfied: scipy&gt;=0.12.0 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from nussl==0.1.5a10)
+Requirement already satisfied: audioread&gt;=2.1.2 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from nussl==0.1.5a10)
+Requirement already satisfied: six&gt;=1.10 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from matplotlib&gt;=1.3.0-&gt;nussl==0.1.5a10)
+Requirement already satisfied: python-dateutil in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from matplotlib&gt;=1.3.0-&gt;nussl==0.1.5a10)
+Requirement already satisfied: functools32 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from matplotlib&gt;=1.3.0-&gt;nussl==0.1.5a10)
+Requirement already satisfied: subprocess32 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from matplotlib&gt;=1.3.0-&gt;nussl==0.1.5a10)
+Requirement already satisfied: pytz in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from matplotlib&gt;=1.3.0-&gt;nussl==0.1.5a10)
+Requirement already satisfied: cycler&gt;=0.10 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from matplotlib&gt;=1.3.0-&gt;nussl==0.1.5a10)
+Requirement already satisfied: pyparsing!=2.0.4,!=2.1.2,!=2.1.6,&gt;=1.5.6 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from matplotlib&gt;=1.3.0-&gt;nussl==0.1.5a10)
+Requirement already satisfied: decorator&gt;=3.0.0 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from librosa&gt;=0.4.1-&gt;nussl==0.1.5a10)
+Requirement already satisfied: scikit-learn&gt;=0.14.0 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from librosa&gt;=0.4.1-&gt;nussl==0.1.5a10)
+Requirement already satisfied: resampy&gt;=0.1.0 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from librosa&gt;=0.4.1-&gt;nussl==0.1.5a10)
+Requirement already satisfied: joblib&gt;=0.7.0 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from librosa&gt;=0.4.1-&gt;nussl==0.1.5a10)
+Requirement already satisfied: Cython&gt;=0.23 in anaconda2/envs/my_nussl_env/lib/python2.7/site-packages (from resampy&gt;=0.1.0-&gt;librosa&gt;=0.4.1-&gt;nussl==0.1.5a10)
+Installing collected packages: nussl
+  Found existing installation: nussl 0.1.3
+    Uninstalling nussl-0.1.3:
+      Successfully uninstalled nussl-0.1.3
+Successfully installed nussl-0.1.5a10
+(my_nussl_env) $ python
+Python 2.7.13 |Continuum Analytics, Inc.| (default, Dec 20 2016, 23:05:08)
+[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)] on darwin
+Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+Anaconda is brought to you by Continuum Analytics.
+Please check out: http://continuum.io/thanks and https://anaconda.org
+&gt;&gt;&gt; import nussl
+&gt;&gt;&gt; nussl.version
+&#39;0.1.5a10&#39;
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.5a10',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

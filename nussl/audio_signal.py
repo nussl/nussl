@@ -9,6 +9,7 @@ import librosa
 import numbers
 import audioread
 import json
+import warnings
 
 import spectral_utils
 import constants
@@ -27,9 +28,9 @@ class AudioSignal(object):
             into ``self.audio_data``.
         audio_data_array (:obj:`np.ndarray`, optional): Numpy array containing a real-valued, time-series representation
             of the audio.
-        signal_starting_position (int, optional): Starting point of the section to be extracted in seconds.
+        offset (int, optional): Starting point of the section to be extracted in seconds.
             Defaults to 0
-        signal_length (int, optional): Length of the signal to be extracted. Defaults to full length of the signal
+        duration (int, optional): Length of the signal to be extracted. Defaults to full length of the signal
         sample_rate (int, optional): sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE
         stft (:obj:`np.ndarray`, optional): Optional pre-computed complex spectrogram data.
         stft_params (:obj:`StftParams`, optional):
@@ -61,8 +62,7 @@ class AudioSignal(object):
     """
 
     def __init__(self, path_to_input_file=None, audio_data_array=None, stft=None,
-                 sample_rate=constants.DEFAULT_SAMPLE_RATE, stft_params=None,
-                 signal_starting_position=0, signal_length=None):
+                 sample_rate=constants.DEFAULT_SAMPLE_RATE, stft_params=None, offset=0, duration=None):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
@@ -70,11 +70,17 @@ class AudioSignal(object):
         self._active_start = None
         self._active_end = None
 
-        if (path_to_input_file is not None) and (audio_data_array is not None):
-            raise Exception('Cannot initialize AudioSignal object with a path AND an array!')
+        # Assert that this object was only initialized in one way
+        got_path = path_to_input_file is not None
+        got_audio_array = audio_data_array is not None
+        got_stft = stft is not None
+        init_inputs = np.array([got_path, got_audio_array, got_stft])
+
+        if len(init_inputs[init_inputs == True]) > 1:
+            raise ValueError('Can only initialize AudioSignal object with one of [path, audio, stft]!')
 
         if path_to_input_file is not None:
-            self.load_audio_from_file(self.path_to_input_file, signal_starting_position, signal_length)
+            self.load_audio_from_file(self.path_to_input_file, offset, duration)
         elif audio_data_array is not None:
             self.load_audio_from_array(audio_data_array, sample_rate)
 
@@ -100,7 +106,7 @@ class AudioSignal(object):
 
     _NAME_STEM = 'audio_signal'
 
-    def plot_spectrogram(self, file_name=None, ch=None, use_librosa=constants.USE_LIBROSA_STFT):
+    def plot_spectrogram(self, file_name=None, ch=None):
         # TODO: use self.stft_data if not None
         # TODO: flatten to mono be default
         # TODO: make other parameters adjustable
@@ -117,18 +123,15 @@ class AudioSignal(object):
                 for i in range(1, self.num_channels+1):
                     name = name_stem + '_ch{}.png'.format(i)
                     spectral_utils.plot_stft(self.get_channel(i), name,
-                                             sample_rate=self.sample_rate,
-                                             use_librosa=use_librosa)
+                                             sample_rate=self.sample_rate)
             else:
                 name = name_stem + '.png'
                 spectral_utils.plot_stft(self.get_channel(1), name,
-                                         sample_rate=self.sample_rate,
-                                         use_librosa=use_librosa)
+                                         sample_rate=self.sample_rate)
         else:
             name = name_stem + '_ch{}.png'.format(ch)
             spectral_utils.plot_stft(self.get_channel(ch), name,
-                                     sample_rate=self.sample_rate,
-                                     use_librosa=use_librosa)
+                                     sample_rate=self.sample_rate)
 
     ##################################################
     # Properties
@@ -144,7 +147,7 @@ class AudioSignal(object):
 
     @property
     def signal_length(self):
-        """ (int): Number of samples in self.audio_data
+        """ (int): Number of samples in the active region of `self.audio_data`
             The length of the audio signal represented by this object in samples
         """
         if self.audio_data is None:
@@ -260,10 +263,12 @@ class AudioSignal(object):
             :ref: self.set_active_region_to_default
 
         """
-        return self._active_start == 0 and self._active_end == self.signal_length
+        return self._active_start == 0 and self._active_end == self._signal_length
 
     @property
     def _signal_length(self):
+        """ (int): This is the length of the full signal, not just the active region.
+        """
         if self._audio_data is None:
             return None
         return self._audio_data.shape[self._LEN]
@@ -284,36 +289,34 @@ class AudioSignal(object):
     # I/O
     ##################################################
 
-    def load_audio_from_file(self, input_file_path, signal_starting_position=0, signal_length=None):
-        # type: (unicode, integer, integer) -> None
+    def load_audio_from_file(self, input_file_path, offset=0, duration=None):
+        # type: (str, float, float) -> None
         """Loads an audio signal from a file
 
         Parameters:
             input_file_path (str): Path to input file.
-            signal_length (int, optional): Length of signal to load. signal_length of 0 means read the whole file.
-                Defaults to the full length of the signal.
-            signal_starting_position (int, optional): The starting point of the section to be extracted (seconds).
+            offset (float, optional): The starting point of the section to be extracted (seconds).
                 Defaults to 0 seconds.
+            duration (float, optional): Length of signal to load in second.
+                signal_length of 0 means read the whole file. Defaults to the full length of the signal.
 
         """
-        if signal_length is not None and signal_starting_position >= signal_length:
-            raise IndexError('signal_starting_position cannot be greater than signal_length!')
-
         try:
             with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
-                self.sample_rate = input_file.samplerate
                 file_length = input_file.duration
-                n_ch = input_file.channels
 
-            read_mono = True
-            if n_ch != 1:
-                read_mono = False
+            if offset > file_length:
+                raise ValueError('offset is longer than signal!')
+
+            if duration is not None and offset + duration >= file_length:
+                warnings.warn('offset + duration are longer than the signal. Reading until end of signal...',
+                              UserWarning)
 
             audio_input, self.sample_rate = librosa.load(input_file_path,
-                                                         sr=input_file.samplerate,
-                                                         offset=0,
-                                                         duration=file_length,
-                                                         mono=read_mono)
+                                                         sr=None,
+                                                         offset=offset,
+                                                         duration=duration,
+                                                         mono=False)
 
             # Change from fixed point to floating point
             if not np.issubdtype(audio_input.dtype, float):
@@ -321,12 +324,14 @@ class AudioSignal(object):
 
             self.audio_data = audio_input
 
-        except Exception:
-            raise IOError("Cannot read from file, {file}".format(file=input_file_path))
+        except Exception as e:
+            if isinstance(e, ValueError):  # This is the error we just raise, re-raise it
+                raise e
+            else:
+                raise IOError("Cannot read from file, {file}".format(file=input_file_path))
 
         self.path_to_input_file = input_file_path
-        self._active_end = signal_length if signal_length is not None else self._audio_data.shape[self._LEN]
-        self._active_start = signal_starting_position
+        self.set_active_region_to_default()
 
     def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
         """Loads an audio signal from a numpy array.
@@ -352,8 +357,7 @@ class AudioSignal(object):
 
         self.audio_data = signal
         self.sample_rate = sample_rate
-        self._active_start = 0
-        self._active_end = self.signal_length
+        self.set_active_region_to_default()
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
         """Outputs the audio signal to a file
@@ -449,24 +453,24 @@ class AudioSignal(object):
 
         """
         if self.audio_data is None or self.audio_data.size == 0:
-            raise Exception("No time domain signal (self.audio_data) to make STFT from!")
+            raise ValueError("No time domain signal (self.audio_data) to make STFT from!")
 
-        window_length = self.stft_params.window_length if window_length is None else window_length
-        hop_length = self.stft_params.hop_length if hop_length is None else hop_length
+        window_length = self.stft_params.window_length if window_length is None else int(window_length)
+        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
         window_type = self.stft_params.window_type if window_type is None else window_type
-        n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else n_fft_bins
+        n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else int(n_fft_bins)
 
         calculated_stft = self._do_stft(window_length, hop_length, window_type,
                                         n_fft_bins, remove_reflection, use_librosa)
 
-        if overwrite or self.stft_data is None:
+        if overwrite:
             self.stft_data = calculated_stft
 
         return calculated_stft
 
     def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection, use_librosa):
         if self.audio_data is None or self.audio_data.size == 0:
-            raise Exception('Cannot do stft without signal!')
+            raise ValueError('Cannot do stft without signal!')
 
         stfts = []
 
@@ -475,7 +479,7 @@ class AudioSignal(object):
         for i in range(1, self.num_channels + 1):
             stfts.append(stft_func(signal=self.get_channel(i), window_length=window_length,
                                    hop_length=hop_length, window_type=window_type,
-                                   n_fft_bins=n_fft_bins,remove_reflection=remove_reflection))
+                                   n_fft_bins=n_fft_bins, remove_reflection=remove_reflection))
 
         return np.array(stfts).transpose((1, 2, 0))
 
@@ -503,10 +507,10 @@ class AudioSignal(object):
 
         """
         if self.stft_data is None or self.stft_data.size == 0:
-            raise Exception('Cannot do inverse STFT without self.stft_data!')
+            raise ValueError('Cannot do inverse STFT without self.stft_data!')
 
-        window_length = self.stft_params.window_length if window_length is None else window_length
-        hop_length = self.stft_params.hop_length if hop_length is None else hop_length
+        window_length = self.stft_params.window_length if window_length is None else int(window_length)
+        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
         # TODO: bubble up center
         window_type = self.stft_params.window_type if window_type is None else window_type
 
@@ -526,9 +530,16 @@ class AudioSignal(object):
 
         istft_func = spectral_utils.librosa_istft_wrapper if use_librosa else spectral_utils.e_istft
 
+        original_length = None if self.signal_length is None else self.signal_length
+
         for i in range(1, self.num_channels + 1):
-            signals.append(istft_func(stft=self.get_stft_channel(i), window_length=window_length,
-                                      hop_length=hop_length, window_type=window_type))
+            calculated_signal = istft_func(stft=self.get_stft_channel(i), window_length=window_length,
+                                           hop_length=hop_length, window_type=window_type)
+
+            if original_length is not None:
+                calculated_signal = calculated_signal[:original_length]
+
+            signals.append(calculated_signal)
 
         return np.array(signals)
 
@@ -564,7 +575,7 @@ class AudioSignal(object):
 
         """
         if n_samples > self.signal_length:
-            raise Exception('n_samples must be less than self.signal_length!')
+            raise ValueError('n_samples must be less than self.signal_length!')
 
         if not self.active_region_is_default:
             raise Exception('Cannot truncate while active region is not set as default!')
@@ -851,10 +862,10 @@ class AudioSignal(object):
 
         if self.signal_length > other.signal_length:
             combined = np.copy(self.audio_data)
-            combined[:, :other.audio_data.size] -= other.audio_data
+            combined[:, :other.signal_length] -= other.audio_data
         else:
             combined = np.copy(other.audio_data)
-            combined[:, :self.audio_data.size] -= self.audio_data
+            combined[:, :self.signal_length] -= self.audio_data
 
         return AudioSignal(audio_data_array=combined)
 

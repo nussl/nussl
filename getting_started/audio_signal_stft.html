@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Spectrograms and STFTs &mdash; nussl 0.1.5a9 documentation</title>
+  <title>Spectrograms and STFTs &mdash; nussl 0.1.5a10 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/>
         <link rel="up" title="The AudioSignal Object" href="audio_signal.html"/>
         <link rel="next" title="Using REPET" href="repet.html"/>
         <link rel="prev" title="AudioSignal Basics" href="audio_signal_basics.html"/> 
@@ -157,7 +157,7 @@
 <span id="audio-signal-stft"></span><h1>Spectrograms and STFTs<a class="headerlink" href="#spectrograms-and-stfts" title="Permalink to this headline">¶</a></h1>
 <p>Most, if not all, source separation algorithms do not their operations in the time domain, but rather in the frequency
 domain. For this, <em>nussl</em> provides an interface for working with <a class="reference external" href="https://en.wikipedia.org/wiki/Short-time_Fourier_transform">Short-Time Fourier Transform (STFT)</a>
-data.</p>
+data. Here, we describe how to do some simple STFT operations with the <code class="xref py py-class docutils literal"><span class="pre">nussl.AudioSignal</span></code> object.</p>
 <div class="section" id="stft-basics">
 <h2>STFT Basics<a class="headerlink" href="#stft-basics" title="Permalink to this headline">¶</a></h2>
 <p>Let&#8217;s reinitialize <code class="docutils literal"><span class="pre">signal1</span></code> from the previous page. We should be able to get frequency domain data by looking
@@ -307,7 +307,52 @@ know not to reconstruct the reflection when doing an inverse STFT. It is the use
 kind of bookkeeping.</p>
 <div class="section" id="stftparams-object">
 <h3>StftParams Object<a class="headerlink" href="#stftparams-object" title="Permalink to this headline">¶</a></h3>
-<p>The Stft</p>
+<p>The <code class="xref py py-class docutils literal"><span class="pre">nussl.StftParams</span></code> is an object that stores parameters for doing STFTs and iSTFTs. Its main function is to
+keep track of user-set parameters for the duration of the <code class="docutils literal"><span class="pre">AudioSignal</span></code> object&#8217;s life. The separation
+objects (<code class="xref py py-class docutils literal"><span class="pre">nussl.Repet</span></code>, for instance) also have a <code class="docutils literal"><span class="pre">StftParams</span></code> object, which is copied from the input
+<code class="docutils literal"><span class="pre">AudioSignal</span></code> object.</p>
+<p>Let&#8217;s get to some examples to demonstrate.</p>
+<p>We can calculate an STFT with special, non-default parameters:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">(</span><span class="n">window_length</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">hop_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">WINDOW_HANN</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But the next time we do an STFT, we&#8217;ll have the default parameters again. And <em>furthermore</em>, any other code
+that calls <code class="docutils literal"><span class="pre">signal1.sift()</span></code> (like, <code class="docutils literal"><span class="pre">nussl.Repet</span></code>) will use the default parameters.</p>
+<p>If we want to have these settings saved for the life of this <code class="docutils literal"><span class="pre">AudioSignal</span></code> object, we have to set them
+in <code class="docutils literal"><span class="pre">signal1</span></code>&#8216;s <code class="docutils literal"><span class="pre">StftParams</span></code> object, at <code class="docutils literal"><span class="pre">signal1.stft_params</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">4096</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">WINDOW_HANN</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This block of code is equivalent to the first, but now when we call <code class="docutils literal"><span class="pre">signal1.stft()</span></code> again it will use the same
+settings again.</p>
+<p>So now when <code class="docutils literal"><span class="pre">Repet</span></code> does an STFT (or any other separation method in <em>nussl</em>), it will use our settings again.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The STFT inside <code class="docutils literal"><span class="pre">Repet</span></code> used the parameters we set for <code class="docutils literal"><span class="pre">signal1</span></code>. Automatically, <code class="docutils literal"><span class="pre">my_repet</span></code> has a copy of
+<code class="docutils literal"><span class="pre">signal1.stft_params</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span>
+<span class="go">4096</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span>
+<span class="go">1024</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_type</span>
+<span class="go">&#39;hann&#39;</span>
+</pre></div>
+</div>
+<p>What if I want to change just one of the STFT parameters for only this repet instance? We can change the STFT parameters
+for <code class="docutils literal"><span class="pre">my_repet</span></code> and they won&#8217;t affect <code class="docutils literal"><span class="pre">signal1.stft_params</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">==</span> <span class="mi">2048</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now when we run <code class="docutils literal"><span class="pre">my_repet</span></code>, the hop length is 2048 instead of what was set in <code class="docutils literal"><span class="pre">signal1</span></code>, 1024.</p>
+<p><a class="reference external" href="http://gph.is/1TL5s3R">Awesome!</a></p>
 <p class="rubric">Footnotes</p>
 <table class="docutils footnote" frame="void" id="f1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
@@ -366,7 +411,7 @@ kind of bookkeeping.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5a9',
+            VERSION:'0.1.5a10',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

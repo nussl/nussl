@@ -4,7 +4,7 @@
 AudioSignal Basics
 ==================
 
-The AudioSignal object is the main container for all things related to your audio data. It provides a lot of
+The :class:`nussl.AudioSignal` object is the main container for all things related to your audio data. It provides a lot of
 helpful utilities to make it easy to manipulate your audio. Because it is at the heart of all of the source separation
 algorithms in *nussl*, it is crucial to understand how it works. Here we provide a brief introduction to many common
 tasks.

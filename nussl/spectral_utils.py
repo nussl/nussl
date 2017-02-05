@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fftpack as scifft
@@ -15,7 +16,7 @@ import constants
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
               window_type=None, sample_rate=None, n_fft_bins=None,
-              freq_max=None, show_interactive_plot=False, use_librosa=constants.USE_LIBROSA_STFT):
+              freq_max=None, show_interactive_plot=False):
     """
     Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
     You can specify the same all of the same parameters that are in e_stft(). By default, the StftParams defaults
@@ -82,8 +83,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         window_type = defaults.window_type if window_type is None else window_type
 
     (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length,
-                                           window_type, sample_rate, n_fft_bins,
-                                           use_librosa)
+                                           window_type, sample_rate, n_fft_bins)
 
     plt.close('all')
 
@@ -122,7 +122,7 @@ def e_stft(signal, window_length, hop_length, window_type,
     multichannel audio. If you want to do an STFT on multichannel audio see the AudioSignal object.
 
     Args:
-        signal: 1D numpy array containing audio data. (REAL?COMPLEX?INTEGER?)
+        signal: 1D numpy array containing audio data. (REAL)
         window_length: (int) number of samples per window
         hop_length: (int) number of samples between the start of adjacent windows, or "hop"
         window_type: (string) type of window to use. Using WindowType object is recommended.
@@ -169,15 +169,15 @@ def e_stft(signal, window_length, hop_length, window_type,
         # stft_more_bins has shape (num_bins // 2 + 1, duration / hop_length)
     """
     if n_fft_bins is None:
-        n_fft_bins = int(2 ** np.ceil(np.log2(window_length)))
+        n_fft_bins = window_length
 
     window_type = constants.WINDOW_DEFAULT if window_type is None else window_type
     window = make_window(window_type, window_length)
 
-    signal, zero_pad1, zero_pad2 = _add_zero_padding(signal, window_length, hop_length)
+    orig_signal_length = len(signal)
+    signal, num_blocks = _add_zero_padding(signal, window_length, hop_length)
 
     # figure out size of output stft
-    num_blocks = int(((len(signal) - window_length) / hop_length + 1))
     stft_bins = n_fft_bins // 2 + 1 if remove_reflection else n_fft_bins  # only want just over half of each fft
 
     # this is where we do the stft calculation
@@ -188,17 +188,17 @@ def e_stft(signal, window_length, hop_length, window_type,
         unwindowed_signal = signal[start:end]
         windowed_signal = np.multiply(unwindowed_signal, window)
         fft = scifft.fft(windowed_signal, n=n_fft_bins)
-        stft[hop, ] = fft[0:stft_bins]
+        stft[hop, ] = fft[:stft_bins]
 
-    # reshape the 2d array, so it's how we expect it.
+    # reshape the 2d array, so it's (n_fft, n_hops).
     stft = stft.T
-    stft = _remove_stft_padding(stft, zero_pad1, zero_pad2, hop_length) if remove_padding else stft
+    stft = _remove_stft_padding(stft, orig_signal_length, window_length, hop_length) if remove_padding else stft
 
     return stft
 
 
 def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, remove_reflection=True,
-                         remove_padding=True, center=True, n_fft_bins=None):
+                         center=True, n_fft_bins=None):
     """
 
     Args:
@@ -207,7 +207,6 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
         hop_length:
         window_type:
         remove_reflection:
-        remove_padding:
         center:
         n_fft_bins:
 
@@ -216,23 +215,19 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
     """
 
     if window_type is not None and n_fft_bins is not None:
-        warnings.warn('n_fft_bins ignored. Librosa\'s stft uses window_length as n_fft_bins')
-
-    signal, zero_pad1, zero_pad2 = _add_zero_padding(signal, window_length, hop_length)
+        warnings.warn("n_fft_bins ignored. Librosa's stft uses window_length as n_fft_bins")
 
     window = make_window(window_type, window_length) if window_type is not None else None
-
+    signal = librosa.util.fix_length(signal, len(signal) + hop_length)
     stft = librosa.stft(signal, n_fft=window_length, hop_length=hop_length, win_length=window_length,
                         window=window, center=center)
 
     stft = stft if remove_reflection else _add_reflection(stft)
 
-    stft = _remove_stft_padding(stft, zero_pad1, zero_pad2, hop_length) if remove_padding else stft
-
     return stft
 
 
-def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=False):
+def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=True):
     """
     Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
     this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
@@ -280,31 +275,44 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     """
 
     n_hops = stft.shape[1]
-    signal_length = ((n_hops - 1) * hop_length) - window_length # ?
-    signal_length = (n_hops - 1) * hop_length + window_length
+    overlap = window_length - hop_length
+    signal_length = (n_hops * hop_length) + overlap
     signal = np.zeros(signal_length)
 
+    norm_window = np.zeros(signal_length)
+    window = make_window(window_type, window_length)
+
     # Add reflection back
-    if reconstruct_reflection:
-        stft = _add_reflection(stft)
+    stft = _add_reflection(stft) if reconstruct_reflection else stft
 
     for n in range(n_hops):
         start = n * hop_length
         end = start + window_length
-        signal[start:end] = signal[start:end] + np.real(scifft.ifft(stft[:, n]))
+        inv_sig_temp = np.real(scifft.ifft(stft[:, n]))
+        signal[start:end] = signal[start:end] + inv_sig_temp[:window_length]
+        norm_window[start:end] = norm_window[start:end] + window
+
+    norm_window[norm_window == 0.0] = constants.EPSILON  # Prevent dividing by zero
+    signal_norm = signal / norm_window
 
     # remove zero-padding
     if remove_padding:
-        start = window_length - hop_length
-        stop = signal_length - (window_length - hop_length)
-        signal = signal[start:stop]
+        if overlap >= hop_length:
+            ovp_hop_ratio = int(np.ceil(overlap / hop_length))
+            start = ovp_hop_ratio * hop_length
+            end = signal_length - overlap
 
-    return signal
+            signal_norm = signal_norm[start:end]
+
+        else:
+            signal_norm = signal_norm[hop_length:]
+
+    return signal_norm
 
 
 def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
-                          remove_reflection=False, remove_padding=False, center=True):
-    """
+                          remove_reflection=False, center=True, original_signal_length=None):
+    """Wrapper for calling into librosa's istft function.
 
     Args:
         stft:
@@ -312,7 +320,8 @@ def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
         hop_length:
         window_type:
         remove_reflection:
-        remove_padding:
+        center:
+        original_signal_length:
 
     Returns:
 
@@ -327,18 +336,14 @@ def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
     signal = librosa.istft(stft, hop_length, window_length, window, center)
 
     # remove zero-padding
-    if remove_padding:
-        start = window_length - hop_length
-        n_hops = stft.shape[1]
-        signal_length = (n_hops - 1) * hop_length + window_length
-        stop = signal_length - (window_length - hop_length)
-        signal = signal[start:stop]
+    if original_signal_length is not None:
+        signal = librosa.util.fix_length(signal, original_signal_length)
 
     return signal
 
 
 def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
-                n_fft_bins=None, remove_reflection=True, use_librosa=constants.USE_LIBROSA_STFT):
+                n_fft_bins=None, remove_reflection=True):
     """
     Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
     the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
@@ -360,6 +365,7 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
         sample_rate: (int) the intended sample rate, this is used in the calculation of the frequency vector
         n_fft_bins: (int) (Optional) number of fft bins per time window.
         If not specified, defaults to next highest power of 2 above window_length
+        remove_reflection (bool):
 
     Returns:
         stft: (np.ndarray) a 2D matrix short time fourier transform data
@@ -369,9 +375,9 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
     if n_fft_bins is None:
         n_fft_bins = window_length
 
-    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins, remove_reflection, use_librosa)
+    stft = e_stft(signal, window_length, hop_length, window_type, n_fft_bins, remove_reflection)
 
-    if use_librosa or remove_reflection:
+    if remove_reflection:
         frequency_vector = (sample_rate / 2) * np.linspace(0, 1, (n_fft_bins / 2) + 1)
     else:
         frequency_vector = sample_rate * np.linspace(0, 1, n_fft_bins + 1)
@@ -397,42 +403,49 @@ def _add_zero_padding(signal, window_length, hop_length):
         signal:
         window_length:
         hop_length:
-
     Returns:
-
     """
-    orig_signal_length = len(signal)
+    original_signal_length = len(signal)
+    overlap = window_length - hop_length
+    num_blocks = np.ceil(len(signal) / hop_length)
 
-    # zero-pad the vector at the beginning and end to reduce the window tapering effect
-    window_length -= 1 if window_length % 2 != 0 else 0 # subtract 1 if window_length is an odd number
-    zero_pad1_len = window_length // 2
-    signal = np.lib.pad(signal, (zero_pad1_len, zero_pad1_len), 'constant', constant_values=(0, 0))
+    if overlap >= hop_length:  # Hop is less than 50% of window length
+        overlap_hop_ratio = np.ceil(overlap / hop_length)
 
-    # another zero pad at the end if not integer multiple of hop_length
-    zero_pad2_len = 0
-    if orig_signal_length % hop_length != 0:
-        zero_pad2_len = hop_length - (orig_signal_length % hop_length)
-        signal = np.lib.pad(signal, (0, zero_pad2_len), 'constant', constant_values=(0, 0))
+        before = int(overlap_hop_ratio * hop_length)
+        after = int((num_blocks * hop_length + overlap) - original_signal_length)
 
-    return signal, zero_pad1_len, zero_pad2_len
+        signal = np.pad(signal, (before, after), 'constant', constant_values=(0, 0))
+        extra = overlap
+
+    else:
+        after = int((num_blocks * hop_length + overlap) - original_signal_length)
+        signal = np.pad(signal, (hop_length, after), 'constant', constant_values=(0, 0))
+        extra = window_length
+
+    num_blocks = int(np.ceil((len(signal) - extra) / hop_length))
+    num_blocks += 1 if overlap == 0 else 0  # if no overlap, then we need to get another hop at the end
+
+    return signal, num_blocks
 
 
-def _remove_stft_padding(stft, zero_pad1_len, zero_pad2_len, hop_length):
+def _remove_stft_padding(stft, original_signal_length, window_length, hop_length):
     """
 
     Args:
         stft:
-        zero_pad1_len:
-        zero_pad2_len:
+        original_signal_length:
+        window_length:
         hop_length:
 
     Returns:
 
     """
-    first = zero_pad1_len // hop_length
-    last = stft.shape[1] - (zero_pad1_len + zero_pad2_len) // hop_length
-    stft = stft[:, first: last]
-    return stft
+    overlap = window_length - hop_length
+    first = int(np.ceil(overlap / hop_length))
+    num_col = int(np.ceil((original_signal_length - window_length) / hop_length))
+    stft_cut = stft[:, first:first + num_col]
+    return stft_cut
 
 
 def make_window(window_type, length):
@@ -468,7 +481,11 @@ def get_window_function(window_type):
     Returns: callable window function from scipy.signal
 
     """
-    return getattr(scipy.signal, window_type)
+    if window_type in dir(scipy.signal):
+        return getattr(scipy.signal, window_type)
+    else:
+        warnings.warn("Cannot get window type {} from scipy.signal".format(window_type))
+        return None
 
 
 def _add_reflection(matrix):
@@ -490,14 +507,14 @@ class StftParams(object):
     This object will get passed around instead of each of these individual attributes.
     """
     def __init__(self, sample_rate, window_length=None, hop_length=None, window_type=None, n_fft_bins=None):
-        self.sample_rate = sample_rate
+        self.sample_rate = int(sample_rate)
 
         # default to 40ms windows
         default_win_len = int(2 ** (np.ceil(np.log2(constants.DEFAULT_WIN_LEN_PARAM * sample_rate))))
-        self._window_length = default_win_len if window_length is None else window_length
-        self._hop_length = self._window_length / 2 if hop_length is None else hop_length
+        self._window_length = default_win_len if window_length is None else int(window_length)
+        self._hop_length = self._window_length // 2 if hop_length is None else int(hop_length)
         self.window_type = constants.WINDOW_DEFAULT if window_type is None else window_type
-        self._n_fft_bins = self._window_length if n_fft_bins is None else n_fft_bins
+        self._n_fft_bins = self._window_length if n_fft_bins is None else int(n_fft_bins)
 
         self._hop_length_needs_update = True
         self._n_fft_bins_needs_update = True

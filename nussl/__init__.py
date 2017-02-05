@@ -12,7 +12,7 @@ from repet import Repet
 from repet_sim import RepetSim
 
 
-__version__ = '0.1.5a9'
+__version__ = '0.1.5a10'
 
 version = __version__  # aliasing version
 short_version = '.'.join(version.split('.')[:-1])

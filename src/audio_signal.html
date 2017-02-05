@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AudioSignal Class &mdash; nussl 0.1.5a9 documentation</title>
+  <title>AudioSignal Class &mdash; nussl 0.1.5a10 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="nussl 0.1.5a9 documentation" href="../index.html"/>
+    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/>
         <link rel="up" title="nussl Classes" href="classes.html"/>
         <link rel="next" title="SeparationBase Class" href="separation_base.html"/>
         <link rel="prev" title="nussl Classes" href="classes.html"/> 
@@ -89,7 +89,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="classes.html">Classes</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">AudioSignal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="separation_base.html">SeparationBase</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repet.html">Repet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="repet_sim.html">RepetSim</a></li>
 <li class="toctree-l2"><a class="reference internal" href="duet.html">Duet</a></li>
 </ul>
@@ -148,7 +147,7 @@
 <span id="audiosignal-class"></span><h1>AudioSignal Class<a class="headerlink" href="#module-audio_signal" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="audio_signal.AudioSignal">
-<em class="property">class </em><code class="descclassname">audio_signal.</code><code class="descname">AudioSignal</code><span class="sig-paren">(</span><em>path_to_input_file=None</em>, <em>audio_data_array=None</em>, <em>stft=None</em>, <em>sample_rate=44100</em>, <em>stft_params=None</em>, <em>signal_starting_position=0</em>, <em>signal_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">audio_signal.</code><code class="descname">AudioSignal</code><span class="sig-paren">(</span><em>path_to_input_file=None</em>, <em>audio_data_array=None</em>, <em>stft=None</em>, <em>sample_rate=44100</em>, <em>stft_params=None</em>, <em>offset=0</em>, <em>duration=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal" title="Permalink to this definition">¶</a></dt>
 <dd><p>AudioSignal is the main entry point for the user or source separation algorithm to manipulate audio.</p>
 <p>The AudioSignal class is a container for all things related to audio data. It contains utilities for
 I/O, time-series and frequency domain manipulation, plotting, and much more. The AudioSignal class is used
@@ -162,9 +161,9 @@ in all source separation objects in <em>nussl</em>.</p>
 into <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</li>
 <li><strong>audio_data_array</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>, optional) &#8211; Numpy array containing a real-valued, time-series representation
 of the audio.</li>
-<li><strong>signal_starting_position</strong> (<em>int, optional</em>) &#8211; Starting point of the section to be extracted in seconds.
+<li><strong>offset</strong> (<em>int, optional</em>) &#8211; Starting point of the section to be extracted in seconds.
 Defaults to 0</li>
-<li><strong>signal_length</strong> (<em>int, optional</em>) &#8211; Length of the signal to be extracted. Defaults to full length of the signal</li>
+<li><strong>duration</strong> (<em>int, optional</em>) &#8211; Length of the signal to be extracted. Defaults to full length of the signal</li>
 <li><strong>sample_rate</strong> (<em>int, optional</em>) &#8211; sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE</li>
 <li><strong>stft</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>, optional) &#8211; Optional pre-computed complex spectrogram data.</li>
 <li><strong>stft_params</strong> (<code class="xref py py-obj docutils literal"><span class="pre">StftParams</span></code>, optional) &#8211; </li>
@@ -230,13 +229,13 @@ Returns:</p>
 
 <dl class="method">
 <dt id="audio_signal.AudioSignal.plot_spectrogram">
-<code class="descname">plot_spectrogram</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>ch=None</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_spectrogram" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_spectrogram</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>ch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_spectrogram" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.signal_length">
 <code class="descname">signal_length</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_length" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> &#8211; Number of samples in self.audio_data
+<dd><p><em>(int)</em> &#8211; Number of samples in the active region of <cite>self.audio_data</cite>
 The length of the audio signal represented by this object in samples</p>
 </dd></dl>
 
@@ -331,7 +330,7 @@ of entries of the STFT. Same shape as <code class="docutils literal"><span class
 
 <dl class="method">
 <dt id="audio_signal.AudioSignal.load_audio_from_file">
-<code class="descname">load_audio_from_file</code><span class="sig-paren">(</span><em>input_file_path</em>, <em>signal_starting_position=0</em>, <em>signal_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.load_audio_from_file" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load_audio_from_file</code><span class="sig-paren">(</span><em>input_file_path</em>, <em>offset=0</em>, <em>duration=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.load_audio_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads an audio signal from a file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -339,10 +338,10 @@ of entries of the STFT. Same shape as <code class="docutils literal"><span class
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>input_file_path</strong> (<em>str</em>) &#8211; Path to input file.</li>
-<li><strong>signal_length</strong> (<em>int, optional</em>) &#8211; Length of signal to load. signal_length of 0 means read the whole file.
-Defaults to the full length of the signal.</li>
-<li><strong>signal_starting_position</strong> (<em>int, optional</em>) &#8211; The starting point of the section to be extracted (seconds).
+<li><strong>offset</strong> (<em>float, optional</em>) &#8211; The starting point of the section to be extracted (seconds).
 Defaults to 0 seconds.</li>
+<li><strong>duration</strong> (<em>float, optional</em>) &#8211; Length of signal to load in second.
+signal_length of 0 means read the whole file. Defaults to the full length of the signal.</li>
 </ul>
 </td>
 </tr>
@@ -826,7 +825,7 @@ Extends the length of self.audio_data by before + after.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.5a9',
+            VERSION:'0.1.5a10',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

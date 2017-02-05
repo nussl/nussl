@@ -6,7 +6,7 @@ Spectrograms and STFTs
 
 Most, if not all, source separation algorithms do not their operations in the time domain, but rather in the frequency
 domain. For this, *nussl* provides an interface for working with `Short-Time Fourier Transform (STFT) <https://en.wikipedia.org/wiki/Short-time_Fourier_transform>`_
-data.
+data. Here, we describe how to do some simple STFT operations with the :class:`nussl.AudioSignal` object.
 
 STFT Basics
 -----------
@@ -168,7 +168,57 @@ kind of bookkeeping.
 StftParams Object
 ^^^^^^^^^^^^^^^^^
 
-The Stft
+The :class:`nussl.StftParams` is an object that stores parameters for doing STFTs and iSTFTs. Its main function is to
+keep track of user-set parameters for the duration of the ``AudioSignal`` object's life. The separation
+objects (:class:`nussl.Repet`, for instance) also have a ``StftParams`` object, which is copied from the input
+``AudioSignal`` object.
+
+Let's get to some examples to demonstrate.
+
+We can calculate an STFT with special, non-default parameters:
+
+>>> signal1 = nussl.AudioSignal(input_file_path)
+>>> signal1.stft(window_length=4096, hop_length=1024, window_type=constants.WINDOW_HANN)
+
+But the next time we do an STFT, we'll have the default parameters again. And *furthermore*, any other code
+that calls ``signal1.sift()`` (like, ``nussl.Repet``) will use the default parameters.
+
+If we want to have these settings saved for the life of this ``AudioSignal`` object, we have to set them
+in ``signal1``'s ``StftParams`` object, at ``signal1.stft_params``.
+
+>>> signal1 = nussl.AudioSignal(input_file_path)
+>>> signal1.stft_params.window_length = 4096
+>>> signal1.stft_params.hop_length = 1024
+>>> signal1.stft_params.window_type = constants.WINDOW_HANN
+>>> signal1.stft()
+
+This block of code is equivalent to the first, but now when we call ``signal1.stft()`` again it will use the same
+settings again.
+
+So now when ``Repet`` does an STFT (or any other separation method in *nussl*), it will use our settings again.
+
+>>> my_repet = nussl.Repet(signal1)
+>>> my_repet.run()
+
+The STFT inside ``Repet`` used the parameters we set for ``signal1``. Automatically, ``my_repet`` has a copy of
+``signal1.stft_params``:
+
+>>> my_repet.stft_params.window_length
+4096
+>>> my_repet.stft_params.hop_length
+1024
+>>> my_repet.stft_params.window_type
+'hann'
+
+What if I want to change just one of the STFT parameters for only this repet instance? We can change the STFT parameters
+for ``my_repet`` and they won't affect ``signal1.stft_params``.
+
+>>> my_repet.stft_params.hop_length == 2048
+>>> my_repet.run()
+
+Now when we run ``my_repet``, the hop length is 2048 instead of what was set in ``signal1``, 1024.
+
+`Awesome! <http://gph.is/1TL5s3R>`_
 
 .. rubric:: Footnotes
 
