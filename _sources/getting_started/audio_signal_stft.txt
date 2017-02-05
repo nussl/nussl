@@ -218,7 +218,7 @@ for ``my_repet`` and they won't affect ``signal1.stft_params``.
 
 Now when we run ``my_repet``, the hop length is 2048 instead of what was set in ``signal1``, 1024.
 
-`Awesome! <http://gph.is/1TL5s3R>`_
+`Awesome! <http://i.giphy.com/d2Z9QYzA2aidiWn6.gif>`_
 
 .. rubric:: Footnotes
 
