@@ -81,6 +81,11 @@ class TestAudioSignal(unittest.TestCase):
     sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
 
     def test_stft_istft_simple1(self):
+        """
+        Tests to make sure stft and istft don't crash with default settings.
+        Returns:
+
+        """
         a = nussl.AudioSignal(audio_data_array=self.sine_wave)
         a.stft()
         a.istft()
@@ -88,17 +93,16 @@ class TestAudioSignal(unittest.TestCase):
     def test_stft_istft_simple2(self):
         a = nussl.AudioSignal(audio_data_array=self.sine_wave)
 
-        # complete OLA
-        a.stft_params.window_type = nussl.constants.WINDOW_RECTANGULAR
-        a.stft_params.hop_length = a.stft_params.window_length
+        a.stft(use_librosa=True)
+        calc_sine = a.istft(overwrite=False, use_librosa=True)
 
-        a.stft()
-        calc_sine = a.istft(overwrite=False)
+        assert np.allclose(a.audio_data, calc_sine, atol=1e-3)
 
-        l = a.stft_params.hop_length // 2
-        # diff = a.audio_data[0, 0:a.signal_length] - calc_sine[0, l:a.signal_length+l]
+        a = nussl.AudioSignal(audio_data_array=self.sine_wave)
+        a.stft(use_librosa=False)
+        calc_sine = a.istft(overwrite=False, use_librosa=False)
 
-        assert (np.allclose(a.audio_data[0, 0:a.signal_length], calc_sine[0, l:a.signal_length + l]))
+        assert np.allclose(a.audio_data, calc_sine)
 
     def test_rms(self):
         ans = np.sqrt(2.0) / 2.0
