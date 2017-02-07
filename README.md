@@ -73,9 +73,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Contributors
 ------------
-Corey Grief ([website](http://music.cs.northwestern.edu/people.php)),
 Ethan Manilow ([website](http://www.ethanmanilow.com)),
+Prem Seetharaman ([website](http://prem.seeth.org)),
 Fatemah Pishdadian ([website](http://music.cs.northwestern.edu/people.php)),
+Corey Grief ([website](http://music.cs.northwestern.edu/people.php)),
 
 Contact
 -------
