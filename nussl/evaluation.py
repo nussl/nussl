@@ -3,17 +3,29 @@ from mir_eval.separation import *
 import numpy as np
 
 class Evaluation(object):
-    """Lets you load ground truth AudioSignals and estimated AudioSignals and compute sepation evaluation criteria (SDR, SIR, SAR and delta SDR, delta SIR, delta SAR).
+    """Lets you load ground truth AudioSignals and estimated AudioSignals and compute sepation 
+    evaluation criteria (SDR, SIR, SAR and delta SDR, delta SIR, delta SAR).
 
     Parameters:
-        ground_truth: ground truth audio sources that make up the mixture. Consists of a list of AudioSignal objects that sum up to the mixture. This must be provided.
-        estimated_sources: Estimated audio sources. These sum up to the mixture and don't have to be in the same order as ground_truth. This can be provided later and swapped dynamically to compare different audio source separation approaches.
-        ground_truth_labels: Labels for the sources in ground truth. Used to interpret the results later.
-        sample_rate: Sample rate for all ground truth and estimated sources. Defaults to the sample rate of the first AudioSignal in ground_truth.
+        ground_truth: ground truth audio sources that make up the mixture. Consists of a list of 
+        AudioSignal objects that sum up to the mixture. This must be provided.
+        estimated_sources: Estimated audio sources. These sum up to the mixture and don't have to 
+        be in the same order as ground_truth. This can be provided later and swapped dynamically
+        to compare different audio source separation approaches.
+        ground_truth_labels: Labels for the sources in ground truth. Used to interpret the 
+        results later.
+        sample_rate: Sample rate for all ground truth and estimated sources. Defaults to 
+        the sample rate of the first AudioSignal in ground_truth.
         do_mono: whether to do evaluation using mono sources to multichannel sources.
-        compute_permutation: True if you can't guarantee that ground_truth and estimated_sources are in the same order. False if you can. It'll be a bit faster if False. Defaults to True.
-        segment_size: when computing evaluation metrics, you can do them by segment instead of for the whole track. Segment size defines how long each segment is. Defaults to 30 seconds.
-        hop_size: when computing evaluation metrics, you can do them by segment instead of for the whole track. Hop size defines how much to hop between segments. Defaults to 15 seconds.
+        compute_permutation: True if you can't guarantee that ground_truth and estimated_sources
+        are in the same order. False if you can. It'll be a bit faster if False. 
+        Defaults to True.
+        segment_size: when computing evaluation metrics, you can do them by segment instead 
+        of for the whole track. Segment size defines how long each segment is. 
+        Defaults to 30 seconds.
+        hop_size: when computing evaluation metrics, you can do them by segment instead of 
+        for the whole track. Hop size defines how much to hop between segments. 
+        Defaults to 15 seconds.
     Examples:
   
     """
