@@ -3,7 +3,7 @@ from mir_eval.separation import *
 import numpy as np
 
 class Evaluation(object):
-    """Lets you load ground truth AudioSignals and estimated AudioSignals and compute sepation 
+    """Lets you load ground truth AudioSignals and estimated AudioSignals and compute separation
     evaluation criteria (SDR, SIR, SAR and delta SDR, delta SIR, delta SAR).
 
     Parameters:
@@ -29,60 +29,101 @@ class Evaluation(object):
     Examples:
   
     """
-    def __init__(self, ground_truth=None, estimated_sources=None, ground_truth_labels=None, sample_rate=None, do_mono=None, compute_permutation=None, hop_size=None, segment_size=None):
+    def __init__(self, ground_truth, estimated_sources=None, ground_truth_labels=None, sample_rate=None,
+                 do_mono=False, compute_permutation=True, hop_size=None, segment_size=None):
         self.ground_truth = ground_truth
-        if self.ground_truth is None:
-            raise Exception('Cannot initialize Evaluation object without ground truth!')
+
+        if ground_truth_labels is None:
+            self.groud_truth_labels = ['Source %d' % i for i in range(len(ground_truth))]
         self.ground_truth_labels = ground_truth_labels
-        if self.ground_truth_labels is None:
-            self.grouth_labels = ['Source %d' % i for i in range(len(ground_truth))]
+
         self.estimated_sources = estimated_sources
         self.sample_rate = sample_rate
+
         if self.sample_rate is None:
             self.sample_rate = ground_truth[0].sample_rate
         
-        self.compute_permutation = True if compute_permutation is None else compute_permutation
-        self.do_mono = False if do_mono is True else do_mono
+        self.compute_permutation = compute_permutation
+        self.do_mono = do_mono
+
         if do_mono:
             self.num_channels = 1
         else:
             self.num_channels = ground_truth[0].num_channels
+
         self.segment_size = 30 if segment_size is None else segment_size
         self.hop_size = 15 if hop_size is None else hop_size
     
-    def validate():
-        if self.estimated_sources = None:
+    def validate(self):
+        """
+
+        Returns:
+
+        """
+        if self.estimated_sources is None:
             raise Exception('Must set estimated_sources to run evaluation!')
-        estimated_lengths = [x.signal_length for x in estimated_sources]
-        reference_lengths = [x.signal_length for x in ground_truth]
+
+        estimated_lengths = [x.signal_length for x in self.estimated_sources]
+        reference_lengths = [x.signal_length for x in self.ground_truth]
+
         if len(set(estimated_lengths)) > 1:
             raise Exception('All AudioSignals in estimated_sources must be the same length!')
         if len(set(reference_lengths)) > 1:
             raise Exception('All AudioSignals in ground_truth must be the same length!')
     
-    def to_mono():
+    def to_mono(self):
+        """
+
+        Returns:
+
+        """
         self.validate()
         for i, audio in enumerate(self.ground_truth):
             mono = audio.to_mono()
             self.ground_truth[i] = AudioSignal(audio_data_array = mono, sample_rate = self.sample_rate)
+
         for i, audio in enumerate(self.estimated_sources):
             mono = audio.to_mono()
-            self.estimated_Sources[i] = AudioSignal(audio_data_array = mono, sample_rate = self.sample_rate)
-        
+            self.estimated_sources[i] = AudioSignal(audio_data_array = mono, sample_rate = self.sample_rate)
 
-    def transform_sources_to_array():
-        estimated_source_array = np.stack([x.audio_data for x in estimated_sources], axis = -1)
-        reference_source_array = np.stack([x.audio_data for x in ground_truth], axis = -1)
+    def transform_sources_to_array(self):
+        """
+
+        Returns:
+
+        """
+        estimated_source_array = np.stack([x.audio_data for x in self.estimated_sources], axis = -1)
+        reference_source_array = np.stack([x.audio_data for x in self.ground_truth], axis = -1)
         return reference_source_array, estimated_source_array
 
-    def bss_eval_sources():
+    def bss_eval_sources(self):
+        """
+
+        Returns:
+
+        """
         self.validate()
 
-    def bss_eval_images():
+    def bss_eval_images(self):
+        """
+
+        Returns:
+
+        """
         self.validate()
 
-    def bss_eval_sources_framewise():
+    def bss_eval_sources_framewise(self):
+        """
+
+        Returns:
+
+        """
         self.validate()
 
-    def bss_eval_images_framewise():
+    def bss_eval_images_framewise(self):
+        """
+
+        Returns:
+
+        """
         self.validate()
