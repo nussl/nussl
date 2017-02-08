@@ -177,7 +177,14 @@ def e_stft(signal, window_length, hop_length, window_type,
     orig_signal_length = len(signal)
     signal, num_blocks = _add_zero_padding(signal, window_length, hop_length)
 
+<<<<<<< HEAD
     # figure out size of output stft    
+=======
+    orig_signal_length = len(signal)
+    signal, num_blocks = _add_zero_padding(signal, window_length, hop_length)
+
+    # figure out size of output stft
+>>>>>>> 2f072866cb53081dd64203a5aaf50d99c5288ed1
     stft_bins = n_fft_bins // 2 + 1 if remove_reflection else n_fft_bins  # only want just over half of each fft
     
     # this is where we do the stft calculation
@@ -193,7 +200,11 @@ def e_stft(signal, window_length, hop_length, window_type,
     # reshape the 2d array, so it's (n_fft, n_hops).
     stft = stft.T
     stft = _remove_stft_padding(stft, orig_signal_length, window_length, hop_length) if remove_padding else stft
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 2f072866cb53081dd64203a5aaf50d99c5288ed1
     return stft
 
 
@@ -282,6 +293,9 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     norm_window = np.zeros(signal_length)
     window = make_window(window_type, window_length)
 
+    norm_window = np.zeros(signal_length)
+    window = make_window(window_type, window_length)
+
     # Add reflection back
     stft = _add_reflection(stft) if reconstruct_reflection else stft
 
@@ -301,12 +315,21 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
             ovp_hop_ratio = int(np.ceil(overlap / hop_length))
             start = ovp_hop_ratio * hop_length
             end = signal_length - overlap
+<<<<<<< HEAD
            
             signal_norm = signal_norm[start:end]
            
         else:
             signal_norm = signal_norm[hop_length:]
            
+=======
+
+            signal_norm = signal_norm[start:end]
+
+        else:
+            signal_norm = signal_norm[hop_length:]
+
+>>>>>>> 2f072866cb53081dd64203a5aaf50d99c5288ed1
     return signal_norm
 
 
@@ -411,6 +434,7 @@ def _add_zero_padding(signal, window_length, hop_length):
 
     if overlap >= hop_length:  # Hop is less than 50% of window length
         overlap_hop_ratio = np.ceil(overlap / hop_length)
+<<<<<<< HEAD
 
         before = int(overlap_hop_ratio * hop_length)
         after = int((num_blocks * hop_length + overlap) - original_signal_length)
@@ -418,6 +442,15 @@ def _add_zero_padding(signal, window_length, hop_length):
         signal = np.pad(signal, (before, after), 'constant', constant_values=(0, 0))
         extra = overlap
         
+=======
+
+        before = int(overlap_hop_ratio * hop_length)
+        after = int((num_blocks * hop_length + overlap) - original_signal_length)
+
+        signal = np.pad(signal, (before, after), 'constant', constant_values=(0, 0))
+        extra = overlap
+
+>>>>>>> 2f072866cb53081dd64203a5aaf50d99c5288ed1
     else:
         after = int((num_blocks * hop_length + overlap) - original_signal_length)
         signal = np.pad(signal, (hop_length, after), 'constant', constant_values=(0, 0))
