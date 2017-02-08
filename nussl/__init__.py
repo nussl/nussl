@@ -14,7 +14,8 @@ from ft2d import FT2D
 from overlap_add import OverlapAdd
 from rpca import RPCA
 
-__version__ = '0.1.5a9'
+
+__version__ = '0.1.5a10'
 
 version = __version__  # aliasing version
 short_version = '.'.join(version.split('.')[:-1])
