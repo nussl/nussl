@@ -67,17 +67,21 @@ class FT2D(separation_base.SeparationBase):
 
         background_stft = np.array(background_stft).transpose((1, 2, 0))
         self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length,
-                              self.stft_params.window_type, overwrite=True,
-                              use_librosa=self.use_librosa_stft)
-        if self.background.signal_length > self.audio_signal.signal_length:
-            self.background.set_active_region_to_default()
-            self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
+        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
+                              overwrite=True, use_librosa=self.use_librosa_stft,
+                              truncate_to_length=self.audio_signal.signal_length)
+
+        # Ethan: Not sure that this is necessary anymore...
+        # if self.background.signal_length > self.audio_signal.signal_length:
+        #     self.background.set_active_region_to_default()
+        #     self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
+
         return self.background
     
     def _compute_spectrum(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
-        self.ft2d = np.stack([np.fft.fft2(np.abs(self.stft[:, :, i])) for i in range(self.audio_signal.num_channels)], axis = -1)
+        self.ft2d = np.stack([np.fft.fft2(np.abs(self.stft[:, :, i]))
+                              for i in range(self.audio_signal.num_channels)], axis = -1)
 
     def compute_ft2d_mask(self, ft2d):
         bg_ft2d, fg_ft2d = self.filter_local_maxima(ft2d)

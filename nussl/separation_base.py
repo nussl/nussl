@@ -106,7 +106,7 @@ class SeparationBase(object):
         return sep_decoder.decode(json_string)
 
     def __call__(self):
-        self.run()
+        return self.run()
 
     def __eq__(self, other):
         for k, v in self.__dict__.items():
