@@ -69,11 +69,13 @@ You can also download and copy the nussl folder into your working directory.
 
 nussl requires:
 
-`numpy, version >= 1.8.0,
-scipy, version >= 0.13.0,
-matplotlib, version >= 1.3.1,
-audioread, version >= 2.1.2,
-librosa, version >= 0.4.1`
+```
+numpy        version >= 1.8.0
+scipy        version >= 0.13.0
+matplotlib   version >= 1.3.1
+audioread    version >= 2.1.2
+librosa      version >= 0.4.1
+```
 
 
 Development Status
@@ -120,6 +122,7 @@ Prem Seetharaman ([website](http://prem.seeth.org/)),
 Fatemah Pishdadian ([website](http://fatemehpishdadian.com/))
 
 Former:
+
 Corey Grief ([website](http://music.cs.northwestern.edu/emeritus.php)),
 
 
