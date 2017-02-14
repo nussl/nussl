@@ -290,8 +290,6 @@ class AudioSignal(object):
         of entries of the STFT. Same shape as ``self.stft_data``.
         Raises:
             AttributeError: if ``self.stft_data`` is ``None``. Run ``self.stft()`` before accessing this.
-<<<<<<< HEAD
-=======
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate power_spectrogram_data because self.stft_data is None')
@@ -303,7 +301,6 @@ class AudioSignal(object):
         The power spectrogram is defined as Re(STFT). Same shape as ``self.stft_data``.
         Raises:
             AttributeError: if ``self.stft_data`` is ``None``. Run ``self.stft()`` before accessing this.
->>>>>>> 0b2e67923cbc96bb3638c5ed9f35f5788ebef215
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate magnitude_spectrogram_data because self.stft_data is None')
@@ -507,13 +504,8 @@ class AudioSignal(object):
 
         return np.array(stfts).transpose((1, 2, 0))
 
-<<<<<<< HEAD
-    def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True,
-              reconstruct_reflection=False, use_librosa=constants.USE_LIBROSA_STFT):
-=======
     def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True, reconstruct_reflection=False,
               use_librosa=constants.USE_LIBROSA_STFT, truncate_to_length=None):
->>>>>>> 0b2e67923cbc96bb3638c5ed9f35f5788ebef215
         """Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
             The results of the iSTFT calculation can be accessed from ``self.audio_data``
@@ -529,10 +521,7 @@ class AudioSignal(object):
             reconstruct_reflection (bool, optional): Should reconstruct the reflection above Nyquist
             overwrite (bool, optional): Overwrite ``self.stft_data`` with current calculation
             use_librosa (bool, optional): Use *librosa's* stft function
-<<<<<<< HEAD
-=======
             truncate_to_length (int, optional): truncate resultant signal to specified length. Default None.
->>>>>>> 0b2e67923cbc96bb3638c5ed9f35f5788ebef215
 
         Returns:
             (:obj:`np.ndarray`) Calculated, real-valued iSTFT from ``self.stft_data``, 2D numpy array
@@ -673,70 +662,6 @@ class AudioSignal(object):
 
         for ch in range(self.num_channels):
             self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant', constant_values=(0, 0))
-<<<<<<< HEAD
-        self.set_active_region_to_default()
-
-    def get_channel(self, n):
-        """Gets the n-th channel from ``self.audio_data``. **1-based.**
-
-        Raises:
-            Exception: If not ``0 <= n < self.num_channels``.
-
-        Parameters:
-            n (int): index of channel to get. **1-based**
-        Returns:
-            (:obj:`np.array`): the audio data in the n-th channel of the signal, 1D
-        """
-        if n > self.num_channels:
-            raise Exception(
-                'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
-
-        if n <= 0:
-            raise Exception('Cannot get channel {}. This will cause unexpected results'.format(n))
-
-        return self._get_axis(self.audio_data, self._CHAN, n - 1)
-
-    def get_stft_channel(self, n):
-        """ Returns the n-th channel from ``self.stft_data``. **1-based.**
-
-        Raises:
-            Exception: If not ``0 <= n < self.num_channels``.
-
-        Args:
-            n: (int) index of stft channel to get. **1 based**
-
-        Returns:
-            (:obj:`np.array`): the stft data in the n-th channel of the signal, 1D
-        """
-        if n > self.num_channels:
-            raise Exception(
-                'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
-
-        if n <= 0:
-            raise Exception('Cannot get channel {}. This will cause unexpected results'.format(n))
-
-        return self._get_axis(self.stft_data, self._STFT_CHAN, n - 1)
-
-    def get_power_spectrogram_channel(self, n):
-        """ Returns the n-th channel from ``self.power_spectrogram_data``. **1-based.**
-
-         Raises:
-            Exception: If not ``0 <= n < self.num_channels``.
-
-        Args:
-            n: (int) index of power spectrogram channel to get. **1 based**
-
-        Returns:
-            (:obj:`np.array`): the power spectrogram data in the n-th channel of the signal, 1D
-        """
-        if n > self.num_channels:
-            raise Exception(
-                'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
-
-        # np.array helps with duck typing
-        return self._get_axis(np.array(self.power_spectrogram_data), self._STFT_CHAN, n - 1)
-=======
->>>>>>> 0b2e67923cbc96bb3638c5ed9f35f5788ebef215
 
     def peak_normalize(self, overwrite=True):
         """ Normalizes ``abs(self.audio_data)`` to 1.0.
@@ -774,11 +699,7 @@ class AudioSignal(object):
 
         return new_signal
 
-<<<<<<< HEAD
-    def sub(self, other):
-=======
     def subtract(self, other):
->>>>>>> 0b2e67923cbc96bb3638c5ed9f35f5788ebef215
         """Subtracts two audio signal objects.
 
         This does element-wise subtraction on the ``self.audio_data`` array.
@@ -892,16 +813,6 @@ class AudioSignal(object):
         """
         return np.sqrt(np.mean(np.square(self.audio_data)))
 
-<<<<<<< HEAD
-    def to_mono(self, overwrite=False):
-        """ Converts ``self.audio_data`` to mono by averaging every sample.
-
-        Warning:
-            If overwrite=True (default) this will overwrite any data in ``self.audio_data``!
-
-        Args:
-            overwrite (bool, optional): If ``True`` this function will overwrite ``self.audio_data``.
-=======
     ##################################################
     #              Channel Utilities
     ##################################################
@@ -968,10 +879,8 @@ class AudioSignal(object):
 
         Args:
             n:
->>>>>>> 0b2e67923cbc96bb3638c5ed9f35f5788ebef215
 
         Returns:
-            (:obj:`np.array`): Mono-ed version of ``self.audio_data``.
 
         """
         new_signal = copy.copy(self)
