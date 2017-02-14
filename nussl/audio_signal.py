@@ -127,11 +127,7 @@ class AudioSignal(object):
                                              sample_rate=self.sample_rate)
             else:
                 name = name_stem + '.png'
-<<<<<<< HEAD
-                spectral_utils.plot_stft(self.get_channel(1), name,
-=======
                 spectral_utils.plot_stft(self.get_channel(0), name,
->>>>>>> 0b2e67923cbc96bb3638c5ed9f35f5788ebef215
                                          sample_rate=self.sample_rate)
         else:
             name = name_stem + '_ch{}.png'.format(ch)
