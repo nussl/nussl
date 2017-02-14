@@ -253,14 +253,52 @@ class AudioSignalUnitTests(unittest.TestCase):
         self.assertTrue(not np.any(signal.audio_data - self.sine_wave)) # check if all are exactly 0
         signal.istft()
         # they should not be exactly zero at this point, because overwrite is on
-        self.assertTrue(not np.any(signal.get_channel(1)[0:len(self.sine_wave)] - self.sine_wave))
+        self.assertTrue(not np.any(signal.get_channel(0)[0:len(self.sine_wave)] - self.sine_wave))
 
         # make sure these don't crash or nothing silly
         signal.stft(use_librosa=True)
         signal.istft(use_librosa=True)
 
     def test_get_channel(self):
-        pass
+        # Here we're setting up signals with 1 to 8 channels
+        # Each channel has a sine wave of different frequency in it
+
+        # This is the frequencies for our different channels
+        max_n_channels = 8
+        freq_multiple = 300
+        freqs = [i * freq_multiple for i in range(max_n_channels)]
+
+        # Make the signals and test
+        for f in range(1, max_n_channels):
+            sig = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:f]])
+            self._get_channel_helper(sig, len(sig))
+
+    def _get_channel_helper(self, signal, n_channels):
+        a = nussl.AudioSignal(audio_data_array=signal)
+
+        # Check that we are counting our channels correctly
+        assert a.num_channels == n_channels
+
+        # Check that we can get every channel with AudioSignal.get_channel()
+        for i, ch in enumerate(signal):
+            assert np.array_equal(a.get_channel(i), ch)
+
+        # Check that attempting to get higher channels raises exception
+        for i in range(n_channels, n_channels + 10):
+            with self.assertRaises(ValueError):
+                a.get_channel(i)
+
+        # Check that attempting to get lower channels raises exception
+        for i in range(-1, -11, -1):
+            with self.assertRaises(ValueError):
+                a.get_channel(i)
+
+        # Check that AudioSignal.get_channels() generator works
+        i = 0
+        for ch in a.get_channels():
+            assert np.array_equal(ch, signal[i, :])
+            i += 1
+        assert i == a.num_channels
 
     def test_arithmetic(self):
         a = nussl.AudioSignal(self.input_path1)
@@ -269,7 +307,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         with self.assertRaises(Exception):
             a.add(b)
         with self.assertRaises(Exception):
-            a.sub(b)
+            a.subtract(b)
         with self.assertRaises(Exception):
             c = a + b
         with self.assertRaises(Exception):

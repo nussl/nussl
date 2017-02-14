@@ -5,7 +5,7 @@ import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
 
-import spectral_utils
+import utils
 import separation_base
 import constants
 from audio_signal import AudioSignal
@@ -91,7 +91,6 @@ class Repet(separation_base.SeparationBase):
                 self.period = self._update_period(self.period)
                 self._is_period_converted_to_hops = True
 
-
     def run(self):
         """ Runs the original REPET algorithm
 
@@ -137,12 +136,10 @@ class Repet(separation_base.SeparationBase):
 
         background_stft = np.array(background_stft).transpose((1, 2, 0))
         self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length,
-                              self.stft_params.window_type, overwrite=True,
-                              use_librosa=self.use_librosa_stft)
-        if self.background.signal_length > self.audio_signal.signal_length:
-            self.background.set_active_region_to_default()
-            self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
+        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
+                              overwrite=True, use_librosa=self.use_librosa_stft,
+                              truncate_to_length=self.audio_signal.signal_length)
+
         return self.background
 
     def _compute_spectrum(self):
@@ -428,6 +425,8 @@ class Repet(separation_base.SeparationBase):
         """
         if self.background is None:
             return None
+
+        b = self.audio_signal.audio_data - self.background.audio_data
         self.foreground = self.audio_signal - self.background
         self.foreground.sample_rate = self.audio_signal.sample_rate
         return [self.background, self.foreground]
