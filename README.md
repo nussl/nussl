@@ -27,7 +27,6 @@ At its core, nussl contains (or will contain) implementations of the following s
 
 Spatialization algorithms:
 * Degenerate Unmixing Estimation Technique (DUET)
-* PROJection Estimation Technique (PROJET) (**Coming Soon**)
 
 Median filtering algorithms:
 * REpeating Pattern Extraction Technique (REPET)
@@ -38,9 +37,6 @@ Median filtering algorithms:
 General matrix decomposition
 * Non-negative Matrix Factorization (NMF) (**Coming Soon**)
 * Robust Principal Component Analysis (RPCA) (**Coming Soon**)
-
-Medoldy tracking algorithms:
-* Smooth-filters Instantaneous Mixture Model (SIMM) (**Coming Soon**)
 
 The nussl team is also working on implementing an evaluation framework, which will include easy interoperability
 between nussl and `mir_eval` (`bss_eval`) as well as implementations of other evaluation methods. (See development
