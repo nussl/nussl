@@ -14,6 +14,7 @@ from ft2d import FT2D
 from overlap_add import OverlapAdd
 from rpca import RPCA
 from ideal_mask import IdealMask
+from projet import Projet
 
 __version__ = '0.1.5a10'
 
