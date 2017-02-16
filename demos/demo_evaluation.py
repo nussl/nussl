@@ -16,7 +16,7 @@ background = mixture - vocals
 evaluation = nussl.Evaluation(ground_truth = [background, vocals],
                               compute_permutation = False,
                               ground_truth_labels = ['Vocals', 'Background'])
-evaluation.load_scores_from_file('output/evaluation.json')
+#evaluation.load_scores_from_file('output/evaluation.json')
 
 def evaluate(evaluation_object, sources, algorithm_name):
     if algorithm_name not in evaluation.scores:
@@ -45,6 +45,7 @@ evaluate(evaluation, sources, 'REPET')
 repet_sim = nussl.RepetSim(mixture)
 repet_sim.run()
 sources = repet_sim.make_audio_signals()
+
 
 evaluate(evaluation, sources, 'REPET-SIM')
 

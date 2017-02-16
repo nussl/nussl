@@ -100,7 +100,7 @@ class Evaluation(object):
     def algorithm_name(self, value):
         assert (type(value) == str)
         self._algorithm_name = value
-        self.scores[self._algorithm_name] = {}
+        self.scores[self._algorithm_name] = {label: {} for label in self.ground_truth_labels}
 
     def validate(self):
         """
@@ -147,12 +147,17 @@ class Evaluation(object):
         separation.validate(reference, estimated)
         sdr, sir, sar, perm = separation.bss_eval_sources(reference, estimated,
                                                           compute_permutation = self.compute_permutation)
-        labels = [self.ground_truth_labels[i] for i in perm.tolist()]
-        self.scores[self.algorithm_name]['Sources'] = {}
-        self.scores[self.algorithm_name]['Sources']['Source to Distortion'] = sdr.tolist()
-        self.scores[self.algorithm_name]['Sources']['Source to Interference'] = sir.tolist()
-        self.scores[self.algorithm_name]['Sources']['Source to Artifact'] = sar.tolist()
-        self.scores[self.algorithm_name]['Sources']['Permutation'] = perm.tolist()
+
+        for i, label in enumerate(self.ground_truth_labels):
+            self.scores[self.algorithm_name][label]['Sources'] = {}
+
+            D = self.scores[self.algorithm_name][label]['Sources']
+
+            D['Source to Distortion'] = sdr.tolist()[i]
+            D['Source to Interference'] = sir.tolist()[i]
+            D['Source to Artifact'] = sar.tolist()[i]
+
+        self.scores[self.algorithm_name]['Permutation'] = perm.tolist()
 
 
     def bss_eval_images(self):
@@ -168,13 +173,18 @@ class Evaluation(object):
         separation.validate(reference, estimated)
         sdr, isr, sir, sar, perm = separation.bss_eval_images(reference, estimated,
                                                           compute_permutation=self.compute_permutation)
-        self.scores[self.algorithm_name]['Images'] = {}
-        self.scores[self.algorithm_name]['Images']['Source to Distortion'] = sdr.tolist()
-        self.scores[self.algorithm_name]['Images']['Image to Spatial'] = isr.tolist()
-        self.scores[self.algorithm_name]['Images']['Source to Interference'] = sir.tolist()
-        self.scores[self.algorithm_name]['Images']['Source to Artifact'] = sar.tolist()
-        self.scores[self.algorithm_name]['Images']['Permutation'] = perm.tolist()
-        self.scores[self.algorithm_name]['Images']['Labels'] = [self.ground_truth_labels[i] for i in perm.tolist()]
+
+        for i, label in enumerate(self.ground_truth_labels):
+            self.scores[self.algorithm_name][label]['Images'] = {}
+
+            D = self.scores[self.algorithm_name][label]['Images']
+
+            D['Source to Distortion'] = sdr.tolist()[i]
+            D['Image to Spatial'] = isr.tolist()[i]
+            D['Source to Interference'] = sir.tolist()[i]
+            D['Source to Artifact'] = sar.tolist()[i]
+
+        self.scores[self.algorithm_name]['Permutation'] = perm.tolist()
 
     def bss_eval_sources_framewise(self):
         """
@@ -192,12 +202,6 @@ class Evaluation(object):
         sdr, sir, sar, perm = separation.bss_eval_sources_framewise(reference, estimated,
                                                         window = self.segment_size, hop = self.hop_size,
                                                         compute_permutation=self.compute_permutation)
-        self.scores[self.algorithm_name]['Source frames'] = {}
-        self.scores[self.algorithm_name]['Source frames']['Source to Distortion'] = sdr.tolist()
-        self.scores[self.algorithm_name]['Source frames']['Source to Interference'] = sir.tolist()
-        self.scores[self.algorithm_name]['Source frames']['Source to Artifact'] = sar.tolist()
-        self.scores[self.algorithm_name]['Source frames']['Permutation'] = perm.tolist()
-        self.scores[self.algorithm_name]['Source frames']['Labels'] = [self.ground_truth_labels[i] for i in perm.tolist()]
 
     def bss_eval_images_framewise(self):
         """
@@ -214,14 +218,6 @@ class Evaluation(object):
         sdr, isr, sir, sar, perm = separation.bss_eval_images_framewise(reference, estimated,
                                                             window=self.segment_size, hop=self.hop_size,
                                                             compute_permutation=self.compute_permutation)
-        print perm
-        self.scores[self.algorithm_name]['Image frames'] = {}
-        self.scores[self.algorithm_name]['Image frames']['Source to Distortion'] = sdr.tolist()
-        self.scores[self.algorithm_name]['Image frames']['Image to Spatial'] = isr.tolist()
-        self.scores[self.algorithm_name]['Image frames']['Source to Interference'] = sir.tolist()
-        self.scores[self.algorithm_name]['Image frames']['Source to Artifact'] = sar.tolist()
-        self.scores[self.algorithm_name]['Image frames']['Permutation'] = perm.tolist()
-        self.scores[self.algorithm_name]['Image frames']['Labels'] = [self.ground_truth_labels[i] for i in perm.tolist()]
 
     def load_scores_from_file(self, filename):
         f = open(filename, 'r')
