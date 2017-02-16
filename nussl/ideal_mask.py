@@ -54,7 +54,8 @@ class IdealMask(separation_base.SeparationBase):
             self.estimated.append(AudioSignal(stft = estimated_stft, sample_rate=self.audio_signal.sample_rate))
             self.estimated[-1].istft(self.stft_params.window_length, self.stft_params.hop_length,
                                   self.stft_params.window_type, overwrite=True,
-                                  use_librosa=self.use_librosa_stft)
+                                  use_librosa=self.use_librosa_stft,
+                                  truncate_to_length=self.audio_signal.signal_length)
         residual = self.audio_signal
         for source in self.estimated:
             residual = residual - source

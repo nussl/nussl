@@ -72,7 +72,7 @@ class OverlapAdd(separation_base.SeparationBase):
         overlap_samples = window_samples - hop_samples
 
         if num_samples < window_samples + hop_samples:
-            return self.separate(self.audio_signal, self.separation_method)
+            return self.separate()
         else:
             num_segments = int(1 + np.floor((num_samples - window_samples) / float(hop_samples)))
             overlap_window = triang(2*overlap_samples)
