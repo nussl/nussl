@@ -177,10 +177,11 @@ class Evaluation(object):
 
     def bss_eval_sources_framewise(self):
         """
-
+        TODO - figure out compute_permutation=True branch will work here
         Returns:
 
         """
+        raise NotImplementedError("Still working on this!")
         self.validate()
         reference, estimated = self.transform_sources_to_array()
         if self.num_channels != 1:
@@ -199,10 +200,11 @@ class Evaluation(object):
 
     def bss_eval_images_framewise(self):
         """
-
+        TODO - figure out compute_permutation=True branch will work here
         Returns:
 
         """
+        raise NotImplementedError("Still working on this!")
         self.validate()
         if self.num_channels == 1:
             raise Exception("Can't run bss_eval_Image frames_framewise on mono audio signals!")
@@ -219,6 +221,11 @@ class Evaluation(object):
         self.scores[self.algorithm_name]['Image frames']['Source to Artifact'] = sar.tolist()
         self.scores[self.algorithm_name]['Image frames']['Permutation'] = perm.tolist()
         self.scores[self.algorithm_name]['Image frames']['Labels'] = [self.ground_truth_labels[i] for i in perm.tolist()]
+
+    def load_scores_from_file(self, filename):
+        f = open(filename, 'r')
+        self.scores = json.load(f)
+        f.close()
 
     def write_scores_to_file(self, filename):
         f = open(filename, 'w')
