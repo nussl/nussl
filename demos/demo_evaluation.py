@@ -16,18 +16,19 @@ background = mixture - vocals
 evaluation = nussl.Evaluation(ground_truth = [background, vocals],
                               compute_permutation = False,
                               ground_truth_labels = ['Vocals', 'Background'])
-
+evaluation.load_scores_from_file('output/evaluation.json')
 
 def evaluate(evaluation_object, sources, algorithm_name):
-    print 'Evaluating %s' % algorithm_name
-    evaluation_object.algorithm_name = algorithm_name
-    evaluation_object.estimated_sources = sources
+    if algorithm_name not in evaluation.scores:
+        print 'Evaluating %s' % algorithm_name
+        evaluation_object.algorithm_name = algorithm_name
+        evaluation_object.estimated_sources = sources
 
-    start = time.time()
-    evaluation_object.bss_eval_sources()
-    evaluation_object.bss_eval_images()
-    end = time.time()
-    print end - start
+        start = time.time()
+        evaluation_object.bss_eval_sources()
+        evaluation_object.bss_eval_images()
+        end = time.time()
+        print end - start
 
 ideal_mask = nussl.IdealMask(mixture, sources = [vocals])
 ideal_mask.run()

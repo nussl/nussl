@@ -147,12 +147,13 @@ class Evaluation(object):
         separation.validate(reference, estimated)
         sdr, sir, sar, perm = separation.bss_eval_sources(reference, estimated,
                                                           compute_permutation = self.compute_permutation)
+        labels = [self.ground_truth_labels[i] for i in perm.tolist()]
         self.scores[self.algorithm_name]['Sources'] = {}
         self.scores[self.algorithm_name]['Sources']['Source to Distortion'] = sdr.tolist()
         self.scores[self.algorithm_name]['Sources']['Source to Interference'] = sir.tolist()
         self.scores[self.algorithm_name]['Sources']['Source to Artifact'] = sar.tolist()
         self.scores[self.algorithm_name]['Sources']['Permutation'] = perm.tolist()
-        self.scores[self.algorithm_name]['Sources']['Labels'] = [self.ground_truth_labels[i] for i in perm.tolist()]
+
 
     def bss_eval_images(self):
         """
