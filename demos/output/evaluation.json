@@ -35,14 +35,14 @@
         "Background": {
             "Images": {
                 "Image to Spatial": 20.604351662775187,
-                "Source to Artifact": 12.05633951947715,
+                "Source to Artifact": 12.181575695524788,
                 "Source to Distortion": 11.637393187189875,
-                "Source to Interference": 28.247995885500824
+                "Source to Interference": 24.991076597067597
             },
             "Sources": {
-                "Source to Artifact": 11.918309639757068,
+                "Source to Artifact": 12.065692420714418,
                 "Source to Distortion": 11.83422876261874,
-                "Source to Interference": 29.27768743795976
+                "Source to Interference": 24.944314047169428
             }
         },
         "Permutation": [
@@ -51,15 +51,15 @@
         ],
         "Vocals": {
             "Images": {
-                "Image to Spatial": 28.979609430710784,
-                "Source to Artifact": 14.968827366000767,
-                "Source to Distortion": 14.053010094952441,
-                "Source to Interference": 23.645140051404553
+                "Image to Spatial": 28.576281456911406,
+                "Source to Artifact": 14.417044590613175,
+                "Source to Distortion": 13.205794509466335,
+                "Source to Interference": 19.25885390285317
             },
             "Sources": {
-                "Source to Artifact": 14.436401437767001,
-                "Source to Distortion": 14.248080684241277,
-                "Source to Interference": 28.124379580665764
+                "Source to Artifact": 14.037751561231,
+                "Source to Distortion": 12.862765182717357,
+                "Source to Interference": 19.28263922544279
             }
         }
     },

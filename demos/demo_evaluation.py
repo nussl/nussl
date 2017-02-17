@@ -12,6 +12,7 @@ import nussl
 mixture = nussl.AudioSignal('../input/mixture/mixture.wav', duration = 30, offset = 60)
 vocals = nussl.AudioSignal('../input/mixture/vocals.wav', duration = 30, offset = 60)
 background = mixture - vocals
+print str(mixture)
 
 evaluation = nussl.Evaluation(ground_truth = [background, vocals],
                               compute_permutation = False,
@@ -30,9 +31,10 @@ def evaluate(evaluation_object, sources, algorithm_name):
         end = time.time()
         print end - start
 
-ideal_mask = nussl.IdealMask(mixture, sources = [vocals])
+ideal_mask = nussl.IdealMask(mixture, sources = [mixture - vocals, vocals])
 ideal_mask.run()
-sources = ideal_mask.make_audio_signals()[::-1]
+sources = ideal_mask.make_audio_signals()
+print str(ideal_mask)
 
 evaluate(evaluation, sources, 'Ideal binary mask')
 
