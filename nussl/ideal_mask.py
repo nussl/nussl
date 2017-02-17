@@ -23,7 +23,8 @@ class IdealMask(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal, use_librosa_stft=constants.USE_LIBROSA_STFT, sources=None):
+    def __init__(self, input_audio_signal, use_librosa_stft=constants.USE_LIBROSA_STFT, sources=None,
+                 return_residual=False):
         super(IdealMask, self).__init__(input_audio_signal=input_audio_signal)
         if sources is None:
             raise Exception('Cannot run IdealMask if there are no sources to derive a mask from!')
@@ -32,6 +33,7 @@ class IdealMask(separation_base.SeparationBase):
         self.use_librosa_stft = use_librosa_stft
         self.stft = None
         self.magnitude_spectrogram = None
+        self.return_residual = return_residual
 
     def run(self):
         """
@@ -57,9 +59,10 @@ class IdealMask(separation_base.SeparationBase):
                                   use_librosa=self.use_librosa_stft,
                                   truncate_to_length=self.audio_signal.signal_length)
         residual = self.audio_signal
-        for source in self.estimated:
-            residual = residual - source
-        self.estimated.append(residual)
+        if self.return_residual:
+            for source in self.estimated:
+                residual = residual - source
+            self.estimated.append(residual)
         return self.estimated
 
     def _compute_spectrum(self):

@@ -81,6 +81,10 @@ class SeparationBase(object):
     def to_json(self):
         return json.dumps(self, default=SeparationBase._to_json_helper)
 
+    def __str__(self):
+        return self.__class__.__name__
+
+
     @staticmethod
     def _to_json_helper(o):
         if not isinstance(o, SeparationBase):

@@ -91,7 +91,7 @@ class AudioSignal(object):
         self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
-        return 'AudioSignal'
+        return self.__class__.__name__
 
     ##################################################
     # Plotting
