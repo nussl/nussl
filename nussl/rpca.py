@@ -75,11 +75,8 @@ class RPCA(separation_base.SeparationBase):
         background_stft = np.array(background_stft).transpose((1, 2, 0))
         self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
         self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft)
-        
-        if self.background.signal_length > self.audio_signal.signal_length:
-            self.background.set_active_region_to_default()
-            self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
+                              overwrite=True, use_librosa=self.use_librosa_stft,
+                              truncate_to_length=self.audio_signal.signal_length)
 
         return self.background
     
