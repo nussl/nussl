@@ -94,7 +94,7 @@ class Projet(separation_base.SeparationBase):
         # (F, T, 2) (15, 2). first by 2,1 axes -> (F, T, 2) x (2, 15) -> (F, T, 15). and then flatten it.
         C = np.tensordot(self.stft, projection_matrix, axes=(2, 1))
         for p in range(C.shape[-1]):
-            proj = AudioSignal(stft=np.stack([C[:, :, p], C[:, :, p]], axis = -1), sample_rate=self.audio_signal.sample_rate)
+            proj = AudioSignal(stft=C[:, :, p, np.newaxis], sample_rate=self.audio_signal.sample_rate)
             proj.istft(self.stft_params.window_length, self.stft_params.hop_length,
                          self.stft_params.window_type, overwrite=True,
                          use_librosa=self.use_librosa_stft,
@@ -126,9 +126,6 @@ class Projet(separation_base.SeparationBase):
             # (41, 15) dot ((15, F*T) dot (F*T, 4) - > (15, 4) dot ((41, 15) dot (15, 4) -> (41, 4))
             # (41, 4) dot (41, 15), [(15, F*T), (F*T, 4)] -> (15, 4)
             # (41, 4)
-            plt.figure(figsize = (20, 4))
-            plt.imshow(Q.T, aspect='auto')
-            plt.savefig('Q_%d.png' % iteration)
 
             Q *= np.dot(K.T, np.dot(1.0 / (sigma + eps), P)) / np.dot(K.T, np.dot(3 * sigma / (sigma ** 2 + V2.T + eps), P))
 
@@ -173,8 +170,8 @@ class Projet(separation_base.SeparationBase):
         return res
 
     def complex_randn(self, shape):
-        return np.ones(shape) + 1j * np.zeros(shape)
-        #return np.random.randn(*shape) + 1j * np.random.randn(*shape)
+        #return np.ones(shape) + 1j * np.zeros(shape)
+        return np.random.randn(*shape) + 1j * np.random.randn(*shape)
 
 
     def orthMatrix(self, R):
