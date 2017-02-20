@@ -8,9 +8,9 @@ if not path in sys.path:
 import nussl
 print nussl
 
-mixture = nussl.AudioSignal('../input/panned_mix.wav')
+mixture = nussl.AudioSignal('../input/panned_mixture_four_sources.wav')
 
-projet = nussl.Projet(mixture, verbose = True, num_iterations = 50, num_sources = 2)
+projet = nussl.Projet(mixture, verbose = True, num_iterations = 50, num_sources = 4)
 projet.run()
 sources = projet.make_audio_signals()
 
