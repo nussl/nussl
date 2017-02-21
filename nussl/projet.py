@@ -93,13 +93,6 @@ class Projet(separation_base.SeparationBase):
         # compute the projections and store their spectrograms and squared spectrograms
         # (F, T, 2) (15, 2). first by 2,1 axes -> (F, T, 2) x (2, 15) -> (F, T, 15). and then flatten it.
         C = np.tensordot(self.stft, projection_matrix, axes=(2, 1))
-        for p in range(C.shape[-1]):
-            proj = AudioSignal(stft=C[:, :, p, np.newaxis], sample_rate=self.audio_signal.sample_rate)
-            proj.istft(self.stft_params.window_length, self.stft_params.hop_length,
-                         self.stft_params.window_type, overwrite=True,
-                         use_librosa=self.use_librosa_stft,
-                         truncate_to_length=self.audio_signal.signal_length)
-            proj.write_audio_to_file('proj_output_%d.wav' % p)
         C = np.reshape(C, (F * T, num_projections))
         # NOTE: C now the same shape as P.
         V = np.abs(C).astype(np.float32)
