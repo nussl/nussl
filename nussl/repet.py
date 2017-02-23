@@ -5,7 +5,6 @@ import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
 
-import utils
 import separation_base
 import constants
 from audio_signal import AudioSignal
@@ -242,6 +241,10 @@ class Repet(separation_base.SeparationBase):
         min_period, max_period = int(min_period), int(max_period)
         beat_spectrum = beat_spectrum[1:]  # discard the first element of beat_spectrum (lag 0)
         beat_spectrum = beat_spectrum[min_period - 1: max_period]
+
+        if len(beat_spectrum) == 0:
+            raise RuntimeError('min_period is larger than the beat spectrum!')
+
         period = np.argmax(beat_spectrum) + min_period
 
         return period
@@ -424,9 +427,8 @@ class Repet(separation_base.SeparationBase):
             background, foreground = repet.make_audio_signals()
         """
         if self.background is None:
-            return None
+            raise ValueError('Cannot make audio signals prior to running algorithm!')
 
-        b = self.audio_signal.audio_data - self.background.audio_data
         self.foreground = self.audio_signal - self.background
         self.foreground.sample_rate = self.audio_signal.sample_rate
         return [self.background, self.foreground]

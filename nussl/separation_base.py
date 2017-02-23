@@ -108,6 +108,12 @@ class SeparationBase(object):
     def __call__(self):
         return self.run()
 
+    def __str__(self):
+        return self.__class__.__name__
+
+    def __repr__(self):
+        return self.__class__.__name__ + ' instance'
+
     def __eq__(self, other):
         for k, v in self.__dict__.items():
             if isinstance(v, np.ndarray):

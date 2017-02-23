@@ -267,3 +267,28 @@ def add_mismatched_arrays(array1, array2, truncate=False):
             result[:len(array2)] += array2
 
     return result
+
+
+def add_mismatched_arrays2D(array1, array2, truncate=False):
+    # Cast these arrays to the largest common type
+    array1 = np.array(array1, dtype=np.promote_types(array1.dtype, array2.dtype))
+    array2 = np.array(array2, dtype=np.promote_types(array1.dtype, array2.dtype))
+
+    # TODO: find a more elegant way to do this whole function
+
+    if truncate:
+        if array1.shape[1] < array2.shape[1]:  # Kludge
+            result = array1.copy()
+            result += array2[:, :array1.shape[1]]
+        else:
+            result = array2.copy()
+            result += array1[:, :array2.shape[1]]
+    else:
+        if array1.shape[1] < array2.shape[1]:
+            result = array2.copy()
+            result[:, :array1.shape[1]] += array1
+        else:
+            result = array1.copy()
+            result[:, :array2.shape[1]] += array2
+
+    return result
