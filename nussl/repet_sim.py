@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import warnings
 
 import spectral_utils
 import separation_base
@@ -41,6 +42,8 @@ class RepetSim(separation_base.SeparationBase):
         self.similarity_threshold = 0 if similarity_threshold is None else similarity_threshold
         self.min_distance_between_frames = 1 if min_distance_between_frames is None else min_distance_between_frames
         self.max_repeating_frames = 100 if max_repeating_frames is None else max_repeating_frames
+
+        self._min_distance_converted_to_hops = False
 
         self.verbose = False
         self.similarity_matrix = None
@@ -87,14 +90,10 @@ class RepetSim(separation_base.SeparationBase):
 
         background_stft = np.array(background_stft).transpose((1, 2, 0))
         self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft,
+        self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
+        self.background.stft_params = self.stft_params
+        self.background.istft(overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)
-
-        # Ethan: Not sure that this is necessary anymore...
-        # if self.background.signal_length > self.audio_signal.signal_length:
-        #     self.background.set_active_region_to_default()
-        #     self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
 
         return self.background
 
@@ -108,7 +107,10 @@ class RepetSim(separation_base.SeparationBase):
 
         self.similarity_matrix = self.get_similarity_matrix()
 
-        self.min_distance_between_frames *= self.audio_signal.sample_rate / self.stft_params.window_overlap
+        if not self._min_distance_converted_to_hops:
+            self.min_distance_between_frames *= self.audio_signal.sample_rate / self.stft_params.window_overlap
+            self._min_distance_converted_to_hops = True
+
         return self._find_similarity_indices()
 
     @staticmethod
@@ -163,6 +165,12 @@ class RepetSim(separation_base.SeparationBase):
             # so +1 for 0-based, and +1 for the first peak we threw out
             cur_indices = cur_indices[1:self.max_repeating_frames + 2]
             similarity_indices.append(cur_indices)
+
+        if all(not idx for idx in similarity_indices):
+            raise RuntimeError('No similarity indices!')
+
+        if any(not idx for idx in similarity_indices):
+            warnings.warn('Not all indices have similarities above threshold!')
 
         return similarity_indices
 

@@ -289,7 +289,7 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
         start = n * hop_length
         end = start + window_length
         inv_sig_temp = np.real(scifft.ifft(stft[:, n]))
-        signal[start:end] = signal[start:end] + inv_sig_temp[:window_length]
+        signal[start:end] += inv_sig_temp[:window_length]
         norm_window[start:end] = norm_window[start:end] + window
 
     norm_window[norm_window == 0.0] = constants.EPSILON  # Prevent dividing by zero
@@ -448,12 +448,15 @@ def _remove_stft_padding(stft, original_signal_length, window_length, hop_length
     return stft_cut
 
 
-def make_window(window_type, length):
-    """Returns an np array of type window_type
+def make_window(window_type, length, symmetric=False):
+    """Returns an `np.array` populated with samples of a normalized window of type `window_type`
 
     Args:
         window_type (basestring): Type of window to create, string can be
         length (int): length of window
+        symmetric (bool): False (default) generates a periodic window (for use in spectral analysis).
+            True generates a symmetric window (for use in filter design).
+            Does nothing for rectangular window
 
     Returns:
         window (np.array): np array with a window of type window_type
@@ -463,11 +466,13 @@ def make_window(window_type, length):
     if window_type == constants.WINDOW_RECTANGULAR:
         return np.ones(length)
     elif window_type == constants.WINDOW_HANN:
-        return scipy.signal.hann(length, False)
+        return scipy.signal.hann(length, symmetric)
     elif window_type == constants.WINDOW_BLACKMAN:
-        return scipy.signal.blackman(length, False)
+        return scipy.signal.blackman(length, symmetric)
     elif window_type == constants.WINDOW_HAMMING:
-        return scipy.signal.hamming(length, False)
+        return scipy.signal.hamming(length, symmetric)
+    elif window_type == constants.WINDOW_TRIANGULAR:
+        return scipy.signal.triang(length, symmetric)
     else:
         return None
 

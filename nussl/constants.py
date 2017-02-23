@@ -17,6 +17,7 @@ WINDOW_HAMMING = scipy.signal.hamming.__name__  #: (str): Name for calling Hammi
 WINDOW_RECTANGULAR = 'rectangular'  #: (str): Name for calling Rectangular window. 'rectangular'
 WINDOW_HANN = scipy.signal.hann.__name__  #: (str): Name for calling Hann window. 'hann'
 WINDOW_BLACKMAN = scipy.signal.blackman.__name__  #: (str): Name for calling Blackman window. 'blackman'
+WINDOW_TRIANGULAR = 'triangular'  #: (str): Name for calling Triangular window. 'triangular'
 
 WINDOW_DEFAULT = WINDOW_HAMMING  #: (str): Default window, Hamming.
 ALL_WINDOWS = [WINDOW_HAMMING, WINDOW_RECTANGULAR, WINDOW_HANN, WINDOW_BLACKMAN]

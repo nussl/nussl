@@ -91,10 +91,10 @@ class AudioSignal(object):
         self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
-        return 'AudioSignal'
+        return self.__class__.__name__
 
     ##################################################
-    # Plotting
+    #                   Plotting
     ##################################################
 
     def plot_time_domain(self):
@@ -135,7 +135,7 @@ class AudioSignal(object):
                                      sample_rate=self.sample_rate)
 
     ##################################################
-    # Properties
+    #                 Properties
     ##################################################
 
     # Constants for accessing _audio_data np.array indices
@@ -307,7 +307,7 @@ class AudioSignal(object):
         return np.abs(self.stft_data)
 
     ##################################################
-    # I/O
+    #                     I/O
     ##################################################
 
     def load_audio_from_file(self, input_file_path, offset=0, duration=None):
@@ -411,6 +411,10 @@ class AudioSignal(object):
         if verbose:
             print("Successfully wrote {file}.".format(file=output_file_path))
 
+    ##################################################
+    #                Active Region
+    ##################################################
+
     def set_active_region(self, start, end):
         """
         Determines the bounds of what gets returned when you access ``self.audio_data``.
@@ -444,6 +448,32 @@ class AudioSignal(object):
         """
         self._active_start = 0
         self._active_end = self._signal_length
+
+    def next_window_generator(self, window_size, hop_size, convert_to_samples=False):
+        """
+
+        Args:
+            window_size:
+            hop_size:
+            convert_to_samples:
+
+        Returns:
+
+        """
+        raise NotImplemented
+        # start = self._active_start
+        # end = self.signal_length
+        # if convert_to_samples:
+        #     start /= self.sample_rate
+        #     end = self.signal_duration
+        # old_start = self._active_start
+        # self.set_active_region_to_default()
+        #
+        # while old_start + window_size < self.signal_length:
+        #     start = old_start + hop_size
+        #     end = start + window_size
+        #     self.set_active_region(start, end)
+        #     yield start, end
 
     ##################################################
     #               STFT Utilities
@@ -554,8 +584,7 @@ class AudioSignal(object):
 
         return calculated_signal
 
-    def _do_istft(self, window_length, hop_length, window_type, reconstruct_reflection, use_librosa,
-                  truncate_to_length=None):
+    def _do_istft(self, window_length, hop_length, window_type, reconstruct_reflection, use_librosa):
         if self.stft_data.size == 0:
             raise ValueError('Cannot do inverse STFT without self.stft_data!')
 
@@ -741,6 +770,66 @@ class AudioSignal(object):
         int_type = 'int' + str(bit_depth)
 
         return np.multiply(self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype(int_type)
+
+    def make_empty_copy(self, verbose=True):
+        """ Makes a copy of this `AudioSignal` object with `audio_data` and `stft_data`
+        initialized to `np.ndarray`s of the same size, but populated with zeros.
+
+        Returns:
+            (:obj:`AudioSignal`):
+
+        """
+        if not self.active_region_is_default and verbose:
+            warnings.warn('Making a copy when active region is not default!')
+
+        new_signal = copy.deepcopy(self)
+        new_signal.audio_data = np.zeros_like(self.audio_data)
+        new_signal.stft_data = np.zeros_like(self.stft_data)
+        return new_signal
+
+    def make_copy_with_audio_data(self, audio_data, verbose=True):
+        """ Makes a copy of this `AudioSignal` object with `self.audio_data` initialized to the input`audio_data`
+        numpy array.
+
+        Args:
+            audio_data:
+
+        Returns:
+
+        """
+        if verbose:
+            if not self.active_region_is_default:
+                warnings.warn('Making a copy when active region is not default.')
+
+            if audio_data.shape != self.audio_data.shape:
+                warnings.warn('Shape of new audio_data does not match current audio_data.')
+
+        new_signal = copy.deepcopy(self)
+        new_signal.audio_data = self.audio_data
+        new_signal.stft_data = np.zeros_like(self.stft_data)
+        return new_signal
+
+    def make_copy_with_stft_data(self, stft_data, verbose=True):
+        """
+
+        Args:
+            stft_data:
+            verbose:
+
+        Returns:
+
+        """
+        if verbose:
+            if not self.active_region_is_default:
+                warnings.warn('Making a copy when active region is not default.')
+
+            if stft_data.shape != self.stft_data.shape:
+                warnings.warn('Shape of new stft_data does not match current stft_data.')
+
+        new_signal = copy.deepcopy(self)
+        new_signal.stft_data = self.stft_data
+        new_signal.audio_data = np.zeros_like(self.audio_data)
+        return new_signal
 
     def to_json(self):
         """ Converts this ``AudioSignal`` object to JSON.
