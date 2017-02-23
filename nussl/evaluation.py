@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from audio_signal import AudioSignal
-from mir_eval.separation import *
+from mir_eval import separation
 import numpy as np
+import json
 
 class Evaluation(object):
     """Lets you load ground truth AudioSignals and estimated AudioSignals and compute separation
@@ -32,12 +33,12 @@ class Evaluation(object):
     Examples:
   
     """
-    def __init__(self, ground_truth, estimated_sources, ground_truth_labels=None,
+    def __init__(self, ground_truth, estimated_sources=None, ground_truth_labels=None, algorithm_name=None,
                  do_mono=False, compute_permutation=True, hop_size=15, segment_size=30):
         # Do input checking
         ground_truth = self._verify_input_list(ground_truth, do_mono)
-        estimated_sources = self._verify_input_list(estimated_sources, do_mono)
-
+        if estimated_sources is not None:
+            estimated_sources = self._verify_input_list(estimated_sources, do_mono)
         if do_mono:
             num_channels = 1
             [g.to_mono(overwrite=True) for g in ground_truth]
@@ -48,13 +49,16 @@ class Evaluation(object):
         # Now that everything is as we expect it, we can set our attributes
         self.ground_truth = ground_truth
         self.num_channels = num_channels
-        self.do_mono = do_mono
 
         if ground_truth_labels is None:
             self.ground_truth_labels = ['Source %d' % i for i in range(len(ground_truth))]
-
-        self.ground_truth_labels = ground_truth_labels
-
+        else:
+            self.ground_truth_labels = ground_truth_labels
+        if algorithm_name is None:
+            self._algorithm_name = 'Approach'
+        else:
+            assert (type(algorithm_name) == str)
+            self._algorithm_name = algorithm_name
         self.estimated_sources = estimated_sources
         self.sample_rate = ground_truth[0].sample_rate
         
@@ -62,6 +66,7 @@ class Evaluation(object):
 
         self.segment_size = segment_size
         self.hop_size = hop_size
+        self.scores = {}
 
     @staticmethod
     def _verify_input_list(audio_signal_list, do_mono):
@@ -77,6 +82,8 @@ class Evaluation(object):
 
         if not all(audio_signal_list[0].sample_rate == g.sample_rate for g in audio_signal_list):
             #  TODO: is this a huge deal? Maybe just throw a warning if not a problem...
+            # I think we need it. If something about the signals match, it'll be pointless to get something like the
+            # SDR.
             raise ValueError('Not all AudioSignal objects have the same sample rate.')
 
         if not do_mono:
@@ -84,13 +91,25 @@ class Evaluation(object):
                 raise ValueError('Not all AudioSignal objects have the number of channels.')
 
         return audio_signal_list
-    
+
+    @property
+    def algorithm_name(self):
+        return self._algorithm_name
+
+    @algorithm_name.setter
+    def algorithm_name(self, value):
+        assert (type(value) == str)
+        self._algorithm_name = value
+        self.scores[self._algorithm_name] = {label: {} for label in self.ground_truth_labels}
+
     def validate(self):
         """
 
         Returns:
 
         """
+        if self.estimated_sources is None:
+            raise ValueError('Must set estimated_sources first!')
         estimated_lengths = [x.signal_length for x in self.estimated_sources]
         reference_lengths = [x.signal_length for x in self.ground_truth]
 
@@ -99,20 +118,6 @@ class Evaluation(object):
         if len(set(reference_lengths)) > 1:
             raise Exception('All AudioSignals in ground_truth must be the same length!')
     
-    def to_mono(self):
-        """
-
-        Returns:
-
-        """
-        self.validate()
-        for i, audio in enumerate(self.ground_truth):
-            mono = audio.to_mono()
-            self.ground_truth[i] = AudioSignal(audio_data_array=mono, sample_rate=self.sample_rate)
-
-        for i, audio in enumerate(self.estimated_sources):
-            mono = audio.to_mono()
-            self.estimated_sources[i] = AudioSignal(audio_data_array=mono, sample_rate=self.sample_rate)
 
     def transform_sources_to_array(self):
         """
@@ -120,8 +125,11 @@ class Evaluation(object):
         Returns:
 
         """
-        estimated_source_array = np.stack([x.audio_data for x in self.estimated_sources], axis=-1)
-        reference_source_array = np.stack([x.audio_data for x in self.ground_truth], axis=-1)
+        estimated_source_array = np.swapaxes(np.stack([np.copy(x.audio_data) for x in self.ground_truth], axis=-1),
+                                             0, -1)
+        reference_source_array = np.swapaxes(np.stack([np.copy(x.audio_data) for x in self.estimated_sources], axis=-1),
+                                             0, -1)
+
         return reference_source_array, estimated_source_array
 
     def bss_eval_sources(self):
@@ -131,6 +139,26 @@ class Evaluation(object):
 
         """
         self.validate()
+        reference, estimated = self.transform_sources_to_array()
+
+        if self.num_channels != 1:
+            reference = np.sum(reference, axis=-1)
+            estimated = np.sum(estimated, axis=-1)
+        separation.validate(reference, estimated)
+        sdr, sir, sar, perm = separation.bss_eval_sources(reference, estimated,
+                                                          compute_permutation = self.compute_permutation)
+
+        for i, label in enumerate(self.ground_truth_labels):
+            self.scores[self.algorithm_name][label]['Sources'] = {}
+
+            D = self.scores[self.algorithm_name][label]['Sources']
+
+            D['Source to Distortion'] = sdr.tolist()[i]
+            D['Source to Interference'] = sir.tolist()[i]
+            D['Source to Artifact'] = sar.tolist()[i]
+
+        self.scores[self.algorithm_name]['Permutation'] = perm.tolist()
+
 
     def bss_eval_images(self):
         """
@@ -139,19 +167,68 @@ class Evaluation(object):
 
         """
         self.validate()
+        if self.num_channels == 1:
+            raise Exception("Can't run bss_eval_images on mono audio signals!")
+        reference, estimated = self.transform_sources_to_array()
+        separation.validate(reference, estimated)
+        sdr, isr, sir, sar, perm = separation.bss_eval_images(reference, estimated,
+                                                          compute_permutation=self.compute_permutation)
+
+        for i, label in enumerate(self.ground_truth_labels):
+            self.scores[self.algorithm_name][label]['Images'] = {}
+
+            D = self.scores[self.algorithm_name][label]['Images']
+
+            D['Source to Distortion'] = sdr.tolist()[i]
+            D['Image to Spatial'] = isr.tolist()[i]
+            D['Source to Interference'] = sir.tolist()[i]
+            D['Source to Artifact'] = sar.tolist()[i]
+
+        self.scores[self.algorithm_name]['Permutation'] = perm.tolist()
 
     def bss_eval_sources_framewise(self):
         """
-
+        TODO - figure out compute_permutation=True branch will work here
         Returns:
 
         """
+        raise NotImplementedError("Still working on this!")
         self.validate()
+        reference, estimated = self.transform_sources_to_array()
+        if self.num_channels != 1:
+            reference = np.sum(reference, axis=-1)
+            estimated = np.sum(estimated, axis=-1)
+        separation.validate(reference, estimated)
+        sdr, sir, sar, perm = separation.bss_eval_sources_framewise(reference, estimated,
+                                                        window = self.segment_size, hop = self.hop_size,
+                                                        compute_permutation=self.compute_permutation)
 
     def bss_eval_images_framewise(self):
         """
-
+        TODO - figure out compute_permutation=True branch will work here
         Returns:
 
         """
+        raise NotImplementedError("Still working on this!")
         self.validate()
+        if self.num_channels == 1:
+            raise Exception("Can't run bss_eval_Image frames_framewise on mono audio signals!")
+        reference, estimated = self.transform_sources_to_array()
+        separation.validate(reference, estimated)
+        sdr, isr, sir, sar, perm = separation.bss_eval_images_framewise(reference, estimated,
+                                                            window=self.segment_size, hop=self.hop_size,
+                                                            compute_permutation=self.compute_permutation)
+
+    def load_scores_from_file(self, filename):
+        f = open(filename, 'r')
+        self.scores = json.load(f)
+        f.close()
+
+    def write_scores_to_file(self, filename):
+        f = open(filename, 'w')
+        f.write(self.to_json())
+        f.close()
+
+    def to_json(self):
+        return json.dumps(self.scores, sort_keys = True,
+                          indent=4, separators=(',', ': '))

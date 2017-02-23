@@ -282,6 +282,9 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     norm_window = np.zeros(signal_length)
     window = make_window(window_type, window_length)
 
+    norm_window = np.zeros(signal_length)
+    window = make_window(window_type, window_length)
+
     # Add reflection back
     stft = _add_reflection(stft) if reconstruct_reflection else stft
 

@@ -9,12 +9,17 @@ import constants
 from audio_signal import AudioSignal
 
 class RPCA(separation_base.SeparationBase):
-    """Implements foreground/background separation using the 2D Fourier Transform
+    """Implements foreground/background separation using RPCA
+
+    Huang, Po-Sen, et al. "Singing-voice separation from monaural recordings using robust principal component analysis."
+    Acoustics, Speech and Signal Processing (ICASSP), 2012 IEEE International Conference on. IEEE, 2012.
 
     Parameters:
         input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that REPET will be run on.
+                            audio data that RPCA will be run on.
         high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
+        num_iterations: (Optional) (int) how many iterations to run RPCA for, defaults to 100.
+        verbose: (Optional) (bool) prints out error rates and iteration count while running (defaults to False)
         do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
                         input AudioSignal object)
         use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
@@ -70,11 +75,8 @@ class RPCA(separation_base.SeparationBase):
         background_stft = np.array(background_stft).transpose((1, 2, 0))
         self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
         self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft)
-        
-        if self.background.signal_length > self.audio_signal.signal_length:
-            self.background.set_active_region_to_default()
-            self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
+                              overwrite=True, use_librosa=self.use_librosa_stft,
+                              truncate_to_length=self.audio_signal.signal_length)
 
         return self.background
     
