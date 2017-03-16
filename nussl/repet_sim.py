@@ -130,7 +130,7 @@ class RepetSim(separation_base.SeparationBase):
         similarity = np.dot(matrix, matrix.T)
 
         # inverse of the squared magnitude of preference vectors (number of occurrences)
-        inv_square_mag = 1 / np.diag(similarity)
+        inv_square_mag = 1.0 / (np.diag(similarity) + constants.EPSILON)
 
         # if it doesn't occur, set it's inverse magnitude to zero (instead of inf)
         inv_square_mag[np.isinf(inv_square_mag)] = 0
