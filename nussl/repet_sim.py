@@ -88,10 +88,11 @@ class RepetSim(separation_base.SeparationBase):
             stft_with_mask = repeating_mask * self.stft[:, :, i]
             background_stft.append(stft_with_mask)
 
+        # Set STFT in correct order
         background_stft = np.array(background_stft).transpose((1, 2, 0))
-        self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
+
+        # Make new audio signal and do iSTFT to get background
         self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
-        self.background.stft_params = self.stft_params
         self.background.istft(overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)
 
@@ -124,25 +125,27 @@ class RepetSim(separation_base.SeparationBase):
         """
         assert (type(matrix) == np.ndarray)
 
-        # Code below is adopted from http://stackoverflow.com/a/20687984/5768001
+        # ignore the 'divide by zero' warning
+        with np.errstate(divide='ignore'):
+            # Code below is adopted from http://stackoverflow.com/a/20687984/5768001
 
-        # base similarity matrix (all dot products)
-        similarity = np.dot(matrix, matrix.T)
+            # base similarity matrix (all dot products)
+            similarity = np.dot(matrix, matrix.T)
 
-        # inverse of the squared magnitude of preference vectors (number of occurrences)
-        inv_square_mag = 1.0 / (np.diag(similarity) + constants.EPSILON)
+            # inverse of the squared magnitude of preference vectors (number of occurrences)
+            inv_square_mag = 1 / np.diag(similarity)
 
-        # if it doesn't occur, set it's inverse magnitude to zero (instead of inf)
-        inv_square_mag[np.isinf(inv_square_mag)] = 0
+            # if it doesn't occur, set it's inverse magnitude to zero (instead of inf)
+            inv_square_mag[np.isinf(inv_square_mag)] = 0
 
-        # inverse of the magnitude
-        inv_mag = np.sqrt(inv_square_mag)
+            # inverse of the magnitude
+            inv_mag = np.sqrt(inv_square_mag)
 
-        # cosine similarity (element-wise multiply by inverse magnitudes)
-        cosine = similarity * inv_mag
-        cosine = cosine.T * inv_mag
+            # cosine similarity (element-wise multiply by inverse magnitudes)
+            cosine = similarity * inv_mag
+            cosine = cosine.T * inv_mag
 
-        return cosine
+            return cosine
 
     def _find_similarity_indices(self):
         """Finds the similarity indices for all time frames from the similarity matrix

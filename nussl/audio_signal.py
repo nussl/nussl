@@ -788,7 +788,7 @@ class AudioSignal(object):
         return new_signal
 
     def make_copy_with_audio_data(self, audio_data, verbose=True):
-        """ Makes a copy of this `AudioSignal` object with `self.audio_data` initialized to the input`audio_data`
+        """ Makes a copy of this `AudioSignal` object with `self.audio_data` initialized to the input `audio_data`
         numpy array.
 
         Args:
@@ -805,12 +805,13 @@ class AudioSignal(object):
                 warnings.warn('Shape of new audio_data does not match current audio_data.')
 
         new_signal = copy.deepcopy(self)
-        new_signal.audio_data = self.audio_data
+        new_signal.audio_data = audio_data
         new_signal.stft_data = np.zeros_like(self.stft_data)
         return new_signal
 
     def make_copy_with_stft_data(self, stft_data, verbose=True):
-        """
+        """ Makes a copy of this `AudioSignal` object with `self.stft_data` initialized to the input `stft_data`
+        numpy array.
 
         Args:
             stft_data:
@@ -827,7 +828,7 @@ class AudioSignal(object):
                 warnings.warn('Shape of new stft_data does not match current stft_data.')
 
         new_signal = copy.deepcopy(self)
-        new_signal.stft_data = self.stft_data
+        new_signal.stft_data = stft_data
         new_signal.audio_data = np.zeros_like(self.audio_data)
         return new_signal
 
