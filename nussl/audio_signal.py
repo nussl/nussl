@@ -112,27 +112,22 @@ class AudioSignal(object):
         # TODO: flatten to mono be default
         # TODO: make other parameters adjustable
         if file_name is None:
-            name_stem = self.file_name if self.file_name is not None else self._NAME_STEM
+            name = self.file_name if self.file_name is not None else self._NAME_STEM
         else:
-            if os.path.isfile(file_name):
-                name_stem = os.path.splitext(file_name)[0]
-            else:
-                name_stem = file_name
+            name = os.path.splitext(file_name)[0]
+
+        name = name if self._check_if_valid_img_type(name) else name + '.png'
 
         if ch is None:
-            if self.num_channels > 1:
-                for i in range(1, self.num_channels+1):
-                    name = name_stem + '_ch{}.png'.format(i)
-                    spectral_utils.plot_stft(self.get_channel(i), name,
-                                             sample_rate=self.sample_rate)
-            else:
-                name = name_stem + '.png'
-                spectral_utils.plot_stft(self.get_channel(0), name,
-                                         sample_rate=self.sample_rate)
+            spectral_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
         else:
-            name = name_stem + '_ch{}.png'.format(ch)
-            spectral_utils.plot_stft(self.get_channel(ch), name,
-                                     sample_rate=self.sample_rate)
+            spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
+
+    @staticmethod
+    def _check_if_valid_img_type(name):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        return any([name[len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
 
     ##################################################
     #                 Properties
@@ -170,7 +165,7 @@ class AudioSignal(object):
             Defaults to returning number of channels in ``self.audio_data``. If that is ``None``, returns number of
             channels in ``self.stft_data``. If both are ``None`` then returns ``None``.
         """
-        # TODO: what if about a mismatch between audio_data and stft_data
+        # TODO: what about a mismatch between audio_data and stft_data??
         if self.audio_data is not None:
             return self.audio_data.shape[self._CHAN]
         if self.stft_data is not None:
