@@ -21,7 +21,7 @@ modified by Ethan Manilow and Prem Seetharaman for incorporation into nussl.
 import numpy as np
 
 import separation_base
-import constants
+import config
 from audio_signal import AudioSignal
 import matplotlib.pyplot as plt
 
@@ -34,7 +34,7 @@ class Projet(separation_base.SeparationBase):
         use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
 
     """
-    def __init__(self, input_audio_signal, use_librosa_stft=constants.USE_LIBROSA_STFT, num_sources=None,
+    def __init__(self, input_audio_signal, use_librosa_stft=config.USE_LIBROSA_STFT, num_sources=None,
                  num_iterations=None, num_panning_directions=None, num_projections=None, verbose=None):
         super(Projet, self).__init__(input_audio_signal=input_audio_signal)
         self.sources = None
