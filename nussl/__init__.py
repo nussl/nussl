@@ -3,6 +3,7 @@
 
 from .spectral_utils import *
 from utils import *
+from config import *
 from constants import *
 from .audio_signal import AudioSignal
 from separation_base import SeparationBase
@@ -27,8 +28,8 @@ __title__ = 'nussl'
 __description__ = 'A flexible sound source separation library.'
 __uri__ = 'https://github.com/interactiveaudiolab/nussl'
 
-__author__ = 'C. Grief, E. Manilow, F. Pishdadian'
+__author__ = 'E. Manilow, P. Seetharaman, F. Pishdadian'
 __email__ = 'ethanmanilow2015@u.northwestern.edu'
 
 __license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2016 Interactive Audio Lab'
+__copyright__ = 'Copyright (c) 2017 Interactive Audio Lab'

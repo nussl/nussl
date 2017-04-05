@@ -13,6 +13,7 @@ import warnings
 import copy
 
 import spectral_utils
+import config
 import constants
 import utils
 
@@ -88,7 +89,7 @@ class AudioSignal(object):
         # stft data
         self.stft_data = stft  # complex spectrogram data
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
-        self.use_librosa_stft = constants.USE_LIBROSA_STFT
+        self.use_librosa_stft = config.USE_LIBROSA_STFT
 
     def __str__(self):
         return self.__class__.__name__
@@ -239,6 +240,17 @@ class AudioSignal(object):
         if self.stft_data is None:
             raise AttributeError('Cannot calculate freq_vector until self.stft() is run')
         return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[self._STFT_BINS])
+
+    @property
+    def time_bins_vector(self):
+        """(:obj:`np.ndarray`): A 1D numpy array with time values that correspond
+            to each time bin (horizontal axis) in the STFT.
+        Raises:
+            AttributeError: If ``self.stft_data`` is ``None``. Run ``self.stft()`` before accessing this.
+        """
+        if self.stft_data is None:
+            raise AttributeError('Cannot calculate time_bins_vector until self.stft() is run')
+        return np.linspace(0.0, self.signal_duration, num=self.stft_data.shape[self._STFT_LEN])
 
     @property
     def stft_length(self):
@@ -475,7 +487,7 @@ class AudioSignal(object):
     ##################################################
 
     def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, remove_reflection=True,
-             overwrite=True, use_librosa=constants.USE_LIBROSA_STFT):
+             overwrite=True, use_librosa=config.USE_LIBROSA_STFT):
         """Computes the Short Time Fourier Transform (STFT) of ``self.audio_data``.
 
             The results of the STFT calculation can be accessed from ``self.stft_data``
@@ -530,7 +542,7 @@ class AudioSignal(object):
         return np.array(stfts).transpose((1, 2, 0))
 
     def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True, reconstruct_reflection=False,
-              use_librosa=constants.USE_LIBROSA_STFT, truncate_to_length=None):
+              use_librosa=config.USE_LIBROSA_STFT, truncate_to_length=None):
         """Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
             The results of the iSTFT calculation can be accessed from ``self.audio_data``
@@ -897,6 +909,26 @@ class AudioSignal(object):
 
         """
         return np.sqrt(np.mean(np.square(self.audio_data)))
+
+    def get_closest_frequency_bin(self, freq):
+        """
+        Returns index of the closest element to freq
+        Args:
+            freq: (int) frequency to retrieve in Hz
+
+        Returns: (int) index of closest frequency to input freq
+
+        Examples:
+            Make a low pass filter starting around 1200 Hz
+            >>> signal = nussl.AudioSignal('path_to_song.wav')
+            >>> signal.stft()
+            >>> idx = signal.get_closest_frequency_bin(1200)  # 1200 Hz
+            >>> signal.stft_data[idx:, :, :] = 0.0  # eliminate everything above idx
+
+        """
+        if self.freq_vector is None:
+            raise ValueError('Cannot get frequency bin until self.stft() is run!')
+        return (np.abs(self.freq_vector - freq)).argmin()
 
     ##################################################
     #              Channel Utilities
