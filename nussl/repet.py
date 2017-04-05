@@ -7,6 +7,7 @@ import scipy.spatial.distance
 
 import separation_base
 import constants
+import config
 from audio_signal import AudioSignal
 
 
@@ -52,7 +53,7 @@ class Repet(separation_base.SeparationBase):
 
     """
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
-                 do_mono=False, use_find_period_complex=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
+                 do_mono=False, use_find_period_complex=False, use_librosa_stft=config.USE_LIBROSA_STFT,
                  matlab_fidelity=False):
         super(Repet, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)

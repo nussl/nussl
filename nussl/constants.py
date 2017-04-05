@@ -24,6 +24,4 @@ ALL_WINDOWS = [WINDOW_HAMMING, WINDOW_RECTANGULAR, WINDOW_HANN, WINDOW_BLACKMAN]
 """list(str): list of all available windows in *nussl*
 """
 
-# TODO: put this in a config file
-USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will use librosa's stft function by default
 NUMPY_JSON_KEY = "py/numpy.ndarray"  #: (str): key used when turning numpy arrays into json
