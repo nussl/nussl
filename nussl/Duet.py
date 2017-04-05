@@ -99,14 +99,17 @@ class Duet(separation_base.SeparationBase):
         fs = self.sample_rate
 
         # Compute the stft of the two channel mixtures
-        stft1, psd1, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(1),
-                                                                                L, hop, winType, fs, use_librosa=True)
-        stft2, psd2, frequency_vector, time_vector = spectral_utils.e_stft_plus(self.audio_signal.get_channel(2),
-                                                                                L, hop, winType, fs, use_librosa=True)
+        self.audio_signal.stft_params = self.stft_params
+        self.audio_signal.stft()
+
+        stft_ch0 = self.audio_signal.get_stft_channel(0)
+        stft_ch1 = self.audio_signal.get_stft_channel(1)
+        frequency_vector = self.audio_signal.freq_vector
+        time_vector = self.audio_signal.time_bins_vector
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
-        stft1 = stft1[1::, :]
-        stft2 = stft2[1::, :]
+        stft_ch0 = stft_ch0[1::, :]
+        stft_ch1 = stft_ch1[1::, :]
         num_frequency_bins = len(frequency_vector)
         num_time_bins = len(time_vector)
 
@@ -115,7 +118,7 @@ class Duet(separation_base.SeparationBase):
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        R21 = (stft2 + constants.EPSILON) / (stft1 + constants.EPSILON)
+        R21 = (stft_ch1 + constants.EPSILON) / (stft_ch0 + constants.EPSILON)
         atn = np.abs(R21)  # relative attenuation between the two channels
         alpha = atn - 1 / atn  # symmetric attenuation
         delta = -np.imag(np.log(R21)) / (2 * np.pi * wmat)  # relative delay
@@ -125,7 +128,7 @@ class Duet(separation_base.SeparationBase):
         # calculate the weighted histogram
         p = 1
         q = 0
-        tfw = (np.abs(stft1) * np.abs(stft2)) ** p * (np.abs(wmat)) ** q  # time-freq weights
+        tfw = (np.abs(stft_ch0) * np.abs(stft_ch1)) ** p * (np.abs(wmat)) ** q  # time-freq weights
 
         # only consider time-freq. points yielding estimates in bounds
         a_premask = np.logical_and(self.a_min < alpha, alpha < self.a_max)
@@ -175,7 +178,7 @@ class Duet(separation_base.SeparationBase):
         bestsofar = np.inf * np.ones((num_frequency_bins - 1, num_time_bins))
         bestind = np.zeros((num_frequency_bins - 1, num_time_bins), int)
         for i in range(0, self.num_sources):
-            score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * stft1 - stft2) ** 2 / (1 + atnpeak[i] ** 2)
+            score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * stft_ch0 - stft_ch1) ** 2 / (1 + atnpeak[i] ** 2)
             mask = (score < bestsofar)
             bestind[mask] = i
             bestsofar[mask] = score[mask]
@@ -185,7 +188,7 @@ class Duet(separation_base.SeparationBase):
         for i in range(0, self.num_sources):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, num_time_bins)),
-                            (stft1 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * stft2) / (1 + atnpeak[i] ** 2) * mask])
+                            (stft_ch0 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * stft_ch1) / (1 + atnpeak[i] ** 2) * mask])
             # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
             xi = spectral_utils.e_istft(Xm, L, hop, winType)
 
