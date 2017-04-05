@@ -7,6 +7,7 @@ import warnings
 
 import separation_base
 import constants
+import config
 import spectral_utils
 from audio_signal import AudioSignal
 
@@ -44,7 +45,7 @@ class OverlapAdd(separation_base.SeparationBase):
     """
     def __init__(self, input_audio_signal, separation_method,
                  overlap_window_size=24, overlap_hop_size=12, overlap_window_type=constants.WINDOW_TRIANGULAR,
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT):
+                 do_mono=False, use_librosa_stft=config.USE_LIBROSA_STFT):
         """
 
         Args:

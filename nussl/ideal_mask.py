@@ -5,7 +5,7 @@ import numpy as np
 
 import spectral_utils
 import separation_base
-import constants
+import config
 from audio_signal import AudioSignal
 from scipy.ndimage.filters import maximum_filter, minimum_filter
 
@@ -23,7 +23,7 @@ class IdealMask(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal, use_librosa_stft=constants.USE_LIBROSA_STFT, sources=None,
+    def __init__(self, input_audio_signal, use_librosa_stft=config.USE_LIBROSA_STFT, sources=None,
                  return_residual=False):
         super(IdealMask, self).__init__(input_audio_signal=input_audio_signal)
         if sources is None:

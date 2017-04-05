@@ -5,7 +5,7 @@ import numpy as np
 
 import spectral_utils
 import separation_base
-import constants
+import config
 from audio_signal import AudioSignal
 
 class RPCA(separation_base.SeparationBase):
@@ -26,7 +26,7 @@ class RPCA(separation_base.SeparationBase):
 
     """
     def __init__(self, input_audio_signal, high_pass_cutoff=None, num_iterations=None, epsilon=None,
-                 do_mono=False, verbose=None, use_librosa_stft=constants.USE_LIBROSA_STFT):
+                 do_mono=False, verbose=None, use_librosa_stft=config.USE_LIBROSA_STFT):
         super(RPCA, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.use_librosa_stft = use_librosa_stft
