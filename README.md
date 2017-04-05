@@ -1,4 +1,4 @@
-=====
+
 nussl
 =====
 
@@ -9,7 +9,9 @@ algorithms as well as an easy-to-use framework for prototyping and adding new al
 to create a low barrier to entry for using popular source separation algorithms, while also allowing the
 user fine tuned control of low-level parameters.
 
+
 **NOTICE: nussl is currently in alpha. Please be mindful.**
+
 Please see the issues page before contacting the authors.
 
 Documentation
@@ -27,6 +29,7 @@ At its core, nussl contains (or will contain) implementations of the following s
 
 Spatialization algorithms:
 * Degenerate Unmixing Estimation Technique (DUET)
+* PROJET 
 
 Median filtering algorithms:
 * REpeating Pattern Extraction Technique (REPET)
@@ -34,9 +37,11 @@ Median filtering algorithms:
 * Harmonic/Percussive Source Separation (HPSS) (**Coming Soon**)
 * Kernel Adaptive Modeling (KAM) (**Coming Soon**)
 
-General matrix decomposition
+General matrix decomposition:
 * Non-negative Matrix Factorization (NMF) (**Coming Soon**)
 * Robust Principal Component Analysis (RPCA) (**Coming Soon**)
+
+Also coming: Deep methods (Deep Clustering, Huang et. al. Deep Separation, etc.) (with keras backend), Separation by Segmentation, Melody tracking methods (Melodia, SIMM), ICA, Ideal Masks, Overlap adding (windowing) functionality for existing methods, and many more!
 
 The nussl team is also working on implementing an evaluation framework, which will include easy interoperability
 between nussl and `mir_eval` (`bss_eval`) as well as implementations of other evaluation methods. (See development
