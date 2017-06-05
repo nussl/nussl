@@ -56,6 +56,11 @@ class Repet(separation_base.SeparationBase):
                  do_mono=False, use_find_period_complex=False, use_librosa_stft=config.USE_LIBROSA_STFT,
                  matlab_fidelity=False):
         super(Repet, self).__init__(input_audio_signal=input_audio_signal)
+
+        # Check input parameters
+        if (min_period or max_period) and period:
+            raise ValueError('Cannot set both period and (min_period or max_period)!')
+
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None
         self.foreground = None
@@ -76,9 +81,6 @@ class Repet(separation_base.SeparationBase):
         # TODO: stereo doesn't do true stereo REPET (see TODO below)
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)
-
-        if (min_period or max_period) and period:
-            raise ValueError('Cannot set both period and (min_period or max_period)!')
 
         # Set period parameters
         self.min_period, self.max_period, self.period = None, None, None
@@ -120,7 +122,7 @@ class Repet(separation_base.SeparationBase):
         # the MATLAB implementation had
         low = 1 if self.matlab_fidelity else 0
 
-        self._compute_spectrum()
+        self._compute_spectrograms()
         self.repeating_period = self._calculate_repeating_period()
 
         # separate the mixture background by masking
@@ -142,7 +144,7 @@ class Repet(separation_base.SeparationBase):
 
         return self.background
 
-    def _compute_spectrum(self):
+    def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         self.magnitude_spectrogram = np.abs(self.stft)
 
@@ -167,7 +169,7 @@ class Repet(separation_base.SeparationBase):
             beat_spec = repet.get_beat_spectrum()
         """
         if recompute_stft or self.magnitude_spectrogram is None:
-            self._compute_spectrum()
+            self._compute_spectrograms()
 
         # TODO: Make this multi-channel. The np.mean() reduces the n channels to 1.
         self.beat_spectrum = self.compute_beat_spectrum(np.mean(np.square(self.magnitude_spectrogram),

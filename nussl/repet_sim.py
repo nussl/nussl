@@ -77,7 +77,7 @@ class RepetSim(separation_base.SeparationBase):
                                             (self.stft_params.n_fft_bins - 1) /
                                             self.audio_signal.sample_rate) + 1)
         low = 1 if self.matlab_fidelity else 0
-        self._compute_spectrum()
+        self._compute_spectrograms()
         self.similarity_indices = self._get_similarity_indices()
 
         background_stft = []
@@ -99,13 +99,13 @@ class RepetSim(separation_base.SeparationBase):
 
         return self.background
 
-    def _compute_spectrum(self):
+    def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         self.magnitude_spectrogram = np.abs(self.stft)
 
     def _get_similarity_indices(self):
         if self.magnitude_spectrogram is None:
-            self._compute_spectrum()
+            self._compute_spectrograms()
 
         self.similarity_matrix = self.get_similarity_matrix()
 
@@ -188,7 +188,7 @@ class RepetSim(separation_base.SeparationBase):
 
         """
         if self.magnitude_spectrogram is None:
-            self._compute_spectrum()
+            self._compute_spectrograms()
 
         if self.similarity_indices is None:
             self._get_similarity_indices()
@@ -223,7 +223,7 @@ class RepetSim(separation_base.SeparationBase):
 
         """
         if self.magnitude_spectrogram is None:
-            self._compute_spectrum()
+            self._compute_spectrograms()
         mean_magnitude_spectrogram = np.mean(self.magnitude_spectrogram, axis=2)
         return self.compute_similarity_matrix(mean_magnitude_spectrogram.T)
 

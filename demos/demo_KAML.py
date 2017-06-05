@@ -158,7 +158,7 @@ Df = 3
 Dt = 20
 # TODO: make this a function instead of a HUGE lambda
 Nhood = lambda TFcoords1, TFcoords2: np.logical_and((np.abs(
-    np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0])) - np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))) < Df), \
+    np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0])) - np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))) < Df),
                                                     (np.abs(np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0])) - np.tile(
                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))) < Dt))
 

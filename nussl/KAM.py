@@ -394,7 +394,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     for ns in range(0, J):
         SKj = SourceKernels[ns]
         if len(SKj) < 2:
-            raise Exception('The information required for generating source kernels is insufficient.' \
+            raise Exception('The information required for generating source kernels is insufficient.'
                             ' Each sub-list in SourceKernels must contain at least two elements.')
         KTYPE = SKj[0]
         if KTYPE != 'userdef' and len(SKj) == 2:
@@ -417,7 +417,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     else:
         MeanPSD = Px / (J)
 
-    U = [];
+    U = []
     V = []
     Utemp, Vtemp = randSVD(MeanPSD ** gamma, numcomp, 'compact')[0:3:2]  # compute the compact form of randomized SVD
     del MeanPSD
@@ -446,7 +446,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             Pj_gamma = np.abs(np.dot(U[ns], np.conj(V[ns].T)) ** (1 / gamma))
             Pj_reshape = np.reshape(Pj_gamma.T, (LF * LT, 1))
             Pj_tile = np.tile(Pj_reshape, (1, I * I))
-            SumPR = SumPR + Pj_tile * Rj[:, :, ns]
+            SumPR += Pj_tile * Rj[:, :, ns]
             del Pj_gamma, Pj_reshape, Pj_tile
         SumPR.shape = (LF * LT, I, I)
         SumPR += 1e-16 * np.random.randn(LF * LT, I, I)
@@ -734,14 +734,14 @@ class Kernel:
             Df = ParamVal[0, 0]
             Dt = ParamVal[0, 1]
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:, 0], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))), \
+            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))),
                                                                                     (np.abs(np.tile(TFcoords1[:, 1], (
                                                                                     1, TFcoords2.shape[0])) - np.tile(
                                                                                         TFcoords2[:, 1].T, (
-                                                                                        TFcoords1.shape[0], 1))) < Dt)), \
+                                                                                        TFcoords1.shape[0], 1))) < Dt)),
                                                                      np.logical_and((np.tile(TFcoords1[:, 1], (
                                                                      1, TFcoords2.shape[0])) == np.tile(
-                                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))), \
+                                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))),
                                                                                     (np.abs(np.tile(TFcoords1[:, 0], (
                                                                                     1, TFcoords2.shape[0])) - np.tile(
                                                                                         TFcoords2[:, 0].T, (
@@ -753,7 +753,7 @@ class Kernel:
             Df = ParamVal[0, 0]
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and((np.tile(TFcoords1[:, 1],
                                                                                (1, TFcoords2.shape[0])) == np.tile(
-                TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))), \
+                TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))),
                                                                       (np.abs(np.tile(TFcoords1[:, 0], (
                                                                       1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 0].T,
@@ -765,7 +765,7 @@ class Kernel:
             Dt = ParamVal[0, 0]
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and((np.tile(TFcoords1[:, 0],
                                                                                (1, TFcoords2.shape[0])) == np.tile(
-                TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))), \
+                TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))),
                                                                       (np.abs(np.tile(TFcoords1[:, 1], (
                                                                       1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 1].T,
@@ -777,12 +777,12 @@ class Kernel:
             P = ParamVal[0, 0]
             Dt = ParamVal[0, 1] * P + 1
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:, 0], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))), \
+            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))),
                                                                                      (np.abs(np.tile(TFcoords1[:, 1], (
                                                                                      1, TFcoords2.shape[0])) - np.tile(
                                                                                          TFcoords2[:, 1].T, (
                                                                                          TFcoords1.shape[0],
-                                                                                         1))) < Dt)), \
+                                                                                         1))) < Dt)),
                                                                       (np.mod(np.tile(TFcoords1[:, 1], (
                                                                       1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 1].T, (TFcoords1.shape[0], 1)),
@@ -794,12 +794,12 @@ class Kernel:
             P = ParamVal[0, 0]
             Df = ParamVal[0, 1] * P + 1
             self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:, 1], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))), \
+            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))),
                                                                                      (np.abs(np.tile(TFcoords1[:, 0], (
                                                                                      1, TFcoords2.shape[0])) - np.tile(
                                                                                          TFcoords2[:, 0].T, (
                                                                                          TFcoords1.shape[0],
-                                                                                         1))) < Df)), \
+                                                                                         1))) < Df)),
                                                                       (np.mod(np.tile(TFcoords1[:, 0], (
                                                                       1, TFcoords2.shape[0])) - np.tile(
                                                                           TFcoords2[:, 0].T, (TFcoords1.shape[0], 1)),
