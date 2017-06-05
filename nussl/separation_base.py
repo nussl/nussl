@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import audio_signal
-import spectral_utils
-import constants
-
 import copy
 import json
 import utils
 import numpy as np
 import inspect
+import warnings
+
+import audio_signal
+import spectral_utils
+import constants
 
 
 class SeparationBase(object):
@@ -23,12 +24,22 @@ class SeparationBase(object):
     """
 
     def __init__(self, input_audio_signal):
+        if not isinstance(input_audio_signal, audio_signal.AudioSignal):
+            raise ValueError('input_audio_signal is not an AudioSignal object!')
+
         self._audio_signal = None
 
         if input_audio_signal is not None:
             self.audio_signal = input_audio_signal
         else:
             self.audio_signal = audio_signal.AudioSignal()
+
+        if not self.audio_signal.has_data:
+            warnings.warn('input_audio_signal has no data!')
+
+            # initialize to empty arrays so that we don't crash randomly
+            self.audio_signal.audio_data = np.array([])
+            self.audio_signal.stft_data = np.array([])
 
     @property
     def sample_rate(self):
@@ -84,7 +95,6 @@ class SeparationBase(object):
     def __str__(self):
         return self.__class__.__name__
 
-
     @staticmethod
     def _to_json_helper(o):
         if not isinstance(o, SeparationBase):
@@ -111,9 +121,6 @@ class SeparationBase(object):
 
     def __call__(self):
         return self.run()
-
-    def __str__(self):
-        return self.__class__.__name__
 
     def __repr__(self):
         return self.__class__.__name__ + ' instance'
@@ -170,7 +177,7 @@ class SeparationBaseDecoder(json.JSONDecoder):
             for k, v in json_dict.items():
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
                     seperator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
-                elif isinstance(v, basestring) and audio_signal.__name__ in v: # TODO: python3-ify this
+                elif isinstance(v, (str, bytes)) and audio_signal.__name__ in v: # TODO: test this
                     seperator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
                 else:
                     seperator.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')

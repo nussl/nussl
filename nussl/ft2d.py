@@ -53,7 +53,7 @@ class FT2D(separation_base.SeparationBase):
                                             self.audio_signal.sample_rate)) + 1
 
         # the MATLAB implementation had
-        self._compute_spectrum()
+        self._compute_spectrograms()
 
         # separate the mixture background by masking
         background_stft = []
@@ -78,7 +78,7 @@ class FT2D(separation_base.SeparationBase):
 
         return self.background
     
-    def _compute_spectrum(self):
+    def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         self.ft2d = np.stack([np.fft.fft2(np.abs(self.stft[:, :, i]))
                               for i in range(self.audio_signal.num_channels)], axis = -1)
@@ -92,7 +92,7 @@ class FT2D(separation_base.SeparationBase):
 
     def filter_local_maxima(self, ft2d):
         data = np.abs(np.fft.fftshift(ft2d))
-        data = data / np.max(data)
+        data /= np.max(data)
         threshold = np.std(data)
         
         data_max = maximum_filter(data, self.neighborhood_size)

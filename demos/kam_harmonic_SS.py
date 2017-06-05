@@ -20,8 +20,8 @@ Ovp=3*WinL/4 # 50% overlap
 mix.windowlength=WinL
 mix.overlap_samples=Ovp
 mix.num_fft_bins=WinL
-mix.makeplot=1; 
-mix.fmaxplot=5000;
+mix.makeplot=1
+mix.fmaxplot=5000
 
 plt.figure(1)
 mix.do_STFT()

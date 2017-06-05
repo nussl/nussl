@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import unittest
 import nussl
 import numpy as np
@@ -8,8 +10,8 @@ class TestRepet(unittest.TestCase):
 
     @staticmethod
     def _load_final_matlab_results():
-        back_path = os.path.join('repet_matlab_results', 'mix3_matlab_repet_background')
-        fore_path = os.path.join('repet_matlab_results', 'mix3_matlab_repet_foreground')
+        back_path = os.path.join('repet_reference', 'repet_matlab_results', 'mix3_matlab_repet_background')
+        fore_path = os.path.join('repet_reference', 'repet_matlab_results', 'mix3_matlab_repet_foreground')
         matlab_background = scipy.io.loadmat(back_path)['back'].T
         matlab_foreground = scipy.io.loadmat(fore_path)['fore'].T
 

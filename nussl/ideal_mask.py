@@ -23,8 +23,8 @@ class IdealMask(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal, use_librosa_stft=config.USE_LIBROSA_STFT, sources=None,
-                 return_residual=False):
+    def __init__(self, input_audio_signal, sources=None, return_residual=False, do_binary_mask=True,
+                 use_librosa_stft=config.USE_LIBROSA_STFT):
         super(IdealMask, self).__init__(input_audio_signal=input_audio_signal)
         if sources is None:
             raise Exception('Cannot run IdealMask if there are no sources to derive a mask from!')
@@ -47,25 +47,27 @@ class IdealMask(separation_base.SeparationBase):
 
         """
 
-        self._compute_spectrum()
+        self._compute_spectrograms()
         self.estimated = []
 
         for source in self.sources:
             mask = np.divide(np.abs(source.stft), self.magnitude_spectrogram)
             estimated_stft = np.multiply(mask, self.stft)
-            self.estimated.append(AudioSignal(stft = estimated_stft, sample_rate=self.audio_signal.sample_rate))
+            self.estimated.append(AudioSignal(stft=estimated_stft, sample_rate=self.audio_signal.sample_rate))
             self.estimated[-1].istft(self.stft_params.window_length, self.stft_params.hop_length,
-                                  self.stft_params.window_type, overwrite=True,
-                                  use_librosa=self.use_librosa_stft,
-                                  truncate_to_length=self.audio_signal.signal_length)
+                                     self.stft_params.window_type, overwrite=True,
+                                     use_librosa=self.use_librosa_stft,
+                                     truncate_to_length=self.audio_signal.signal_length)
+
         residual = self.audio_signal
         if self.return_residual:
             for source in self.estimated:
                 residual = residual - source
             self.estimated.append(residual)
+
         return self.estimated
 
-    def _compute_spectrum(self):
+    def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         self.magnitude_spectrogram = np.abs(self.stft)
         for source in self.sources:
@@ -86,6 +88,6 @@ class IdealMask(separation_base.SeparationBase):
              ::
         """
         if self.estimated is None:
-            return None
+            raise ValueError('Cannot make audio signals prior to running algorithm!')
 
         return self.estimated

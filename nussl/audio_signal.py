@@ -78,7 +78,8 @@ class AudioSignal(object):
         got_stft = stft is not None
         init_inputs = np.array([got_path, got_audio_array, got_stft])
 
-        if len(init_inputs[init_inputs == True]) > 1:
+        # noinspection PyPep8
+        if len(init_inputs[init_inputs == True]) > 1:  # ignore inspection for clarity
             raise ValueError('Can only initialize AudioSignal object with one of [path, audio, stft]!')
 
         if path_to_input_file is not None:
@@ -312,6 +313,18 @@ class AudioSignal(object):
         if self.stft_data is None:
             raise AttributeError('Cannot calculate magnitude_spectrogram_data because self.stft_data is None')
         return np.abs(self.stft_data)
+
+    @property
+    def has_data(self):
+        """ Returns False if ``self.audio_data`` and ``self.stft_data`` are empty. Else, returns True.
+        Returns:
+            Returns False if ``self.audio_data`` and ``self.stft_data`` are empty. Else, returns True.
+        """
+        if self.audio_data is None and self.stft_data is None:
+            return False
+        if self.audio_data.size == 0 and self.stft_data.size == 0:
+            return False
+        return True
 
     ##################################################
     #                     I/O
