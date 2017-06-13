@@ -122,50 +122,13 @@ class Duet(separation_base.SeparationBase):
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        R21 = (stft_ch1 + constants.EPSILON) / (stft_ch0 + constants.EPSILON)
-        atn = np.abs(R21)  # relative attenuation between the two channels
+        r21 = (stft_ch1 + constants.EPSILON) / (stft_ch0 + constants.EPSILON)
+        atn = np.abs(r21)  # relative attenuation between the two channels
         alpha = atn - 1 / atn  # symmetric attenuation
-        delta = -np.imag(np.log(R21)) / (2 * np.pi * wmat)  # relative delay
+        delta = -np.imag(np.log(r21)) / (2 * np.pi * wmat)  # relative delay
 
-        # What is going on here???
-        # ------------------------------------
-        # calculate the weighted histogram
-        p = 1
-        q = 0
-        tfw = (np.abs(stft_ch0) * np.abs(stft_ch1)) ** p * (np.abs(wmat)) ** q  # time-freq weights
-
-        # only consider time-freq. points yielding estimates in bounds
-        a_premask = np.logical_and(self.attenuation_min < alpha, alpha < self.attenuation_max)
-        d_premask = np.logical_and(self.delay_min < delta, delta < self.delay_max)
-        ad_premask = np.logical_and(a_premask, d_premask)
-
-        ad_nzind = np.nonzero(ad_premask)
-        alpha_vec = alpha[ad_nzind]
-        delta_vec = delta[ad_nzind]
-        tfw_vec = tfw[ad_nzind]
-
-        # compute the histogram
-        H = np.histogram2d(alpha_vec, delta_vec, bins=np.array([self.num_attenuation_bins, self.num_delay_bins]),
-                           range=np.array([[self.attenuation_min, self.attenuation_max],
-                                           [self.delay_min, self.delay_max]]), normed=False,
-                           weights=tfw_vec)
-
-        hist = H[0] / H[0].max()
-        agrid = H[1]
-        dgrid = H[2]
-
-        # Save these for later
-        self.attenuation_grid = agrid
-        self.delay_grid = dgrid
-        self.attenuation_delay_histogram = hist
-        self.non_normalized_hist = H[0]
-        self.smoothed_hist = self._smooth_matrix(self.non_normalized_hist, np.array([3]))
-
-        # smooth the histogram - local average 3-by-3 neighboring bins
-        hist = self._smooth_matrix(hist, np.array([3]))
-
-        # normalize and plot the histogram
-        hist /= hist.max()
+        # make histogram
+        hist = self.make_histogram(stft_ch0, stft_ch1, wmat)
 
         # find the location of peaks in the alpha-delta plane
         self.peak_indices = self.find_peaks2(hist, self.peak_threshold,
@@ -208,6 +171,48 @@ class Duet(separation_base.SeparationBase):
         self.separated_sources = xhat
 
         return xhat, ad_est
+
+    def make_histogram(self, stft_ch0, stft_ch1, wmat):
+    	# What is going on here???
+        # ------------------------------------
+        # calculate the weighted histogram
+        p = 1
+        q = 0
+        tfw = (np.abs(stft_ch0) * np.abs(stft_ch1)) ** p * (np.abs(wmat)) ** q  # time-freq weights
+
+        # only consider time-freq. points yielding estimates in bounds
+        a_premask = np.logical_and(self.attenuation_min < alpha, alpha < self.attenuation_max)
+        d_premask = np.logical_and(self.delay_min < delta, delta < self.delay_max)
+        ad_premask = np.logical_and(a_premask, d_premask)
+
+        ad_nzind = np.nonzero(ad_premask)
+        alpha_vec = alpha[ad_nzind]
+        delta_vec = delta[ad_nzind]
+        tfw_vec = tfw[ad_nzind]
+
+        # compute the histogram
+        H = np.histogram2d(alpha_vec, delta_vec, bins=np.array([self.num_attenuation_bins, self.num_delay_bins]),
+                           range=np.array([[self.attenuation_min, self.attenuation_max],
+                                           [self.delay_min, self.delay_max]]), normed=False,
+                           weights=tfw_vec)
+
+        hist = H[0] / H[0].max()
+        agrid = H[1]
+        dgrid = H[2]
+
+        # Save these for later
+        self.attenuation_grid = agrid
+        self.delay_grid = dgrid
+        self.attenuation_delay_histogram = hist
+        self.non_normalized_hist = H[0]
+        self.smoothed_hist = self._smooth_matrix(self.non_normalized_hist, np.array([3]))
+
+        # smooth the histogram - local average 3-by-3 neighboring bins
+        hist = self._smooth_matrix(hist, np.array([3]))
+
+        # normalize and plot the histogram
+        hist /= hist.max()
+        return hist
 
     @staticmethod
     def find_peaks2(data, min_thr=0.5, min_dist=None, max_peaks=1):
