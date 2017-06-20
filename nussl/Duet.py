@@ -20,7 +20,6 @@ class Duet(separation_base.SeparationBase):
     The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
     and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.
 
-
     References:
 
         * Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation. Springer Netherlands,
@@ -74,6 +73,8 @@ class Duet(separation_base.SeparationBase):
         self.smoothed_hist = None
         self.peak_indices = None
 
+        self.symmetric_atn = None
+        self.delay = None
         self.num_frequency_bins = None
         self.num_time_bins = None
         self.stft_ch0 = None
@@ -99,26 +100,17 @@ class Duet(separation_base.SeparationBase):
 
         """
 
-        # Give them shorter names
-        L = self.stft_params.window_length
-        win_type = self.stft_params.window_type
-        hop = self.stft_params.hop_length
-        fs = self.sample_rate
-
         # Calculate the stft of both channels and create the frequency matrix
-        self.stft_ch0, self.stft_ch1, self.wmat = self.setup_duet(fs)
+        self.stft_ch0, self.stft_ch1, self.wmat = self.compute_spectrogram(self.sample_rate)
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        r21 = (self.stft_ch1 + constants.EPSILON) / (self.stft_ch0 + constants.EPSILON)
-        atn = np.abs(r21)  # relative attenuation between the two channels
-        symmetric_atn = atn - 1 / atn  # symmetric attenuation
-        delay = -np.imag(np.log(r21)) / (2 * np.pi * self.wmat)  # relative delay
+        self.symmetric_atn, self.delay = self.compute_atn_delay()
 
-        # make histogram and grids
-        hist, agrid, dgrid = self.make_histogram(symmetric_atn, delay)
+        # Make histogram and bins
+        hist, agrid, dgrid = self.make_histogram()
 
-        # find the location of peaks in the symmetric_atn-delay plane
+        # Find the location of peaks in the symmetric_atn-delay plane
         self.peak_indices = self.find_peaks2(hist, self.peak_threshold,
                                              np.array([self.attenuation_min_distance, self.delay_min_distance]),
                                              self.num_sources)
@@ -126,7 +118,7 @@ class Duet(separation_base.SeparationBase):
         # compute delay_peak, attenuation peak, and attenuation/delay estimates
         delay_peak, atn_delay_est, atnpeak = self.convert_peaks(agrid, dgrid)
         
-		# compute masks for separation
+        # compute masks for separation
         bestind, mask = self.compute_masks(atnpeak, delay_peak)
        
         # demix with ML alignment and convert to time domain
@@ -135,8 +127,8 @@ class Duet(separation_base.SeparationBase):
         self.separated_sources = source_estimates
         return source_estimates, atn_delay_est
 
-    def setup_duet(self, fs):
-    	""" Creates the stfts matrices for channel 0 and 1, and computes the frequency matrix. 
+    def compute_spectrogram(self, fs):
+        """ Creates the stfts matrices for channel 0 and 1, and computes the frequency matrix.
         Parameter:
         fs (integer): sample rate
 
@@ -168,23 +160,33 @@ class Duet(separation_base.SeparationBase):
 
         return stft_ch0, stft_ch1, wmat
 
-    def make_histogram(self, symmetric_atn, delay):
-    	"""Receives the stft of the two channel mixtures and the frequency matrix to a create a smooth and normalized histogram.
+    def compute_atn_delay(self):
+        # Calculate the symmetric attenuation (alpha) and delay (delta) for each
+        # time-freq. point
+        r21 = (self.stft_ch1 + constants.EPSILON) / (self.stft_ch0 + constants.EPSILON)
+        atn = np.abs(r21)  # relative attenuation between the two channels
+        symmetric_atn = atn - 1 / atn  # symmetric attenuation
+        delay = -np.imag(np.log(r21)) / (2 * np.pi * self.wmat)  # relative delay
+        return symmetric_atn, delay
 
-	    Parameters:
-        stft_ch0 (): a 2D Numpy matrix containing the stft of channel 0
-        stft_ch1 (): a 2D Numpy matrix containing the stft of channel 1
-        symmetric_atn:
-        delay:
-        wmat (): a 2D Numpy matrix containing 
+    def make_histogram(self):
+        """Receives the stft of the two channel mixtures and the frequency matrix to a create
+        a smooth and normalized histogram.
+
+        Parameters:
+        stft_ch0: a 2D Numpy matrix containing the stft of channel 0
+        stft_ch1: a 2D Numpy matrix containing the stft of channel 1
+        symmetric_atn: the symmetric attenuation between two channels
+        delay: the time delay between 2 channels
+        wmat: a 2D Numpy matrix containing the time frequency matrix of the signal
 
         Returns:
-            hist (np.array): 
+            hist (np.array): a smooth and normaliz
             agrid:
             dgrid:
-    	 """
+        """
 
-    	# What is going on here???
+        # What is going on here???
         # ------------------------------------
         # calculate the weighted histogram
         p = 1
@@ -192,13 +194,13 @@ class Duet(separation_base.SeparationBase):
         tfw = (np.abs(self.stft_ch0) * np.abs(self.stft_ch1)) ** p * (np.abs(self.wmat)) ** q  # time-freq weights
 
         # only consider time-freq. points yielding estimates in bounds
-        a_premask = np.logical_and(self.attenuation_min < symmetric_atn, symmetric_atn < self.attenuation_max)
-        d_premask = np.logical_and(self.delay_min < delay, delay < self.delay_max)
+        a_premask = np.logical_and(self.attenuation_min < self.symmetric_atn, self.symmetric_atn < self.attenuation_max)
+        d_premask = np.logical_and(self.delay_min < self.delay, self.delay < self.delay_max)
         ad_premask = np.logical_and(a_premask, d_premask)
 
         ad_nzind = np.nonzero(ad_premask)
-        symmetric_atn_vec = symmetric_atn[ad_nzind]
-        delay_vec = delay[ad_nzind]
+        symmetric_atn_vec = self.symmetric_atn[ad_nzind]
+        delay_vec = self.delay[ad_nzind]
         tfw_vec = tfw[ad_nzind]
 
         # compute the histogram
@@ -218,15 +220,13 @@ class Duet(separation_base.SeparationBase):
         self.non_normalized_hist = H[0]
         self.smoothed_hist = self._smooth_matrix(self.non_normalized_hist, np.array([3]))
 
-		# smooth the histogram - local average 3-by-3 neighboring bins
+        # smooth the histogram - local average 3-by-3 neighboring bins
         hist = self._smooth_matrix(hist, np.array([3]))
 
         # normalize and plot the histogram
         hist /= hist.max()
 
         return hist, agrid, dgrid 
-
-
 
     @staticmethod
     def find_peaks2(data, min_thr=0.5, min_dist=None, max_peaks=1):
@@ -273,25 +273,25 @@ class Duet(separation_base.SeparationBase):
         return peakIndex
 
     def convert_peaks(self, agrid, dgrid):
-    	"""Receives the attenuation and delay bins and computes the delay/attenuation peaks based on the peak finder indices.
+        """Receives the attenuation and delay bins and computes the delay/attenuation peaks based on the peak finder indices.
 
        Parameters:
-            agrid:
-            dgrid:
+            agrid: Attenuation bins
+            dgrid: Delay bins
 
         Returns:
             delay_peak:
             atn_delay_est:
             atnpeak:
         """
-    	symmetric_atn_peak = agrid[self.peak_indices[0, :]]
+        symmetric_atn_peak = agrid[self.peak_indices[0, :]]
         delay_peak = dgrid[self.peak_indices[1, :]]
 
         atn_delay_est = np.vstack([symmetric_atn_peak, delay_peak]).T
 
         # convert symmetric_atn to atnpeak
         atnpeak = (symmetric_atn_peak + np.sqrt(symmetric_atn_peak ** 2 + 4)) / 2
-       	return delay_peak, atn_delay_est, atnpeak
+        return delay_peak, atn_delay_est, atnpeak
 
     @staticmethod
     def find_peaks(data, min_thr=0.5, min_dist=None, max_num=1):
@@ -337,7 +337,7 @@ class Duet(separation_base.SeparationBase):
         return peak_indices
 
     def compute_masks(self, atnpeak, delay_peak):
-    	# compute masks for separation
+        # compute masks for separation
         bestsofar = np.inf * np.ones((self.num_frequency_bins - 1, self.num_time_bins))
         bestind = np.zeros((self.num_frequency_bins - 1, self.num_time_bins), int)
         for i in range(0, self.num_sources):
