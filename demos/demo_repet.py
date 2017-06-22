@@ -6,7 +6,6 @@ if not path in sys.path:
     sys.path.insert(1, path)
 
 import nussl
-print nussl.USE_LIBROSA_STFT
 import numpy as np
 
 def main():

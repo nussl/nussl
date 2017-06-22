@@ -10,6 +10,7 @@ import warnings
 import base64
 import json
 import constants
+from audio_signal import AudioSignal
 
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
@@ -321,3 +322,79 @@ def complex_randn(shape):
     Returns: (:obj:`np.ndarray`): a complex-valued numpy array of random values with shape `shape`
     """
     return np.random.randn(*shape) + 1j * np.random.randn(*shape)
+
+
+def _get_axis(array, axis_num, i):
+    """
+    Will get index 'i' along axis 'axis_num' of a 2- or 3-dimensional numpy array.
+    If array has 4+ dimensions or 'axis_num' is larger than number of axes, will return None.
+    Args:
+        array: 
+        axis_num: 
+        i: 
+
+    Returns:
+
+    """
+    if array.ndim == 2:
+        if axis_num == 0:
+            return array[i, :]
+        elif axis_num == 1:
+            return array[:, i]
+        else:
+            return None
+    elif array.ndim == 3:
+        if axis_num == 0:
+            return array[i, :, :]
+        elif axis_num == 1:
+            return array[:, i, :]
+        elif axis_num == 2:
+            return array[:, :, i]
+        else:
+            return None
+    else:
+        return None
+
+
+def _verify_audio_signal_list_lax(audio_signal_list):
+    """
+    Verifies that an input (audio_signal_list) is a list of AudioSignal objects.
+    Args:
+        audio_signal_list: (list) List of AudioSignal objects
+
+    Returns:
+        (list) Verified list of AudioSignal objects.
+
+    """
+    if isinstance(audio_signal_list, AudioSignal):
+        audio_signal_list = [audio_signal_list]
+    elif isinstance(audio_signal_list, list):
+        if not all(isinstance(s, AudioSignal) for s in audio_signal_list):
+            raise ValueError('All input objects must be AudioSignal objects!')
+        if not all(s.has_data for s in audio_signal_list):
+            raise ValueError('All AudioSignal objects in input list must have data!')
+    else:
+        raise ValueError('All input objects must be AudioSignal objects!')
+
+    return audio_signal_list
+
+
+def _verify_audio_signal_list_strict(audio_signal_list):
+    """
+    Verifies that an input (audio_signal_list) is a list of AudioSignal objects and that they all have the same
+    sample rate and same number of channels.
+    Args:
+        audio_signal_list: (list) List of AudioSignal objects
+
+    Returns: (list) Verified list of AudioSignal objects, that all have the same sample rate and number of channels.
+
+    """
+    audio_signal_list = _verify_audio_signal_list_lax(audio_signal_list)
+
+    if not all(audio_signal_list[0].sample_rate == s.sample_rate for s in audio_signal_list):
+        raise ValueError('All input AudioSignal objects must have the same sample rate!')
+
+    if not all(audio_signal_list[0].num_channels == s.num_channels for s in audio_signal_list):
+        raise ValueError('All input AudioSignal objects must have the same number of channels!')
+
+    return audio_signal_list

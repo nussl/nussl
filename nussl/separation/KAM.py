@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import scipy.ndimage.filters
 import scipy
-from audio_signal import AudioSignal
+from nussl.audio_signal import AudioSignal
 
 
 def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=False):
@@ -170,7 +170,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
     for n in range(0, Numit):
 
         # Step (3):
-        # compute the inverse term: [sum_j' f_j' R_j']^-1
+        # compute the inverse_mask term: [sum_j' f_j' R_j']^-1
         SumFR = np.sum(fj * Rj, axis=2)  ###  !!!!!!!!!! careful about memory storage!
         SumFR.shape = (LF * LT, I, I)
         SumFR += 1e-16 * np.random.randn(LF * LT, I, I)  # to avoid singularity issues
@@ -274,7 +274,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             Shat[:, :, nch, ns] = np.reshape(S[:, nch, ns], (LT, LF)).T
 
 
-    # Compute the inverse stft of the estimated sources
+    # Compute the inverse_mask stft of the estimated sources
     shat = np.zeros((x.shape[0], I, J))
     sigTemp = AudioSignal()
     sigTemp.windowtype = Mixture.windowtype
@@ -440,7 +440,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     for n in range(0, Numit):
 
         # Step (3-a):
-        # compute the inverse term: [sum_j' (pgamma_j')^(1/gamma) R_j']^-1
+        # compute the inverse_mask term: [sum_j' (pgamma_j')^(1/gamma) R_j']^-1
         SumPR = np.zeros((LF * LT, I * I), dtype='single')
         for ns in range(0, J):
             Pj_gamma = np.abs(np.dot(U[ns], np.conj(V[ns].T)) ** (1 / gamma))
@@ -559,7 +559,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             Shat[:, :, nch, ns] = np.reshape(S[:, nch, ns], (LT, LF)).T
 
 
-    # Compute the inverse stft of the estimated sources
+    # Compute the inverse_mask stft of the estimated sources
     shat = np.zeros((x.shape[0], I, J))
     sigTemp = AudioSignal()
     sigTemp.windowtype = Mixture.windowtype

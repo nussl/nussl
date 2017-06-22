@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 # noinspection PyUnusedImport
 from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
-import spectral_utils
+import nussl.audio_signal
+import nussl.constants
+import nussl.spectral_utils
+import nussl.utils
 import separation_base
-import audio_signal
-import constants
-import utils
 
 
 class Duet(separation_base.SeparationBase):
@@ -118,30 +118,30 @@ class Duet(separation_base.SeparationBase):
         num_time_bins = len(time_vector)
 
         # Compute the freq. matrix for later use in phase calculations
-        wmat = np.array(np.tile(np.mat(frequency_vector[1::]).T, (1, num_time_bins))) * (2 * np.pi / fs)  # WTF?
+        frequency_matrix = np.array(np.tile(np.mat(frequency_vector[1::]).T, (1, num_time_bins))) * (2 * np.pi / fs)  # WTF?
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        R21 = (stft_ch1 + constants.EPSILON) / (stft_ch0 + constants.EPSILON)
-        atn = np.abs(R21)  # relative attenuation between the two channels
-        alpha = atn - 1 / atn  # symmetric attenuation
-        delta = -np.imag(np.log(R21)) / (2 * np.pi * wmat)  # relative delay
+        R21 = (stft_ch1 + nussl.constants.EPSILON) / (stft_ch0 + nussl.constants.EPSILON)
+        relative_attenuation = np.abs(R21)  # relative attenuation between the two channels
+        symmetric_attenuation = relative_attenuation - 1 / relative_attenuation
+        relative_delay = -np.imag(np.log(R21)) / (2 * np.pi * frequency_matrix)  # relative delay
 
         # What is going on here???
         # ------------------------------------
         # calculate the weighted histogram
         p = 1
         q = 0
-        tfw = (np.abs(stft_ch0) * np.abs(stft_ch1)) ** p * (np.abs(wmat)) ** q  # time-freq weights
+        tfw = (np.abs(stft_ch0) * np.abs(stft_ch1)) ** p * (np.abs(frequency_matrix)) ** q  # time-freq weights
 
         # only consider time-freq. points yielding estimates in bounds
-        a_premask = np.logical_and(self.attenuation_min < alpha, alpha < self.attenuation_max)
-        d_premask = np.logical_and(self.delay_min < delta, delta < self.delay_max)
+        a_premask = np.logical_and(self.attenuation_min < symmetric_attenuation, symmetric_attenuation < self.attenuation_max)
+        d_premask = np.logical_and(self.delay_min < relative_delay, relative_delay < self.delay_max)
         ad_premask = np.logical_and(a_premask, d_premask)
 
         ad_nzind = np.nonzero(ad_premask)
-        alpha_vec = alpha[ad_nzind]
-        delta_vec = delta[ad_nzind]
+        alpha_vec = symmetric_attenuation[ad_nzind]
+        delta_vec = relative_delay[ad_nzind]
         tfw_vec = tfw[ad_nzind]
 
         # compute the histogram
@@ -184,7 +184,7 @@ class Duet(separation_base.SeparationBase):
         bestsofar = np.inf * np.ones((num_frequency_bins - 1, num_time_bins))
         bestind = np.zeros((num_frequency_bins - 1, num_time_bins), int)
         for i in range(0, self.num_sources):
-            score = np.abs(atnpeak[i] * np.exp(-1j * wmat * deltapeak[i]) * stft_ch0 - stft_ch1) ** 2 / \
+            score = np.abs(atnpeak[i] * np.exp(-1j * frequency_matrix * deltapeak[i]) * stft_ch0 - stft_ch1) ** 2 / \
                     (1 + atnpeak[i] ** 2)
             mask = (score < bestsofar)
             bestind[mask] = i
@@ -195,12 +195,12 @@ class Duet(separation_base.SeparationBase):
         for i in range(0, self.num_sources):
             mask = (bestind == i)
             Xm = np.vstack([np.zeros((1, num_time_bins)),
-                            (stft_ch0 + atnpeak[i] * np.exp(1j * wmat * deltapeak[i]) * stft_ch1) /
+                            (stft_ch0 + atnpeak[i] * np.exp(1j * frequency_matrix * deltapeak[i]) * stft_ch1) /
                             (1 + atnpeak[i] ** 2) * mask])
             # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
-            xi = spectral_utils.e_istft(Xm, L, hop, win_type)
+            xi = nussl.spectral_utils.e_istft(Xm, L, hop, win_type)
 
-            xhat[i, :] = utils.add_mismatched_arrays(xhat[i, ], xi)[:self.audio_signal.signal_length]
+            xhat[i, :] = nussl.utils.add_mismatched_arrays(xhat[i,], xi)[:self.audio_signal.signal_length]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]
@@ -370,8 +370,8 @@ class Duet(separation_base.SeparationBase):
         """
         signals = []
         for i in range(self.num_sources):
-            cur_signal = audio_signal.AudioSignal(audio_data_array=self.separated_sources[i],
-                                                  sample_rate=self.sample_rate)
+            cur_signal = nussl.audio_signal.AudioSignal(audio_data_array=self.separated_sources[i],
+                                                        sample_rate=self.sample_rate)
             signals.append(cur_signal)
         return signals
 

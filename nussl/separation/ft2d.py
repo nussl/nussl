@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
-import spectral_utils
-import separation_base
-import config
-from audio_signal import AudioSignal
 from scipy.ndimage.filters import maximum_filter, minimum_filter
+
+import nussl.config
+import nussl.spectral_utils
+import separation_base
+from nussl.audio_signal import AudioSignal
 
 
 class FT2D(separation_base.SeparationBase):
@@ -23,7 +23,7 @@ class FT2D(separation_base.SeparationBase):
 
     """
     def __init__(self, input_audio_signal, high_pass_cutoff=None, neighborhood_size=None,
-                 do_mono=False, use_librosa_stft=config.USE_LIBROSA_STFT):
+                 do_mono=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
         super(FT2D, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None

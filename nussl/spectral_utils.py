@@ -229,7 +229,7 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
 
 def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=True):
     """
-    Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
+    Computes an inverse_mask short time fourier transform (STFT) from a 2D numpy array of complex values. By default
     this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
     reconstruct_reflection flag overrides that behavior.
 

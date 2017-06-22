@@ -3,10 +3,10 @@
 
 import numpy as np
 
-import spectral_utils
-import separation_base
 import config
 from audio_signal import AudioSignal
+from nussl.separation import separation_base
+
 
 class RPCA(separation_base.SeparationBase):
     """Implements foreground/background separation using RPCA
@@ -126,18 +126,47 @@ class RPCA(separation_base.SeparationBase):
         self.error = error
         return low_rank, sparse_matrix
 
-    def shrink(self, matrix, tau):
-        return np.sign(matrix)*np.maximum(np.abs(matrix) - tau, 0)
+    @staticmethod
+    def shrink(matrix, tau):
+        """
+        
+        Args:
+            matrix: 
+            tau: 
+
+        Returns:
+
+        """
+        return np.sign(matrix) * np.maximum(np.abs(matrix) - tau, 0)
 
     def svd_threshold(self, matrix, tau):
+        """
+        
+        Args:
+            matrix: 
+            tau: 
+
+        Returns:
+
+        """
         u, sigma, v = np.linalg.svd(matrix, full_matrices = False)
         shrunk = self.shrink(sigma, tau)
         thresholded_singular_values = np.dot(u, np.dot(np.diag(shrunk), v))
         return thresholded_singular_values
 
-    def reduced_rank_svd(self, matrix, k):
+    @staticmethod
+    def reduced_rank_svd(matrix, k):
+        """
+        
+        Args:
+            matrix: 
+            k: 
+
+        Returns:
+
+        """
         u, sigma, v = np.linalg.svd(matrix, full_matrices = False)
-        matrix_reduced = np.dot(u[:, 0:k], np.dot(sigma[0:K], v[0:k, :]))
+        matrix_reduced = np.dot(u[:, 0:k], np.dot(sigma[0:k], v[0:k, :]))
         return matrix_reduced
 
     def make_audio_signals(self):

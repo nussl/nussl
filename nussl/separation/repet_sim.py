@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import warnings
 
-import spectral_utils
-import separation_base
-import constants
-import config
-from audio_signal import AudioSignal
-import utils
+import numpy as np
+
+import nussl.config
+import nussl.constants
+import nussl.spectral_utils
+import nussl.utils
+import mask_separation_base
+import masks
 
 
-class RepetSim(separation_base.SeparationBase):
+class RepetSim(mask_separation_base.MaskSeparationBase):
     """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
 
     REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
@@ -36,8 +37,10 @@ class RepetSim(separation_base.SeparationBase):
 
     def __init__(self, input_audio_signal, similarity_threshold=None, min_distance_between_frames=None,
                  max_repeating_frames=None, high_pass_cutoff=None, do_mono=False,
-                 use_librosa_stft=config.USE_LIBROSA_STFT, matlab_fidelity=False):
-        super(RepetSim, self).__init__(input_audio_signal=input_audio_signal)
+                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT, matlab_fidelity=False,
+                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
+        super(RepetSim, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type,
+                                       mask_threshold=mask_threshold)
 
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
         self.similarity_threshold = 0 if similarity_threshold is None else similarity_threshold
@@ -53,6 +56,7 @@ class RepetSim(separation_base.SeparationBase):
         self.similarity_indices = None
         self.magnitude_spectrogram = None
         self.stft = None
+        self.masks = None
         self.use_librosa_stft = use_librosa_stft
         self.matlab_fidelity = matlab_fidelity
 
@@ -81,23 +85,35 @@ class RepetSim(separation_base.SeparationBase):
         self.similarity_indices = self._get_similarity_indices()
 
         background_stft = []
+        background_mask = []
         for i in range(self.audio_signal.num_channels):
             repeating_mask = self._compute_mask(self.magnitude_spectrogram[:, :, i])
 
             repeating_mask[low:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            background_mask.append(repeating_mask)
 
             stft_with_mask = repeating_mask * self.stft[:, :, i]
             background_stft.append(stft_with_mask)
 
         # Set STFT in correct order
         background_stft = np.array(background_stft).transpose((1, 2, 0))
+        self._make_background_signal(background_stft)
 
-        # Make new audio signal and do iSTFT to get background
+        # make a mask and return
+        background_mask = np.array(background_mask).transpose((1, 2, 0))
+        background_mask = masks.SoftMask(background_mask)
+        if self.mask_type == self.BINARY_MASK:
+            background_mask = background_mask.mask_to_binary(self.mask_threshold)
+
+        self.masks = [background_mask, background_mask.inverse_mask()]
+
+        return self.masks
+
+    def _make_background_signal(self, background_stft):
         self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
-        self.background.istft(overwrite=True, use_librosa=self.use_librosa_stft,
+        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
+                              overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)
-
-        return self.background
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
@@ -133,16 +149,16 @@ class RepetSim(separation_base.SeparationBase):
             # base similarity matrix (all dot products)
             similarity = np.dot(matrix, matrix.T)
 
-            # inverse of the squared magnitude of preference vectors (number of occurrences)
+            # inverse_mask of the squared magnitude of preference vectors (number of occurrences)
             inv_square_mag = 1 / np.diag(similarity)
 
-            # if it doesn't occur, set it's inverse magnitude to zero (instead of inf)
+            # if it doesn't occur, set it's inverse_mask magnitude to zero (instead of inf)
             inv_square_mag[np.isinf(inv_square_mag)] = 0
 
-            # inverse of the magnitude
+            # inverse_mask of the magnitude
             inv_mag = np.sqrt(inv_square_mag)
 
-            # cosine similarity (element-wise multiply by inverse magnitudes)
+            # cosine similarity (element-wise multiply by inverse_mask magnitudes)
             cosine = similarity * inv_mag
             cosine = cosine.T * inv_mag
 
@@ -159,10 +175,10 @@ class RepetSim(separation_base.SeparationBase):
 
         similarity_indices = []
         for i in range(self.audio_signal.stft_length):
-            cur_indices = utils.find_peak_indices(self.similarity_matrix[i, :],
-                                                  self.max_repeating_frames,
-                                                  min_dist=self.min_distance_between_frames,
-                                                  threshold=self.similarity_threshold)
+            cur_indices = nussl.utils.find_peak_indices(self.similarity_matrix[i, :],
+                                                        self.max_repeating_frames,
+                                                        min_dist=self.min_distance_between_frames,
+                                                        threshold=self.similarity_threshold)
 
             # the first peak is always itself so we throw it out
             # we also want only self.max_repeating_frames peaks
@@ -201,7 +217,7 @@ class RepetSim(separation_base.SeparationBase):
             mask[:, i] = np.median(similar_times, axis=0)
 
         mask = np.minimum(mask, magnitude_spectrogram_channel)
-        mask = (mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
+        mask = (mask + nussl.constants.EPSILON) / (magnitude_spectrogram_channel + nussl.constants.EPSILON)
         return mask
 
     def get_similarity_matrix(self):

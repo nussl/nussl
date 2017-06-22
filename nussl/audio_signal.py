@@ -150,7 +150,7 @@ class AudioSignal(object):
         """
         if self.audio_data is None:
             return None
-        return self.audio_data.shape[self._LEN]
+        return self.audio_data.shape[constants.LEN_INDEX]
 
     @property
     def signal_duration(self):
@@ -169,9 +169,9 @@ class AudioSignal(object):
         """
         # TODO: what about a mismatch between audio_data and stft_data??
         if self.audio_data is not None:
-            return self.audio_data.shape[self._CHAN]
+            return self.audio_data.shape[constants.CHAN_INDEX]
         if self.stft_data is not None:
-            return self.stft_data.shape[self._STFT_CHAN]
+            return self.stft_data.shape[constants.STFT_CHAN_INDEX]
         return None
 
     @property
@@ -185,7 +185,7 @@ class AudioSignal(object):
             return None
 
         start = 0
-        end = self._audio_data.shape[self._LEN]
+        end = self._audio_data.shape[constants.LEN_INDEX]
 
         if self._active_end is not None and self._active_end < end:
             end = self._active_end
@@ -197,9 +197,9 @@ class AudioSignal(object):
 
     @audio_data.setter
     def audio_data(self, value):
-        assert (type(value) == np.ndarray)
+        assert isinstance(value, np.ndarray), 'Type of self.audio_data must be np.ndarray!'
 
-        if value.ndim > 1 and value.shape[self._CHAN] > value.shape[self._LEN]:
+        if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
             warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
             value = value.T
 
@@ -209,7 +209,7 @@ class AudioSignal(object):
         self._audio_data = value
 
         if self._audio_data.ndim < 2:
-            self._audio_data = np.expand_dims(self._audio_data, axis=self._CHAN)
+            self._audio_data = np.expand_dims(self._audio_data, axis=constants.CHAN_INDEX)
 
         self.set_active_region_to_default()
 
@@ -240,7 +240,7 @@ class AudioSignal(object):
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate freq_vector until self.stft() is run')
-        return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[self._STFT_BINS])
+        return np.linspace(0.0, self.sample_rate // 2, num=self.stft_data.shape[constants.STFT_VERT_INDEX])
 
     @property
     def time_bins_vector(self):
@@ -251,7 +251,7 @@ class AudioSignal(object):
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate time_bins_vector until self.stft() is run')
-        return np.linspace(0.0, self.signal_duration, num=self.stft_data.shape[self._STFT_LEN])
+        return np.linspace(0.0, self.signal_duration, num=self.stft_data.shape[constants.STFT_LEN_INDEX])
 
     @property
     def stft_length(self):
@@ -261,7 +261,7 @@ class AudioSignal(object):
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate stft_length until self.stft() is run')
-        return self.stft_data.shape[self._STFT_LEN]
+        return self.stft_data.shape[constants.STFT_LEN_INDEX]
 
     @property
     def num_fft_bins(self):
@@ -271,7 +271,7 @@ class AudioSignal(object):
         """
         if self.stft_data is None:
             raise AttributeError('Cannot calculate num_fft_bins until self.stft() is run')
-        return self.stft_data.shape[self._STFT_BINS]
+        return self.stft_data.shape[constants.STFT_VERT_INDEX]
 
     @property
     def active_region_is_default(self):
@@ -289,7 +289,7 @@ class AudioSignal(object):
         """
         if self._audio_data is None:
             return None
-        return self._audio_data.shape[self._LEN]
+        return self._audio_data.shape[constants.LEN_INDEX]
 
     @property
     def power_spectrogram_data(self):
@@ -304,7 +304,7 @@ class AudioSignal(object):
         return np.abs(self.stft_data) ** 2
 
     @property
-    def mangitude_spectrogram_data(self):
+    def magnitude_spectrogram_data(self):
         """ (:obj:`np.ndarray`): Returns a real valued 2D ``np.array`` with magnitude spectrogram data.
         The power spectrogram is defined as Re(STFT). Same shape as ``self.stft_data``.
         Raises:
@@ -638,7 +638,7 @@ class AudioSignal(object):
         """
         self._verify_audio(other)
 
-        self.audio_data = np.concatenate((self.audio_data, other.audio_data), axis=self._LEN)
+        self.audio_data = np.concatenate((self.audio_data, other.audio_data), axis=constants.LEN_INDEX)
 
     def truncate_samples(self, n_samples):
         """ Truncates the signal leaving only the first ``n_samples`` samples.
@@ -943,14 +943,32 @@ class AudioSignal(object):
             raise ValueError('Cannot get frequency bin until self.stft() is run!')
         return (np.abs(self.freq_vector - freq)).argmin()
 
+    def apply_gain(self, value, overwrite=False):
+        """
+        Apply a gain to self.audio_data
+        Args:
+            value: (float) amount to multiply self.audio_data by
+            overwrite: (bool) should overwrite audio_data in self
+
+        Returns:
+
+        """
+        if not isinstance(value, numbers.Real):
+            raise ValueError('Can only multiply/divide by a scalar!')
+
+        audio_data = self.audio_data * value
+        if overwrite:
+            self.audio_data = audio_data
+        return self
+
     ##################################################
     #              Channel Utilities
     ##################################################
 
     def _verify_get_channel(self, n):
         if n >= self.num_channels:
-            raise ValueError(
-                'Cannot get channel {0} when this object only has {1} channels!'.format(n, self.num_channels))
+            raise ValueError( 'Cannot get channel {0} when this object only has {1} channels! (0-based)'
+                              .format(n, self.num_channels))
 
         if n < 0:
             raise ValueError('Cannot get channel {}. This will cause unexpected results'.format(n))
@@ -968,7 +986,7 @@ class AudioSignal(object):
         """
         self._verify_get_channel(n)
 
-        return self._get_axis(self.audio_data, self._CHAN, n)
+        return utils._get_axis(self.audio_data, constants.CHAN_INDEX, n)
 
     def get_channels(self):
         """
@@ -993,7 +1011,7 @@ class AudioSignal(object):
         """
         self._verify_get_channel(n)
 
-        return self._get_axis(self.stft_data, self._STFT_CHAN, n)
+        return utils._get_axis(self.stft_data, constants.STFT_CHAN_INDEX, n)
 
     def get_stft_channels(self):
         """
@@ -1033,7 +1051,7 @@ class AudioSignal(object):
         self._verify_get_channel(n)
 
         # np.array helps with duck typing
-        return self._get_axis(np.array(self.power_spectrogram_data), self._STFT_CHAN, n)
+        return utils._get_axis(np.array(self.power_spectrogram_data), constants.STFT_CHAN_INDEX, n)
 
     def get_magnitude_spectrogram_channel(self, n):
         """ Returns the n-th channel from ``self.magnitude_spectrogram_data``.
@@ -1050,7 +1068,7 @@ class AudioSignal(object):
         self._verify_get_channel(n)
 
         # np.array helps with duck typing
-        return self._get_axis(np.array(self.mangitude_spectrogram_data), self._STFT_CHAN, n)
+        return utils._get_axis(np.array(self.magnitude_spectrogram_data), constants.STFT_CHAN_INDEX, n)
 
     def to_mono(self, overwrite=False):
         """ Converts ``self.audio_data`` to mono by averaging every sample.
@@ -1065,7 +1083,7 @@ class AudioSignal(object):
             (:obj:`np.array`): Mono-ed version of ``self.audio_data``.
 
         """
-        mono = np.mean(self.audio_data, axis=self._CHAN)
+        mono = np.mean(self.audio_data, axis=constants.CHAN_INDEX)
         if overwrite:
             self.audio_data = mono
         return mono
@@ -1102,21 +1120,17 @@ class AudioSignal(object):
     def __isub__(self, other):
         return self - other
 
-    def __mul__(self, other):
-        if not isinstance(other, numbers.Real):
-            raise ValueError('Can only multiply/divide by a scalar!')
+    def __mul__(self, value):
+        return self.apply_gain(value, overwrite=True)
 
-        self.audio_data *= other
-        return self
+    def __div__(self, value):
+        return self.apply_gain(1.0 / float(value), overwrite=True)
 
-    def __div__(self, other):
-        return self * (1 / float(other))
+    def __imul__(self, value):
+        return self * value
 
-    def __imul__(self, other):
-        return self * other
-
-    def __idiv__(self, other):
-        return self / other
+    def __idiv__(self, value):
+        return self / value
 
     def __len__(self):
         return self.signal_length
@@ -1132,28 +1146,3 @@ class AudioSignal(object):
 
     def __ne__(self, other):
         return not self == other
-
-    ##################################################
-    #              Private utils
-    ##################################################
-
-    @staticmethod
-    def _get_axis(array, axis_num, i):
-        if array.ndim == 2:
-            if axis_num == 0:
-                return array[i, :]
-            elif axis_num == 1:
-                return array[:, i]
-            else:
-                return None
-        elif array.ndim == 3:
-            if axis_num == 0:
-                return array[i, :, :]
-            elif axis_num == 1:
-                return array[:, i, :]
-            elif axis_num == 2:
-                return array[:, :, i]
-            else:
-                return None
-        else:
-            return None
