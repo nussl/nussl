@@ -25,3 +25,15 @@ ALL_WINDOWS = [WINDOW_HAMMING, WINDOW_RECTANGULAR, WINDOW_HANN, WINDOW_BLACKMAN]
 """
 
 NUMPY_JSON_KEY = "py/numpy.ndarray"  #: (str): key used when turning numpy arrays into json
+
+# ############# Array Indices ############# #
+
+# audio_data
+LEN_INDEX  = 1  #: (int): Index of the length of
+CHAN_INDEX = 0
+
+# stft_data
+STFT_VERT_INDEX = 0
+STFT_LEN_INDEX  = 1
+STFT_CHAN_INDEX = 2
+

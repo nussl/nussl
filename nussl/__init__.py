@@ -1,23 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .spectral_utils import *
-from utils import *
-from config import *
-from constants import *
-from .audio_signal import AudioSignal
-from separation_base import SeparationBase
-from Duet import Duet
-from Nmf import NMF, DistanceType
-from repet import Repet
-from repet_sim import RepetSim
-from ft2d import FT2D
-from overlap_add import OverlapAdd
-from rpca import RPCA
-from ideal_mask import IdealMask
-from projet import Projet
-from ica import ICA
-from evaluation import Evaluation
+from nussl.config import *
+from nussl.constants import *
+from nussl.utils import *
+from nussl.spectral_utils import *
+from nussl.audio_signal import AudioSignal
+from nussl.separation import *
+from nussl.separation.masks import *
+from nussl.evaluation import *
 
 __version__ = '0.1.5a10'
 

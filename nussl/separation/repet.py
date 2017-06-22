@@ -5,13 +5,13 @@ import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
 
-import separation_base
-import constants
-import config
-from audio_signal import AudioSignal
+import nussl.config
+import nussl.constants
+import mask_separation_base
+import masks
 
 
-class Repet(separation_base.SeparationBase):
+class Repet(mask_separation_base.MaskSeparationBase):
     """Implements the original REpeating Pattern Extraction Technique algorithm using the beat spectrum.
 
     REPET is a simple method for separating a repeating background from a non-repeating foreground in an
@@ -53,9 +53,11 @@ class Repet(separation_base.SeparationBase):
 
     """
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
-                 do_mono=False, use_find_period_complex=False, use_librosa_stft=config.USE_LIBROSA_STFT,
-                 matlab_fidelity=False):
-        super(Repet, self).__init__(input_audio_signal=input_audio_signal)
+                 do_mono=False, use_find_period_complex=False,
+                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT, matlab_fidelity=False,
+                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
+        super(Repet, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type,
+                                    mask_threshold=mask_threshold)
 
         # Check input parameters
         if (min_period or max_period) and period:
@@ -65,6 +67,7 @@ class Repet(separation_base.SeparationBase):
         self.background = None
         self.foreground = None
         self.beat_spectrum = None
+        self.masks = None
         self.use_find_period_complex = use_find_period_complex
         self.use_librosa_stft = use_librosa_stft
 
@@ -97,7 +100,7 @@ class Repet(separation_base.SeparationBase):
         """ Runs the original REPET algorithm
 
         Returns:
-            background (AudioSignal): An AudioSignal object with repeating background in background.audio_data
+            masks (Mask): An MaskBase object with repeating background in background.audio_data
             (to get the corresponding non-repeating foreground run self.make_audio_signals())
 
         Example:
@@ -127,22 +130,30 @@ class Repet(separation_base.SeparationBase):
 
         # separate the mixture background by masking
         background_stft = []
+        background_mask = []
         for i in range(self.audio_signal.num_channels):
             repeating_mask = self._compute_repeating_mask(self.magnitude_spectrogram[:, :, i])
 
             repeating_mask[low:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            background_mask.append(repeating_mask)
 
             # apply mask
             stft_with_mask = repeating_mask * self.stft[:, :, i]
             background_stft.append(stft_with_mask)
 
+        # make a new audio signal for the background
         background_stft = np.array(background_stft).transpose((1, 2, 0))
-        self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft,
-                              truncate_to_length=self.audio_signal.signal_length)
+        self._make_background_signal(background_stft)
 
-        return self.background
+        # make a mask and return
+        background_mask = np.array(background_mask).transpose((1, 2, 0))
+        background_mask = masks.SoftMask(background_mask)
+        if self.mask_type == self.BINARY_MASK:
+            background_mask = background_mask.mask_to_binary(self.mask_threshold)
+
+        self.masks = [background_mask, background_mask.inverse_mask()]
+
+        return self.masks
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
@@ -323,7 +334,7 @@ class Repet(separation_base.SeparationBase):
 
         # take minimum of computed mask and original input and scale
         min_median_mask = np.minimum(median_mask, magnitude_spectrogram_channel)
-        mask = (min_median_mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
+        mask = (min_median_mask + nussl.constants.EPSILON) / (magnitude_spectrogram_channel + nussl.constants.EPSILON)
 
         return mask
 
@@ -355,6 +366,12 @@ class Repet(separation_base.SeparationBase):
         result += self.stft_params.window_length / self.stft_params.window_overlap - 1
         result /= self.stft_params.window_overlap
         return int(np.ceil(result))
+
+    def _make_background_signal(self, background_stft):
+        self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
+        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
+                              overwrite=True, use_librosa=self.use_librosa_stft,
+                              truncate_to_length=self.audio_signal.signal_length)
 
     def plot(self, output_file, **kwargs):
         """
