@@ -23,21 +23,19 @@ x2 = x(:,2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. analyze the signals - STFT
 
-%wlen = 1024; timestep = 512; numfreq = 1024; ovp = 0;
+wlen = 1024; timestep = 512; numfreq = 1024;
 % ->
-wlen = 2048; timestep = 1024; numfreq = 2048;
+% wlen = 2048; timestep = 1024; numfreq = 2048;
 % <-
-awin = hann(wlen);                                           % analysis window is a Hamming window
+awin = hamming(wlen);                                           % analysis window is a Hamming window
 
-[tf1,Fout1,Tout1,Pout1] = f_stft(x1,wlen,'hanning',timestep,numfreq,fs);
-[tf2,Fout2,Tout2,Pout2] = f_stft(x2,wlen,'hanning',timestep,numfreq,fs);
+tf1 = tfanalysis(x1,awin,timestep,numfreq);                     % time-freq domain
+tf2 = tfanalysis(x2,awin,timestep,numfreq);                     % time-freq domain
 tf1(1,:) = []; tf2(1,:) = [];                                   % remove dc component from mixtures to avoid dividing by zero frequency in the delay estimation
-save('tf1.mat', 'tf1'); save('tf2.mat', 'tf2');
-freq_len = length(Fout1);
+
 % calculate pos/neg frequencies for later use in delay calc
-freq = [(1:(freq_len/2+1)) ((-freq_len/2)+1:-1)]*(pi/(freq_len)); %Removed 2 from 2 pi to make fit with nussl
+freq = [(1:numfreq/2) ((-numfreq/2)+1:-1)]*(2*pi/(numfreq));
 fmat = freq(ones(size(tf1,2),1),:)';
-save('fmat.mat', 'fmat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 2. calculate alpha and delta for each t-f point
@@ -47,11 +45,10 @@ R21 = (tf2+eps)./(tf1+eps);                                     % time-freq rati
 %%% 2.1 HERE WE ESTIMATE THE RELATIVE ATTENUATION (alpha) %%%
 a = abs(R21);                                                   % relative attenuation between the two mixtures
 alpha = a-1./a;                                                 % 'alpha' (symmetric attenuation)
-save('alpha_duet.mat', 'alpha');
 
 %%% 2.2 HERE WE ESTIMATE THE RELATIVE DELAY (delta) %%%%
 delta = -imag(log(R21))./fmat;                                  % 'delta' relative delay
-save('delta_duet.mat', 'alpha');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 3. calculate weighted histogram
 
@@ -75,13 +72,13 @@ A = full(sparse(alpha_ind,delta_ind,tfweight,abins,dbins));
 
 % smooth the histogram - local average 3-by-3 neighboring bins
 A = twoDsmooth(A,3);
-save('histogram_duet.mat', 'alpha');
+
 % plot 2-D histogram
 % mesh(linspace(-maxd,maxd,dbins),linspace(-maxa,maxa,abins),A);
 % ->
 figure,
 mesh(linspace(-maxd,maxd,dbins),linspace(-maxa,maxa,abins),A);
-%pause
+pause
 % <-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -139,6 +136,6 @@ for i=1:numsources
     % as that eliminates most of the masking artifacts
 %     soundsc(est(i,:)+0.05*x1,fs); pause;                        % play demixture
     % ->
-    audiowrite(est(i,:)'+0.05*x1,fs,[file(1:end-4),'_',num2str(i),'.wav']);
+    wavwrite(est(i,:)'+0.05*x1,fs,nbits,[file(1:end-4),'_',num2str(i),'.wav']);
     % <-
 end
