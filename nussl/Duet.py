@@ -101,7 +101,7 @@ class Duet(separation_base.SeparationBase):
         """
 
         # Calculate the stft of both channels and create the frequency matrix
-        self.stft_ch0, self.stft_ch1, self.wmat = self.compute_spectrogram(self.sample_rate)
+        self.stft_ch0, self.stft_ch1, self.wmat = self._compute_spectrogram(self.sample_rate)
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
@@ -127,7 +127,7 @@ class Duet(separation_base.SeparationBase):
         self.separated_sources = source_estimates
         return source_estimates, atn_delay_est
 
-    def compute_spectrogram(self, fs):
+    def _compute_spectrogram(self, fs):
         """ Creates the stfts matrices for channel 0 and 1, and computes the frequency matrix.
         Parameter:
         fs (integer): sample rate
@@ -135,7 +135,7 @@ class Duet(separation_base.SeparationBase):
         Returns:
             stft_ch0 (np.matrix): a 2D Numpy matrix containing the stft of channel 0
             stft_ch1 (np.matrix): a 2D Numpy matrix containing the stft of channel 1
-            wmat: a frequency matrix
+            wmat: a time frequency matrix
         """
         if self.audio_signal.num_channels != 2:  # double check this
             raise ValueError('Cannot run Duet on audio signal without exactly 2 channels!')
@@ -174,16 +174,16 @@ class Duet(separation_base.SeparationBase):
         a smooth and normalized histogram.
 
         Parameters:
-        stft_ch0: a 2D Numpy matrix containing the stft of channel 0
-        stft_ch1: a 2D Numpy matrix containing the stft of channel 1
-        symmetric_atn: the symmetric attenuation between two channels
-        delay: the time delay between 2 channels
-        wmat: a 2D Numpy matrix containing the time frequency matrix of the signal
+        stft_ch0 (complex np.array): a 2D Numpy matrix containing the stft of channel 0
+        stft_ch1 (complex np.array): a 2D Numpy matrix containing the stft of channel 1
+        symmetric_atn (np.array): the symmetric attenuation between two channels
+        delay (np.array): the time delay between 2 channels
+        wmat(np.array): a 2D Numpy matrix containing the time frequency matrix of the signal
 
         Returns:
-            hist (np.array): a smooth and normaliz
-            agrid:
-            dgrid:
+            hist (np.array): a smooth and normalized histogram
+            agrid (np.array): attenuation bins
+            dgrid (np.array): delay bins
         """
 
         # What is going on here???
@@ -276,8 +276,8 @@ class Duet(separation_base.SeparationBase):
         """Receives the attenuation and delay bins and computes the delay/attenuation peaks based on the peak finder indices.
 
        Parameters:
-            agrid: Attenuation bins
-            dgrid: Delay bins
+            agrid (np.array): Attenuation bins
+            dgrid (np.array): Delay bins
 
         Returns:
             delay_peak:

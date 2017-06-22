@@ -27,10 +27,10 @@ x2 = x(:,2);
 % ->
 wlen = 2048; timestep = 1024; numfreq = 2048;
 % <-
-awin = hann(wlen);                                           % analysis window is a Hamming window
+awin = hamming(wlen);                                           % analysis window is a Hamming window
 
-[tf1,Fout1,Tout1,Pout1] = f_stft(x1,wlen,'hanning',timestep,numfreq,fs);
-[tf2,Fout2,Tout2,Pout2] = f_stft(x2,wlen,'hanning',timestep,numfreq,fs);
+[tf1,Fout1,Tout1,Pout1] = f_stft(x1,wlen,'hamming',timestep,numfreq,fs);
+[tf2,Fout2,Tout2,Pout2] = f_stft(x2,wlen,'hamming',timestep,numfreq,fs);
 tf1(1,:) = []; tf2(1,:) = [];                                   % remove dc component from mixtures to avoid dividing by zero frequency in the delay estimation
 save('tf1.mat', 'tf1'); save('tf2.mat', 'tf2');
 freq_len = length(Fout1);

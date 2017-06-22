@@ -92,8 +92,7 @@ mesh(linspace(-maxd,maxd,dbins),linspace(-maxa,maxa,abins),A);
 % peakalpha=[0 -0.4];
 % ->
 numsources = input('How many sources?\n');
-%peaks = local_peaks(A,[3,3]);                                   % Local extrema/peaks
-peaks = py.utils.find_peak_indices(A,3)
+peaks = local_peaks(A,[3,3]);                                   % Local extrema/peaks
 peaks = flipud(sortrows(peaks,3));                              % Sort peaks by decreasing level value
 peaks = peaks(1:numsources,1:2);                                % Keep only the indices of the first r peaks
 
