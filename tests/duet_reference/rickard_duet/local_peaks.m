@@ -86,7 +86,9 @@ else
     for i = 1:n
         for j = 1:m
             Xij = X((1:win1)+i-1,(1:win2)+j-1);                 % Sliding window of size win
-            [val,row,col] = maxi(Xij);
+            [val, idx] = max(Xij(:));
+            [row, col] = ind2sub(size(Xij),idx);
+
             if all([row,col] == [v1+1,v2+1]) && val >= thresh   % If maximum local & above threshold, it is a peak
                 P = cat(1,P,val);
                 I = cat(1,I,i);
