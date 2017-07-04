@@ -22,14 +22,14 @@ class DuetUnitTests(unittest.TestCase):
     #     duet = nussl.Duet(signal, 3)
     #     duet.run()
 
-    # def test_refact_duet(self):
-    #     input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
-    #     signal = nussl.AudioSignal(path_to_input_file=input_file_name)
-    #     refact_duet = nussl.Duet(signal, num_sources=3)
-    #     refact_duet_result = refact_duet.run()
-    #     duet = nussl.Duet(signal, 3)
-    #     nussel_duet_result = duet.run()
-    #     assert refact_duet_result == nussel_duet_result
+    def test_refact_duet(self):
+        input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
+        signal = nussl.AudioSignal(path_to_input_file=input_file_name)
+        refact_duet = nussl.Duet(signal, num_sources=3)
+        refact_duet_result = refact_duet.run()
+        duet = nussl.Duet(signal, 3)
+        nussel_duet_result = duet.run()
+        assert refact_duet_result == nussel_duet_result
 
     @staticmethod
     def _load_matlab_results():
@@ -49,7 +49,7 @@ class DuetUnitTests(unittest.TestCase):
         signal = nussl.AudioSignal(audio_data_array=np_sin)
         with self.assertRaises(ValueError):
             duet = nussl.Duet(signal, 3)
-            duet.compute_spectrogram(duet.sample_rate)
+            duet._compute_spectrogram(duet.sample_rate)
 
     def test_compute_spectrogram_wmat(self):
         # Load MATLAB values
@@ -64,12 +64,14 @@ class DuetUnitTests(unittest.TestCase):
         path = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
         signal = nussl.AudioSignal(path)
         duet = nussl.Duet(signal, 3)
-        duet_sft0, duet_sft1, duet_wmat = duet.compute_spectrogram(duet.sample_rate)
-        zero_check = duet_sft0 - tf1_mat
-        max_error = np.max(zero_check)
-        assert np.allclose(duet_sft0, tf1_mat, atol=1e-02) #Still has the first and last col doubled
-        assert np.allclose(duet_sft1, tf2_mat)
-        assert np.allclose(duet_wmat, fmat)
+        duet.stft_params.window_length = 1024
+        duet.stft_params.window_type = nussl.WINDOW_RECTANGULAR
+        duet.stft_params.hop_length = duet.stft_params.window_length
+
+        duet_sft0, duet_sft1, duet_wmat = duet._compute_spectrogram(duet.sample_rate)
+        assert np.allclose(duet_sft0, tf1_mat, atol=1e-06)
+        assert np.allclose(duet_sft1, tf2_mat, atol=1e-06)
+        # assert np.allclose(duet_wmat, fmat)
 
     # def test_compute_atn_delay(self):
     #     sym_atn_mat_path = os.path.join('duet_reference', 'rickard_duet', 'alpha_duet')

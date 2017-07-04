@@ -25,12 +25,11 @@ x2 = x(:,2);
 
 %wlen = 1024; timestep = 512; numfreq = 1024; ovp = 0;
 % ->
-wlen = 2048; timestep = 1024; numfreq = 2048;
-% <-
-awin = hamming(wlen);                                           % analysis window is a Hamming window
+wlen = 1024; overlap = 0; numfreq = 1024;
+% <-awin = hamming(wlen);                                           % analysis window is a Hamming window
 
-[tf1,Fout1,Tout1,Pout1] = f_stft(x1,wlen,'hamming',timestep,numfreq,fs);
-[tf2,Fout2,Tout2,Pout2] = f_stft(x2,wlen,'hamming',timestep,numfreq,fs);
+[tf1,Fout1,Tout1,Pout1] = f_stft(x1,wlen,'rectangular',overlap,numfreq,fs);
+[tf2,Fout2,Tout2,Pout2] = f_stft(x2,wlen,'rectangular',overlap,numfreq,fs);
 tf1(1,:) = []; tf2(1,:) = [];                                   % remove dc component from mixtures to avoid dividing by zero frequency in the delay estimation
 save('tf1.mat', 'tf1'); save('tf2.mat', 'tf2');
 freq_len = length(Fout1);
@@ -133,7 +132,7 @@ for i=1:numsources
     esti = tfsynthesis([zeros(1,size(tf1,2));
     ((tf1+peaka(i)*exp(sqrt(-1)*fmat*peakdelta(i)).*tf2)...
     ./(1+peaka(i)^2)).*mask],...
-    sqrt(2)*awin/wlen,timestep,numfreq);
+    sqrt(2)*awin/wlen,overlap,numfreq);
     est(i,:)=esti(1:length(x1))';
     % add back into the demix a little bit of the mixture
     % as that eliminates most of the masking artifacts
