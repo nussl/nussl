@@ -22,7 +22,7 @@ class DuetUnitTests(unittest.TestCase):
     #     duet = nussl.Duet(signal, 3)
     #     duet.run()
 
-    def test_refact_duet(self):
+    def test_duet_outputs(self):
         input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
         signal = nussl.AudioSignal(path_to_input_file=input_file_name)
         refact_duet = nussl.Duet(signal, num_sources=3)
@@ -78,19 +78,16 @@ class DuetUnitTests(unittest.TestCase):
     #     delay_mat_path = os.path.join('duet_reference', 'rickard_duet', 'delta_duet')
     #     sym_atn_mat = scipy.io.loadmat(sym_atn_mat_path)['sym'].T
     #     delay_mat = scipy.io.loadmat(delay_mat_path)['delay'].T
-    #
 
     # def test_make_histogram(self):
 
-    # def test_find_peaks2(self):
+    # def test_convert_peaks
 
-    # def test_convert_peaks(self):
+    # def test_compute_masks
 
-    # def test_compute_masks(self):
+    # def test_convert_time_domain
 
-    # def test_convert_time_domain(self):
-
-    # def test_setup_duet(self):
+    # test_smooth_matrix
 
 
 if __name__ == '__main__':
