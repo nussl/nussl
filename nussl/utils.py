@@ -87,6 +87,8 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
     if np.size(np.nonzero(input_array)) < n_peaks:
         warnings.warn('Threshold set such that there will be less peaks than n_peaks.')
 
+    input_array = np.multiply(input_array, (input_array >= threshold))
+
     peak_indices = []
     for i in range(n_peaks):
         # np.unravel_index for 2D indices e.g., index 5 in a 3x3 array should be (1, 2)

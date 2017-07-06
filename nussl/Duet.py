@@ -73,7 +73,6 @@ class Duet(separation_base.SeparationBase):
 
         self.attenuation_delay_histogram = None
         self.non_normalized_hist = None
-        self.smoothed_hist = None
         self.peak_indices = None
         self.p = p
         self.q = q
@@ -120,16 +119,13 @@ class Duet(separation_base.SeparationBase):
 
         # Find the location of peaks in the attenuation-delay plane
 
-        self.peak_indices = self.find_peaks2(hist, self.peak_threshold,
-                                             np.array([self.attenuation_min_distance, self.delay_min_distance]),
-                                             self.num_sources)
-        peak_idxs_ = utils.find_peak_indices(hist, self.num_sources, threshold=self.peak_threshold)
+        # self.peak_indices = self.find_peaks2(hist, self.peak_threshold,
+        #                                      np.array([self.attenuation_min_distance, self.delay_min_distance]),
+        #                                      self.num_sources)
 
-        # TODO: can we use this find_peaks()?
-        #Returns [1424, 1424, 1424] which doesn't make sense since hist is 50 by 50. find_peaks2 finds both the indices
-        #and the values as well.
-        # peak_idxs_ = utils.find_peak_indices(hist, self.num_sources, threshold=self.peak_threshold)
-        # peak_valsz_ = utils.find_peak_values(hist, self.num_sources, threshold=self.peak_threshold)
+        self.peak_indices = utils.find_peak_indices(hist, self.num_sources, threshold=self.peak_threshold,
+                                             min_dist=[self.attenuation_min_distance, self.delay_min_distance])
+
         # compute delay_peak, attenuation peak, and attenuation/delay estimates
         delay_peak, atn_delay_est, atn_peak = self.convert_peaks(atn_bins, delay_bins)
         
@@ -227,8 +223,6 @@ class Duet(separation_base.SeparationBase):
         # resolved
         self.attenuation_delay_histogram = hist / hist.max()
         self.non_normalized_hist = hist
-        # save smoothed_hist (not normalized) as an option for plotting
-        self.smoothed_hist = self._smooth_matrix(self.non_normalized_hist, np.array([3]))
 
         # smooth the normalized histogram - local average 3-by-3 neighboring bins
         hist = self._smooth_matrix(self.attenuation_delay_histogram, np.array([3]))
@@ -297,15 +291,18 @@ class Duet(separation_base.SeparationBase):
         """
         # TODO:
         if self.peak_indices is None:
-            raise ValueError('')
+            raise ValueError('No peak indices')
 
-        if any(a > len(atn_bins) for a in self.peak_indices[0, :]):
-            raise ValueError('Cant ')
+        atn_indices = [x[0] for x in self.peak_indices]
+        delay_indices = [x[1] for x in self.peak_indices]
 
-        symmetric_atn_peak = atn_bins[self.peak_indices[0, :]]
-        delay_peak = delay_bins[self.peak_indices[1, :]]
+        if any(a > len(atn_bins) for a in atn_indices):
+            raise ValueError('Attenuation index greater than length of bins')
 
-        atn_delay_est = np.vstack([symmetric_atn_peak, delay_peak]).T
+        symmetric_atn_peak = atn_bins[atn_indices]
+        delay_peak = delay_bins[delay_indices]
+
+        atn_delay_est = np.column_stack((symmetric_atn_peak, delay_peak))
 
         # convert symmetric_atn to atn_peak
         atn_peak = (symmetric_atn_peak + np.sqrt(symmetric_atn_peak ** 2 + 4)) / 2
@@ -500,7 +497,10 @@ class Duet(separation_base.SeparationBase):
         AA = np.tile(self.attenuation_grid[1::], (self.num_delay_bins, 1)).T
         DD = np.tile(self.delay_grid[1::].T, (self.num_attenuation_bins, 1))
 
-        histogram_data = self.attenuation_delay_histogram if normalize else self.smoothed_hist
+        # save smoothed_hist (not normalized) as an option for plotting
+        smoothed_hist = self._smooth_matrix(self.non_normalized_hist, np.array([3]))
+
+        histogram_data = self.attenuation_delay_histogram if normalize else smoothed_hist
 
         # plot the histogram in 2D
         if not three_d_plot:

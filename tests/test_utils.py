@@ -26,10 +26,6 @@ class TestUtils(unittest.TestCase):
         peak = nussl.find_peak_indices(arr, 1)
         assert peak == (9, 9)
 
-        np.random.seed(0)
-        arr = np.random.randint(0, 100, size=(100, 100))
-
-
 
     def test_add_mismatched_arrays(self):
         long_array = np.ones((20,))
