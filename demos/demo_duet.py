@@ -17,7 +17,6 @@ def main():
 
     # and run
     duet.run()
-    print duet.stft_ch0
     # plot histogram results
     duet.plot(os.path.join('..', 'Output', 'duet_2d.png'))
     duet.plot(os.path.join('..', 'Output', 'duet_3d.png'), three_d_plot=True)
