@@ -14,6 +14,9 @@ import nussl.constants
 
 
 class MaskBase(object):
+    """
+    Base class for Mask objects. Contains many common 
+    """
     def __init__(self, mask):
         self._mask = None
         self.mask = mask
@@ -21,6 +24,7 @@ class MaskBase(object):
     @property
     def mask(self):
         """
+        
 
         Returns:
 

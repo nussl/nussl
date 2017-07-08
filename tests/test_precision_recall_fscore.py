@@ -26,9 +26,7 @@ class PrecisionRecallFScoreUnitTest(unittest.TestCase):
         mixture = drums + flute
 
         repet = nussl.Repet(mixture, mask_type=nussl.BinaryMask)
-        repet_drum_mask = repet()
-        repet_flute_mask = repet_drum_mask.inverse_mask()
-        repet_mask_list = [repet_drum_mask, repet_flute_mask]
+        repet_mask_list = repet()
 
         ideal_mask = nussl.IdealMask(mixture, [drums, flute], mask_type=nussl.BinaryMask)
         ideal_mask_list = ideal_mask()

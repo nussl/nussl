@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Base class for separation algorithms that make masks.
+Base class for separation algorithms that make masks. Most algorithms in nussl are derived from MaskSeparationBase. 
 
 """
 import warnings
@@ -13,9 +13,21 @@ import masks
 
 class MaskSeparationBase(separation_base.SeparationBase):
     """
-    Base class for separation algorithms that create a mask (binary or soft) to do their separation. Because python
-    is dynamically typed, and therefore we cannot enforce return types for SeparationBase.run(), this class provides
-    a way to 
+    Base class for separation algorithms that create a mask (binary or soft) to do their separation. Most algorithms 
+    in nussl are derived from :ref:`MaskSeparationBase`.
+    
+    Although this class will do nothing if you instantiate and run it by itself, algorithms that are derived from this
+    class are expected to return a list of :ref:`MaskBase` -derived objects (i.e., either a :ref:`BinaryMask` or 
+    :ref:`SoftMask` object)
+    by their `run()` method. Being a subclass of :ref:`MaskSeparationBase` is an implicit contract assuring this. 
+    Returning a :ref:`MaskBase` -derived object standardizes algorithm return types for :ref:`EvaluationBase`
+     -derived objects. 
+    
+    Args:
+        input_audio_signal: (:obj:`AudioSignal`) An AudioSignal object containing the mixture to be separated.
+        mask_type: (str) Indicates whether to make binary or soft masks. See :ref: `mask_type` property for details.
+        mask_threshold: (float) Value between [0.0, 1.0] to convert a soft mask to a binary mask. See :ref: 
+            `mask_threshold` property for details.
     
     """
 
@@ -34,8 +46,51 @@ class MaskSeparationBase(separation_base.SeparationBase):
     @property
     def mask_type(self):
         """
+        This property indicates what type of mask the derived algorithm will create and be returned by `run()`.
+        Options are either 'soft' or 'binary'. 
+        :ref:`mask_type` is usually set when initializing a :ref:`MaskSeparationBase`-derived class 
+        and defaults to SOFT_MASK.
+        This property, though stored as a string, can be set in two ways when initializing:
+        
+        First, it is possible to set this property
+        with a string. Only 'soft' and 'binary' are accepted (case insensitive), every other value will raise an
+        error. When initializing with a string, two helper attributes are provided: :ref:`BINARY_MASK` and 
+        :ref:`SOFT_MASK`.
+        It is HIGHLY encouraged to use these, as the API may change and code that uses bare strings 
+        (e.g. `mask_type = 'soft'` or `mask_type = 'binary'`) for assignment might not be future-proof. :ref:`BINARY_MASK`
+        and :ref:`SOFT_MASK` are safe aliases in case these underlying types change.
+        
+        The second way to set this property is by using a class prototype of either the SoftMask or BinaryMask class
+        prototype . This is probably the most stable way to set this, and it's fairly succinct. 
+        For example, `mask_type = nussl.BinaryMask` or `mask_type = nussl.SoftMask` are both perfectly valid.
+        
+        Though uncommon, this can be set outside of `__init__()` 
+        
+        Examples of both methods are shown below.
         
         Returns:
+            mask_type (str): Either 'soft' or 'binary'. 
+            
+        Raises:
+            ValueError if set invalidly.
+            
+        Examples
+        ::
+         import nussl
+         mixture_signal = nussl.AudioSignal()
+            
+         # Two options for determining mask upon init...
+         
+         # Option 1: Init with a string (BINARY_MASK is a string 'constant')
+         projet = nussl.Projet(mixture_signal, mask_type=nussl.MaskSeparationBase.BINARY_MASK)
+         
+         # Option 2: Init with a class type
+         ola = nussl.OverlapAdd(mixture_signal, mask_type=nussl.SoftMask)
+         
+         # It's also possible to change these values after init by changing the `mask_type` property...
+         projet.mask_type = nussl.MaskSeparationBase.SOFT_MASK  # using a string
+         ola.mask_type = nussl.BinaryMask  # or using a class type
+        
 
         """
         return self._mask_type
@@ -79,8 +134,16 @@ class MaskSeparationBase(separation_base.SeparationBase):
     @property
     def mask_threshold(self):
         """
+        Threshold of determining True/False if `self.mask_type` is :ref:`BINARY_MASK`. Some algorithms will first make a 
+        soft mask and then convert that to a binary mask using this threshold parameter. All values of the soft mask
+        are between [0.0, 1.0] and as such `self.mask_threshold` is expected to be a float between [0.0, 1.0].
         
         Returns:
+            mask_threshold (float): Value between [0.0, 1.0] that indicates the True/False cutoff when converting a soft
+                                mask to binary mask.
+                                
+        Raises:
+            ValueError if not a float or if set outside [0.0, 1.0].
 
         """
         return self._mask_threshold
@@ -91,3 +154,27 @@ class MaskSeparationBase(separation_base.SeparationBase):
             raise ValueError('Mask threshold must be a float between [0.0, 1.0]!')
 
         self._mask_threshold = value
+
+    def plot(self, output_name, **kwargs):
+        """Plots relevant data for mask-based separation algorithm. Base class: Do not call directly!
+
+        Raises:
+            NotImplementedError: Cannot call base class!
+        """
+        raise NotImplementedError('Cannot call base class!')
+
+    def run(self):
+        """Runs mask-based separation algorithm. Base class: Do not call directly!
+
+        Raises:
+            NotImplementedError: Cannot call base class!
+        """
+        raise NotImplementedError('Cannot call base class!')
+
+    def make_audio_signals(self):
+        """Makes ``AudioSignal`` objects after mask-based separation algorithm is run. Base class: Do not call directly!
+
+        Raises:
+            NotImplementedError: Cannot call base class!
+        """
+        raise NotImplementedError('Cannot call base class!')

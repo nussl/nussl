@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+IdealMask separates sources using the ideal binary or soft mask from ground truth.
+"""
 
 import numpy as np
 import warnings
@@ -12,16 +15,63 @@ import masks
 
 
 class IdealMask(mask_separation_base.MaskSeparationBase):
-    """Separate sources using the ideal binary or soft mask from ground truth
+    """
+    IdealMask separates sources using the ideal binary or soft mask from ground truth. It accepts a list of AudioSignal
+    objects, each of which contains a known source, and applies a mask to a time-frequency representation of the
+    input mixture created from each of the known sources. This is often used as an upper bound on source separation
+    performance when benchmarking new algorithms, as it represents the best possible scenario for mask-based methods.
+    
+    At the time of this writing, the time-frequency representation used by this class is the magnitude spectrogram
+    
+    This class is derived from :ref:`MaskSeparationBase` so its :ref:`run` method returns a list of :ref:`MaskBase` 
+    objects.
+    
+    Args:
+        input_audio_mixture (:obj:`AudioSignal`): Input :ref:`AudioSignal` mixture to create the masks from.
+        sources_list (list): List of :ref:`AudioSignal` objects where each one represents an isolated source in 
+            the mixture.
+        mask_type (str, Optional): Indicates whether to make a binary or soft mask. Optional, defaults to SOFT_MASK
+        use_librosa_stft (bool, Optional): Whether to use librosa's STFT function. Optional, defaults to config 
+            settings.
+        
+    Attributes:
+        sources (list): List of :ref:`AudioSignal` objects from `__init__()` where each object represents a single
+            isolated sources within the mixture.
+        estimated_masks (list): List of resultant :ref:`MaskBase` objects created. Masks in this list are in
+            the same order that `source_list` (and `self.sources`) is in.
+        estimated_sources (list): List of :ref:`AudioSignal` objects created from applying the created masks to the
+            mixture.
+            
+    Raises:
+        ValueError: If not all items in `sources_list` are :ref:`AudioSignal` objects, OR if not all of the 
+            :ref:`AudioSignal` objects in `sources_list` have the same sample rate and number of channels,
+            OR if `input_audio_mixture` has a different sample rate or number of channels as the :ref:`AudioSignal` 
+            objects in `sources_list`.
+            
+    Examples:
+        ::
+        import nussl
+        import os
+        
+        path_to_drums = os.path.join('demo_files', 'drums.wav')
+        path_to_flute = os.path.join('demo_files', 'flute.wav')
 
-    Parameters:
-        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that REPET will be run on.
-        high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
-        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
-                        input AudioSignal object)
-        use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
-
+        drums = nussl.AudioSignal(path_to_drums)
+        drums.to_mono(overwrite=True)  # make it mono
+        
+        flute = nussl.AudioSignal(path_to_flute)
+        flute.truncate_samples(drums.signal_length)  # shorten the flute solo
+        
+        # Make a mixture and increase the gain on the flute
+        mixture = drums + flute * 3.0
+        
+        # Run IdealMask making binary masks
+        ideal_mask = nussl.IdealMask(mixture, [drums, flute], mask_type=nussl.BinaryMask)
+        ideal_mask.run()
+        ideal_drums, ideal_flute = ideal_mask.make_audio_signals()
+        ideal_residual = ideal_mask.residual  # Left over audio that was not captured by the mask
+        
+        
     """
 
     def __init__(self, input_audio_mixture, sources_list,
@@ -43,24 +93,56 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
     def run(self):
         """
-
+        Creates a list of masks (as :ref:`MaskBase` objects, either :ref:`BinaryMask` or :ref:`SoftMask` depending 
+        on how the object was instantiated) from a list of known source signals (`source_list` in the constructor).
+        Returns a list of :ref:`MaskBase` objects (one for each input signal) in the order that they were provided
+        when this object was initialized.
+        
+        Binary masks are created based on the magnitude spectrogram using the following formula:
+        
+                `mask = (provided_source.mag_spec >= (mixture_mag_spec - provided_source.mag_spec)`
+                
+        Where '-' is a element-wise subtraction (as if the values were binary ints, 0 or 1) and '>=' 
+        is element-wise logical greater-than-or-equal (again, as if the values were binary ints, 0 or 1).
+        
+        
+        Soft masks are also created based on the magnitude spectrogram but use the following formula:
+        
+                `mask = mixture_mag_spec / provided_source.mag_spec`
+                `mask = log(mask)`
+                `mask = (mask + abs(min(mask))) / max(mask)`
+        
+        Where all arithmetic operations and log are element-wise. This provides a logarithmically scaled mask that is
+        in the interval [0.0, 1.0].
+        
+        
         Returns:
-            self.estimated_masks (list): 
-
-        Example:
-             ::
+            estimated_masks (list): List of resultant :ref:`MaskBase` objects created. Masks in this list are in
+                the same order that `source_list` (and `self.sources`) is in.
+                
+        Raises:
+            RuntimeError if unknown mask type is provided (Options are [BinaryMask, or SoftMask]).
 
         """
         self._compute_spectrograms()
         self.estimated_masks = []
 
         for source in self.sources:
-            cur_mask = np.divide(source.magnitude_spectrogram_data, self.audio_signal.magnitude_spectrogram_data)
-            cur_mask /= np.max(cur_mask)
-
-            mask = masks.SoftMask(cur_mask)
             if self.mask_type == self.BINARY_MASK:
-                mask = mask.mask_to_binary(self.mask_threshold)
+                mag = source.magnitude_spectrogram_data  # Alias this variable, for easy reading
+                cur_mask = (mag >= (self._mixture_mag_spec - mag))
+                mask = masks.BinaryMask(cur_mask)
+
+            elif self.mask_type == self.SOFT_MASK:
+                # TODO: This is a kludge. What is the actual right way to do this?
+                sm = np.divide(self.audio_signal.magnitude_spectrogram_data, source.magnitude_spectrogram_data)
+                # log_sm1 = np.log(sm - np.min(sm) + 1)
+                log_sm = np.log(sm)
+                log_sm += np.abs(np.min(log_sm))
+                log_sm /= np.max(log_sm)
+                mask = masks.SoftMask(sm)
+            else:
+                raise RuntimeError('Unknown mask type: {}'.format(self.mask_type))
 
             self.estimated_masks.append(mask)
 
@@ -69,8 +151,19 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
     @property
     def residual(self):
         """
+        This is an :ref:`AudioSignal` object that contains the left over audio that was not captured 
+        by creating the masks. The residual is calculated in the time domain; after all of the masks are
+        created by running `IdealMask.run()` and making the corresponding :ref:`AudioSignal` objects 
+        (using `IdealMask.make_audio_signals()` which applies the masks to the mixture stft and does an istft for
+        each source from the calculated masks) , the residual is simply the original mixture with 
         
         Returns:
+            residual (:obj:`AudioSignal`): :ref:`AudioSignal` object that contains the left over 
+                audio that was not captured by creating the masks.
+        
+        Raises:
+            ValueError if IdealMask.run() has not been called. OR
+            Exception if there was an unforeseen issue.
 
         """
         if self.estimated_masks is None:
@@ -79,30 +172,40 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         if self.estimated_sources is None:
             warnings.warn('Need to run self.make_audio_signals prior to calculating residual...')
             self.make_audio_signals()
+        else:
+            residual = self.audio_signal
+            for source in self.estimated_sources:
+                residual = residual - source
 
-        residual = self.audio_signal
-        for source in self.estimated_sources:
-            residual = residual - source
+            return residual
 
-        return residual
+        raise Exception('Could not make residual!')
 
     def _compute_spectrograms(self):
         self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
+
+        # Alias this variable for ease
+        self._mixture_mag_spec = self.audio_signal.magnitude_spectrogram_data
         for source in self.sources:
             source.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
 
     def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run FT2D.run() prior
-        to calling this function. This function will return None if run() has not been called.
+        """ Returns a list of signals (as :ref:`AudioSignal` objects) created by applying the ideal masks.
+            This creates the signals by element-wise multiply the masks with the mixture stft.
+            Prior to running this, it is expected that `run()` has been called or else this will throw an error.
+            These of signals is in the same order as the input ideal mixtures were when they were input (as a parameter
+            to the constructor, `sources_list`).
 
         Returns:
-            Audio Signals (List): 2 element list.
+            estimated_sources (list): List of :ref:`AudioSignal` objects that represent the sources created by applying
+                a mask from the known source to the mixture
 
-                * bkgd: Audio signal with the calculated background track
-                * fkgd: Audio signal with the calculated foreground track
-
-        EXAMPLE:
-             ::
+        Examples:
+            ::
+            
+            ideal_mask = nussl.IdealMask(mixture, [drums, flute], mask_type=nussl.BinaryMask)
+            ideal_mask.run()
+            ideal_drums, ideal_flute = ideal_mask.make_audio_signals()
         """
         if self.estimated_masks is None or self.audio_signal.stft_data.size <= 0:
             raise ValueError('Cannot make audio signals prior to running algorithm!')

@@ -25,9 +25,9 @@ class RunAndEvalUnitTest(unittest.TestCase):
         repet_sim = nussl.RepetSim
         repet_kwargs = {}
 
-        scores_sim = nussl.run_and_eval_precision_recall_fscore(repet_sim, repet_kwargs, mixtures, true_sources)
+        scores_sim = nussl.run_and_eval_prf(repet_sim, repet_kwargs, mixtures, true_sources)
 
         repet = nussl.Repet
-        scores_repet = nussl.run_and_eval_precision_recall_fscore(repet, repet_kwargs, mixtures, true_sources)
+        scores_repet = nussl.run_and_eval_prf(repet, repet_kwargs, mixtures, true_sources)
 
         i = 0
