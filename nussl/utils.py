@@ -10,7 +10,10 @@ import warnings
 import base64
 import json
 import constants
+
 from audio_signal import AudioSignal
+from separation import SeparationBase
+from separation import MaskSeparationBase
 
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
@@ -358,12 +361,13 @@ def _get_axis(array, axis_num, i):
 
 def _verify_audio_signal_list_lax(audio_signal_list):
     """
-    Verifies that an input (audio_signal_list) is a list of AudioSignal objects.
+    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects. If not so, attempts 
+    to correct the list (if possible) and returns the corrected list.
     Args:
-        audio_signal_list: (list) List of AudioSignal objects
+        audio_signal_list (list): List of :ref:`AudioSignal` objects
 
     Returns:
-        (list) Verified list of AudioSignal objects.
+        audio_signal_list (list): Verified list of :ref:`AudioSignal` objects.
 
     """
     if isinstance(audio_signal_list, AudioSignal):
@@ -381,12 +385,16 @@ def _verify_audio_signal_list_lax(audio_signal_list):
 
 def _verify_audio_signal_list_strict(audio_signal_list):
     """
-    Verifies that an input (audio_signal_list) is a list of AudioSignal objects and that they all have the same
-    sample rate and same number of channels.
+    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects and that they all have the same
+    sample rate and same number of channels. If not true, attempts to correct the list (if possible) and returns 
+    the corrected list.
+    
     Args:
-        audio_signal_list: (list) List of AudioSignal objects
+        audio_signal_list (list): List of :ref:`AudioSignal` objects
 
-    Returns: (list) Verified list of AudioSignal objects, that all have the same sample rate and number of channels.
+    Returns: 
+        audio_signal_list (list): Verified list of :ref:`AudioSignal` objects, that all have 
+        the same sample rate and number of channels.
 
     """
     audio_signal_list = _verify_audio_signal_list_lax(audio_signal_list)
@@ -398,3 +406,49 @@ def _verify_audio_signal_list_strict(audio_signal_list):
         raise ValueError('All input AudioSignal objects must have the same number of channels!')
 
     return audio_signal_list
+
+
+def _verify_separation_list(separation_list):
+    """
+    Verifies that all items in `separation_list` are :ref:`SeparationBase` -derived objects. If not so, attempts 
+    to correct the list if possible and returns the corrected list.
+    
+    Args:
+        separation_list: (list) List of :ref:`SeparationBase` -derived objects
+
+    Returns:
+        separation_list: (list) Verified list of :ref:`SeparationBase` -derived objects
+
+    """
+    if isinstance(separation_list, SeparationBase):
+        separation_list = [separation_list]
+    elif isinstance(separation_list, list):
+        if not all(isinstance(s, SeparationBase) for s in separation_list):
+            raise ValueError('All separation objects must be SeparationBase-derived objects!')
+    else:
+        raise ValueError('All separation objects must be SeparationBase-derived objects!')
+
+    return separation_list
+
+
+def _verify_mask_separation_list(mask_separation_list):
+    """
+    Verifies that all items in `separation_list` are :ref:`MaskSeparationBase` -derived objects. If not so, attempts 
+    to correct the list if possible and returns the corrected list.
+
+    Args:
+        mask_separation_list: (list) List of :ref:`MaskSeparationBase` -derived objects
+
+    Returns:
+        separation_list: (list) Verified list of :ref:`MaskSeparationBase` -derived objects
+
+    """
+    if isinstance(mask_separation_list, MaskSeparationBase):
+        mask_separation_list = [mask_separation_list]
+    elif isinstance(mask_separation_list, list):
+        if not all(isinstance(s, MaskSeparationBase) for s in mask_separation_list):
+            raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
+    else:
+        raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
+
+    return mask_separation_list

@@ -38,8 +38,10 @@ class BinaryMask(mask_base.MaskBase):
 
     def mask_as_ints(self, channel=None):
         """
-
+        Returns this `BinaryMask` as a numpy array of ints of 0's and 1's.
+        
         Returns:
+            numpy :obj:`ndarray` of this `BinaryMask` represented as ints instead of bools.
 
         """
         if channel is None:
@@ -49,8 +51,13 @@ class BinaryMask(mask_base.MaskBase):
 
     def inverse_mask(self, channel=None):
         """
-        
+        Makes a new `BinaryMask` object with a logical not applied to flip the values in this `BinaryMask` object.
+            
+        Args:
+            channel (int, Optional):  
+
         Returns:
+            A new `BinaryMask` object
 
         """
         if channel is None:
@@ -63,7 +70,7 @@ class BinaryMask(mask_base.MaskBase):
     @staticmethod
     def mask_to_binary(mask_, threshold):
         """
-
+        Makes a binary mask from a soft mask with a True/False threshold.
         Args:
             mask_: 
             threshold: 
