@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>PrecisionRecallFScore Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="nussl Transformer Classes" href="../transformers/transformer_classes.html" />
+    <link rel="prev" title="EvaluationBase Class" href="evaluation_base.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">PrecisionRecallFScore Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="evaluation_base.html" title="Previous Chapter: EvaluationBase Class"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; EvaluationBase Class</span>
+    </a>
+  </li>
+  <li>
+    <a href="../transformers/transformer_classes.html" title="Next Chapter: nussl Transformer Classes"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">nussl Transfo... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/src/evaluation/precision_recall_fscore.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-evaluation.precision_recall_fscore">
+<span id="precisionrecallfscore-class"></span><h1>PrecisionRecallFScore Class<a class="headerlink" href="#module-evaluation.precision_recall_fscore" title="Permalink to this headline">¶</a></h1>
+<p>This class provides common statistical metrics for determining how well a source separation algorithm in nussl was
+able to create a binary mask compared to a known binary mask. The metrics used here are
+<a class="reference external" href="https://en.wikipedia.org/wiki/Precision_and_recall">Precision, Recall</a>,
+<a class="reference external" href="https://en.wikipedia.org/wiki/F1_score">F-Score</a> (sometimes called F-measure or F1-score), and Accuracy
+(though this is not reflected in the name of the class, it is simply   <code class="docutils literal"><span class="pre">#</span> <span class="pre">correct</span> <span class="pre">/</span> <span class="pre">total</span></code>).</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Run Repet</span>
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>  <span class="c1"># it&#39;s important to specify BinaryMask!</span>
+<span class="n">repet_masks</span> <span class="o">=</span> <span class="n">repet</span><span class="p">()</span>
+
+<span class="c1"># Get Ideal Binary Masks</span>
+<span class="n">ideal_mask</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">IdealMask</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="p">[</span><span class="n">drums</span><span class="p">,</span> <span class="n">flute</span><span class="p">],</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>  <span class="c1"># BinaryMask here, too!</span>
+<span class="n">ideal_masks</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="p">()</span>
+
+<span class="c1"># Compare Repet to Ideal Binary Mask</span>
+<span class="n">prf_repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">PrecisionRecallFScore</span><span class="p">(</span><span class="n">ideal_masks</span><span class="p">,</span> <span class="n">repet_masks</span><span class="p">)</span>
+<span class="n">prf_repet_scores</span> <span class="o">=</span> <span class="n">prf_repet</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Scores for each source are stored in a nested dictionary aptly named <code class="docutils literal"><span class="pre">scores</span></code>. This is a dictionary of dictionaries
+where the key is the source label, and the value is another dictionary with scores for each of the metrics for that
+source. So, for instance, the format of the <code class="docutils literal"><span class="pre">prf_repet_scores</span></code> dictionary from above is shown below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;Source 0&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">:</span> <span class="mf">0.83</span><span class="p">,</span>
+               <span class="s1">&#39;Precision&#39;</span><span class="p">:</span> <span class="mf">0.78</span><span class="p">,</span>
+               <span class="s1">&#39;Recall&#39;</span><span class="p">:</span> <span class="mf">0.81</span><span class="p">,</span>
+               <span class="s1">&#39;F1-Score&#39;</span><span class="p">:</span> <span class="mf">0.77</span> <span class="p">},</span>
+ <span class="s1">&#39;Source 1&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">:</span> <span class="mf">0.22</span><span class="p">,</span>
+               <span class="s1">&#39;Precision&#39;</span><span class="p">:</span> <span class="mf">0.12</span><span class="p">,</span>
+               <span class="s1">&#39;Recall&#39;</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">,</span>
+               <span class="s1">&#39;F1-Score&#39;</span><span class="p">:</span> <span class="mf">0.19</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p><code class="docutils literal"><span class="pre">PrecisionRecallFScore</span></code> can only be run using <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects. The constructor expects a list of
+<a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects for both the ground truth sources and the estimated sources.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="evaluation_base.html#evaluation-base"><span class="std std-ref">EvaluationBase Class</span></a> for more information about derived properties that this class has.</li>
+<li><a class="reference internal" href="../separation/other/ideal_mask.html#ideal-mask"><span class="std std-ref">IdealMask Class</span></a> for information about how to get an array of ground truth binary masks.</li>
+</ul>
+</div>
+<dl class="class">
+<dt id="evaluation.precision_recall_fscore.PrecisionRecallFScore">
+<em class="property">class </em><code class="descclassname">evaluation.precision_recall_fscore.</code><code class="descname">PrecisionRecallFScore</code><span class="sig-paren">(</span><em>true_sources_mask_list</em>, <em>estimated_sources_mask_list</em>, <em>source_labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.precision_recall_fscore.PrecisionRecallFScore" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>true_sources_mask_list</strong> (<em>list</em>) – List of <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects representing the ground truth sources.</li>
+<li><strong>estimated_sources_mask_list</strong> (<em>list</em>) – List of <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects representing the estimates from a source
+separation object</li>
+<li><strong>source_labels</strong> (<em>list</em><em>) </em><em>(</em><em>Optional</em>) – List of <code class="docutils literal"><span class="pre">str</span></code> with labels for each source. If no labels are provided, sources
+will be labeled <code class="docutils literal"><span class="pre">Source</span> <span class="pre">0,</span> <span class="pre">Source</span> <span class="pre">1,</span> <span class="pre">...</span></code> etc.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="evaluation.precision_recall_fscore.PrecisionRecallFScore.evaluate">
+<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.precision_recall_fscore.PrecisionRecallFScore.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the precision, recall, f-score, and accuracy of each <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> object in
+Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

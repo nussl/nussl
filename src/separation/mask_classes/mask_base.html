@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>MaskBase Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="BinaryMask Class" href="binary_mask.html" />
+    <link rel="prev" title="Mask Classes" href="mask_classes.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">MaskBase Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="mask_classes.html" title="Previous Chapter: Mask Classes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Mask Classes</span>
+    </a>
+  </li>
+  <li>
+    <a href="binary_mask.html" title="Next Chapter: BinaryMask Class"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">BinaryMask Class &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../../_sources/src/separation/mask_classes/mask_base.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-separation.masks.mask_base">
+<span id="maskbase-class"></span><span id="mask-base"></span><h1>MaskBase Class<a class="headerlink" href="#module-separation.masks.mask_base" title="Permalink to this headline">¶</a></h1>
+<p>Base class for Mask objects. Contains many common utilities used for accessing masks. The mask itself is
+represented under the hood as a three dimensional numpy <code class="docutils literal"><span class="pre">ndarray</span></code> object. The dimensions are
+<code class="docutils literal"><span class="pre">[NUM_FREQ,</span> <span class="pre">NUM_HOPS,</span> <span class="pre">NUM_CHAN]</span></code>. Safe accessors for these array indices are in <a class="reference internal" href="../../constants.html#constants"><span class="std std-ref">constants.py</span></a> as well as
+below.</p>
+<dl class="class">
+<dt id="separation.masks.mask_base.MaskBase">
+<em class="property">class </em><code class="descclassname">separation.masks.mask_base.</code><code class="descname">MaskBase</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.mask_base.MaskBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mask</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – A 2- or 3-dimensional numpy <code class="docutils literal"><span class="pre">ndarray</span></code> representing a mask.</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="separation.masks.mask_base.MaskBase.mask">
+<code class="descname">mask</code><a class="headerlink" href="#separation.masks.mask_base.MaskBase.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>The actual mask. This is represented as a three dimensional numpy <code class="docutils literal"><span class="pre">ndarray</span></code> object.
+The input gets validated by <code class="docutils literal"><span class="pre">_validate_mask</span></code>. In the case of <a class="reference internal" href="binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> the validation checks that
+the values are all 1 or 0 (or bools), in the case of <a class="reference internal" href="soft_mask.html#soft-mask"><span class="std std-ref">SoftMask Class</span></a> the validation checks that all values
+are within the domain [0.0, 1.0].</p>
+<p>This base class will throw a <code class="docutils literal"><span class="pre">NotImplementedError</span></code> if instantiated directly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">ValueError</span></code> if <code class="docutils literal"><span class="pre">mask.ndim</span></code> is less than 2 or greater than 3, or if values fail validation.</li>
+<li><code class="docutils literal"><span class="pre">NotImplementedError</span></code> if instantiated directly.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.masks.mask_base.MaskBase.get_channel">
+<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.mask_base.MaskBase.get_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets mask channel <code class="docutils literal"><span class="pre">n</span></code> and returns it as a 2D <code class="docutils literal"><span class="pre">np.ndarray</span></code>
+:param n: Channel index to return (0-based).
+:type n: int</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> with the mask channel</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="docutils literal"><span class="pre">AttributeError</span></code> if <code class="docutils literal"><span class="pre">self.mask</span></code> is <code class="docutils literal"><span class="pre">None</span></code></li>
+<li><code class="docutils literal"><span class="pre">ValueError</span></code> if <code class="docutils literal"><span class="pre">n</span></code> is less than 0 or greater than the number of channels that this mask object has.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.mask_base.MaskBase.length">
+<code class="descname">length</code><a class="headerlink" href="#separation.masks.mask_base.MaskBase.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Number of time hops that this mask represents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.mask_base.MaskBase.height">
+<code class="descname">height</code><a class="headerlink" href="#separation.masks.mask_base.MaskBase.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Number of frequency bins this mask has.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.mask_base.MaskBase.num_channels">
+<code class="descname">num_channels</code><a class="headerlink" href="#separation.masks.mask_base.MaskBase.num_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Number of channels this mask has.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.mask_base.MaskBase.shape">
+<code class="descname">shape</code><a class="headerlink" href="#separation.masks.mask_base.MaskBase.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>(tuple) Returns the shape of the whole mask. Identical to <code class="docutils literal"><span class="pre">np.ndarray.shape()</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.mask_base.MaskBase.dtype">
+<code class="descname">dtype</code><a class="headerlink" href="#separation.masks.mask_base.MaskBase.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>(str) Returns the data type of the values of the mask.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

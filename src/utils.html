@@ -1,149 +1,140 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>utils.py &mdash; nussl 0.1.5a10 documentation</title>
-  
 
-  
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>utils.py &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nussl Examples" href="../examples/examples.html" />
+    <link rel="prev" title="spectral_utils.py" href="spectral_utils.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
 
-  
+  </head>
+  <body>
 
-  
-  
-    
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
 
-  
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/>
-        <link rel="up" title="Modules" href="modules.html"/>
-        <link rel="next" title="nussl Examples" href="../examples/examples.html"/>
-        <link rel="prev" title="spectral_utils.py" href="spectral_utils.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-  <div class="wy-grid-for-nav">
-
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
-            <a href="../index.html" class="icon icon-home"> nussl
-          
-
-          
-          </a>
-
-          
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
             
             
-              <div class="version">
-                0.1
-              </div>
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <ul>
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="classes.html">Classes</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="constants.html">constants.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spectral_utils.html">spectral_utils.py</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">utils.py</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="separation/separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
 </ul>
-
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">utils.py</a></li>
+</ul>
+</ul>
+</li>
+              
             
+            
+              
+                
+  <li>
+    <a href="spectral_utils.html" title="Previous Chapter: spectral_utils.py"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; spectral_utils.py</span>
+    </a>
+  </li>
+  <li>
+    <a href="../examples/examples.html" title="Next Chapter: nussl Examples"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">nussl Examples &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/src/utils.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
           
         </div>
-      </div>
-    </nav>
+    </div>
+  </div>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">nussl</a>
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
- 
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-          <li><a href="modules.html">Modules</a> &raquo;</li>
-      
-    <li>utils.py</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          
-            <a href="../_sources/src/utils.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-            
   <div class="section" id="module-utils">
-<span id="utils-py"></span><h1>utils.py<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
+<span id="utils-py"></span><span id="utils"></span><h1>utils.py<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
 <p>Provides utilities for running nussl algorithms that do not belong to any specific algorithm or that are shared
 between algorithms.</p>
 <dl class="function">
@@ -159,16 +150,15 @@ searching for max). Use exactly the same as find_peak_values().</p>
 <li>This function only returns the indices of peaks. If you want to find peak values,</li>
 </ul>
 <p>use find_peak_values().</p>
-<ul>
+<ul class="simple">
 <li><dl class="first docutils">
 <dt>min_dist can be an int or a tuple of length 2.</dt>
-<dd><p class="first last">If input_array is 1-D, min_dist must be an integer.
+<dd>If input_array is 1-D, min_dist must be an integer.
 If input_array is 2-D, min_dist can be an integer, in which case the minimum
 distance in both dimensions will be equal. min_dist can also be a tuple if
 you want each dimension to have a different minimum distance between peaks.
 In that case, the 0th value in the tuple represents the first dimension, and
-the 1st value represents the second dimension in the numpy array.</p>
-</dd>
+the 1st value represents the second dimension in the numpy array.</dd>
 </dl>
 </li>
 </ul>
@@ -181,15 +171,15 @@ the 1st value represents the second dimension in the numpy array.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>input_array</strong> &#8211; a 1- or 2- dimensional numpy array that will be inspected.</li>
-<li><strong>n_peaks</strong> &#8211; (int) maximum number of peaks to find</li>
-<li><strong>min_dist</strong> &#8211; (int) minimum distance between peaks. Default value: len(input_array) / 4</li>
-<li><strong>do_min</strong> &#8211; (bool) if True, finds indices at minimum value instead of maximum</li>
-<li><strong>threshold</strong> &#8211; (float) the value (scaled between 0.0 and 1.0)</li>
+<li><strong>input_array</strong> – a 1- or 2- dimensional numpy array that will be inspected.</li>
+<li><strong>n_peaks</strong> – (int) maximum number of peaks to find</li>
+<li><strong>min_dist</strong> – (int) minimum distance between peaks. Default value: len(input_array) / 4</li>
+<li><strong>do_min</strong> – (bool) if True, finds indices at minimum value instead of maximum</li>
+<li><strong>threshold</strong> – (float) the value (scaled between 0.0 and 1.0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>peak_indices</em> &#8211; (list) list of the indices of the peak values</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>peak_indices</em> – (list) list of the indices of the peak values</p>
 </td>
 </tr>
 </tbody>
@@ -211,16 +201,15 @@ searching for max).</p>
 <li>This function only returns the indices of peaks. If you want to find peak values,</li>
 </ul>
 <p>use find_peak_values().</p>
-<ul>
+<ul class="simple">
 <li><dl class="first docutils">
 <dt>min_dist can be an int or a tuple of length 2.</dt>
-<dd><p class="first last">If input_array is 1-D, min_dist must be an integer.
+<dd>If input_array is 1-D, min_dist must be an integer.
 If input_array is 2-D, min_dist can be an integer, in which case the minimum
 distance in both dimensions will be equal. min_dist can also be a tuple if
 you want each dimension to have a different minimum distance between peaks.
 In that case, the 0th value in the tuple represents the first dimension, and
-the 1st value represents the second dimension in the numpy array.</p>
-</dd>
+the 1st value represents the second dimension in the numpy array.</dd>
 </dl>
 </li>
 </ul>
@@ -233,15 +222,15 @@ the 1st value represents the second dimension in the numpy array.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>input_array</strong> &#8211; a 1- or 2- dimensional numpy array that will be inspected.</li>
-<li><strong>n_peaks</strong> &#8211; (int) maximum number of peaks to find</li>
-<li><strong>min_dist</strong> &#8211; (int) minimum distance between peaks. Default value: len(input_array) / 4</li>
-<li><strong>do_min</strong> &#8211; (bool) if True, finds indices at minimum value instead of maximum</li>
-<li><strong>threshold</strong> &#8211; (float) the value (scaled between 0.0 and 1.0)</li>
+<li><strong>input_array</strong> – a 1- or 2- dimensional numpy array that will be inspected.</li>
+<li><strong>n_peaks</strong> – (int) maximum number of peaks to find</li>
+<li><strong>min_dist</strong> – (int) minimum distance between peaks. Default value: len(input_array) / 4</li>
+<li><strong>do_min</strong> – (bool) if True, finds indices at minimum value instead of maximum</li>
+<li><strong>threshold</strong> – (float) the value (scaled between 0.0 and 1.0)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>peak_values</em> &#8211; (list) list of the values of the peak values</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>peak_values</em> – (list) list of the values of the peak values</p>
 </td>
 </tr>
 </tbody>
@@ -267,7 +256,7 @@ the 1st value represents the second dimension in the numpy array.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array</strong> &#8211; (numpy array) any numpy array to convert to JSON</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array</strong> – (numpy array) any numpy array to convert to JSON</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(string) JSON-ified numpy array.</td>
 </tr>
@@ -289,7 +278,7 @@ the 1st value represents the second dimension in the numpy array.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array_json</strong> &#8211; (string) JSON-ified nump array</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array_json</strong> – (string) JSON-ified nump array</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(numpy array) numpy array from the input JSON string</td>
 </tr>
@@ -314,7 +303,7 @@ from: <a class="reference external" href="http://stackoverflow.com/a/27948073/57
 <dl class="function">
 <dt id="utils.add_mismatched_arrays">
 <code class="descclassname">utils.</code><code class="descname">add_mismatched_arrays</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em>, <em>truncate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.add_mismatched_arrays" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will add two 1-D numpy arrays of different length. If truncate is false, it will expand
+<dd><p>Will add two 1D numpy arrays of different length. If truncate is false, it will expand
 the resultant array to the larger of the two, if True it will truncate the resultant
 array to the smaller of the two.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -322,87 +311,69 @@ array to the smaller of the two.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>array1</strong> &#8211; (np.array) 1-D numeric array</li>
-<li><strong>array2</strong> &#8211; (np.array) 1-D numeric array</li>
-<li><strong>truncate</strong> &#8211; (Bool) If True, will truncate the resultant array to the smaller of the two</li>
+<li><strong>array1</strong> – (np.array) 1D numeric array</li>
+<li><strong>array2</strong> – (np.array) 1D numeric array</li>
+<li><strong>truncate</strong> – (Bool) If True, will truncate the resultant array to the smaller of the two</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">One array added from the two input arrays</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">One 1D array added from the two input arrays</p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="utils.add_mismatched_arrays2D">
+<code class="descclassname">utils.</code><code class="descname">add_mismatched_arrays2D</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em>, <em>truncate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.add_mismatched_arrays2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will add two 2D numpy arrays of different length. If truncate is false, it will expand
+the resultant array to the larger of the two, if True it will truncate the resultant
+array to the smaller of the two.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>array1</strong> – (np.array) 2D numeric array</li>
+<li><strong>array2</strong> – (np.array) 2D numeric array</li>
+<li><strong>truncate</strong> – (Bool) If True, will truncate the resultant array to the smaller of the two</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">One 2D array added from the two input arrays</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.complex_randn">
+<code class="descclassname">utils.</code><code class="descname">complex_randn</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.complex_randn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a complex-valued numpy array of random values with shape <cite>shape</cite>
+:param shape: (tuple) tuple of ints that will be the shape of the resultant complex numpy array</p>
+<p>Returns: (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>): a complex-valued numpy array of random values with shape <cite>shape</cite></p>
+</dd></dl>
+
 </div>
 
 
-           </div>
-          </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../examples/examples.html" class="btn btn-neutral float-right" title="nussl Examples" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="spectral_utils.html" class="btn btn-neutral" title="spectral_utils.py" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
     </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
     <p>
-        &copy; Copyright 2017, Interactive Audio Lab.
-
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
 </footer>
-
-        </div>
-      </div>
-
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.1.5a10',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+  </body>
 </html>

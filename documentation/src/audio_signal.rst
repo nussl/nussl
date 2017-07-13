@@ -1,3 +1,5 @@
+.. _audio_signal:
+
 AudioSignal Class
 =================
 

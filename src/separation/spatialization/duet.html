@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Duet Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Other Separation Classes" href="../other/other_classes.html" />
+    <link rel="prev" title="Spatialization Classes" href="spatialization.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Duet Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="spatialization.html" title="Previous Chapter: Spatialization Classes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Spatializatio...</span>
+    </a>
+  </li>
+  <li>
+    <a href="../other/other_classes.html" title="Next Chapter: Other Separation Classes"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Other Separat... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../../_sources/src/separation/spatialization/duet.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-separation.Duet">
+<span id="duet-class"></span><span id="duet"></span><h1>Duet Class<a class="headerlink" href="#module-separation.Duet" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="separation.Duet.Duet">
+<em class="property">class </em><code class="descclassname">separation.Duet.</code><code class="descname">Duet</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_sources</em>, <em>attenuation_min=-3</em>, <em>attenuation_max=3</em>, <em>num_attenuation_bins=50</em>, <em>delay_min=-3</em>, <em>delay_max=3</em>, <em>num_delay_bins=50</em>, <em>peak_threshold=0.2</em>, <em>attenuation_min_distance=5</em>, <em>delay_min_distance=5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../base_classes/separation_base.html#separation.separation_base.SeparationBase" title="separation.separation_base.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">separation.separation_base.SeparationBase</span></code></a></p>
+<p>Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.</p>
+<p>The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
+and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz.</p>
+<p class="rubric">References</p>
+<ul class="simple">
+<li>Rickard, Scott. “The DUET blind source separation algorithm.” Blind Speech Separation. Springer Netherlands,
+2007. 217-241.</li>
+<li>Yilmaz, Ozgur, and Scott Rickard. “Blind separation of speech mixtures via time-frequency masking.” Signal
+Processing, IEEE transactions on 52.7 (2004): 1830-1847.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_audio_signal</strong> (<em>np.array</em>) – a 2-row Numpy matrix containing samples of the two-channel mixture</li>
+<li><strong>num_sources</strong> (<em>int</em>) – number of sources to find</li>
+<li><strong>attenuation_min</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Minimum attenuation. Defaults to -3</li>
+<li><strong>attenuation_max</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Maximum attenuation. Defaults to 3</li>
+<li><strong>num_attenuation_bins</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of bins for attenuation. Defaults to 50</li>
+<li><strong>delay_min</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Minimum delay. Defaults to -3</li>
+<li><strong>delay_max</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Maximum delay. Defaults to 3</li>
+<li><strong>num_delay_bins</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of bins for delay. Defaults to 50</li>
+<li><strong>peak_threshold</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – Value in [0, 1] for peak picking. Defaults to 0.2</li>
+<li><strong>attenuation_min_distance</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Minimum distance between peaks wrt attenuation. Defaults to 5</li>
+<li><strong>delay_min_distance</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Minimum distance between peaks wrt delay. Defaults to 5</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p><a class="reference internal" href="../../../examples/duet_demo.html#duet-demo"><span class="std std-ref">The DUET Demo Example</span></a></p>
+<dl class="method">
+<dt id="separation.Duet.Duet.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>xhat</strong> (<em>np.array</em>) - an N-row matrix containing time-domain estimates of sources</li>
+<li><strong>ad_est</strong> (<em>np.array</em>) - N by 2 Numpy matrix containing estimated attenuation and delay values
+corresponding to N sources</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">input_file_name</span> <span class="o">=</span> <span class="s1">&#39;../Input/dev1_female3_inst_mix.wav&#39;</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_file_name</span><span class="p">)</span>
+
+<span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="separation.Duet.Duet.find_peaks2">
+<em class="property">static </em><code class="descname">find_peaks2</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_peaks=1</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.find_peaks2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receives a matrix of positive numerical values (in [0,1]) and finds the peak values and corresponding
+indices.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>np.array</em>) – a 2D Numpy matrix containing real values (in [0,1])</li>
+<li><strong>min_thr</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – minimum threshold (in [0,1]) on data values. Defaults to 0.5</li>
+<li><strong>min_dist</strong> (<em>Optional</em><em>[</em><em>np.array</em><em>]</em>) – 1 by 2 matrix containing minimum distances (in # of time elements) between
+peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
+<li><strong>max_peaks</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – maximum number of peaks in the whole matrix. Defaults to 1</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>peakIndex (np.array)</em> – a two-row Numpy matrix containing peaks and their indices</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="separation.Duet.Duet.find_peaks">
+<em class="property">static </em><code class="descname">find_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_num=1</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.find_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receives a row vector of positive values (in [0,1]) and finds the peak values and corresponding indices.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>np.array</em>) – a 2D Numpy matrix containing real values (in [0,1])</li>
+<li><strong>min_thr</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – minimum threshold (in [0,1]) on data values. Defaults to 0.5</li>
+<li><strong>min_dist</strong> (<em>Optional</em><em>[</em><em>np.array</em><em>]</em>) – 1 by 2 matrix containing minimum distances (in # of time elements) between
+peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
+<li><strong>max_peaks</strong> – maximum number of peaks in the whole matrix. Defaults to 1</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.Duet.Duet.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the extracted signals</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>signals (List[AudioSignal])</em> – List of AudioSignals extracted using DUET.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.Duet.Duet.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>three_d_plot=False</em>, <em>normalize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots histograms with the results of the DUET algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_name</strong> (<em>str</em>) – path to save plot as</li>
+<li><strong>three_d_plot</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Flags whether or not to plot in 3d. Defaults to False</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

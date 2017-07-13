@@ -1,151 +1,130 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>AudioSignal Class &mdash; nussl 0.1.5a10 documentation</title>
-  
 
-  
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AudioSignal Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
 
-  
+  </head>
+  <body>
 
-  
-  
-    
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
 
-  
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/>
-        <link rel="up" title="nussl Classes" href="classes.html"/>
-        <link rel="next" title="SeparationBase Class" href="separation_base.html"/>
-        <link rel="prev" title="nussl Classes" href="classes.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-  <div class="wy-grid-for-nav">
-
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
-            <a href="../index.html" class="icon icon-home"> nussl
-          
-
-          
-          </a>
-
-          
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
             
             
-              <div class="version">
-                0.1
-              </div>
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <ul>
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="classes.html">Classes</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">AudioSignal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="separation_base.html">SeparationBase</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repet.html">Repet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="repet_sim.html">RepetSim</a></li>
-<li class="toctree-l2"><a class="reference internal" href="duet.html">Duet</a></li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="separation/separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transformers/transformer_classes.html">Transformer Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
 </ul>
-
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">AudioSignal Class</a></li>
+</ul>
+</ul>
+</li>
+              
             
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/src/audio_signal.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
           
         </div>
-      </div>
-    </nav>
+    </div>
+  </div>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">nussl</a>
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
- 
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-          <li><a href="classes.html">nussl Classes</a> &raquo;</li>
-      
-    <li>AudioSignal Class</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          
-            <a href="../_sources/src/audio_signal.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-            
   <div class="section" id="module-audio_signal">
-<span id="audiosignal-class"></span><h1>AudioSignal Class<a class="headerlink" href="#module-audio_signal" title="Permalink to this headline">¶</a></h1>
+<span id="audiosignal-class"></span><span id="audio-signal"></span><h1>AudioSignal Class<a class="headerlink" href="#module-audio_signal" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="audio_signal.AudioSignal">
 <em class="property">class </em><code class="descclassname">audio_signal.</code><code class="descname">AudioSignal</code><span class="sig-paren">(</span><em>path_to_input_file=None</em>, <em>audio_data_array=None</em>, <em>stft=None</em>, <em>sample_rate=44100</em>, <em>stft_params=None</em>, <em>offset=0</em>, <em>duration=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal" title="Permalink to this definition">¶</a></dt>
@@ -158,16 +137,16 @@ in all source separation objects in <em>nussl</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>path_to_input_file</strong> (<em>str, optional</em>) &#8211; Path to an input file to open upon initialization. Audio gets loaded
+<li><strong>path_to_input_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to an input file to open upon initialization. Audio gets loaded
 into <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</li>
-<li><strong>audio_data_array</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>, optional) &#8211; Numpy array containing a real-valued, time-series representation
+<li><strong>audio_data_array</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>, optional) – Numpy array containing a real-valued, time-series representation
 of the audio.</li>
-<li><strong>offset</strong> (<em>int, optional</em>) &#8211; Starting point of the section to be extracted in seconds.
+<li><strong>offset</strong> (<em>int</em><em>, </em><em>optional</em>) – Starting point of the section to be extracted in seconds.
 Defaults to 0</li>
-<li><strong>duration</strong> (<em>int, optional</em>) &#8211; Length of the signal to be extracted. Defaults to full length of the signal</li>
-<li><strong>sample_rate</strong> (<em>int, optional</em>) &#8211; sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE</li>
-<li><strong>stft</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>, optional) &#8211; Optional pre-computed complex spectrogram data.</li>
-<li><strong>stft_params</strong> (<code class="xref py py-obj docutils literal"><span class="pre">StftParams</span></code>, optional) &#8211; </li>
+<li><strong>duration</strong> (<em>int</em><em>, </em><em>optional</em>) – Length of the signal to be extracted. Defaults to full length of the signal</li>
+<li><strong>sample_rate</strong> (<em>int</em><em>, </em><em>optional</em>) – sampling rate to read audio file at. Defaults to Constants.DEFAULT_SAMPLE_RATE</li>
+<li><strong>stft</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>, optional) – Optional pre-computed complex spectrogram data.</li>
+<li><strong>stft_params</strong> (<code class="xref py py-obj docutils literal"><span class="pre">StftParams</span></code>, optional) – </li>
 </ul>
 </td>
 </tr>
@@ -186,7 +165,7 @@ Defaults to 0</li>
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.audio_data">
 <code class="descname">audio_data</code><a class="headerlink" href="#audio_signal.AudioSignal.audio_data" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code> &#8211; Real-valued, uncompressed, time-domain representation of the audio.
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code> – Real-valued, uncompressed, time-domain representation of the audio.
 2D numpy array with shape <cite>(n_channels, n_samples)</cite>.
 <code class="docutils literal"><span class="pre">None</span></code> by default, this can be initialized at instantiation.
 Usually, this is expected to be floats. Some functions will convert to floats if not already.</p>
@@ -195,20 +174,20 @@ Usually, this is expected to be floats. Some functions will convert to floats if
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.path_to_input_file">
 <code class="descname">path_to_input_file</code><a class="headerlink" href="#audio_signal.AudioSignal.path_to_input_file" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Path to the input file. <code class="docutils literal"><span class="pre">None</span></code> if this AudioSignal never loaded a file, i.e.,
+<dd><p><em>str</em> – Path to the input file. <code class="docutils literal"><span class="pre">None</span></code> if this AudioSignal never loaded a file, i.e.,
 initialized with a np.array.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.sample_rate">
 <code class="descname">sample_rate</code><a class="headerlink" href="#audio_signal.AudioSignal.sample_rate" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>int</em> &#8211; Sample rate of this AudioSignal object.</p>
+<dd><p><em>int</em> – Sample rate of this AudioSignal object.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.stft_data">
 <code class="descname">stft_data</code><a class="headerlink" href="#audio_signal.AudioSignal.stft_data" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code> &#8211; Complex-valued, frequency-domain representation of audio calculated by the
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code> – Complex-valued, frequency-domain representation of audio calculated by the
 Short-Time Fourier Transform (STFT).
 3D numpy array with shape <cite>(n_frequency_bins, n_hops, n_channels)</cite>.
 <code class="docutils literal"><span class="pre">None</span></code> by default, this can be initialized at instantiation.</p>
@@ -217,14 +196,14 @@ Short-Time Fourier Transform (STFT).
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.stft_params">
 <code class="descname">stft_params</code><a class="headerlink" href="#audio_signal.AudioSignal.stft_params" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">StftParams</span></code> &#8211; Container for all settings for doing a STFT. Has same lifespan as AudioSignal
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">StftParams</span></code> – Container for all settings for doing a STFT. Has same lifespan as AudioSignal
 object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="audio_signal.AudioSignal.plot_time_domain">
 <code class="descname">plot_time_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_time_domain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented yet &#8211; will raise and exception
+<dd><p>Not implemented yet – will raise and exception
 Returns:</p>
 </dd></dl>
 
@@ -236,21 +215,21 @@ Returns:</p>
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.signal_length">
 <code class="descname">signal_length</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_length" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> &#8211; Number of samples in the active region of <cite>self.audio_data</cite>
+<dd><p><em>(int)</em> – Number of samples in the active region of <cite>self.audio_data</cite>
 The length of the audio signal represented by this object in samples</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.signal_duration">
 <code class="descname">signal_duration</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_duration" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(float)</em> &#8211; Duration of audio in seconds.
+<dd><p><em>(float)</em> – Duration of audio in seconds.
 The length of the audio signal represented by this object in seconds</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.num_channels">
 <code class="descname">num_channels</code><a class="headerlink" href="#audio_signal.AudioSignal.num_channels" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> &#8211; Number of channels this AudioSignal has.
+<dd><p><em>(int)</em> – Number of channels this AudioSignal has.
 Defaults to returning number of channels in <code class="docutils literal"><span class="pre">self.audio_data</span></code>. If that is <code class="docutils literal"><span class="pre">None</span></code>, returns number of
 channels in <code class="docutils literal"><span class="pre">self.stft_data</span></code>. If both are <code class="docutils literal"><span class="pre">None</span></code> then returns <code class="docutils literal"><span class="pre">None</span></code>.</p>
 </dd></dl>
@@ -258,7 +237,7 @@ channels in <code class="docutils literal"><span class="pre">self.stft_data</spa
 <dl class="attribute">
 <dt>
 <code class="descname">audio_data</code></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) &#8211; Real-valued, uncompressed, time-domain representation of the audio.
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Real-valued, uncompressed, time-domain representation of the audio.
 2D numpy array with shape <cite>(n_channels, n_samples)</cite>.
 <code class="docutils literal"><span class="pre">None</span></code> by default, this can be initialized at instantiation.
 Usually, this is expected to be floats. Some functions will convert to floats if not already.</p>
@@ -267,20 +246,20 @@ Usually, this is expected to be floats. Some functions will convert to floats if
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.file_name">
 <code class="descname">file_name</code><a class="headerlink" href="#audio_signal.AudioSignal.file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> &#8211; The name of the file wth extension, NOT the full path
+<dd><p><em>(str)</em> – The name of the file wth extension, NOT the full path
 .. seealso:: :ref: self.path_to_input_file</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.time_vector">
 <code class="descname">time_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.time_vector" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) &#8211; A 1D np array with timestamps (in seconds) for each sample in the time domain.</p>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – A 1D np array with timestamps (in seconds) for each sample in the time domain.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.freq_vector">
 <code class="descname">freq_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.freq_vector" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) &#8211;</p>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) –</p>
 <dl class="docutils">
 <dt>A 1D numpy array with frequency values that correspond</dt>
 <dd>to each frequency bin (vertical axis) for the STFT.</dd>
@@ -289,7 +268,25 @@ Usually, this is expected to be floats. Some functions will convert to floats if
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> &#8211; If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.time_bins_vector">
+<code class="descname">time_bins_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.time_bins_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) –</p>
+<dl class="docutils">
+<dt>A 1D numpy array with time values that correspond</dt>
+<dd>to each time bin (horizontal axis) in the STFT.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</td>
 </tr>
 </tbody>
 </table>
@@ -298,21 +295,21 @@ Usually, this is expected to be floats. Some functions will convert to floats if
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.stft_length">
 <code class="descname">stft_length</code><a class="headerlink" href="#audio_signal.AudioSignal.stft_length" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> &#8211; The number of time windows the STFT has.
-:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> &#8211; If <code class="docutils literal"><span class="pre">self.stft_dat``a</span> <span class="pre">is</span> <span class="pre">``None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
+<dd><p><em>(int)</em> – The number of time windows the STFT has.
+:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_dat``a</span> <span class="pre">is</span> <span class="pre">``None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.num_fft_bins">
 <code class="descname">num_fft_bins</code><a class="headerlink" href="#audio_signal.AudioSignal.num_fft_bins" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> &#8211; Number of FFT bins in self.stft_data
-:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> &#8211; If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
+<dd><p><em>(int)</em> – Number of FFT bins in self.stft_data
+:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.active_region_is_default">
 <code class="descname">active_region_is_default</code><a class="headerlink" href="#audio_signal.AudioSignal.active_region_is_default" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(bool)</em> &#8211; True if active region is the full length of <code class="docutils literal"><span class="pre">self.audio_data</span></code>
+<dd><p><em>(bool)</em> – True if active region is the full length of <code class="docutils literal"><span class="pre">self.audio_data</span></code>
 .. seealso:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">:</span><span class="n">ref</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_active_region</span>
 <span class="p">:</span><span class="n">ref</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_active_region_to_default</span>
@@ -323,10 +320,25 @@ Usually, this is expected to be floats. Some functions will convert to floats if
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.power_spectrogram_data">
 <code class="descname">power_spectrogram_data</code><a class="headerlink" href="#audio_signal.AudioSignal.power_spectrogram_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) &#8211; Returns a real valued 2D <code class="docutils literal"><span class="pre">np.array</span></code> with power spectrogram data.
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Returns a real valued 2D <code class="docutils literal"><span class="pre">np.array</span></code> with power spectrogram data.
 The power spectrogram is defined as Re(STFT)^2, where ^2 is element-wise squaring
 of entries of the STFT. Same shape as <code class="docutils literal"><span class="pre">self.stft_data</span></code>.
-:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> &#8211; if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
+:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.magnitude_spectrogram_data">
+<code class="descname">magnitude_spectrogram_data</code><a class="headerlink" href="#audio_signal.AudioSignal.magnitude_spectrogram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Returns a real valued 2D <code class="docutils literal"><span class="pre">np.array</span></code> with magnitude spectrogram data.
+The power spectrogram is defined as Re(STFT). Same shape as <code class="docutils literal"><span class="pre">self.stft_data</span></code>.
+:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.has_data">
+<code class="descname">has_data</code><a class="headerlink" href="#audio_signal.AudioSignal.has_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns False if <code class="docutils literal"><span class="pre">self.audio_data</span></code> and <code class="docutils literal"><span class="pre">self.stft_data</span></code> are empty. Else, returns True.
+:returns: Returns False if <code class="docutils literal"><span class="pre">self.audio_data</span></code> and <code class="docutils literal"><span class="pre">self.stft_data</span></code> are empty. Else, returns True.</p>
 </dd></dl>
 
 <dl class="method">
@@ -338,10 +350,10 @@ of entries of the STFT. Same shape as <code class="docutils literal"><span class
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>input_file_path</strong> (<em>str</em>) &#8211; Path to input file.</li>
-<li><strong>offset</strong> (<em>float, optional</em>) &#8211; The starting point of the section to be extracted (seconds).
+<li><strong>input_file_path</strong> (<em>str</em>) – Path to input file.</li>
+<li><strong>offset</strong> (<em>float</em><em>, </em><em>optional</em>) – The starting point of the section to be extracted (seconds).
 Defaults to 0 seconds.</li>
-<li><strong>duration</strong> (<em>float, optional</em>) &#8211; Length of signal to load in second.
+<li><strong>duration</strong> (<em>float</em><em>, </em><em>optional</em>) – Length of signal to load in second.
 signal_length of 0 means read the whole file. Defaults to the full length of the signal.</li>
 </ul>
 </td>
@@ -361,8 +373,8 @@ signal_length of 0 means read the whole file. Defaults to the full length of the
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>signal</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) &#8211; Array containing the audio file signal sampled at sampleRate</li>
-<li><strong>sample_rate</strong> (<em>int, optional</em>) &#8211; the sample rate of signal. Default is Constants.DEFAULT_SAMPLE_RATE (44.1kHz)</li>
+<li><strong>signal</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Array containing the audio file signal sampled at sampleRate</li>
+<li><strong>sample_rate</strong> (<em>int</em><em>, </em><em>optional</em>) – the sample rate of signal. Default is Constants.DEFAULT_SAMPLE_RATE (44.1kHz)</li>
 </ul>
 </td>
 </tr>
@@ -379,9 +391,9 @@ signal_length of 0 means read the whole file. Defaults to the full length of the
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>output_file_path</strong> (<em>str</em>) &#8211; Filename where output file will be saved.</li>
-<li><strong>sample_rate</strong> (<em>int, optional</em>) &#8211; The sample rate to write the file at. Default is <code class="docutils literal"><span class="pre">self.sample_rate</span></code>.</li>
-<li><strong>verbose</strong> (<em>bool, optional</em>) &#8211; Print out a message if writing the file was successful.</li>
+<li><strong>output_file_path</strong> (<em>str</em>) – Filename where output file will be saved.</li>
+<li><strong>sample_rate</strong> (<em>int</em><em>, </em><em>optional</em>) – The sample rate to write the file at. Default is <code class="docutils literal"><span class="pre">self.sample_rate</span></code>.</li>
+<li><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Print out a message if writing the file was successful.</li>
 </ul>
 </td>
 </tr>
@@ -420,8 +432,8 @@ subtracting, concatenating, truncating, and other utilities may not be available
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>start</strong> (<em>int</em>) &#8211; Beginning of active region (in samples). Cannot be less than 0.</li>
-<li><strong>end</strong> (<em>int</em>) &#8211; End of active region (in samples). Cannot be larger than self.signal_length.</li>
+<li><strong>start</strong> (<em>int</em>) – Beginning of active region (in samples). Cannot be less than 0.</li>
+<li><strong>end</strong> (<em>int</em>) – End of active region (in samples). Cannot be larger than self.signal_length.</li>
 </ul>
 </td>
 </tr>
@@ -436,12 +448,32 @@ subtracting, concatenating, truncating, and other utilities may not be available
 </dd></dl>
 
 <dl class="method">
+<dt id="audio_signal.AudioSignal.next_window_generator">
+<code class="descname">next_window_generator</code><span class="sig-paren">(</span><em>window_size</em>, <em>hop_size</em>, <em>convert_to_samples=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.next_window_generator" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>window_size</strong> – </li>
+<li><strong>hop_size</strong> – </li>
+<li><strong>convert_to_samples</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="audio_signal.AudioSignal.stft">
 <code class="descname">stft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em>, <em>overwrite=True</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.stft" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the Short Time Fourier Transform (STFT) of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
-<blockquote>
-<div>The results of the STFT calculation can be accessed from <code class="docutils literal"><span class="pre">self.stft_data</span></code>
-if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code> prior to running this function or <code class="docutils literal"><span class="pre">overwrite</span> <span class="pre">==</span> <span class="pre">True</span></code></div></blockquote>
+<dd><dl class="docutils">
+<dt>Computes the Short Time Fourier Transform (STFT) of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</dt>
+<dd>The results of the STFT calculation can be accessed from <code class="docutils literal"><span class="pre">self.stft_data</span></code>
+if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code> prior to running this function or <code class="docutils literal"><span class="pre">overwrite</span> <span class="pre">==</span> <span class="pre">True</span></code></dd>
+</dl>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">If overwrite=True (default) this will overwrite any data in <code class="docutils literal"><span class="pre">self.stft_data</span></code>!</p>
@@ -451,13 +483,13 @@ if <code class="docutils literal"><span class="pre">self.stft_data</span></code>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>window_length</strong> (<em>int, optional</em>) &#8211; Amount of time (in samples) to do an FFT on</li>
-<li><strong>hop_length</strong> (<em>int, optional</em>) &#8211; Amount of time (in samples) to skip ahead for the new FFT</li>
-<li><strong>window_type</strong> (<em>str, optional</em>) &#8211; Type of scaling to apply to the window.</li>
-<li><strong>n_fft_bins</strong> (<em>int, optional</em>) &#8211; Number of FFT bins per each hop</li>
-<li><strong>remove_reflection</strong> (<em>bool, optional</em>) &#8211; Should remove reflection above Nyquist</li>
-<li><strong>overwrite</strong> (<em>bool, optional</em>) &#8211; Overwrite <code class="docutils literal"><span class="pre">self.stft_data</span></code> with current calculation</li>
-<li><strong>use_librosa</strong> (<em>bool, optional</em>) &#8211; Use <em>librosa&#8217;s</em> stft function</li>
+<li><strong>window_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to do an FFT on</li>
+<li><strong>hop_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to skip ahead for the new FFT</li>
+<li><strong>window_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of scaling to apply to the window.</li>
+<li><strong>n_fft_bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of FFT bins per each hop</li>
+<li><strong>remove_reflection</strong> (<em>bool</em><em>, </em><em>optional</em>) – Should remove reflection above Nyquist</li>
+<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – Overwrite <code class="docutils literal"><span class="pre">self.stft_data</span></code> with current calculation</li>
+<li><strong>use_librosa</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use <em>librosa’s</em> stft function</li>
 </ul>
 </td>
 </tr>
@@ -471,7 +503,7 @@ with shape <cite>(n_frequency_bins, n_hops, n_channels)</cite>.</p>
 
 <dl class="method">
 <dt id="audio_signal.AudioSignal.istft">
-<code class="descname">istft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>overwrite=True</em>, <em>reconstruct_reflection=False</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.istft" title="Permalink to this definition">¶</a></dt>
+<code class="descname">istft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>overwrite=True</em>, <em>reconstruct_reflection=False</em>, <em>use_librosa=True</em>, <em>truncate_to_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.istft" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes and returns the inverse Short Time Fourier Transform (iSTFT).</p>
 <blockquote>
 <div>The results of the iSTFT calculation can be accessed from <code class="docutils literal"><span class="pre">self.audio_data</span></code>
@@ -485,12 +517,13 @@ if <code class="docutils literal"><span class="pre">self.audio_data</span></code
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>window_length</strong> (<em>int, optional</em>) &#8211; Amount of time (in samples) to do an FFT on</li>
-<li><strong>hop_length</strong> (<em>int, optional</em>) &#8211; Amount of time (in samples) to skip ahead for the new FFT</li>
-<li><strong>window_type</strong> (<em>str, optional</em>) &#8211; Type of scaling to apply to the window.</li>
-<li><strong>reconstruct_reflection</strong> (<em>bool, optional</em>) &#8211; Should reconstruct the reflection above Nyquist</li>
-<li><strong>overwrite</strong> (<em>bool, optional</em>) &#8211; Overwrite <code class="docutils literal"><span class="pre">self.stft_data</span></code> with current calculation</li>
-<li><strong>use_librosa</strong> (<em>bool, optional</em>) &#8211; Use <em>librosa&#8217;s</em> stft function</li>
+<li><strong>window_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to do an FFT on</li>
+<li><strong>hop_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to skip ahead for the new FFT</li>
+<li><strong>window_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of scaling to apply to the window.</li>
+<li><strong>reconstruct_reflection</strong> (<em>bool</em><em>, </em><em>optional</em>) – Should reconstruct the reflection above Nyquist</li>
+<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – Overwrite <code class="docutils literal"><span class="pre">self.stft_data</span></code> with current calculation</li>
+<li><strong>use_librosa</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use <em>librosa’s</em> stft function</li>
+<li><strong>truncate_to_length</strong> (<em>int</em><em>, </em><em>optional</em>) – truncate resultant signal to specified length. Default None.</li>
 </ul>
 </td>
 </tr>
@@ -512,7 +545,7 @@ with shape <cite>(n_channels, n_samples)</cite>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> &#8211; If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
 <li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
 </ul>
 </td>
@@ -531,9 +564,9 @@ This can only be done if <code class="docutils literal"><span class="pre">self.a
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; If <code class="docutils literal"><span class="pre">n_samples</span> <span class="pre">&gt;</span> <span class="pre">self.signal_length</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <code class="docutils literal"><span class="pre">n_samples</span> <span class="pre">&gt;</span> <span class="pre">self.signal_length</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> &#8211; (int) number of samples that will be left.</td>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> – (int) number of samples that will be left.</td>
 </tr>
 </tbody>
 </table>
@@ -548,12 +581,21 @@ This can only be done if self.active_region_is_default is True.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; If <code class="docutils literal"><span class="pre">n_seconds</span> <span class="pre">&gt;</span> <span class="pre">self.signal_duration</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <code class="docutils literal"><span class="pre">n_seconds</span> <span class="pre">&gt;</span> <span class="pre">self.signal_duration</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_seconds</strong> &#8211; (float) number of seconds to truncate <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_seconds</strong> – (float) number of seconds to truncate <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.crop_signal">
+<code class="descname">crop_signal</code><span class="sig-paren">(</span><em>before</em>, <em>after</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.crop_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get rid of samples before and after the signal on all channels. Contracts the length
+of self.audio_data by before + after. Useful to get rid of zero padding after the fact.
+:param before: (int) number of samples to remove at beginning of self.audio_data
+:param after: (int) number of samples to remove at end of self.audio_data</p>
 </dd></dl>
 
 <dl class="method">
@@ -565,72 +607,14 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; If <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</p>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>before</strong> &#8211; (int) number of zeros to be put before the current contents of self.audio_data</li>
-<li><strong>after</strong> &#8211; (int) number of zeros to be put after the current contents fo self.audio_data</li>
+<li><strong>before</strong> – (int) number of zeros to be put before the current contents of self.audio_data</li>
+<li><strong>after</strong> – (int) number of zeros to be put after the current contents fo self.audio_data</li>
 </ul>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.get_channel">
-<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the n-th channel from <code class="docutils literal"><span class="pre">self.audio_data</span></code>. <strong>1-based.</strong></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>int</em>) &#8211; index of channel to get. <strong>1-based</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) &#8211; the audio data in the n-th channel of the signal, 1D</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.get_stft_channel">
-<code class="descname">get_stft_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.stft_data</span></code>. <strong>1-based.</strong></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> &#8211; If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> &#8211; (int) index of stft channel to get. <strong>1 based</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) &#8211; the stft data in the n-th channel of the signal, 1D</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.get_power_spectrogram_channel">
-<code class="descname">get_power_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_power_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.power_spectrogram_data</span></code>. <strong>1-based.</strong></p>
-<blockquote>
-<div><dl class="docutils">
-<dt>Raises:</dt>
-<dd>Exception: If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</dd>
-</dl>
-</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> &#8211; (int) index of power spectrogram channel to get. <strong>1 based</strong></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) &#8211; the power spectrogram data in the n-th channel of the signal, 1D</td>
 </tr>
 </tbody>
 </table>
@@ -656,15 +640,15 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> &#8211; If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
 <li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) &#8211; Other <code class="docutils literal"><span class="pre">AudioSignal</span></code> to add.</p>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – Other <code class="docutils literal"><span class="pre">AudioSignal</span></code> to add.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) &#8211; New <code class="docutils literal"><span class="pre">AudioSignal</span></code> object with the sum of <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – New <code class="docutils literal"><span class="pre">AudioSignal</span></code> object with the sum of <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
 </td>
 </tr>
 </tbody>
@@ -672,8 +656,8 @@ Extends the length of self.audio_data by before + after.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="audio_signal.AudioSignal.sub">
-<code class="descname">sub</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.sub" title="Permalink to this definition">¶</a></dt>
+<dt id="audio_signal.AudioSignal.subtract">
+<code class="descname">subtract</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.subtract" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subtracts two audio signal objects.</p>
 <p>This does element-wise subtraction on the <code class="docutils literal"><span class="pre">self.audio_data</span></code> array.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -681,15 +665,15 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> &#8211; If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
 <li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) &#8211; Other <code class="docutils literal"><span class="pre">AudioSignal</span></code> to subtract.</p>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – Other <code class="docutils literal"><span class="pre">AudioSignal</span></code> to subtract.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) &#8211; New <code class="docutils literal"><span class="pre">AudioSignal</span></code> object with the difference between <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – New <code class="docutils literal"><span class="pre">AudioSignal</span></code> object with the difference between <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
 </td>
 </tr>
 </tbody>
@@ -705,7 +689,7 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> &#8211; If <code class="docutils literal"><span class="pre">bit_depth</span></code> is not one of the above bit-depths.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">bit_depth</span></code> is not one of the above bit-depths.</td>
 </tr>
 </tbody>
 </table>
@@ -715,12 +699,63 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bit_depth</strong> (<em>int, optional</em>) &#8211; Bit depth of the integer array that will be returned.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bit_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – Bit depth of the integer array that will be returned.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) &#8211; Integer representation of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Integer representation of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.make_empty_copy">
+<code class="descname">make_empty_copy</code><span class="sig-paren">(</span><em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_empty_copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a copy of this <cite>AudioSignal</cite> object with <cite>audio_data</cite> and <cite>stft_data</cite>
+initialized to <a href="#id1"><span class="problematic" id="id2">`</span></a>np.ndarray`s of the same size, but populated with zeros.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.make_copy_with_audio_data">
+<code class="descname">make_copy_with_audio_data</code><span class="sig-paren">(</span><em>audio_data</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_copy_with_audio_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a copy of this <cite>AudioSignal</cite> object with <cite>self.audio_data</cite> initialized to the input <cite>audio_data</cite>
+numpy array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>audio_data</strong> – </td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.make_copy_with_stft_data">
+<code class="descname">make_copy_with_stft_data</code><span class="sig-paren">(</span><em>stft_data</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_copy_with_stft_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a copy of this <cite>AudioSignal</cite> object with <cite>self.stft_data</cite> initialized to the input <cite>stft_data</cite>
+numpy array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stft_data</strong> – </li>
+<li><strong>verbose</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
 </dd></dl>
 
 <dl class="method">
@@ -731,7 +766,7 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(str)</em> &#8211; JSON representation of the current <code class="docutils literal"><span class="pre">AudioSignal</span></code> object.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(str)</em> – JSON representation of the current <code class="docutils literal"><span class="pre">AudioSignal</span></code> object.</td>
 </tr>
 </tbody>
 </table>
@@ -746,9 +781,9 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>string</em>) &#8211; a json encoded <code class="docutils literal"><span class="pre">AudioSignal</span></code> string</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>string</em>) – a json encoded <code class="docutils literal"><span class="pre">AudioSignal</span></code> string</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>(obj</em> &#8211; <cite>AudioSignal</cite>): an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object based on the parameters in JSON string</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>(obj</em> – <cite>AudioSignal</cite>): an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object based on the parameters in JSON string</td>
 </tr>
 </tbody>
 </table>
@@ -758,7 +793,136 @@ Extends the length of self.audio_data by before + after.</p>
 <dt id="audio_signal.AudioSignal.rms">
 <code class="descname">rms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.rms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the root-mean-square of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.
-:returns: <em>(float)</em> &#8211; Root-mean-square of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
+:returns: <em>(float)</em> – Root-mean-square of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_closest_frequency_bin">
+<code class="descname">get_closest_frequency_bin</code><span class="sig-paren">(</span><em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_closest_frequency_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns index of the closest element to freq
+:param freq: (int) frequency to retrieve in Hz</p>
+<p>Returns: (int) index of closest frequency to input freq</p>
+<p class="rubric">Examples</p>
+<p>Make a low pass filter starting around 1200 Hz
+&gt;&gt;&gt; signal = nussl.AudioSignal(‘path_to_song.wav’)
+&gt;&gt;&gt; signal.stft()
+&gt;&gt;&gt; idx = signal.get_closest_frequency_bin(1200)  # 1200 Hz
+&gt;&gt;&gt; signal.stft_data[idx:, :, :] = 0.0  # eliminate everything above idx</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.apply_gain">
+<code class="descname">apply_gain</code><span class="sig-paren">(</span><em>value</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.apply_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a gain to self.audio_data
+:param value: (float) amount to multiply self.audio_data by
+:param overwrite: (bool) should overwrite audio_data in self</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_channel">
+<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the n-th channel from <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>int</em>) – index of channel to get. <strong>0-based</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the audio data in the n-th channel of the signal, 1D</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_channels">
+<code class="descname">get_channels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_stft_channel">
+<code class="descname">get_stft_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.stft_data</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of stft channel to get. <strong>0-based</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the stft data in the n-th channel of the signal, 1D</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_stft_channels">
+<code class="descname">get_stft_channels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.make_audio_signal_from_channel">
+<code class="descname">make_audio_signal_from_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_audio_signal_from_channel" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – </td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_power_spectrogram_channel">
+<code class="descname">get_power_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_power_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.power_spectrogram_data</span></code>.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Raises:</dt>
+<dd>Exception: If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</dd>
+</dl>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of power spectrogram channel to get <strong>0-based</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the power spectrogram data in the n-th channel of the signal, 1D</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_magnitude_spectrogram_channel">
+<code class="descname">get_magnitude_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_magnitude_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.magnitude_spectrogram_data</span></code>.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Raises:</dt>
+<dd>Exception: If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</dd>
+</dl>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of magnitude spectrogram channel to get <strong>0-based</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the magnitude spectrogram data in the n-th channel of the signal, 1D</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -773,9 +937,9 @@ Extends the length of self.audio_data by before + after.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>overwrite</strong> (<em>bool, optional</em>) &#8211; If <code class="docutils literal"><span class="pre">True</span></code> this function will overwrite <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal"><span class="pre">True</span></code> this function will overwrite <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) &#8211; Mono-ed version of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – Mono-ed version of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
 </tr>
 </tbody>
 </table>
@@ -786,71 +950,21 @@ Extends the length of self.audio_data by before + after.</p>
 </div>
 
 
-           </div>
-          </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="separation_base.html" class="btn btn-neutral float-right" title="SeparationBase Class" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="classes.html" class="btn btn-neutral" title="nussl Classes" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
     </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
     <p>
-        &copy; Copyright 2017, Interactive Audio Lab.
-
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
 </footer>
-
-        </div>
-      </div>
-
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.1.5a10',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+  </body>
 </html>

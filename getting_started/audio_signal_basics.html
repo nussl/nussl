@@ -1,158 +1,143 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>AudioSignal Basics &mdash; nussl 0.1.5a10 documentation</title>
-  
 
-  
-  
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AudioSignal Basics &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Spectrograms and STFTs" href="audio_signal_stft.html" />
+    <link rel="prev" title="The AudioSignal Object" href="audio_signal.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
 
-  
+  </head>
+  <body>
 
-  
-  
-    
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
 
-  
-
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-    <link rel="top" title="nussl 0.1.5a10 documentation" href="../index.html"/>
-        <link rel="up" title="The AudioSignal Object" href="audio_signal.html"/>
-        <link rel="next" title="Spectrograms and STFTs" href="audio_signal_stft.html"/>
-        <link rel="prev" title="The AudioSignal Object" href="audio_signal.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-  <div class="wy-grid-for-nav">
-
-    
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
-
-          
-            <a href="../index.html" class="icon icon-home"> nussl
-          
-
-          
-          </a>
-
-          
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
             
             
-              <div class="version">
-                0.1
-              </div>
-            
-          
-
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="audio_signal.html">The AudioSignal Object</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">AudioSignal Basics</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#initialization-from-a-file">Initialization from a file</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#initialization-from-a-numpy-array">Initialization from a numpy array</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#other-basic-manipulations">Other basic manipulations</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="audio_signal_stft.html">Spectrograms and STFTs</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="repet.html">Using REPET</a></li>
-</ul>
-</li>
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../src/classes.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/separation/separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/transformers/transformer_classes.html">Transformer Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/modules.html">Modules</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
 </ul>
-
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">AudioSignal Basics</a><ul>
+<li><a class="reference internal" href="#initialization-from-a-file">Initialization from a file</a></li>
+<li><a class="reference internal" href="#initialization-from-a-numpy-array">Initialization from a numpy array</a></li>
+<li><a class="reference internal" href="#other-basic-manipulations">Other basic manipulations</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
             
+            
+              
+                
+  <li>
+    <a href="audio_signal.html" title="Previous Chapter: The AudioSignal Object"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; The AudioSign...</span>
+    </a>
+  </li>
+  <li>
+    <a href="audio_signal_stft.html" title="Next Chapter: Spectrograms and STFTs"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Spectrograms ... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/getting_started/audio_signal_basics.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
           
         </div>
-      </div>
-    </nav>
+    </div>
+  </div>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">nussl</a>
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
- 
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-          <li><a href="getting_started.html">Getting Started</a> &raquo;</li>
-      
-          <li><a href="audio_signal.html">The AudioSignal Object</a> &raquo;</li>
-      
-    <li>AudioSignal Basics</li>
-      <li class="wy-breadcrumbs-aside">
-        
-          
-            <a href="../_sources/getting_started/audio_signal_basics.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-            
   <div class="section" id="audiosignal-basics">
 <span id="audio-signal-basics"></span><h1>AudioSignal Basics<a class="headerlink" href="#audiosignal-basics" title="Permalink to this headline">¶</a></h1>
 <p>The <code class="xref py py-class docutils literal"><span class="pre">nussl.AudioSignal</span></code> object is the main container for all things related to your audio data. It provides a lot of
@@ -228,7 +213,7 @@ make a single channel signal within a numpy array.</p>
 </div>
 <div class="section" id="other-basic-manipulations">
 <h2>Other basic manipulations<a class="headerlink" href="#other-basic-manipulations" title="Permalink to this headline">¶</a></h2>
-<p>If we want to add the audio data in these two signals, it&#8217;s simple. But there are some gotchas:</p>
+<p>If we want to add the audio data in these two signals, it’s simple. But there are some gotchas:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span> <span class="o">=</span> <span class="n">signal1</span> <span class="o">+</span> <span class="n">signal2</span>
 <span class="go">Exception: Cannot add with two signals that have a different number of channels!</span>
 </pre></div>
@@ -247,7 +232,7 @@ changing <code class="docutils literal"><span class="pre">audio_data</span></cod
 </div>
 <p>If we hadn’t set <code class="docutils literal"><span class="pre">overwrite=True</span></code> then <code class="docutils literal"><span class="pre">to_mono()</span></code> would just return a np array of mono-ed <code class="docutils literal"><span class="pre">audio_data</span></code> and
 not change the representation of <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>. You will see this pattern come up again. In certain
-places, <code class="docutils literal"><span class="pre">AudioSignal</span></code>&#8216;s default behavior is to overwrite its internal data, and in other places the default is to
+places, <code class="docutils literal"><span class="pre">AudioSignal</span></code>’s default behavior is to overwrite its internal data, and in other places the default is to
 <strong>not</strong> overwrite data. See the reference pages for more info.</p>
 <p>Now, we can add the two signals as before:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span> <span class="o">=</span> <span class="n">signal1</span> <span class="o">+</span> <span class="n">signal2</span>
@@ -258,7 +243,7 @@ places, <code class="docutils literal"><span class="pre">AudioSignal</span></cod
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;path/to/output.wav&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Awesome! Now lets see how we can manipulate the audio in the frequency domain...</p>
+<p>Awesome! Now lets see how we can manipulate the audio in the frequency domain…</p>
 <p class="rubric">Footnotes</p>
 <table class="docutils footnote" frame="void" id="f1" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
@@ -276,71 +261,21 @@ places, <code class="docutils literal"><span class="pre">AudioSignal</span></cod
 </div>
 
 
-           </div>
-          </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="audio_signal_stft.html" class="btn btn-neutral float-right" title="Spectrograms and STFTs" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="audio_signal.html" class="btn btn-neutral" title="The AudioSignal Object" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
     </div>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
     <p>
-        &copy; Copyright 2017, Interactive Audio Lab.
-
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
-
 </footer>
-
-        </div>
-      </div>
-
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.1.5a10',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+  </body>
 </html>

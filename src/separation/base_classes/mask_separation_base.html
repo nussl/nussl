@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>MaskSeparationBase Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Mask Classes" href="../mask_classes/mask_classes.html" />
+    <link rel="prev" title="SeparationBase Class" href="separation_base.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">MaskSeparationBase Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="separation_base.html" title="Previous Chapter: SeparationBase Class"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; SeparationBase Class</span>
+    </a>
+  </li>
+  <li>
+    <a href="../mask_classes/mask_classes.html" title="Next Chapter: Mask Classes"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Mask Classes &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../../_sources/src/separation/base_classes/mask_separation_base.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="maskseparationbase-class">
+<span id="mask-separation-base"></span><h1>MaskSeparationBase Class<a class="headerlink" href="#maskseparationbase-class" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="separation.MaskSeparationBase">
+<em class="property">class </em><code class="descclassname">separation.</code><code class="descname">MaskSeparationBase</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>mask_type='soft'</em>, <em>mask_threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for separation algorithms that create a mask (binary or soft) to do their separation. Most algorithms
+in nussl are derived from <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code>.</p>
+<p>Although this class will do nothing if you instantiate and run it by itself, algorithms that are derived from this
+class are expected to return a list of <a class="reference internal" href="../mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a> -derived objects (i.e., either a <span class="xref std std-ref">BinaryMask</span> or
+<code class="docutils literal"><span class="pre">SoftMask</span></code> object)
+by their <code class="docutils literal"><span class="pre">run()</span></code> method. Being a subclass of <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code> is an implicit contract assuring this.
+Returning a <code class="docutils literal"><span class="pre">MaskBase</span></code>-derived object standardizes algorithm return types for <code class="docutils literal"><span class="pre">EvaluationBase</span></code> -derived objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_audio_signal</strong> – (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) An <code class="docutils literal"><span class="pre">AudioSignal</span></code> object containing the mixture to be separated.</li>
+<li><strong>mask_type</strong> – (str) Indicates whether to make binary or soft masks. See <code class="docutils literal"><span class="pre">mask_type</span></code> property for details.</li>
+<li><strong>mask_threshold</strong> – (float) Value between [0.0, 1.0] to convert a soft mask to a binary mask. See <code class="docutils literal"><span class="pre">mask_threshold</span></code>
+property for details.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.BINARY_MASK">
+<code class="descname">BINARY_MASK</code><em class="property"> = 'binary'</em><a class="headerlink" href="#separation.MaskSeparationBase.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
+<dd><p>String alias for setting this object to return <code class="docutils literal"><span class="pre">BinaryMask</span></code> objects</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.SOFT_MASK">
+<code class="descname">SOFT_MASK</code><em class="property"> = 'soft'</em><a class="headerlink" href="#separation.MaskSeparationBase.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
+<dd><p>String alias for setting this object to return <code class="docutils literal"><span class="pre">SoftMask</span></code> objects</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.mask_type">
+<code class="descname">mask_type</code><a class="headerlink" href="#separation.MaskSeparationBase.mask_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>This property indicates what type of mask the derived algorithm will create and be returned by <cite>run()</cite>.
+Options are either ‘soft’ or ‘binary’.
+<code class="docutils literal"><span class="pre">mask_type</span></code> is usually set when initializing a <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code>-derived class
+and defaults to <code class="docutils literal"><span class="pre">SOFT_MASK</span></code>
+.
+This property, though stored as a string, can be set in two ways when initializing:</p>
+<p>First, it is possible to set this property
+with a string. Only <code class="docutils literal"><span class="pre">'soft'</span></code> and <code class="docutils literal"><span class="pre">'binary'</span></code> are accepted (case insensitive), every other value will raise an
+error. When initializing with a string, two helper attributes are provided: <code class="docutils literal"><span class="pre">BINARY_MASK</span></code> and
+<code class="docutils literal"><span class="pre">SOFT_MASK</span></code>.</p>
+<p>It is HIGHLY encouraged to use these, as the API may change and code that uses bare strings
+(e.g. <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'soft'</span></code> or <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'binary'</span></code>) for assignment might not be future-proof.
+<code class="docutils literal"><span class="pre">BINARY_MASK</span></code> and <code class="docutils literal"><span class="pre">SOFT_MASK</span></code> are safe aliases in case these underlying types change.</p>
+<p>The second way to set this property is by using a class prototype of either the <code class="docutils literal"><span class="pre">SoftMask</span></code> or
+<code class="docutils literal"><span class="pre">BinaryMask</span></code> class
+prototype. This is probably the most stable way to set this, and it’s fairly succinct.
+For example, <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.BinaryMask</span></code> or <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.SoftMask</span></code> are both perfectly valid.</p>
+<p>Though uncommon, this can be set outside of <code class="docutils literal"><span class="pre">__init__()</span></code></p>
+<p>Examples of both methods are shown below.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_type (str)</em> – Either ‘soft’ or ‘binary’.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if set invalidly.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="n">mixture_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">()</span>
+
+<span class="c1"># Two options for determining mask upon init...</span>
+
+<span class="c1"># Option 1: Init with a string (BINARY_MASK is a string &#39;constant&#39;)</span>
+<span class="n">projet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Projet</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">BINARY_MASK</span><span class="p">)</span>
+
+<span class="c1"># Option 2: Init with a class type</span>
+<span class="n">ola</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">OverlapAdd</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">SoftMask</span><span class="p">)</span>
+
+<span class="c1"># It&#39;s also possible to change these values after init by changing the `mask_type` property...</span>
+<span class="n">projet</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">SOFT_MASK</span>  <span class="c1"># using a string</span>
+<span class="n">ola</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span>  <span class="c1"># or using a class type</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.mask_threshold">
+<code class="descname">mask_threshold</code><a class="headerlink" href="#separation.MaskSeparationBase.mask_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Threshold of determining True/False if <code class="docutils literal"><span class="pre">self.mask_type</span></code> is <code class="docutils literal"><span class="pre">BINARY_MASK</span></code>. Some algorithms will first make a
+soft mask and then convert that to a binary mask using this threshold parameter. All values of the soft mask
+are between [0.0, 1.0] and as such <code class="docutils literal"><span class="pre">self.mask_threshold</span></code> is expected to be a float between [0.0, 1.0].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_threshold (float)</em> – Value between [0.0, 1.0] that indicates the True/False cutoff when converting a soft
+mask to binary mask.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if not a float or if set outside [0.0, 1.0].</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.MaskSeparationBase.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots relevant data for mask-based separation algorithm. Base class: Do not call directly!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.MaskSeparationBase.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs mask-based separation algorithm. Base class: Do not call directly!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.MaskSeparationBase.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects after mask-based separation algorithm is run. Base class: Do not call directly!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Nmf Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Nmf Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/src/transformers/Nmf.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-Nmf">
+<span id="nmf-class"></span><span id="nmf"></span><h1>Nmf Class<a class="headerlink" href="#module-Nmf" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="Nmf.NMF">
+<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">NMF</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_templates</em>, <em>activation_matrix=None</em>, <em>templates=None</em>, <em>distance_measure=None</em>, <em>should_update_template=None</em>, <em>should_update_activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">nussl.separation.separation_base.SeparationBase</span></code></p>
+<p>This is an implementation of the Non-negative Matrix Factorization algorithm for
+source separation. This implementation receives an audio_signal object
+and a number, num_templates, which defines the number of bases vectors.</p>
+<p>This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
+and also allows the user to define distance measure function.</p>
+<p>References:
+[1] Lee, Daniel D., and H. Sebastian Seung. “Algorithms for non-negative matrix factorization.”</p>
+<blockquote>
+<div>Advances in neural information processing systems. 2001.</div></blockquote>
+<dl class="method">
+<dt id="Nmf.NMF.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>This runs the NMF separation algorithm. This function assumes that all
+parameters have been set prior to running.</p>
+<p>No inputs. do_STFT and N must be set prior to calling this function.</p>
+<p>Returns an activation matrix (in a 2d numpy array)
+and a set of template vectors (also 2d numpy array).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a single update using the update function specified.
+:return: nothing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.recombine_calculated_matrices">
+<code class="descname">recombine_calculated_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.recombine_calculated_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.randomize_input_matrices">
+<code class="descname">randomize_input_matrices</code><span class="sig-paren">(</span><em>shouldNormalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.randomize_input_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Nmf.DistanceType">
+<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">DistanceType</code><a class="headerlink" href="#Nmf.DistanceType" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="Nmf.DistanceType.EUCLIDEAN">
+<code class="descname">EUCLIDEAN</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.EUCLIDEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Nmf.DistanceType.DIVERGENCE">
+<code class="descname">DIVERGENCE</code><em class="property"> = 'divergence'</em><a class="headerlink" href="#Nmf.DistanceType.DIVERGENCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Nmf.DistanceType.DEFAULT">
+<code class="descname">DEFAULT</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.DEFAULT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

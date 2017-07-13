@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .spectral_utils import *
-from utils import *
-from constants import *
-from .audio_signal import AudioSignal
-from separation_base import SeparationBase
-from Duet import Duet
-from Nmf import NMF, DistanceType
-from repet import Repet
-from repet_sim import RepetSim
-
+from nussl.config import *
+from nussl.constants import *
+from nussl.utils import *
+from nussl.spectral_utils import *
+from nussl.audio_signal import AudioSignal, _verify_audio_signal_list_lax, _verify_audio_signal_list_strict
+from nussl.separation import *
+from nussl.separation.masks import *
+from nussl.evaluation import *
 
 __version__ = '0.1.5a10'
 
@@ -21,8 +19,8 @@ __title__ = 'nussl'
 __description__ = 'A flexible sound source separation library.'
 __uri__ = 'https://github.com/interactiveaudiolab/nussl'
 
-__author__ = 'C. Grief, E. Manilow, F. Pishdadian'
+__author__ = 'E. Manilow, P. Seetharaman, F. Pishdadian'
 __email__ = 'ethanmanilow2015@u.northwestern.edu'
 
 __license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2016 Interactive Audio Lab'
+__copyright__ = 'Copyright (c) 2017 Interactive Audio Lab'

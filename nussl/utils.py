@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Provides utilities for running nussl algorithms that do not belong to any specific algorithm or that are shared
 between algorithms.
@@ -8,6 +10,9 @@ import warnings
 import base64
 import json
 import constants
+
+from separation import SeparationBase
+from separation import MaskSeparationBase
 
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
@@ -166,6 +171,7 @@ def json_ready_numpy_array(array):
 
     """
     if isinstance(array, np.ndarray):
+        # noinspection PyTypeChecker
         data_b64 = base64.b64encode(np.ascontiguousarray(array).data)
         return {
                 constants.NUMPY_JSON_KEY: {
@@ -232,17 +238,17 @@ def json_numpy_obj_hook(dct):
 
 def add_mismatched_arrays(array1, array2, truncate=False):
     """
-    Will add two 1-D numpy arrays of different length. If truncate is false, it will expand
+    Will add two 1D numpy arrays of different length. If truncate is false, it will expand
     the resultant array to the larger of the two, if True it will truncate the resultant
     array to the smaller of the two.
 
     Args:
-        array1: (np.array) 1-D numeric array
-        array2: (np.array) 1-D numeric array
+        array1: (np.array) 1D numeric array
+        array2: (np.array) 1D numeric array
         truncate: (Bool) If True, will truncate the resultant array to the smaller of the two
 
     Returns:
-        One array added from the two input arrays
+        One 1D array added from the two input arrays
 
     """
     # Cast these arrays to the largest common type
@@ -267,3 +273,132 @@ def add_mismatched_arrays(array1, array2, truncate=False):
             result[:len(array2)] += array2
 
     return result
+
+
+# noinspection PyPep8Naming
+def add_mismatched_arrays2D(array1, array2, truncate=False):
+    """
+    Will add two 2D numpy arrays of different length. If truncate is false, it will expand
+    the resultant array to the larger of the two, if True it will truncate the resultant
+    array to the smaller of the two.
+
+    Args:
+        array1: (np.array) 2D numeric array
+        array2: (np.array) 2D numeric array
+        truncate: (Bool) If True, will truncate the resultant array to the smaller of the two
+
+    Returns:
+        One 2D array added from the two input arrays
+
+    """
+    # Cast these arrays to the largest common type
+    array1 = np.array(array1, dtype=np.promote_types(array1.dtype, array2.dtype))
+    array2 = np.array(array2, dtype=np.promote_types(array1.dtype, array2.dtype))
+
+    # TODO: find a more elegant way to do this whole function
+
+    if truncate:
+        if array1.shape[1] < array2.shape[1]:  # Kludge
+            result = array1.copy()
+            result += array2[:, :array1.shape[1]]
+        else:
+            result = array2.copy()
+            result += array1[:, :array2.shape[1]]
+    else:
+        if array1.shape[1] < array2.shape[1]:
+            result = array2.copy()
+            result[:, :array1.shape[1]] += array1
+        else:
+            result = array1.copy()
+            result[:, :array2.shape[1]] += array2
+
+    return result
+
+
+def complex_randn(shape):
+    """
+    Returns a complex-valued numpy array of random values with shape `shape`
+    Args:
+        shape: (tuple) tuple of ints that will be the shape of the resultant complex numpy array
+
+    Returns: (:obj:`np.ndarray`): a complex-valued numpy array of random values with shape `shape`
+    """
+    return np.random.randn(*shape) + 1j * np.random.randn(*shape)
+
+
+def _get_axis(array, axis_num, i):
+    """
+    Will get index 'i' along axis 'axis_num' of a 2- or 3-dimensional numpy array.
+    If array has 4+ dimensions or 'axis_num' is larger than number of axes, will return None.
+    Args:
+        array: 
+        axis_num: 
+        i: 
+
+    Returns:
+
+    """
+    if array.ndim == 2:
+        if axis_num == 0:
+            return array[i, :]
+        elif axis_num == 1:
+            return array[:, i]
+        else:
+            return None
+    elif array.ndim == 3:
+        if axis_num == 0:
+            return array[i, :, :]
+        elif axis_num == 1:
+            return array[:, i, :]
+        elif axis_num == 2:
+            return array[:, :, i]
+        else:
+            return None
+    else:
+        return None
+
+
+def _verify_separation_list(separation_list):
+    """
+    Verifies that all items in `separation_list` are :ref:`SeparationBase` -derived objects. If not so, attempts 
+    to correct the list if possible and returns the corrected list.
+    
+    Args:
+        separation_list: (list) List of :ref:`SeparationBase` -derived objects
+
+    Returns:
+        separation_list: (list) Verified list of :ref:`SeparationBase` -derived objects
+
+    """
+    if isinstance(separation_list, SeparationBase):
+        separation_list = [separation_list]
+    elif isinstance(separation_list, list):
+        if not all(isinstance(s, SeparationBase) for s in separation_list):
+            raise ValueError('All separation objects must be SeparationBase-derived objects!')
+    else:
+        raise ValueError('All separation objects must be SeparationBase-derived objects!')
+
+    return separation_list
+
+
+def _verify_mask_separation_list(mask_separation_list):
+    """
+    Verifies that all items in `separation_list` are :ref:`MaskSeparationBase` -derived objects. If not so, attempts 
+    to correct the list if possible and returns the corrected list.
+
+    Args:
+        mask_separation_list: (list) List of :ref:`MaskSeparationBase` -derived objects
+
+    Returns:
+        separation_list: (list) Verified list of :ref:`MaskSeparationBase` -derived objects
+
+    """
+    if isinstance(mask_separation_list, MaskSeparationBase):
+        mask_separation_list = [mask_separation_list]
+    elif isinstance(mask_separation_list, list):
+        if not all(isinstance(s, MaskSeparationBase) for s in mask_separation_list):
+            raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
+    else:
+        raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
+
+    return mask_separation_list

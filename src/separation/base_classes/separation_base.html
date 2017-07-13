@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>SeparationBase Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="MaskSeparationBase Class" href="mask_separation_base.html" />
+    <link rel="prev" title="Separation Base Classes" href="separation_base_classes.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">SeparationBase Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="separation_base_classes.html" title="Previous Chapter: Separation Base Classes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Separation Ba...</span>
+    </a>
+  </li>
+  <li>
+    <a href="mask_separation_base.html" title="Next Chapter: MaskSeparationBase Class"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">MaskSeparatio... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../../_sources/src/separation/base_classes/separation_base.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-separation.separation_base">
+<span id="separationbase-class"></span><span id="separation-base"></span><h1>SeparationBase Class<a class="headerlink" href="#module-separation.separation_base" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="separation.separation_base.SeparationBase">
+<em class="property">class </em><code class="descclassname">separation.separation_base.</code><code class="descname">SeparationBase</code><span class="sig-paren">(</span><em>input_audio_signal</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for all separation algorithms in nussl.</p>
+<p>Do not call this. It will not do anything.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_audio_signal</strong> (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) – This will always make a copy of the provided AudioSignal object.</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="separation.separation_base.SeparationBase.sample_rate">
+<code class="descname">sample_rate</code><a class="headerlink" href="#separation.separation_base.SeparationBase.sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Sample rate of <code class="docutils literal"><span class="pre">self.audio_signal</span></code>.
+Literally <code class="docutils literal"><span class="pre">self.audio_signal.sample_rate</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.separation_base.SeparationBase.stft_params">
+<code class="descname">stft_params</code><a class="headerlink" href="#separation.separation_base.SeparationBase.stft_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">StftParams</span></code>) – <code class="docutils literal"><span class="pre">StftParams</span></code> of <code class="docutils literal"><span class="pre">self.audio_signal</span></code>
+Literally <code class="docutils literal"><span class="pre">self.audio_signal.stft_params</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.separation_base.SeparationBase.audio_signal">
+<code class="descname">audio_signal</code><a class="headerlink" href="#separation.separation_base.SeparationBase.audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) – Copy of the <code class="docutils literal"><span class="pre">AudioSignal</span></code> object passed in upon initialization.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.separation_base.SeparationBase.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBase.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots relevant data for separation algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.separation_base.SeparationBase.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBase.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs separation algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.separation_base.SeparationBase.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBase.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects after separation algorithm is run</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.separation_base.SeparationBase.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBase.to_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="separation.separation_base.SeparationBase.from_json">
+<em class="property">classmethod </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBase.from_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="separation.separation_base.SeparationBaseDecoder">
+<em class="property">class </em><code class="descclassname">separation.separation_base.</code><code class="descname">SeparationBaseDecoder</code><span class="sig-paren">(</span><em>separation_class</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBaseDecoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object to decode a <code class="docutils literal"><span class="pre">SeparationBase</span></code>-derived object from JSON serialization.
+You should never have to instantiate this object by hand.</p>
+<dl class="method">
+<dt id="separation.separation_base.SeparationBaseDecoder.json_separation_decoder">
+<code class="descname">json_separation_decoder</code><span class="sig-paren">(</span><em>json_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.separation_base.SeparationBaseDecoder.json_separation_decoder" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

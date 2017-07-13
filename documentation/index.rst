@@ -21,9 +21,11 @@ First Steps
 nussl Documentation
 -------------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   Classes </src/classes>
+   Separation Classes </src/separation/separation_classes>
+   Evaluation Classes </src/evaluation/evaluation_classes>
+   Transformer Classes </src/transformers/transformer_classes>
    Modules </src/modules>
 
 
@@ -41,7 +43,7 @@ For bug reports and issues with this code, please see the `github issues page
 
 Contact
 -------
-Contact Ethan Manilow <ethanmanilow[at]u.northwestern[dot]edu) with any questions.
+Contact Ethan Manilow <ethanmanilow[at]u.northwestern[dot]edu> with any questions.
 
 Indices and tables
 ==================

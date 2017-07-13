@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>IdealMask Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="nussl Evaluation Classes" href="../../evaluation/evaluation_classes.html" />
+    <link rel="prev" title="Other Separation Classes" href="other_classes.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">IdealMask Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="other_classes.html" title="Previous Chapter: Other Separation Classes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Other Separat...</span>
+    </a>
+  </li>
+  <li>
+    <a href="../../evaluation/evaluation_classes.html" title="Next Chapter: nussl Evaluation Classes"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">nussl Evaluat... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../../_sources/src/separation/other/ideal_mask.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="ideal-mask">
+<span id="idealmask-class"></span><h1>IdealMask Class<a class="headerlink" href="#ideal-mask" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-separation.ideal_mask"></span><p><code class="docutils literal"><span class="pre">IdealMask</span></code> separates sources using the ideal binary or soft mask from ground truth. It accepts a list of
+<code class="docutils literal"><span class="pre">AudioSignal</span></code>
+objects, each of which contains a known source, and applies a mask to a time-frequency representation of the
+input mixture created from each of the known sources. This is often used as an upper bound on source separation
+performance when benchmarking new algorithms, as it represents the best possible scenario for mask-based methods.</p>
+<p>At the time of this writing, the time-frequency representation used by this class is the magnitude spectrogram</p>
+<p>This class is derived from <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code> so its <code class="docutils literal"><span class="pre">run()</span></code> method returns a list of <code class="docutils literal"><span class="pre">MaskBase</span></code>
+objects.</p>
+<dl class="class">
+<dt id="separation.ideal_mask.IdealMask">
+<em class="property">class </em><code class="descclassname">separation.ideal_mask.</code><code class="descname">IdealMask</code><span class="sig-paren">(</span><em>input_audio_mixture</em>, <em>sources_list</em>, <em>mask_type='soft'</em>, <em>use_librosa_stft=True</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_audio_mixture</strong> (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) – Input <code class="docutils literal"><span class="pre">AudioSignal</span></code> mixture to create the masks from.</li>
+<li><strong>sources_list</strong> (<em>list</em>) – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects where each one represents an isolated source in
+the mixture.</li>
+<li><strong>mask_type</strong> (<em>str</em><em>, </em><em>Optional</em>) – Indicates whether to make a binary or soft mask. Optional, defaults to <code class="docutils literal"><span class="pre">SOFT_MASK</span></code></li>
+<li><strong>use_librosa_stft</strong> (<em>bool</em><em>, </em><em>Optional</em>) – Whether to use librosa’s STFT function. Optional, defaults to config
+settings.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.sources">
+<code class="descname">sources</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.sources" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects from <code class="docutils literal"><span class="pre">__init__()</span></code> where each object represents a single
+isolated sources within the mixture.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.estimated_masks">
+<code class="descname">estimated_masks</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.estimated_masks" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> – List of resultant <code class="docutils literal"><span class="pre">MaskBase</span></code> objects created. Masks in this list are in
+the same order that <code class="docutils literal"><span class="pre">source_list</span></code> (and <code class="docutils literal"><span class="pre">self.sources</span></code>) is in.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.estimated_sources">
+<code class="descname">estimated_sources</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.estimated_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects created from applying the created masks to the
+mixture.</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If not all items in <code class="docutils literal"><span class="pre">sources_list</span></code> are <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects, OR if not all of the
+<code class="docutils literal"><span class="pre">AudioSignal</span></code> objects in <code class="docutils literal"><span class="pre">sources_list</span></code> have the same sample rate and number of channels,
+OR if <code class="docutils literal"><span class="pre">input_audio_mixture</span></code> has a different sample rate or number of channels as the <code class="docutils literal"><span class="pre">AudioSignal</span></code>
+objects in <code class="docutils literal"><span class="pre">sources_list</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">path_to_drums</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;demo_files&#39;</span><span class="p">,</span> <span class="s1">&#39;drums.wav&#39;</span><span class="p">)</span>
+<span class="n">path_to_flute</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;demo_files&#39;</span><span class="p">,</span> <span class="s1">&#39;flute.wav&#39;</span><span class="p">)</span>
+
+<span class="n">drums</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_drums</span><span class="p">)</span>
+<span class="n">drums</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># make it mono</span>
+
+<span class="n">flute</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_flute</span><span class="p">)</span>
+<span class="n">flute</span><span class="o">.</span><span class="n">truncate_samples</span><span class="p">(</span><span class="n">drums</span><span class="o">.</span><span class="n">signal_length</span><span class="p">)</span>  <span class="c1"># shorten the flute solo</span>
+
+<span class="c1"># Make a mixture and increase the gain on the flute</span>
+<span class="n">mixture</span> <span class="o">=</span> <span class="n">drums</span> <span class="o">+</span> <span class="n">flute</span> <span class="o">*</span> <span class="mf">3.0</span>
+
+<span class="c1"># Run IdealMask making binary masks</span>
+<span class="n">ideal_mask</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">IdealMask</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="p">[</span><span class="n">drums</span><span class="p">,</span> <span class="n">flute</span><span class="p">],</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>
+<span class="n">ideal_mask</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">ideal_drums</span><span class="p">,</span> <span class="n">ideal_flute</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+<span class="n">ideal_residual</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="o">.</span><span class="n">residual</span>  <span class="c1"># Left over audio that was not captured by the mask</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="separation.ideal_mask.IdealMask.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a list of masks (as <code class="docutils literal"><span class="pre">MaskBase</span></code> objects, either <code class="docutils literal"><span class="pre">BinaryMask</span></code> or <code class="docutils literal"><span class="pre">SoftMask</span></code> depending
+on how the object was instantiated) from a list of known source signals (<code class="docutils literal"><span class="pre">source_list</span></code> in the constructor).
+Returns a list of <code class="docutils literal"><span class="pre">MaskBase</span></code> objects (one for each input signal) in the order that they were provided
+when this object was initialized.</p>
+<p>Binary masks are created based on the magnitude spectrogram using the following formula:</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">mask</span> <span class="pre">=</span> <span class="pre">(provided_source.mag_spec</span> <span class="pre">&gt;=</span> <span class="pre">(mixture_mag_spec</span> <span class="pre">-</span> <span class="pre">provided_source.mag_spec)</span></code></div></blockquote>
+<p>Where <code class="docutils literal"><span class="pre">-</span></code> is a element-wise subtraction (as if the values were binary ints, 0 or 1) and <code class="docutils literal"><span class="pre">&gt;=</span></code>
+is element-wise logical greater-than-or-equal (again, as if the values were binary ints, 0 or 1).</p>
+<p>Soft masks are also created based on the magnitude spectrogram but use the following formula:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">mask</span> <span class="pre">=</span> <span class="pre">mixture_mag_spec</span> <span class="pre">/</span> <span class="pre">provided_source.mag_spec</span></code></li>
+<li><code class="docutils literal"><span class="pre">mask</span> <span class="pre">=</span> <span class="pre">log(mask)</span></code></li>
+<li><code class="docutils literal"><span class="pre">mask</span> <span class="pre">=</span> <span class="pre">(mask</span> <span class="pre">+</span> <span class="pre">abs(min(mask)))</span> <span class="pre">/</span> <span class="pre">max(mask)</span></code></li>
+</ol>
+</div></blockquote>
+<p>Where all arithmetic operations and log are element-wise. This provides a logarithmically scaled mask that is
+in the interval [0.0, 1.0].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>estimated_masks (list)</em> – List of resultant <code class="docutils literal"><span class="pre">MaskBase</span></code> objects created. Masks in this list are in
+the same order that <code class="docutils literal"><span class="pre">source_list</span></code> (and <code class="docutils literal"><span class="pre">self.sources</span></code>) are in.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">RuntimeError if unknown mask type is provided (Options are [<code class="docutils literal"><span class="pre">BinaryMask</span></code>, or <code class="docutils literal"><span class="pre">SoftMask</span></code>]).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.residual">
+<code class="descname">residual</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.residual" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object that contains the left over audio that was not captured
+by creating the masks. The residual is calculated in the time domain; after all of the masks are
+created by running <code class="docutils literal"><span class="pre">IdealMask.run()</span></code> and making the corresponding <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects
+(using <code class="docutils literal"><span class="pre">IdealMask.make_audio_signals()</span></code> which applies the masks to the mixture stft and does an istft for
+each source from the calculated masks), the residual is simply the original mixture with</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">residual (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) – <code class="docutils literal"><span class="pre">AudioSignal</span></code> object that contains the left over
+audio that was not captured by creating the masks.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li>ValueError if <code class="docutils literal"><span class="pre">IdealMask.run()</span></code> has not been called. OR</li>
+<li>Exception if there was an unforeseen issue.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.ideal_mask.IdealMask.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of signals (as <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects) created by applying the ideal masks.
+This creates the signals by element-wise multiply the masks with the mixture stft.
+Prior to running this, it is expected that <code class="docutils literal"><span class="pre">run()</span></code> has been called or else this will throw an error.
+These of signals is in the same order as the input ideal mixtures were when they were input (as a parameter
+to the constructor, <code class="docutils literal"><span class="pre">sources_list</span></code>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>estimated_sources (list)</em> – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects that represent the sources created by applying
+a mask from the known source to the mixture</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ideal_mask</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">IdealMask</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="p">[</span><span class="n">drums</span><span class="p">,</span> <span class="n">flute</span><span class="p">],</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>
+<span class="n">ideal_mask</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">ideal_drums</span><span class="p">,</span> <span class="n">ideal_flute</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

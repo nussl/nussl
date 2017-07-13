@@ -1,0 +1,9 @@
+.. _repet:
+
+Repet Class
+===========
+
+.. automodule:: separation.repet
+    :members:
+    :undoc-members:
+    :show-inheritance:

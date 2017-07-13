@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>EvaluationBase Class &#8212; nussl 0.1.5a10 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.5a10',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="PrecisionRecallFScore Class" href="precision_recall_fscore.html" />
+    <link rel="prev" title="nussl Evaluation Classes" href="evaluation_classes.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          nussl</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformer Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">EvaluationBase Class</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="evaluation_classes.html" title="Previous Chapter: nussl Evaluation Classes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; nussl Evaluat...</span>
+    </a>
+  </li>
+  <li>
+    <a href="precision_recall_fscore.html" title="Next Chapter: PrecisionRecallFScore Class"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">PrecisionReca... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/src/evaluation/evaluation_base.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-evaluation.evaluation_base">
+<span id="evaluationbase-class"></span><span id="evaluation-base"></span><h1>EvaluationBase Class<a class="headerlink" href="#module-evaluation.evaluation_base" title="Permalink to this headline">¶</a></h1>
+<p>EvaluationBase is the base class for all evaluation methods in nussl.</p>
+<dl class="class">
+<dt id="evaluation.evaluation_base.EvaluationBase">
+<em class="property">class </em><code class="descclassname">evaluation.evaluation_base.</code><code class="descname">EvaluationBase</code><span class="sig-paren">(</span><em>true_sources_list</em>, <em>estimated_sources_list</em>, <em>source_labels=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for all Evaluation classes for source separation algorithm in nussl.
+Contains common functions for all evaluation techniques. This class should not be instantiated directly.</p>
+<p>Both <cite>true_sources_list</cite> and <cite>estimated_sources_list</cite> get validated using the private method
+<cite>EvaluationBase._verify_input_list()</cite>. If your evaluation needs to verify that input is set correctly (recommended)
+overwrite that method to add checking.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>true_sources_list</strong> (<em>list</em>) – List of objects that contain one ground truth source per object. In some instances
+(such as the BSSEval-objects) this list is filled with <span class="xref std std-ref">AudioSignals</span> but in other cases it is
+populated with <span class="xref std std-ref">MaskBase</span> -derived objects (i.e., either a <span class="xref std std-ref">BinaryMask</span>
+or <span class="xref std std-ref">SoftMask</span> object).</li>
+<li><strong>estimated_sources_list</strong> (<em>list</em>) – List of objects that contain source estimations from a source separation
+algorithm. List should be populated with the same type of objects and in the same order as
+<cite>true_sources_list</cite>.</li>
+<li><strong>source_labels</strong> (<em>list</em><em>, </em><em>Optional</em>) – List of strings that are labels for each source to be used as keys for
+the scores. Default value is <cite>None</cite> and in that case labels are <cite>Source 0</cite>, <cite>Source 1</cite>, etc.</li>
+<li><strong>do_mono</strong> (<em>bool</em><em>, </em><em>Optional</em>) – Whether to make the objects in <cite>true_sources_list</cite> and <cite>estimated_sources_list</cite> mono
+prior to doing the evaluation. This may not work for all <cite>EvaluationBase</cite>-derived objects.</li>
+<li><strong>**kwargs</strong> – Additional arguments for subclasses.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="evaluation.evaluation_base.EvaluationBase.evaluate">
+<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function runs the evaluation method. Do not call this directly from <cite>EvaluationBase</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="evaluation.evaluation_base.EvaluationBase.scores">
+<code class="descname">scores</code><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase.scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary that stores all scores from the evaluation method. Gets populated when <span class="xref std std-ref">evaluate</span> gets run.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
