@@ -4,46 +4,34 @@ import random
 import math
 import numpy as np
 
-import separation_base
-import audio_signal
 import constants
 
-
-class NMF(separation_base.SeparationBase):
-    """
-    This is an implementation of the Non-negative Matrix Factorization algorithm for
-    source separation. This implementation receives an audio_signal object
-    and a number, num_templates, which defines the number of bases vectors.
-
-    This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
-    and also allows the user to define distance measure function.
-
-    References:
-    [1] Lee, Daniel D., and H. Sebastian Seung. "Algorithms for non-negative matrix factorization."
-        Advances in neural information processing systems. 2001.
-    """
-
-    def __str__(self):
-        return "Nmf"
-
-    def __init__(self, input_audio_signal, num_templates,
+class TransformerNMF(object):
+    def __init__(self, input_matrix, num_templates,
                  activation_matrix=None, templates=None, distance_measure=None,
                  should_update_template=None, should_update_activation=None):
-        self.__dict__.update(locals())
-        super(NMF, self).__init__(input_audio_signal=input_audio_signal)
 
         if num_templates <= 0:
             raise Exception('Need more than 0 bases!')
 
-        self.stft = self.audio_signal.stft(overwrite=False) # V in literature
+        self.input_matrix = input_matrix
         self.num_templates = num_templates
 
-        if self.stft.size <= 0:
-            raise Exception('STFT size must be > 0!')
+        if self.input_matrix.size <= 0:
+            raise Exception('Input matrix size must be > 0!')
+
+        if np.iscomplexobj(input_matrix):
+            raise Exception('Input matrix must be real')
+
+        if np.min(input_matrix) < 0.0:
+            raise Exception('Input matrix must be nonnegative!')
+
+        self.activation_matrix = None
+        self.templates = None
 
         if activation_matrix is None and templates is None:
-            self.templates = np.zeros((self.stft.shape[0], num_templates))  # W, in literature
-            self.activation_matrix = np.zeros((num_templates, self.stft.shape[1]))  # H, in literature
+            self.templates = np.zeros((self.input_matrix.shape[0], num_templates))  # W, in literature
+            self.activation_matrix = np.zeros((num_templates, self.input_matrix.shape[1]))  # H, in literature
             self.randomize_input_matrices()
         elif activation_matrix is not None and templates is not None:
             self.templates = templates
@@ -60,19 +48,21 @@ class NMF(separation_base.SeparationBase):
         self.stopping_epsilon = 1e10
         self.max_num_iterations = 20
 
+        self.reconstruction_error = []
+
     def run(self):
         """
         This runs the NMF separation algorithm. This function assumes that all
         parameters have been set prior to running.
 
-        No inputs. do_STFT and N must be set prior to calling this function.
+        No inputs. N must be set prior to calling this function.
 
         Returns an activation matrix (in a 2d numpy array)
         and a set of template vectors (also 2d numpy array).
         """
 
-        if self.stft is None or self.stft.size == 0:
-            raise Exception('Cannot do NMF with an empty STFT!')
+        if self.input_matrix is None or self.input_matrix.size == 0:
+            raise Exception('Cannot do NMF with an empty input_matrix!')
 
         if self.num_templates is None or self.num_templates == 0:
             raise Exception('Cannot do NMF with no bases!')
@@ -87,6 +77,9 @@ class NMF(separation_base.SeparationBase):
         while not should_stop:
 
             self.update()
+
+            self.reconstruction_error.append(self._euclidean_distance() if self.epsilon_euclidean_type else
+                                             self._divergence())
 
             # Stopping conditions
             num_iterations += 1
@@ -127,12 +120,12 @@ class NMF(separation_base.SeparationBase):
 
         # store in memory so we don't have to do n*m calculations.
         template_T = self.templates.T
-        temp_T_stft = np.dot(template_T, self.stft)
+        temp_T_matrix = np.dot(template_T, self.input_matrix)
         temp_T_act = np.dot(np.dot(template_T, self.templates), self.activation_matrix)
 
         # Eq. 4, H update from [1]
         for indices, val in np.ndenumerate(self.activation_matrix):
-            result = temp_T_stft[indices]
+            result = temp_T_matrix[indices]
             result /= temp_T_act[indices]
             result *= self.activation_matrix[indices]
             activation_copy[indices] = result
@@ -145,12 +138,12 @@ class NMF(separation_base.SeparationBase):
 
         # store in memory so we don't have to do n*m calculations.
         activation_T = self.activation_matrix.T
-        stft_act_T = np.dot(self.stft, activation_T)
+        input_matrix_act_T = np.dot(self.input_matrix, activation_T)
         temp_act = np.dot(np.dot(self.templates, self.activation_matrix), activation_T)
 
         # Eq. 4, W update from [1]
         for indices, val in np.ndenumerate(self.templates):
-            result = stft_act_T[indices]
+            result = input_matrix_act_T[indices]
             result /= temp_act[indices]
             result *= self.templates[indices]
             template_copy[indices] = result
@@ -166,7 +159,7 @@ class NMF(separation_base.SeparationBase):
         # Eq. 5, H update from [1]
         for indices, val in np.ndenumerate(self.activation_matrix):
             (a, mu) = indices
-            result = sum((self.templates[i][a] * self.stft[i][mu]) / dot[i][mu]
+            result = sum((self.templates[i][a] * self.input_matrix[i][mu]) / dot[i][mu]
                          for i in range(self.templates.shape[0]))
             result /= sum(self.templates[k][a] for k in range(self.templates.shape[0]))
             result *= self.activation_matrix[indices]
@@ -183,7 +176,7 @@ class NMF(separation_base.SeparationBase):
         # Eq. 5, W update from [1]
         for indices, val in np.ndenumerate(self.templates):
             (i, a) = indices
-            result = sum((self.activation_matrix[a][mu] * self.stft[i][mu]) / dot[i][mu]
+            result = sum((self.activation_matrix[a][mu] * self.input_matrix[i][mu]) / dot[i][mu]
                          for mu in range(self.activation_matrix.shape[1]))
             result /= sum(self.activation_matrix[a][nu] for nu in range(self.activation_matrix.shape[1]))
             result *= self.templates[indices]
@@ -198,41 +191,31 @@ class NMF(separation_base.SeparationBase):
             print(self.activation_matrix.shape, self.templates.shape)
             return
 
-        if mixture.shape != self.stft.shape:
+        if mixture.shape != self.input_matrix.shape:
             raise Exception('Something went wrong! Recombining the activation matrix '
-                            'and template vectors is not the same size as the STFT!')
+                            'and template vectors is not the same size as the input matrix!')
 
-        return sum((self.stft[index] - val) ** 2 for index, val in np.ndenumerate(mixture))
+        return sum((self.input_matrix[index] - val) ** 2 for index, val in np.ndenumerate(mixture))
 
     def _divergence(self):
         mixture = np.dot(self.activation_matrix, self.templates)
 
-        if mixture.shape != self.stft.shape:
+        if mixture.shape != self.input_matrix.shape:
             raise Exception('Something went wrong! Recombining the activation matrix '
-                            'and template vectors is not the same size as the STFT!')
+                            'and template vectors is not the same size as the input matrix!')
 
         return sum(
-            (self.stft[index] * math.log(self.stft[index] / val, 10) + self.stft[index] - val)
+            (self.input_matrix[index] * math.log(self.input_matrix[index] / val, 10) + self.input_matrix[index] - val)
             for index, val in np.ndenumerate(mixture))
-
-    def make_audio_signals(self):
-        # TODO: this!
-        raise NotImplementedError('This does not work yet.')
-        signals = []
-        for stft in self.recombine_calculated_matrices():
-            signal = audio_signal.AudioSignal(stft=stft)
-            signal.istft()
-            signals.append(signal)
-        return signals
 
     def recombine_calculated_matrices(self):
         new_matrices = []
         for n in range(self.num_templates):
             matrix = np.empty_like(self.activation_matrix)
-            matrix[n, ] = self.activation_matrix[n, ]
+            matrix[n,] = self.activation_matrix[n,]
 
-            new_stft = np.dot(self.templates, matrix)
-            new_matrices.append(new_stft)
+            new_matrix = np.dot(self.templates, matrix)
+            new_matrices.append(new_matrix)
         return new_matrices
 
     def randomize_input_matrices(self, shouldNormalize=False):
@@ -251,7 +234,6 @@ class NMF(separation_base.SeparationBase):
 
     def plot(self, outputFile, **kwargs):
         raise NotImplementedError('Sorry, you cannot do this yet.')
-
 
 class DistanceType:
     EUCLIDEAN = 'euclidean'
