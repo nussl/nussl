@@ -9,6 +9,7 @@ from .audio_signal import AudioSignal
 from separation_base import SeparationBase
 from Duet import Duet
 from Nmf import NMF, DistanceType
+from transformer_nmf import TransformerNMF, DistanceType
 from repet import Repet
 from repet_sim import RepetSim
 from ft2d import FT2D

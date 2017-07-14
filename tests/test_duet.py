@@ -10,13 +10,24 @@ import scipy.io
 import os
 import warnings
 
-
 class DuetUnitTests(unittest.TestCase):
+
     def setUp(self):
-        # Use the same audio file that the benchmarks were run with
         path = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
-        signal = nussl.AudioSignal(path)
-        self.duet = nussl.Duet(signal, 3)
+        self.signal = nussl.AudioSignal(path)
+        #Call benchmarks
+        self.duet = nussl.Duet(self.signal, 3)
+        self.benchmark_dict = self.load_benchmarks()
+
+    def load_benchmarks(self):
+        benchmark_dict = {}
+        directory = 'duet_reference/duet_benchmarks'
+        for filename in os.listdir(directory):
+            key = os.path.splitext(filename)[0]
+            file_path = os.path.join('duet_reference', 'duet_benchmarks', filename)
+            value = np.load(file_path)
+            benchmark_dict[key] = value
+        return benchmark_dict
 
     # def test_duet_final_outputs(self):
     #     #Test final outputs
@@ -40,78 +51,75 @@ class DuetUnitTests(unittest.TestCase):
 
     def test_compute_spectrogram_wmat(self):
         # Load Duet values to benchmark against
-        stft0_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_stft_ch0.npy')
-        stft1_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_stft_ch1.npy')
-        wmat_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_wmat.npy')
+        duet = nussl.Duet(self.signal, 3)
+        duet_sft0, duet_sft1, duet_wmat = duet._compute_spectrogram(self.duet.sample_rate)
+        assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch0']) == duet_sft0)
+        assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch1']) == duet_sft1)
+        assert np.all(np.array(self.benchmark_dict['benchmark_wmat']) == duet_wmat)
 
-        benchmark_stft_ch0 = np.load(stft0_path)
-        benchmark_stft_ch1 = np.load(stft1_path)
-        benchmark_wmat = np.load(wmat_path)
-
-        duet_sft0, duet_sft1, duet_wmat = self.duet._compute_spectrogram(self.duet.sample_rate)
-        assert np.all(benchmark_stft_ch0 == duet_sft0)
-        assert np.all(benchmark_stft_ch1 == duet_sft1)
-        assert np.all(benchmark_wmat == duet_wmat)
 
     def test_compute_atn_delay(self):
+        #Use the same stfts for comparing the two functions' outputs
+        duet = nussl.Duet(self.signal, 3)
+        duet.stft_ch0 = self.benchmark_dict['benchmark_stft_ch0']
+        duet.stft_ch1 = self.benchmark_dict['benchmark_stft_ch1']
+        duet.frequency_matrix = self.benchmark_dict['benchmark_wmat']
+
+        symmetric_atn, delay = duet._compute_atn_delay()
+
+        assert np.all(np.array(self.benchmark_dict['benchmark_sym_atn'])== symmetric_atn)
+        assert np.all(np.array(self.benchmark_dict['benchmark_delay'])== delay)
+
+    def test_make_histogram(self):
         #Use the same stfts for comparing this function's outputs
-        stft0_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_stft_ch0.npy')
-        stft1_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_stft_ch1.npy')
-        wmat_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_wmat.npy')
-        self.duet.stft_ch0 = np.load(stft0_path)
-        self.duet.stft_ch1 = np.load(stft1_path)
-        self.duet.frequency_matrix = np.load(wmat_path)
+        duet = nussl.Duet(self.signal, 3)
+        duet.stft_ch0 = self.benchmark_dict['benchmark_stft_ch0']
+        duet.stft_ch1 = self.benchmark_dict['benchmark_stft_ch1']
+        duet.frequency_matrix = self.benchmark_dict['benchmark_wmat']
+        duet.symmetric_atn = self.benchmark_dict['benchmark_sym_atn']
+        duet.delay = self.benchmark_dict['benchmark_delay']
 
         #Load benchmarks
-        sym_atn_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_sym_atn.npy')
-        delay_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_delay.npy')
-        benchmark_sym_atn = np.load(sym_atn_path)
-        benchmark_delay = np.load(delay_path)
+        hist_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_hist.npy')
+        atn_bins_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_atn_bins.npy')
+        delay_bins_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_delay_bins.npy')
+        benchmark_hist = np.load(hist_path)
+        benchmark_atn_bins = np.load(atn_bins_path)
+        benchmark_delay_bins = np.load(delay_bins_path)
 
-        symmetric_atn, delay = self.duet._compute_atn_delay()
+        hist, atn_bins, delay_bins = duet.make_histogram(duet.p, duet.q)
 
-        assert np.all(benchmark_sym_atn == symmetric_atn)
-        assert np.all(benchmark_delay == delay)
+        assert np.all(benchmark_hist == hist)
+        assert np.all(benchmark_atn_bins == atn_bins)
+        assert np.all(benchmark_delay_bins == delay_bins)
 
-    # def test_make_histogram(self):
-    #     #Use the same stfts for comparing this function's outputs
-    #     stft0_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_stft_ch0.npy')
-    #     stft1_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_stft_ch1.npy')
-    #     wmat_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_wmat.npy')
-    #     sym_atn_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_sym_atn.npy')
-    #     delay_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_delay.npy')
-    #     self.duet.stft_ch0 = np.load(stft0_path)
-    #     self.duet.stft_ch1 = np.load(stft1_path)
-    #     self.duet.frequency_matrix = np.load(wmat_path)
-    #     self.symmetric_atn = np.load(sym_atn_path)
-    #     self.delay = np.load(delay_path)
-    #
-    #     #Load benchmarks
-    #     hist_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_hist.npy')
-    #     atn_bins_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_atn_bins.npy')
-    #     delay_bins_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_delay_bins.npy')
-    #     benchmark_hist = np.load(hist_path)
-    #     benchmark_atn_bins = np.load(atn_bins_path)
-    #     benchmark_delay_bins = np.load(delay_bins_path)
-    #
-    #     hist, atn_bins, delay_bins = self.duet.make_histogram(self.duet.p, self.duet.q)
-    #
-    #     assert np.all(benchmark_hist == hist)
-    #     assert np.all(benchmark_atn_bins == atn_bins)
-    #     assert np.all(benchmark_delay_bins == delay_bins)
-    #
-    # def test_peak_indices(self):
-    #     hist_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_hist.npy')
-    #     peak_indices_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_peak_indices.npy')
-    #     benchmark_hist = np.load(hist_path)
-    #     benchmark_peak_indices = np.load(peak_indices_path)
-    #
-    #     duet_peak_indices = nussl.utils.find_peak_indices(benchmark_hist, self.duet.num_sources, threshold=self.duet.peak_threshold,
-    #                                                 min_dist=[self.duet.attenuation_min_distance, self.duet.delay_min_distance])
-    #
-    #     assert np.all(benchmark_peak_indices == duet_peak_indices)
+    def test_peak_indices(self):
+        duet = nussl.Duet(self.signal, 3)
+        duet.stft_ch0 = self.benchmark_dict['benchmark_stft_ch0']
+        duet.stft_ch1 = self.benchmark_dict['benchmark_stft_ch1']
+        duet.frequency_matrix = self.benchmark_dict['benchmark_wmat']
+        duet.symmetric_atn = self.benchmark_dict['benchmark_sym_atn']
+        duet.delay = self.benchmark_dict['benchmark_delay']
 
-    # def test_convert_peaks
+        hist_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_hist.npy')
+        peak_indices_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_peak_indices.npy')
+        benchmark_hist = np.load(hist_path)
+        benchmark_peak_indices = np.load(peak_indices_path)
+
+        duet_peak_indices = nussl.utils.find_peak_indices(benchmark_hist, self.duet.num_sources, threshold=self.duet.peak_threshold,
+                                                    min_dist=[self.duet.attenuation_min_distance, self.duet.delay_min_distance])
+
+    # original DUET returned peaks as [[28 21 44] [24 25 24]] instead of [(28, 24), (21,25), (44,24)]
+    # Convert current peaks being tested to original format
+        atn_indices = [x[0] for x in duet_peak_indices]
+        delay_indices = [x[1] for x in duet_peak_indices]
+        duet_peak_indices = np.row_stack((atn_indices, delay_indices))
+
+        assert np.all(benchmark_peak_indices == duet_peak_indices)
+
+    def test_convert_peaks(self):
+        pass
+
 
     # def test_compute_masks
 
@@ -119,6 +127,7 @@ class DuetUnitTests(unittest.TestCase):
 
     # test_smooth_matrix
 
+    #TODO: fix this function before writing test for it
 
 if __name__ == '__main__':
     unittest.main()
