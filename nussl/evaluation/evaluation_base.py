@@ -94,6 +94,7 @@ class EvaluationBase(object):
             A verified list of objects that are ready for running the evaluation method.
 
         """
+        # noinspection PyProtectedMember
         return nussl._verify_audio_signal_list_strict(audio_signal_list)
 
     def evaluate(self):

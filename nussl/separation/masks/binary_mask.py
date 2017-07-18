@@ -1,7 +1,66 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Binary Mask class
+The BinaryMask class is for creating a time-frequency mask with binary values. Like all :ref:`mask_base` objects,
+BinaryMask is initialized with a 2D or 3D numpy array containing the mask data. The data type (numpy.dtype) of the
+initial mask can be either bool, int, or float. The mask is stored as a 3-dimensional boolean-valued numpy array.
+
+The best case scenario for the input mask np array is when the data type is bool. If the data type of the input mask 
+upon init is int it is expected that all values are either 0 or 1. If the data type
+of the mask is float, all values must be within 1e-2 of either 1 or 0. If the array is not set as one of these, 
+BinaryMask will raise an exception.
+
+BinaryMask (like :ref:`soft_mask`) is one of the return types for the ``run()`` methods of :ref:`mask_separation_base` 
+-derived objects (this is most of the separation methods in `nussl`.
+
+See Also:
+    * :ref:`mask_base`: The base class for BinaryMask and SoftMask
+    * :ref:`soft_mask`: Similar to BinaryMask, but instead of taking boolean values, takes floats between [0.0 and 1.0].
+    * :ref:`mask_separation_base`: Base class for all mask-based separation methods in nussl.
+
+Examples:
+    Initializing a mask from a numpy array...
+    
+.. code-block:: python
+    :linenos:
+    
+    import nussl
+    import numpy as np
+    
+    # load a file
+    signal = nussl.AudioSignal('path/to/file.wav')
+    stft = signal.stft()
+    
+    # Make a random binary mask with the same shape as the stft with dtype == bool
+    rand_bool_mask = np.random.randint(2, size=stft.shape).astype('bool')
+    bin_mask_bool = nussl.BinaryMask(rand_bool_mask)
+    
+    # Make a random binary mask with the same shape as the stft with dtype == int
+    rand_int_mask = np.random.randint(2, size=stft.shape)
+    bin_mask_int = nussl.BinaryMask(rand_int_mask)
+    
+    # Make a random binary mask with the same shape as the stft with dtype == float
+    rand_float_mask = np.random.randint(2, size=stft.shape).astype('float')
+    bin_mask_int = nussl.BinaryMask(rand_float_mask)    
+    
+    
+:ref:`mask_separation_base` -derived methods return :ref:`mask_base` masks, like so...
+
+.. code-block:: python
+    :linenos:
+
+    import nussl
+    
+    # load a file
+    signal = nussl.AudioSignal('path/to/file.wav')
+    
+    repet = nussl.Repet(signal, mask_type=nussl.BinaryMask)  # You have to specify that you want Binary Masks back
+    assert isinstance(repet, nussl.MaskSeparationBase)  # Repet is a MaskSeparationBase-derived class
+    
+    [background_mask, foreground_mask] = repet.run()  # MaskSeparationBase-derived classes return MaskBase objects
+    assert isinstance(foreground_mask, nussl.BinaryMask)  # this is True
+    assert isinstance(background_mask, nussl.BinaryMask)  # this is True
+
 """
 
 import numpy as np
@@ -12,10 +71,13 @@ import mask_base
 class BinaryMask(mask_base.MaskBase):
     """
     Class for creating a Binary Mask to apply to a time-frequency representation of the audio. 
+    
+    Args:
+        input_mask (:obj:`np.ndarray`): 2- or 3-D ``np.array`` that represents the mask.
     """
 
-    def __init__(self, mask):
-        super(BinaryMask, self).__init__(mask)
+    def __init__(self, input_mask):
+        super(BinaryMask, self).__init__(input_mask)
 
     @staticmethod
     def _validate_mask(mask_):
@@ -37,10 +99,10 @@ class BinaryMask(mask_base.MaskBase):
 
     def mask_as_ints(self, channel=None):
         """
-        Returns this `BinaryMask` as a numpy array of ints of 0's and 1's.
+        Returns this ``BinaryMask`` as a numpy array of ints of 0's and 1's.
         
         Returns:
-            numpy :obj:`ndarray` of this `BinaryMask` represented as ints instead of bools.
+            numpy :obj:`ndarray` of this ``BinaryMask`` represented as ints instead of bools.
 
         """
         if channel is None:
@@ -50,13 +112,13 @@ class BinaryMask(mask_base.MaskBase):
 
     def inverse_mask(self, channel=None):
         """
-        Makes a new `BinaryMask` object with a logical not applied to flip the values in this `BinaryMask` object.
+        Makes a new ``BinaryMask`` object with a logical not applied to flip the values in this ``BinaryMask`` object.
             
         Args:
-            channel (int, Optional):  
+            channel (int, Optional): Channel number, 0-based. 
 
         Returns:
-            A new `BinaryMask` object
+            A new ``BinaryMask`` object that has all of the boolean values flipped.
 
         """
         if channel is None:
@@ -64,7 +126,6 @@ class BinaryMask(mask_base.MaskBase):
         else:
             # TODO: this does not give the 2D np.array!
             return BinaryMask(np.logical_not(self.get_channel(channel)))
-
 
     @staticmethod
     def mask_to_binary(mask_, threshold):

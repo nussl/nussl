@@ -135,21 +135,108 @@
       
   <div class="section" id="module-separation.masks.binary_mask">
 <span id="binarymask-class"></span><span id="binary-mask"></span><h1>BinaryMask Class<a class="headerlink" href="#module-separation.masks.binary_mask" title="Permalink to this headline">¶</a></h1>
-<p>Binary Mask class</p>
+<p>The BinaryMask class is for creating a time-frequency mask with binary values. Like all <a class="reference internal" href="mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a> objects,
+BinaryMask is initialized with a 2D or 3D numpy array containing the mask data. The data type (numpy.dtype) of the
+initial mask can be either bool, int, or float. The mask is stored as a 3-dimensional boolean-valued numpy array.</p>
+<p>The best case scenario for the input mask np array is when the data type is bool. If the data type of the input mask
+upon init is int it is expected that all values are either 0 or 1. If the data type
+of the mask is float, all values must be within 1e-2 of either 1 or 0. If the array is not set as one of these,
+BinaryMask will raise an exception.</p>
+<p>BinaryMask (like <a class="reference internal" href="soft_mask.html#soft-mask"><span class="std std-ref">SoftMask Class</span></a>) is one of the return types for the <code class="docutils literal"><span class="pre">run()</span></code> methods of <a class="reference internal" href="../base_classes/mask_separation_base.html#mask-separation-base"><span class="std std-ref">MaskSeparationBase Class</span></a>
+-derived objects (this is most of the separation methods in <cite>nussl</cite>.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a>: The base class for BinaryMask and SoftMask</li>
+<li><a class="reference internal" href="soft_mask.html#soft-mask"><span class="std std-ref">SoftMask Class</span></a>: Similar to BinaryMask, but instead of taking boolean values, takes floats between [0.0 and 1.0].</li>
+<li><a class="reference internal" href="../base_classes/mask_separation_base.html#mask-separation-base"><span class="std std-ref">MaskSeparationBase Class</span></a>: Base class for all mask-based separation methods in nussl.</li>
+</ul>
+</div>
+<p class="rubric">Examples</p>
+<p>Initializing a mask from a numpy array…</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c1"># load a file</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path/to/file.wav&#39;</span><span class="p">)</span>
+<span class="n">stft</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">stft</span><span class="p">()</span>
+
+<span class="c1"># Make a random binary mask with the same shape as the stft with dtype == bool</span>
+<span class="n">rand_bool_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">stft</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+<span class="n">bin_mask_bool</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">(</span><span class="n">rand_bool_mask</span><span class="p">)</span>
+
+<span class="c1"># Make a random binary mask with the same shape as the stft with dtype == int</span>
+<span class="n">rand_int_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">stft</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">bin_mask_int</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">(</span><span class="n">rand_int_mask</span><span class="p">)</span>
+
+<span class="c1"># Make a random binary mask with the same shape as the stft with dtype == float</span>
+<span class="n">rand_float_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">stft</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+<span class="n">bin_mask_int</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">(</span><span class="n">rand_float_mask</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p><a class="reference internal" href="../base_classes/mask_separation_base.html#mask-separation-base"><span class="std std-ref">MaskSeparationBase Class</span></a> -derived methods return <a class="reference internal" href="mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a> masks, like so…</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+
+<span class="c1"># load a file</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path/to/file.wav&#39;</span><span class="p">)</span>
+
+<span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>  <span class="c1"># You have to specify that you want Binary Masks back</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">repet</span><span class="p">,</span> <span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="p">)</span>  <span class="c1"># Repet is a MaskSeparationBase-derived class</span>
+
+<span class="p">[</span><span class="n">background_mask</span><span class="p">,</span> <span class="n">foreground_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>  <span class="c1"># MaskSeparationBase-derived classes return MaskBase objects</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">foreground_mask</span><span class="p">,</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>  <span class="c1"># this is True</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">background_mask</span><span class="p">,</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>  <span class="c1"># this is True</span>
+</pre></div>
+</td></tr></table></div>
 <dl class="class">
 <dt id="separation.masks.binary_mask.BinaryMask">
-<em class="property">class </em><code class="descclassname">separation.masks.binary_mask.</code><code class="descname">BinaryMask</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">separation.masks.binary_mask.</code><code class="descname">BinaryMask</code><span class="sig-paren">(</span><em>input_mask</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a></p>
 <p>Class for creating a Binary Mask to apply to a time-frequency representation of the audio.</p>
-<dl class="method">
-<dt id="separation.masks.binary_mask.BinaryMask.mask_as_ints">
-<code class="descname">mask_as_ints</code><span class="sig-paren">(</span><em>channel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.mask_as_ints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns this <cite>BinaryMask</cite> as a numpy array of ints of 0’s and 1’s.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">numpy <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> of this <cite>BinaryMask</cite> represented as ints instead of bools.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_mask</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – 2- or 3-D <code class="docutils literal"><span class="pre">np.array</span></code> that represents the mask.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="separation.masks.binary_mask.BinaryMask.mask_as_ints">
+<code class="descname">mask_as_ints</code><span class="sig-paren">(</span><em>channel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.mask_as_ints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns this <code class="docutils literal"><span class="pre">BinaryMask</span></code> as a numpy array of ints of 0’s and 1’s.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">numpy <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> of this <code class="docutils literal"><span class="pre">BinaryMask</span></code> represented as ints instead of bools.</td>
 </tr>
 </tbody>
 </table>
@@ -158,14 +245,14 @@
 <dl class="method">
 <dt id="separation.masks.binary_mask.BinaryMask.inverse_mask">
 <code class="descname">inverse_mask</code><span class="sig-paren">(</span><em>channel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.inverse_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a new <cite>BinaryMask</cite> object with a logical not applied to flip the values in this <cite>BinaryMask</cite> object.</p>
+<dd><p>Makes a new <code class="docutils literal"><span class="pre">BinaryMask</span></code> object with a logical not applied to flip the values in this <code class="docutils literal"><span class="pre">BinaryMask</span></code> object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>channel</strong> (<em>int</em><em>, </em><em>Optional</em>) – </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>channel</strong> (<em>int</em><em>, </em><em>Optional</em>) – Channel number, 0-based.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <cite>BinaryMask</cite> object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <code class="docutils literal"><span class="pre">BinaryMask</span></code> object that has all of the boolean values flipped.</td>
 </tr>
 </tbody>
 </table>

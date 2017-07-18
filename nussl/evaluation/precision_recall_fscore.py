@@ -41,16 +41,15 @@ source. So, for instance, the format of the ``prf_repet_scores`` dictionary from
 
 
 Notes:
-    ``PrecisionRecallFScore`` can only be run using :ref:`binary_mask` objects. The constructor expects a list of 
+    * ``PrecisionRecallFScore`` can only be run using :ref:`binary_mask` objects. The constructor expects a list of 
     :ref:`binary_mask` objects for both the ground truth sources and the estimated sources.
+    * ``PrecisionRecallFScore`` does not calculate the correct permutation of the estimated and ground truth sources;
+    they are expected to be in the correct order when they are passed into ``PrecisionRecallFScore``.
 
 See Also:
     * :ref:`evaluation_base` for more information about derived properties that this class has.
     
     * :ref:`ideal_mask` for information about how to get an array of ground truth binary masks.
-    
-    
-    
 
 """
 
@@ -68,6 +67,10 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
          separation object
         source_labels (list) (Optional): List of ``str`` with labels for each source. If no labels are provided, sources
          will be labeled ``Source 0, Source 1, ...`` etc.
+         
+    Attributes:
+        scores (dict): Dictionary storing the precision, recall, F1-Score, and accuracy. See ``evaluate()`` below.
+        
     """
 
     def __init__(self, true_sources_mask_list, estimated_sources_mask_list, source_labels=None):
@@ -91,12 +94,13 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
     @staticmethod
     def _preprocess(mask1, mask2):
         """
-        
+        Prepares masks for sklearn metric functions. Both ``mask1`` and ``mask2`` must be ``BinaryMask`` objects. 
         Args:
-            mask1: 
-            mask2: 
+            mask1 (:obj:`BinaryMask`): BinaryMask
+            mask2 (:obj:`BinaryMask`): BinaryMask
 
         Returns:
+            [mask1, mask2] ready to be input to into an sklearn metric.
 
         """
         assert isinstance(mask1, binary_mask.BinaryMask)
@@ -105,7 +109,7 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
 
     def _precision(self, true_mask, estimated_mask):
         """
-        
+        Wrapper for sklearn.metrics.precision_score()
         Args:
             true_mask: 
             estimated_mask: 
@@ -118,7 +122,7 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
 
     def _recall(self, true_mask, estimated_mask):
         """
-        
+        Wrapper for sklearn.metrics.recall_score()
         Args:
             true_mask: 
             estimated_mask: 
@@ -130,7 +134,7 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
 
     def _f_score(self, true_mask, estimated_mask):
         """
-        
+        Warpper for sklearn.metrics.f1_score()
         Args:
             true_mask: 
             estimated_mask: 
@@ -142,7 +146,7 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
 
     def _accuracy(self, true_mask, estimated_mask):
         """
-        
+        Wrapper for sklearn.metrics.accuracy_score()
         Args:
             true_mask: 
             estimated_mask: 
@@ -155,7 +159,27 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
     def evaluate(self):
         """
         Determines the precision, recall, f-score, and accuracy of each :ref:`binary_mask` object in 
+        ``true_sources_mask_list`` and ``estimated_sources_mask_list``. Returns a dictionary of results that is
+        formatted like so:
+        
+        .. code-block:: python
+
+            {'Source 0' : {'Accuracy': 0.83,
+                           'Precision': 0.78,
+                           'Recall': 0.81,
+                           'F1-Score': 0.77 },
+             'Source 1' : {'Accuracy': 0.22,
+                           'Precision': 0.12,
+                           'Recall': 0.15,
+                           'F1-Score': 0.19 }
+            }
+        
+        This dictionary is stored as e keys to this dictionary 
+        
         Returns:
+            self.scores (dict): A dictionary of scores that contains accuracy, precision, recall, and F1-score
+            of between the list of :ref:`binary_mask` objects in both ``true_sources_mask_list`` 
+            and ``estimated_sources_mask_list``.
 
         """
         for i, true_mask in enumerate(self.true_sources_list):

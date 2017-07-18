@@ -137,11 +137,11 @@
 <span id="maskbase-class"></span><span id="mask-base"></span><h1>MaskBase Class<a class="headerlink" href="#module-separation.masks.mask_base" title="Permalink to this headline">¶</a></h1>
 <p>Base class for Mask objects. Contains many common utilities used for accessing masks. The mask itself is
 represented under the hood as a three dimensional numpy <code class="docutils literal"><span class="pre">ndarray</span></code> object. The dimensions are
-<code class="docutils literal"><span class="pre">[NUM_FREQ,</span> <span class="pre">NUM_HOPS,</span> <span class="pre">NUM_CHAN]</span></code>. Safe accessors for these array indices are in <a class="reference internal" href="../../constants.html#constants"><span class="std std-ref">constants.py</span></a> as well as
+<code class="docutils literal"><span class="pre">[NUM_FREQ,</span> <span class="pre">NUM_HOPS,</span> <span class="pre">NUM_CHAN]</span></code>. Safe accessors for these array indices are in <span class="xref std std-ref">constants</span> as well as
 below.</p>
 <dl class="class">
 <dt id="separation.masks.mask_base.MaskBase">
-<em class="property">class </em><code class="descclassname">separation.masks.mask_base.</code><code class="descname">MaskBase</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.mask_base.MaskBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">separation.masks.mask_base.</code><code class="descname">MaskBase</code><span class="sig-paren">(</span><em>input_mask</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.mask_base.MaskBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -151,6 +151,7 @@ below.</p>
 </tr>
 </tbody>
 </table>
+<p>Attributes:</p>
 <dl class="attribute">
 <dt id="separation.masks.mask_base.MaskBase.mask">
 <code class="descname">mask</code><a class="headerlink" href="#separation.masks.mask_base.MaskBase.mask" title="Permalink to this definition">¶</a></dt>

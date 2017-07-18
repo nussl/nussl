@@ -20,10 +20,16 @@ class MaskBase(object):
     """
     Args:
         mask (:obj:`np.ndarray`): A 2- or 3-dimensional numpy ``ndarray`` representing a mask.
+        
+    Attributes:
+        
+        
+        
     """
-    def __init__(self, mask):
+
+    def __init__(self, input_mask):
         self._mask = None
-        self.mask = mask
+        self.mask = input_mask
 
     @property
     def mask(self):
@@ -75,8 +81,8 @@ class MaskBase(object):
             raise AttributeError('Cannot get channel {} when mask has no data!'.format(n))
 
         if n >= self.num_channels:
-            raise ValueError( 'Cannot get channel {0} when this object only has {1} channels! (0-based)'
-                              .format(n, self.num_channels))
+            raise ValueError('Cannot get channel {0} when this object only has {1} channels! (0-based)'
+                             .format(n, self.num_channels))
 
         if n < 0:
             raise ValueError('Cannot get channel {}. This will cause unexpected results!'.format(n))

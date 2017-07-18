@@ -169,8 +169,12 @@ source. So, for instance, the format of the <code class="docutils literal"><span
 </pre></div>
 </div>
 <p class="rubric">Notes</p>
-<p><code class="docutils literal"><span class="pre">PrecisionRecallFScore</span></code> can only be run using <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects. The constructor expects a list of
-<a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects for both the ground truth sources and the estimated sources.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">PrecisionRecallFScore</span></code> can only be run using <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects. The constructor expects a list of</li>
+</ul>
+<p><a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects for both the ground truth sources and the estimated sources.
+* <code class="docutils literal"><span class="pre">PrecisionRecallFScore</span></code> does not calculate the correct permutation of the estimated and ground truth sources;
+they are expected to be in the correct order when they are passed into <code class="docutils literal"><span class="pre">PrecisionRecallFScore</span></code>.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
@@ -196,11 +200,40 @@ will be labeled <code class="docutils literal"><span class="pre">Source</span> <
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="evaluation.precision_recall_fscore.PrecisionRecallFScore.scores">
+<code class="descname">scores</code><a class="headerlink" href="#evaluation.precision_recall_fscore.PrecisionRecallFScore.scores" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – Dictionary storing the precision, recall, F1-Score, and accuracy. See <code class="docutils literal"><span class="pre">evaluate()</span></code> below.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="evaluation.precision_recall_fscore.PrecisionRecallFScore.evaluate">
 <code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.precision_recall_fscore.PrecisionRecallFScore.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determines the precision, recall, f-score, and accuracy of each <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> object in
-Returns:</p>
+<code class="docutils literal"><span class="pre">true_sources_mask_list</span></code> and <code class="docutils literal"><span class="pre">estimated_sources_mask_list</span></code>. Returns a dictionary of results that is
+formatted like so:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;Source 0&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">:</span> <span class="mf">0.83</span><span class="p">,</span>
+               <span class="s1">&#39;Precision&#39;</span><span class="p">:</span> <span class="mf">0.78</span><span class="p">,</span>
+               <span class="s1">&#39;Recall&#39;</span><span class="p">:</span> <span class="mf">0.81</span><span class="p">,</span>
+               <span class="s1">&#39;F1-Score&#39;</span><span class="p">:</span> <span class="mf">0.77</span> <span class="p">},</span>
+ <span class="s1">&#39;Source 1&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">:</span> <span class="mf">0.22</span><span class="p">,</span>
+               <span class="s1">&#39;Precision&#39;</span><span class="p">:</span> <span class="mf">0.12</span><span class="p">,</span>
+               <span class="s1">&#39;Recall&#39;</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">,</span>
+               <span class="s1">&#39;F1-Score&#39;</span><span class="p">:</span> <span class="mf">0.19</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This dictionary is stored as e keys to this dictionary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>self.scores (dict)</em> – A dictionary of scores that contains accuracy, precision, recall, and F1-score
+of between the list of <a class="reference internal" href="../separation/mask_classes/binary_mask.html#binary-mask"><span class="std std-ref">BinaryMask Class</span></a> objects in both <code class="docutils literal"><span class="pre">true_sources_mask_list</span></code>
+and <code class="docutils literal"><span class="pre">estimated_sources_mask_list</span></code>.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
