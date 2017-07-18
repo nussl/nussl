@@ -1,0 +1,12 @@
+nussl Separation Classes
+========================
+
+.. toctree::
+   :maxdepth: 1
+
+   SeparationBase <separation_base>
+   MaskSeparationBase <mask_separation_base>
+   IdealMask <ideal_mask>
+   Repet <repet>
+   RepetSim <repet_sim>
+   Duet <duet>

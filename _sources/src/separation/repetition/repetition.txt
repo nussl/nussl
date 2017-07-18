@@ -1,0 +1,8 @@
+Repetition Separation Classes
+=============================
+
+.. toctree::
+   :maxdepth: 1
+
+   Repet <repet>
+   RepetSim <repet_sim>

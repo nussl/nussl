@@ -1,0 +1,6 @@
+EvaluationBase Class
+====================
+
+.. automodule:: evaluation.EvaluationBase
+    :members:
+    :undoc-members:

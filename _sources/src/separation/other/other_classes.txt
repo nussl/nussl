@@ -1,0 +1,7 @@
+Other Separation Classes
+========================
+
+.. toctree::
+   :maxdepth: 1
+
+   IdealMask <ideal_mask>

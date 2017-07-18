@@ -1,0 +1,6 @@
+MaskSeparationBase Class
+========================
+
+.. automodule:: separation.mask_separation_base
+    :members:
+    :undoc-members:

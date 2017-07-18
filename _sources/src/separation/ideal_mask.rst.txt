@@ -1,0 +1,6 @@
+IdealMask Class
+===============
+
+.. automodule:: separation.ideal_mask
+    :members:
+    :undoc-members:

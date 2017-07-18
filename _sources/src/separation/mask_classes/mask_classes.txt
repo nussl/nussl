@@ -1,0 +1,9 @@
+Mask Classes
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   MaskBase <mask_base>
+   BinaryMask <binary_mask>
+   SoftMask <soft_mask>

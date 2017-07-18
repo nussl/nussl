@@ -1,0 +1,7 @@
+Spatialization Classes
+======================
+
+.. toctree::
+   :maxdepth: 1
+
+   DUET <duet>
