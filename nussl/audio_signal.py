@@ -501,8 +501,7 @@ class AudioSignal(object):
 
     def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, remove_reflection=True,
              overwrite=True, use_librosa=config.USE_LIBROSA_STFT):
-        """Computes the Short Time Fourier Transform (STFT) of ``self.audio_data``.
-
+        """ Computes the Short Time Fourier Transform (STFT) of ``self.audio_data``.
             The results of the STFT calculation can be accessed from ``self.stft_data``
             if ``self.stft_data`` is ``None`` prior to running this function or ``overwrite == True``
 
@@ -556,7 +555,7 @@ class AudioSignal(object):
 
     def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True, reconstruct_reflection=False,
               use_librosa=config.USE_LIBROSA_STFT, truncate_to_length=None):
-        """Computes and returns the inverse Short Time Fourier Transform (iSTFT).
+        """ Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
             The results of the iSTFT calculation can be accessed from ``self.audio_data``
             if ``self.audio_data`` is ``None`` prior to running this function or ``overwrite == True``

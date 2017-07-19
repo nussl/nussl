@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+
+"""
+
 import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
@@ -100,7 +104,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
         """ Runs the original REPET algorithm
 
         Returns:
-            masks (Mask): An MaskBase object with repeating background in background.audio_data
+            masks (:obj:`MaskBase`): A ``MaskBase``-derived object with repeating background time-frequency data.
             (to get the corresponding non-repeating foreground run self.make_audio_signals())
 
         Example:
@@ -115,7 +119,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
             background, foreground = repet.make_audio_signals()
 
             # output the background
-            background.write_
+            background.write_audio_to_file('output.wav')
 
         """
         # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
@@ -163,7 +167,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
         """Calculates and returns the beat spectrum for the audio signal associated with this object
 
         Args:
-            recompute_stft: (Optional) (bool) Recompute the stft for the audio signal
+            recompute_stft (bool, Optional): Recompute the stft for the audio signal
 
         Returns:
             beat_spectrum (np.array): beat spectrum for the audio file
@@ -211,10 +215,11 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
     @staticmethod
     def compute_beat_spectrum(power_spectrum):
-        """Computes the beat spectrum averages (over freq's) the autocorrelation matrix of a one-sided spectrogram.
+        """
+        Computes the beat spectrum averages (over freq's) the autocorrelation matrix of a one-sided spectrogram.
 
-         The autocorrelation matrix is computed by taking the autocorrelation of each row of the spectrogram and
-         dismissing the symmetric half.
+        The autocorrelation matrix is computed by taking the autocorrelation of each row of the spectrogram and
+        dismissing the symmetric half.
 
         Parameters:
             power_spectrum (np.array): 2D matrix containing the one-sided power
@@ -249,6 +254,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
             beat_spectrum (np.array): input beat spectrum array
             min_period (int): minimum possible period value
             max_period (int): maximum possible period value
+            
         Returns:
              period (int) : The period of the sound signal in stft time bins
         """
