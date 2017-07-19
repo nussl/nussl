@@ -25,7 +25,7 @@ class EvaluationBase(object):
             algorithm. List should be populated with the same type of objects and in the same order as 
             `true_sources_list`.
         source_labels (list, Optional): List of strings that are labels for each source to be used as keys for 
-            the scores. Default value is `None` and in that case labels are `Source 1`, `Source 2`, etc.
+            the scores. Default value is `None` and in that case labels are `Source 0`, `Source 1`, etc.
         do_mono (bool, Optional): Whether to make the objects in `true_sources_list` and `estimated_sources_list` mono
             prior to doing the evaluation. This may not work for all `EvaluationBase`-derived objects.
         **kwargs: Additional arguments for subclasses.
@@ -94,7 +94,8 @@ class EvaluationBase(object):
             A verified list of objects that are ready for running the evaluation method.
 
         """
-        return nussl.utils._verify_audio_signal_list_strict(audio_signal_list)
+        # noinspection PyProtectedMember
+        return nussl._verify_audio_signal_list_strict(audio_signal_list)
 
     def evaluate(self):
         """

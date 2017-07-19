@@ -18,8 +18,8 @@ class SoftMask(mask_base.MaskBase):
     0.0 and 1.0, inclusive. 
     """
 
-    def __init__(self, mask):
-        super(SoftMask, self).__init__(mask)
+    def __init__(self, input_mask):
+        super(SoftMask, self).__init__(input_mask)
 
     @staticmethod
     def _validate_mask(mask_):

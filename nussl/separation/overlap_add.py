@@ -23,7 +23,7 @@ class OverlapAdd(separation_base.SeparationBase):
         separation scheme in nussl.
 
     Notes:
-        Currently supports 'REPET', 'REPET-SIM', and 'FT2D'.
+        Currently supports ``Repet``, ``RepetSim``, and ``FT2D``.
 
     Parameters:
         input_audio_signal (:obj:`AudioSignal`): The ``AudioSignal`` object that the OverlapAdd algorithm will
@@ -36,13 +36,16 @@ class OverlapAdd(separation_base.SeparationBase):
         do_mono:
         use_librosa_stft:
 
-    Examples:
-
-        >>> import nussl
-        >>> signal = nussl.AudioSignal('path/to/audio.wav')
-        >>> ola = nussl.OverlapAdd(signal, nussl.Repet)  # initialize with class
-        >>> ola = nussl.OverlapAdd(signal, 'repet')  # initialize with string (case insensitive)
-        >>> ola.run()
+    Example:
+         ::
+         import nussl
+         
+         signal = nussl.AudioSignal('path/to/audio.wav')
+         
+         ola = nussl.OverlapAdd(signal, nussl.Repet)  # initialize with class
+         ola = nussl.OverlapAdd(signal, 'repet')  # initialize with string (case insensitive)
+         ola.run()
+         
     """
     def __init__(self, input_audio_signal, separation_method,
                  overlap_window_size=24, overlap_hop_size=12, overlap_window_type=nussl.constants.WINDOW_TRIANGULAR,
@@ -172,7 +175,7 @@ class OverlapAdd(separation_base.SeparationBase):
         """ Formats a class name correctly for self._valid_methods_lower.
             Strips all non-alphanumeric chars and makes lowercase.
         """
-        return filter(str.isalnum, string).lower()
+        return str(filter(str.isalnum, string)).lower()
 
     @property
     def separation_instance(self):
@@ -277,8 +280,8 @@ class OverlapAdd(separation_base.SeparationBase):
         return self._separation_instance.run()
 
     def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run OverlapAdd.run() prior
-        to calling this function. This function will raise ValueError if run() has not been called.
+        """ Returns the background and foreground audio signals. You must have run ``OverlapAdd.run()`` prior
+        to calling this function. This function will raise ValueError if ``run()`` has not been called.
 
         Returns:
             Audio Signals (List): 2 element list.
