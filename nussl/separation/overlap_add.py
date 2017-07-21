@@ -26,7 +26,7 @@ class OverlapAdd(separation_base.SeparationBase):
         Currently supports ``Repet``, ``RepetSim``, and ``FT2D``.
 
     Parameters:
-        input_audio_signal (:obj:`AudioSignal`): The ``AudioSignal`` object that the OverlapAdd algorithm will
+        input_audio_signal (:class:`audio_signal.AudioSignal`): The :class:`audio_signal.AudioSignal` object that the OverlapAdd algorithm will
             be run on. This makes a copy of ``input_audio_signal``
 
         separation_method:
@@ -37,7 +37,10 @@ class OverlapAdd(separation_base.SeparationBase):
         use_librosa_stft:
 
     Example:
-         ::
+
+    .. code-block:: python
+        :linenos:
+        
          import nussl
          
          signal = nussl.AudioSignal('path/to/audio.wav')

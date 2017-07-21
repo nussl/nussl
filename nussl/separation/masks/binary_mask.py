@@ -1,22 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-The BinaryMask class is for creating a time-frequency mask with binary values. Like all :ref:`mask_base` objects,
-BinaryMask is initialized with a 2D or 3D numpy array containing the mask data. The data type (numpy.dtype) of the
-initial mask can be either bool, int, or float. The mask is stored as a 3-dimensional boolean-valued numpy array.
+The :class:`BinaryMask` class is for creating a time-frequency mask with binary values. Like all 
+:class:`separation.masks.mask_base.MaskBase` objects, :class:`BinaryMask` is initialized with a 2D or 3D numpy array
+containing the mask data. The data type (numpy.dtype) of the initial mask can be either bool, int, or float. 
+The mask is stored as a 3-dimensional boolean-valued numpy array.
 
 The best case scenario for the input mask np array is when the data type is bool. If the data type of the input mask 
 upon init is int it is expected that all values are either 0 or 1. If the data type
 of the mask is float, all values must be within 1e-2 of either 1 or 0. If the array is not set as one of these, 
-BinaryMask will raise an exception.
+:class:`BinaryMask` will raise an exception.
 
-BinaryMask (like :ref:`soft_mask`) is one of the return types for the ``run()`` methods of :ref:`mask_separation_base` 
--derived objects (this is most of the separation methods in `nussl`.
+:class:`BinaryMask` (like :class:`separation.masks.soft_mask.SoftMask`) is one of the return types for the :func:`run()` 
+methods of :class:`separation.mask_separation_base.MaskSeparationBase`-derived objects (this is most of the 
+separation methods in `nussl`.
 
 See Also:
-    * :ref:`mask_base`: The base class for BinaryMask and SoftMask
-    * :ref:`soft_mask`: Similar to BinaryMask, but instead of taking boolean values, takes floats between [0.0 and 1.0].
-    * :ref:`mask_separation_base`: Base class for all mask-based separation methods in nussl.
+    * :class:`separation.masks.mask_base.MaskBase`: The base class for BinaryMask and SoftMask
+    * :class:`separation.masks.soft_mask.SoftMask`: Similar to BinaryMask, but instead of taking boolean values, 
+      takes floats between ``[0.0 and 1.0]``.
+    * :class:`separation.mask_separation_base.MaskSeparationBase`: Base class for all mask-based separation methods 
+      in `nussl`.
 
 Examples:
     Initializing a mask from a numpy array...
@@ -44,7 +48,8 @@ Examples:
     bin_mask_int = nussl.BinaryMask(rand_float_mask)    
     
     
-:ref:`mask_separation_base` -derived methods return :ref:`mask_base` masks, like so...
+:class:`separation.mask_separation_base.MaskSeparationBase`-derived methods return 
+:class:`separation.masks.mask_base.MaskBase` masks, like so...
 
 .. code-block:: python
     :linenos:
@@ -73,7 +78,7 @@ class BinaryMask(mask_base.MaskBase):
     Class for creating a Binary Mask to apply to a time-frequency representation of the audio. 
     
     Args:
-        input_mask (:obj:`np.ndarray`): 2- or 3-D ``np.array`` that represents the mask.
+        input_mask (:obj:`np.ndarray`): 2- or 3-D :obj:`np.array` that represents the mask.
     """
 
     def __init__(self, input_mask):
@@ -99,10 +104,10 @@ class BinaryMask(mask_base.MaskBase):
 
     def mask_as_ints(self, channel=None):
         """
-        Returns this ``BinaryMask`` as a numpy array of ints of 0's and 1's.
+        Returns this :class:`BinaryMask` as a numpy array of ints of 0's and 1's.
         
         Returns:
-            numpy :obj:`ndarray` of this ``BinaryMask`` represented as ints instead of bools.
+            numpy :obj:`ndarray` of this :obj:`BinaryMask` represented as ints instead of bools.
 
         """
         if channel is None:
@@ -112,13 +117,14 @@ class BinaryMask(mask_base.MaskBase):
 
     def inverse_mask(self, channel=None):
         """
-        Makes a new ``BinaryMask`` object with a logical not applied to flip the values in this ``BinaryMask`` object.
+        Makes a new :class:`BinaryMask` object with a logical not applied to flip the values in this :class:`BinaryMask`
+        object.
             
         Args:
             channel (int, Optional): Channel number, 0-based. 
 
         Returns:
-            A new ``BinaryMask`` object that has all of the boolean values flipped.
+            A new :class:`BinaryMask` object that has all of the boolean values flipped.
 
         """
         if channel is None:
@@ -131,9 +137,10 @@ class BinaryMask(mask_base.MaskBase):
     def mask_to_binary(mask_, threshold):
         """
         Makes a binary mask from a soft mask with a True/False threshold.
+        
         Args:
-            mask_: 
-            threshold: 
+            mask_ (:obj:`MaskBase` or :obj:`np.ndarray`): Soft mask to convert to :class:`BinaryMask`
+            threshold (float): Value between ``[0.0, 1.0]`` to determine the True/False cutoff
 
         Returns:
 

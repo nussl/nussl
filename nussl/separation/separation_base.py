@@ -19,7 +19,7 @@ class SeparationBase(object):
     Do not call this. It will not do anything.
 
     Parameters:
-        input_audio_signal (:obj:`AudioSignal`). ``AudioSignal`` object.
+        input_audio_signal (:class:`audio_signal.AudioSignal`). :class:`audio_signal.AudioSignal` object.
                             This will always make a copy of the provided AudioSignal object.
     """
 
@@ -43,21 +43,22 @@ class SeparationBase(object):
 
     @property
     def sample_rate(self):
-        """(int): Sample rate of ``self.audio_signal``.
-        Literally ``self.audio_signal.sample_rate``.
+        """(int): Sample rate of :attr:`audio_signal`.
+        Literally :attr:`audio_signal.sample_rate`.
         """
         return self.audio_signal.sample_rate
 
     @property
     def stft_params(self):
-        """(:obj:`StftParams`): ``StftParams`` of ``self.audio_signal``
-        Literally ``self.audio_signal.stft_params``.
+        """(:class:`spectral_utils.StftParams`): :class:`spectral_utils.StftParams` of :attr:`audio_signal`
+        Literally :attr:`audio_signal.stft_params`.
         """
         return self.audio_signal.stft_params
 
     @property
     def audio_signal(self):
-        """(:obj:`AudioSignal`): Copy of the ``AudioSignal`` object passed in upon initialization.
+        """(:class:`audio_signal.AudioSignal`): Copy of the :class:`audio_signal.AudioSignal` object passed in 
+        upon initialization.
         """
         return self._audio_signal
 
@@ -82,7 +83,7 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def make_audio_signals(self):
-        """Makes ``AudioSignal`` objects after separation algorithm is run
+        """Makes :class:`audio_signal.AudioSignal` objects after separation algorithm is run
 
         Raises:
             NotImplementedError: Cannot call base class
@@ -90,6 +91,17 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def to_json(self):
+        """
+        Outputs JSON from the data stored in this object.
+        
+        Returns:
+            (str) a JSON string containing all of the information to restore this object exactly as it was when this
+            was called.
+            
+        See Also:
+            :func:`from_json` to restore a JSON frozen object.
+
+        """
         return json.dumps(self, default=SeparationBase._to_json_helper)
 
     def __str__(self):
@@ -116,6 +128,20 @@ class SeparationBase(object):
 
     @classmethod
     def from_json(cls, json_string):
+        """
+        Creates a new :class:`SeparationBase` object from the parameters stored in this JSON string.
+        
+        Args:
+            json_string (str): A JSON string containing all the data to create a new :class:`SeparationBase` 
+                object.
+
+        Returns:
+            (:class:`SeparationBase`) A new :class:`SeparationBase` object from the JSON string.
+            
+        See Also:
+            :func:`to_json` to make a JSON string to freeze this object.
+
+        """
         sep_decoder = SeparationBaseDecoder(cls)
         return sep_decoder.decode(json_string)
 
@@ -141,7 +167,7 @@ class SeparationBase(object):
 
 
 class SeparationBaseDecoder(json.JSONDecoder):
-    """ Object to decode a ``SeparationBase``-derived object from JSON serialization.
+    """ Object to decode a :class:`SeparationBase`-derived object from JSON serialization.
     You should never have to instantiate this object by hand.
     """
 
@@ -150,6 +176,18 @@ class SeparationBaseDecoder(json.JSONDecoder):
         json.JSONDecoder.__init__(self, object_hook=self.json_separation_decoder)
 
     def json_separation_decoder(self, json_dict):
+        """
+        Helper method for :class:`SeparationBaseDecoder`. Don't you worry your pretty little head about this.
+        
+        NEVER CALL THIS DIRECTLY!!
+        
+        Args:
+            json_dict (dict): JSON dictionary provided by ``object_hook`` 
+
+        Returns:
+            A new :class:`SeparationBase`-derived object from JSON serialization
+
+        """
         if '__class__' in json_dict:
             class_name = json_dict.pop('__class__')
             module_name = json_dict.pop('__module__')

@@ -32,7 +32,7 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
     Parameters:
 
     Examples:
-        :ref:`The REPET Demo Example <repet_demo>`
+        :ref:`The RepetSim Demo Example <repet_sim_demo>`
     """
 
     def __init__(self, input_audio_signal, similarity_threshold=None, min_distance_between_frames=None,
@@ -253,8 +253,11 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
                 * bkgd: Audio signal with the calculated background track
                 * fkgd: Audio signal with the calculated foreground track
 
-        EXAMPLE:
-             ::
+        Example:
+            
+        .. code-block:: python
+            :linenos:
+            
             # set up AudioSignal object
             signal = nussl.AudioSignal('path_to_file.wav')
 
