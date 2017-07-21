@@ -25,45 +25,47 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
 
     Notes:
         To find out what output formats are available for your machine run the following code:
-        ::
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
 
-        print fig.canvas.get_supported_filetypes()
-
+        >>> import matplotlib.pyplot as plt
+        >>> fig = plt.figure()
+        >>> print(fig.canvas.get_supported_filetypes())
+    
         (From here: http://stackoverflow.com/a/7608273/5768001)
 
     Args:
         signal: (np.array) input time series signal that will be plotted
         file_name: (str) path to file that will be output. Will overwrite any file that is already there.
-        Uses mat
+            Uses mat
         title: (string) (Optional) Title to go at top of graph. Defaults to 'Spectrogram of [file_name]'
         win_length: (int) (Optional) number of samples per window. Defaults to StftParams default.
         hop_length: (int) (Optional) number of samples between the start of adjacent windows, or "hop".
-        Defaults to StftParams default.
+            Defaults to StftParams default.
         sample_rate: (int) (Optional) sample rate of input signal.  Defaults to StftParams default.
         window_type: (string) (Optional) type of window to use. Using WindowType object is recommended.
-        Defaults to StftParams default.
+            Defaults to StftParams default.
         n_fft_bins: (int) (Optional) number of fft bins per time window.
-        If not specified, defaults to next highest power of 2 above window_length. Defaults to StftParams default.
+            If not specified, defaults to next highest power of 2 above window_length. Defaults to StftParams default.
         freq_max: (int) Max frequency to display. Defaults to 44100Hz
         show_interactive_plot: (bool) (Optional) Flag indicating if plot should be shown when function is run.
-        Defaults to False
+            Defaults to False
 
-    Examples:
-    ::
-    # Set up sine wave parameters
-    sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
-    n_sec = 3 # seconds
-    duration = n_sec * sr
-    freq = 300 # Hz
-
-    # Make sine wave array
-    x = np.linspace(0, freq * 2 * np.pi, duration)
-    x = np.sin(x)
-
-    # plot it and save it in path 'path/to/sine_wav.png'
-    nussl.plot_stft(x, 'path/to/sine_wav.png')
+    Example:
+        
+    .. code-block:: python
+        :linenos:
+        
+        # Set up sine wave parameters
+        sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
+        n_sec = 3 # seconds
+        duration = n_sec * sr
+        freq = 300 # Hz
+    
+        # Make sine wave array
+        x = np.linspace(0, freq * 2 * np.pi, duration)
+        x = np.sin(x)
+    
+        # plot it and save it in path 'path/to/sine_wav.png'
+        nussl.plot_stft(x, 'path/to/sine_wav.png')
 
     """
     sample_rate = constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
@@ -138,8 +140,12 @@ def e_stft(signal, window_length, hop_length, window_type,
         Data is of shape (num_time_blocks, num_fft_bins). These numbers are determined by length of the input signal,
         on internal zero padding (explained at top), and n_fft_bins/remove_reflection input (see example below).
 
-    Examples:
-        ::
+    Example:
+        
+    .. code-block:: python
+        :linenos:
+        
+        
         # Set up sine wave parameters
         sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
         n_sec = 3 # seconds
@@ -167,6 +173,7 @@ def e_stft(signal, window_length, hop_length, window_type,
         num_bins = 4096
         stft_more_bins = e_stft(x, win_length, hop_length, win_type, n_fft_bins=num_bins)
         # stft_more_bins has shape (num_bins // 2 + 1, duration / hop_length)
+        
     """
     if n_fft_bins is None:
         n_fft_bins = window_length
@@ -228,7 +235,7 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
 
 def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection=True, remove_padding=True):
     """
-    Computes an inverse short time fourier transform (STFT) from a 2D numpy array of complex values. By default
+    Computes an inverse_mask short time fourier transform (STFT) from a 2D numpy array of complex values. By default
     this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
     reconstruct_reflection flag overrides that behavior.
 
@@ -250,8 +257,11 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     Returns:
         1D numpy array containing an audio signal representing the original signal used to make stft
 
-    Examples:
-        ::
+    Example:
+        
+    .. code-block:: python
+        :linenos:
+        
         # Set up sine wave parameters
         sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
         n_sec = 3 # seconds

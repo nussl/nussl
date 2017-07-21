@@ -22,15 +22,15 @@ class TestRepet(unittest.TestCase):
         signal = nussl.AudioSignal(path)
 
         repet = nussl.Repet(signal, matlab_fidelity=True)
-        background = repet.run()
+        background_mask = repet.run()
 
-        back, fore = repet.make_audio_signals()
+        background_sig, foreground_sig = repet.make_audio_signals()
 
         matlab_background, matlab_foreground = self._load_final_matlab_results()
 
-        assert np.allclose(back.audio_data, matlab_background)
-        assert np.allclose(background.audio_data, matlab_background)
-        assert np.allclose(fore.audio_data, matlab_foreground)
+        assert np.allclose(background_sig.audio_data, matlab_background)
+        assert np.allclose(foreground_sig.audio_data, matlab_foreground)
+        assert background_mask
 
         i = 0
 
