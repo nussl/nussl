@@ -26,8 +26,8 @@ class OverlapAdd(separation_base.SeparationBase):
         Currently supports ``Repet``, ``RepetSim``, and ``FT2D``.
 
     Parameters:
-        input_audio_signal (:class:`audio_signal.AudioSignal`): The :class:`audio_signal.AudioSignal` object that the OverlapAdd algorithm will
-            be run on. This makes a copy of ``input_audio_signal``
+        input_audio_signal (:class:`audio_signal.AudioSignal`): The :class:`audio_signal.AudioSignal` object that the 
+        OverlapAdd algorithm will be run on. This makes a copy of ``input_audio_signal``
 
         separation_method:
         overlap_window_size:
@@ -53,11 +53,6 @@ class OverlapAdd(separation_base.SeparationBase):
     def __init__(self, input_audio_signal, separation_method,
                  overlap_window_size=24, overlap_hop_size=12, overlap_window_type=nussl.constants.WINDOW_TRIANGULAR,
                  do_mono=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
-        """
-
-        Args:
-
-        """
         super(OverlapAdd, self).__init__(input_audio_signal=input_audio_signal)
         self.background = None
         self.foreground = None
@@ -210,7 +205,7 @@ class OverlapAdd(separation_base.SeparationBase):
         """
 
         Returns:
-            background (AudioSignal): An AudioSignal object with repeating background in background.audio_data
+            background (:obj:`AudioSignal`): An AudioSignal object with background in background.audio_data
             (to get the corresponding non-repeating foreground run self.make_audio_signals())
 
         Example:
@@ -283,8 +278,8 @@ class OverlapAdd(separation_base.SeparationBase):
         return self._separation_instance.run()
 
     def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run ``OverlapAdd.run()`` prior
-        to calling this function. This function will raise ValueError if ``run()`` has not been called.
+        """ Returns the background and foreground audio signals. You must have run :func:`run()` prior
+        to calling this function. This function will raise ValueError if :func:`run()` has not been called.
 
         Returns:
             Audio Signals (List): 2 element list.
