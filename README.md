@@ -91,7 +91,7 @@ In Development Branch:
 * NMF
 * RPCA
 * PROJET
-* 2D-FFT repetition separation
+* 2DFT modulation separation
 
 Planned:
 * KAM
