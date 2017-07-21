@@ -7,6 +7,40 @@ import numpy as np
 import constants
 
 class TransformerNMF(object):
+    """
+    This is an implementation of the Non-negative Matrix Factorization algorithm for
+    general matrix transformations. This implementation receives an input matrix and a number,
+    num_templates, which defines the number of bases vectors.
+
+    This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
+    and also allows the user to define distance measure function.
+
+    References:
+    [1] Lee, Daniel D., and H. Sebastian Seung. "Algorithms for non-negative matrix factorization."
+        Advances in neural information processing systems. 2001.
+
+    :param: input_matrix: The matrix to factor into template and activation matrices
+    :type: input_matrix: 2D numpy array
+
+    :param: num_templates: The rank of the templates matrix
+    :type: num_templates: int
+
+    :param: activation_matrix: An optional seed for the activation matrix
+    :type: activation_matrix: 2D numpy array
+
+    :param: templates: An optional seed for the templates matrix
+    :type: templates: 2D numpy array
+
+    :param: distance_measure: Specifies to use euclidean or divergence distance metrics
+    :type: distance_measure: str
+
+    :param: should_update_template: Whether the template matrix should be updated for another iteration
+    :type: should_update_template: bool
+
+    :param: should_update_activation: Whether the activation matrix should be updated for another iteration
+    :type: should_update_activation: bool
+    """
+
     def __init__(self, input_matrix, num_templates,
                  activation_matrix=None, templates=None, distance_measure=None,
                  should_update_template=None, should_update_activation=None):
@@ -115,6 +149,11 @@ class TransformerNMF(object):
                 self.templates = self._update_template_divergence()
 
     def _update_activation_euclidean(self):
+        """
+        Computes a new activation matrix using the Lee and Seung multiplicative update algorithm
+        :return: An updated activation matrix based on euclidean distance
+        """
+
         # make a new matrix to store results
         activation_copy = np.empty_like(self.activation_matrix)
 
@@ -133,6 +172,11 @@ class TransformerNMF(object):
         return activation_copy
 
     def _update_template_euclidean(self):
+        """
+        Computes a new template matrix using the Lee and Seung multiplicative update algorithm
+        :return: An update template matrix based on euclidean distance
+        """
+
         # make a new matrix to store results
         template_copy = np.empty_like(self.templates)
 
@@ -151,6 +195,10 @@ class TransformerNMF(object):
         return template_copy
 
     def _update_activation_divergent(self):
+        """
+        Computes a new activation matrix using the Lee and Seung multiplicative update algorithm
+        :return: An update activation matrix based on divergence
+        """
         # make a new matrix to store results
         activation_copy = np.empty_like(self.activation_matrix)
 
@@ -168,6 +216,10 @@ class TransformerNMF(object):
         return activation_copy
 
     def _update_template_divergence(self):
+        """
+        Computes a new template matrix using the Lee and Seung multiplicative update algorithm
+        :return: An update template matrix based on divergence
+        """
         # make a new matrix to store results
         template_copy = np.empty_like(self.templates)
 
@@ -185,6 +237,11 @@ class TransformerNMF(object):
         return template_copy
 
     def _euclidean_distance(self):
+        """
+        Calculates the euclidean distance from the original mixture to the
+        dot product of the current template and mixture matrices
+        :return: Euclidean distance
+        """
         try:
             mixture = np.dot(self.templates, self.activation_matrix)
         except:
@@ -198,6 +255,12 @@ class TransformerNMF(object):
         return sum((self.input_matrix[index] - val) ** 2 for index, val in np.ndenumerate(mixture))
 
     def _divergence(self):
+        def _euclidean_distance(self):
+            """
+            Calculates the divergence from the original mixture to the
+            dot product of the current template and mixture matrices
+            :return: Euclidean distance
+            """
         mixture = np.dot(self.activation_matrix, self.templates)
 
         if mixture.shape != self.input_matrix.shape:
