@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -135,14 +136,14 @@
       
   <div class="section" id="ideal-mask">
 <span id="idealmask-class"></span><h1>IdealMask Class<a class="headerlink" href="#ideal-mask" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-separation.ideal_mask"></span><p><code class="docutils literal"><span class="pre">IdealMask</span></code> separates sources using the ideal binary or soft mask from ground truth. It accepts a list of
-<code class="docutils literal"><span class="pre">AudioSignal</span></code>
-objects, each of which contains a known source, and applies a mask to a time-frequency representation of the
-input mixture created from each of the known sources. This is often used as an upper bound on source separation
-performance when benchmarking new algorithms, as it represents the best possible scenario for mask-based methods.</p>
-<p>At the time of this writing, the time-frequency representation used by this class is the magnitude spectrogram</p>
-<p>This class is derived from <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code> so its <code class="docutils literal"><span class="pre">run()</span></code> method returns a list of <code class="docutils literal"><span class="pre">MaskBase</span></code>
-objects.</p>
+<span class="target" id="module-separation.ideal_mask"></span><p><a class="reference internal" href="#separation.ideal_mask.IdealMask" title="separation.ideal_mask.IdealMask"><code class="xref py py-class docutils literal"><span class="pre">IdealMask</span></code></a> separates sources using the ideal binary or soft mask from ground truth. It accepts a list of
+<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects, each of which contains a known source, and applies a mask to a
+time-frequency representation of the input mixture created from each of the known sources. This is often used as
+an upper bound on source separation performance when benchmarking new algorithms, as it represents the best possible
+scenario for mask-based methods.</p>
+<p>At the time of this writing, the time-frequency representation used by this class is the magnitude spectrogram.</p>
+<p>This class is derived from <code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code> so its
+<code class="xref py py-func docutils literal"><span class="pre">run()</span></code> method returns a list of <a class="reference internal" href="../mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> objects.</p>
 <dl class="class">
 <dt id="separation.ideal_mask.IdealMask">
 <em class="property">class </em><code class="descclassname">separation.ideal_mask.</code><code class="descname">IdealMask</code><span class="sig-paren">(</span><em>input_audio_mixture</em>, <em>sources_list</em>, <em>mask_type='soft'</em>, <em>use_librosa_stft=True</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask" title="Permalink to this definition">¶</a></dt>
@@ -152,10 +153,12 @@ objects.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>input_audio_mixture</strong> (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) – Input <code class="docutils literal"><span class="pre">AudioSignal</span></code> mixture to create the masks from.</li>
-<li><strong>sources_list</strong> (<em>list</em>) – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects where each one represents an isolated source in
-the mixture.</li>
-<li><strong>mask_type</strong> (<em>str</em><em>, </em><em>Optional</em>) – Indicates whether to make a binary or soft mask. Optional, defaults to <code class="docutils literal"><span class="pre">SOFT_MASK</span></code></li>
+<li><strong>input_audio_mixture</strong> (<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>) – Input <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> mixture to
+create the masks from.</li>
+<li><strong>sources_list</strong> (<em>list</em>) – List of <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects where each one represents an
+isolated source in the mixture.</li>
+<li><strong>mask_type</strong> (<em>str</em><em>, </em><em>Optional</em>) – Indicates whether to make a binary or soft mask. Optional, defaults to
+<a class="reference internal" href="#separation.ideal_mask.IdealMask.SOFT_MASK" title="separation.ideal_mask.IdealMask.SOFT_MASK"><code class="xref py py-attr docutils literal"><span class="pre">SOFT_MASK</span></code></a>.</li>
 <li><strong>use_librosa_stft</strong> (<em>bool</em><em>, </em><em>Optional</em>) – Whether to use librosa’s STFT function. Optional, defaults to config
 settings.</li>
 </ul>
@@ -166,44 +169,63 @@ settings.</li>
 <dl class="attribute">
 <dt id="separation.ideal_mask.IdealMask.sources">
 <code class="descname">sources</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.sources" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects from <code class="docutils literal"><span class="pre">__init__()</span></code> where each object represents a single
-isolated sources within the mixture.</p>
+<dd><p><em>list</em> – List of <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects from <code class="xref py py-func docutils literal"><span class="pre">__init__()</span></code> where each object
+represents a single isolated sources within the mixture.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.ideal_mask.IdealMask.estimated_masks">
 <code class="descname">estimated_masks</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.estimated_masks" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> – List of resultant <code class="docutils literal"><span class="pre">MaskBase</span></code> objects created. Masks in this list are in
-the same order that <code class="docutils literal"><span class="pre">source_list</span></code> (and <code class="docutils literal"><span class="pre">self.sources</span></code>) is in.</p>
+<dd><p><em>list</em> – List of resultant <a class="reference internal" href="../mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> objects created.
+Masks in this list are in the same order that <code class="docutils literal"><span class="pre">source_list</span></code> (and <a class="reference internal" href="#separation.ideal_mask.IdealMask.sources" title="separation.ideal_mask.IdealMask.sources"><code class="xref py py-attr docutils literal"><span class="pre">sources</span></code></a>) is in.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.ideal_mask.IdealMask.estimated_sources">
 <code class="descname">estimated_sources</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.estimated_sources" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects created from applying the created masks to the
-mixture.</p>
+<dd><p><em>list</em> – List of <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects created from applying the
+created masks to the mixture.</p>
 </dd></dl>
 
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If not all items in <code class="docutils literal"><span class="pre">sources_list</span></code> are <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects, OR if not all of the
-<code class="docutils literal"><span class="pre">AudioSignal</span></code> objects in <code class="docutils literal"><span class="pre">sources_list</span></code> have the same sample rate and number of channels,
-OR if <code class="docutils literal"><span class="pre">input_audio_mixture</span></code> has a different sample rate or number of channels as the <code class="docutils literal"><span class="pre">AudioSignal</span></code>
-objects in <code class="docutils literal"><span class="pre">sources_list</span></code>.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If not all items in <code class="docutils literal"><span class="pre">sources_list</span></code> are <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects, OR if not
+all of the  <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects in <code class="docutils literal"><span class="pre">sources_list</span></code> have the same sample rate and
+number of channels, OR if <code class="docutils literal"><span class="pre">input_audio_mixture</span></code> has a different sample rate or number of channels as the
+<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>  objects in <code class="docutils literal"><span class="pre">sources_list</span></code>.</td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<p>Example:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="n">path_to_drums</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;demo_files&#39;</span><span class="p">,</span> <span class="s1">&#39;drums.wav&#39;</span><span class="p">)</span>
 <span class="n">path_to_flute</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;demo_files&#39;</span><span class="p">,</span> <span class="s1">&#39;flute.wav&#39;</span><span class="p">)</span>
 
 <span class="n">drums</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_drums</span><span class="p">)</span>
-<span class="n">drums</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># make it mono</span>
+<span class="n">drums</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># make it mono</span>
 
 <span class="n">flute</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_flute</span><span class="p">)</span>
 <span class="n">flute</span><span class="o">.</span><span class="n">truncate_samples</span><span class="p">(</span><span class="n">drums</span><span class="o">.</span><span class="n">signal_length</span><span class="p">)</span>  <span class="c1"># shorten the flute solo</span>
@@ -217,18 +239,213 @@ objects in <code class="docutils literal"><span class="pre">sources_list</span><
 <span class="n">ideal_drums</span><span class="p">,</span> <span class="n">ideal_flute</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
 <span class="n">ideal_residual</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="o">.</span><span class="n">residual</span>  <span class="c1"># Left over audio that was not captured by the mask</span>
 </pre></div>
+</td></tr></table></div>
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.BINARY_MASK">
+<code class="descname">BINARY_MASK</code><em class="property"> = 'binary'</em><a class="headerlink" href="#separation.ideal_mask.IdealMask.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.SOFT_MASK">
+<code class="descname">SOFT_MASK</code><em class="property"> = 'soft'</em><a class="headerlink" href="#separation.ideal_mask.IdealMask.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.audio_signal">
+<code class="descname">audio_signal</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>) – Copy of the <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> object passed in
+upon initialization.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.ideal_mask.IdealMask.from_json">
+<code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code> object from the parameters stored in this JSON string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>str</em>) – A JSON string containing all the data to create a new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code>
+object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code>) A new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code> object from the JSON string.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#separation.ideal_mask.IdealMask.to_json" title="separation.ideal_mask.IdealMask.to_json"><code class="xref py py-func docutils literal"><span class="pre">to_json()</span></code></a> to make a JSON string to freeze this object.</p>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.ideal_mask.IdealMask.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of signals (as <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects) created by applying the ideal masks.
+This creates the signals by element-wise multiply the masks with the mixture stft.
+Prior to running this, it is expected that <a class="reference internal" href="#separation.ideal_mask.IdealMask.run" title="separation.ideal_mask.IdealMask.run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a> has been called or else this will throw an error.
+These of signals is in the same order as the input ideal mixtures were when they were input (as a parameter
+to the constructor, <code class="docutils literal"><span class="pre">sources_list</span></code> or the <a class="reference internal" href="#separation.ideal_mask.IdealMask.sources" title="separation.ideal_mask.IdealMask.sources"><code class="xref py py-attr docutils literal"><span class="pre">sources</span></code></a> attribute).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>estimated_sources (list)</em> – List of <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects that represent the sources
+created by applying a mask from the known source to the mixture</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">ideal_mask</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">IdealMask</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="p">[</span><span class="n">drums</span><span class="p">,</span> <span class="n">flute</span><span class="p">],</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>
+<span class="n">ideal_mask</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">ideal_drums</span><span class="p">,</span> <span class="n">ideal_flute</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.mask_threshold">
+<code class="descname">mask_threshold</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.mask_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>PROPERTY</p>
+<p>Threshold of determining True/False if <a class="reference internal" href="#separation.ideal_mask.IdealMask.mask_type" title="separation.ideal_mask.IdealMask.mask_type"><code class="xref py py-attr docutils literal"><span class="pre">mask_type</span></code></a> is <a class="reference internal" href="#separation.ideal_mask.IdealMask.BINARY_MASK" title="separation.ideal_mask.IdealMask.BINARY_MASK"><code class="xref py py-attr docutils literal"><span class="pre">BINARY_MASK</span></code></a>. Some algorithms will first
+make a soft mask and then convert that to a binary mask using this threshold parameter. All values of the
+soft mask are between <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code> and as such <a class="reference internal" href="#separation.ideal_mask.IdealMask.mask_threshold" title="separation.ideal_mask.IdealMask.mask_threshold"><code class="xref py py-func docutils literal"><span class="pre">mask_threshold()</span></code></a> is expected to be a float between
+<code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_threshold (float)</em> – Value between <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code> that indicates the True/False cutoff when converting a
+soft mask to binary mask.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if not a float or if set outside <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.mask_type">
+<code class="descname">mask_type</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.mask_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>PROPERTY</p>
+<p>This property indicates what type of mask the derived algorithm will create and be returned by <a class="reference internal" href="#separation.ideal_mask.IdealMask.run" title="separation.ideal_mask.IdealMask.run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a>.
+Options are either ‘soft’ or ‘binary’.
+<a class="reference internal" href="#separation.ideal_mask.IdealMask.mask_type" title="separation.ideal_mask.IdealMask.mask_type"><code class="xref py py-attr docutils literal"><span class="pre">mask_type</span></code></a> is usually set when initializing a <code class="xref py py-class docutils literal"><span class="pre">MaskSeparationBase</span></code>-derived class
+and defaults to <a class="reference internal" href="#separation.ideal_mask.IdealMask.SOFT_MASK" title="separation.ideal_mask.IdealMask.SOFT_MASK"><code class="xref py py-attr docutils literal"><span class="pre">SOFT_MASK</span></code></a>.</p>
+<p>This property, though stored as a string, can be set in two ways when initializing:</p>
+<ul>
+<li><p class="first">First, it is possible to set this property with a string. Only <code class="docutils literal"><span class="pre">'soft'</span></code> and <code class="docutils literal"><span class="pre">'binary'</span></code> are accepted
+(case insensitive), every other value will raise an error. When initializing with a string, two helper
+attributes are provided: <a class="reference internal" href="#separation.ideal_mask.IdealMask.BINARY_MASK" title="separation.ideal_mask.IdealMask.BINARY_MASK"><code class="xref py py-attr docutils literal"><span class="pre">BINARY_MASK</span></code></a> and <a class="reference internal" href="#separation.ideal_mask.IdealMask.SOFT_MASK" title="separation.ideal_mask.IdealMask.SOFT_MASK"><code class="xref py py-attr docutils literal"><span class="pre">SOFT_MASK</span></code></a>.</p>
+<p>It is <strong>HIGHLY</strong> encouraged to use these, as the API may change and code that uses bare strings
+(e.g. <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'soft'</span></code> or <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'binary'</span></code>) for assignment might not be future-proof.
+<code class="xref py py-attr docutils literal"><span class="pre">BINARY_MASK`</span></code> and <a class="reference internal" href="#separation.ideal_mask.IdealMask.SOFT_MASK" title="separation.ideal_mask.IdealMask.SOFT_MASK"><code class="xref py py-attr docutils literal"><span class="pre">SOFT_MASK</span></code></a> are safe aliases in case these underlying types change.</p>
+</li>
+<li><p class="first">The second way to set this property is by using a class prototype of either the
+<a class="reference internal" href="../mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> class
+prototype. This is probably the most stable way to set this, and it’s fairly succinct.
+For example, <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.BinaryMask</span></code> or <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.SoftMask</span></code> are both perfectly valid.</p>
+</li>
+</ul>
+<p>Though uncommon, this can be set outside of <code class="xref py py-func docutils literal"><span class="pre">__init__()</span></code></p>
+<p>Examples of both methods are shown below.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_type (str)</em> – Either <code class="docutils literal"><span class="pre">'soft'</span></code> or <code class="docutils literal"><span class="pre">'binary'</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if set invalidly.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="n">mixture_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">()</span>
+
+<span class="c1"># Two options for determining mask upon init...</span>
+
+<span class="c1"># Option 1: Init with a string (BINARY_MASK is a string &#39;constant&#39;)</span>
+<span class="n">repet_sim</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">RepetSim</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">BINARY_MASK</span><span class="p">)</span>
+
+<span class="c1"># Option 2: Init with a class type</span>
+<span class="n">ola</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">OverlapAdd</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">SoftMask</span><span class="p">)</span>
+
+<span class="c1"># It&#39;s also possible to change these values after init by changing the `mask_type` property...</span>
+<span class="n">repet_sim</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">SOFT_MASK</span>  <span class="c1"># using a string</span>
+<span class="n">ola</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span>  <span class="c1"># or using a class type</span>
+</pre></div>
+</td></tr></table></div>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.ideal_mask.IdealMask.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots relevant data for mask-based separation algorithm. Base class: Do not call directly!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.residual">
+<code class="descname">residual</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.residual" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is an <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> object that contains the left over audio that was not captured
+by creating the masks. The residual is calculated in the time domain; after all of the masks are
+created by running <a class="reference internal" href="#separation.ideal_mask.IdealMask.run" title="separation.ideal_mask.IdealMask.run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a> and making the corresponding <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects
+(using <a class="reference internal" href="#separation.ideal_mask.IdealMask.make_audio_signals" title="separation.ideal_mask.IdealMask.make_audio_signals"><code class="xref py py-func docutils literal"><span class="pre">make_audio_signals()</span></code></a> which applies the masks to the mixture stft and does an istft for
+each source from the calculated masks), the residual is simply the original mixture with</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">residual (<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>) – <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> object that contains the
+left over audio that was not captured by creating the masks.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li>* ValueError if <a class="reference internal" href="#separation.ideal_mask.IdealMask.run" title="separation.ideal_mask.IdealMask.run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a> has not been called. OR</li>
+<li>* Exception if there was an unforeseen issue.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="separation.ideal_mask.IdealMask.run">
 <code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a list of masks (as <code class="docutils literal"><span class="pre">MaskBase</span></code> objects, either <code class="docutils literal"><span class="pre">BinaryMask</span></code> or <code class="docutils literal"><span class="pre">SoftMask</span></code> depending
-on how the object was instantiated) from a list of known source signals (<code class="docutils literal"><span class="pre">source_list</span></code> in the constructor).
-Returns a list of <code class="docutils literal"><span class="pre">MaskBase</span></code> objects (one for each input signal) in the order that they were provided
-when this object was initialized.</p>
+<dd><p>Creates a list of masks (as <a class="reference internal" href="../mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> objects, either
+<a class="reference internal" href="../mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a>
+depending on how the object was instantiated) from a list of known source signals (<code class="docutils literal"><span class="pre">source_list</span></code>
+in the constructor).</p>
+<p>Returns a list of <a class="reference internal" href="../mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> objects (one for each input signal)
+in the order that they were provided when this object was initialized.</p>
 <p>Binary masks are created based on the magnitude spectrogram using the following formula:</p>
 <blockquote>
 <div><code class="docutils literal"><span class="pre">mask</span> <span class="pre">=</span> <span class="pre">(provided_source.mag_spec</span> <span class="pre">&gt;=</span> <span class="pre">(mixture_mag_spec</span> <span class="pre">-</span> <span class="pre">provided_source.mag_spec)</span></code></div></blockquote>
-<p>Where <code class="docutils literal"><span class="pre">-</span></code> is a element-wise subtraction (as if the values were binary ints, 0 or 1) and <code class="docutils literal"><span class="pre">&gt;=</span></code>
+<p>Where ‘<code class="docutils literal"><span class="pre">-</span></code>‘ is a element-wise subtraction (as if the values were binary ints, 0 or 1) and ‘<code class="docutils literal"><span class="pre">&gt;=</span></code>’
 is element-wise logical greater-than-or-equal (again, as if the values were binary ints, 0 or 1).</p>
 <p>Soft masks are also created based on the magnitude spectrogram but use the following formula:</p>
 <blockquote>
@@ -244,8 +461,8 @@ in the interval [0.0, 1.0].</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>estimated_masks (list)</em> – List of resultant <code class="docutils literal"><span class="pre">MaskBase</span></code> objects created. Masks in this list are in
-the same order that <code class="docutils literal"><span class="pre">source_list</span></code> (and <code class="docutils literal"><span class="pre">self.sources</span></code>) are in.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>estimated_masks (list)</em> – List of resultant <a class="reference internal" href="../mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> objects created.
+Masks in this list are in the same order that <code class="docutils literal"><span class="pre">source_list</span></code> (and <a class="reference internal" href="#separation.ideal_mask.IdealMask.sources" title="separation.ideal_mask.IdealMask.sources"><code class="xref py py-attr docutils literal"><span class="pre">sources</span></code></a>) are in.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">RuntimeError if unknown mask type is provided (Options are [<code class="docutils literal"><span class="pre">BinaryMask</span></code>, or <code class="docutils literal"><span class="pre">SoftMask</span></code>]).</td>
 </tr>
@@ -254,53 +471,35 @@ the same order that <code class="docutils literal"><span class="pre">source_list
 </dd></dl>
 
 <dl class="attribute">
-<dt id="separation.ideal_mask.IdealMask.residual">
-<code class="descname">residual</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.residual" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object that contains the left over audio that was not captured
-by creating the masks. The residual is calculated in the time domain; after all of the masks are
-created by running <code class="docutils literal"><span class="pre">IdealMask.run()</span></code> and making the corresponding <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects
-(using <code class="docutils literal"><span class="pre">IdealMask.make_audio_signals()</span></code> which applies the masks to the mixture stft and does an istft for
-each source from the calculated masks), the residual is simply the original mixture with</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">residual (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) – <code class="docutils literal"><span class="pre">AudioSignal</span></code> object that contains the left over
-audio that was not captured by creating the masks.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li>ValueError if <code class="docutils literal"><span class="pre">IdealMask.run()</span></code> has not been called. OR</li>
-<li>Exception if there was an unforeseen issue.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
+<dt id="separation.ideal_mask.IdealMask.sample_rate">
+<code class="descname">sample_rate</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Sample rate of <a class="reference internal" href="../../audio_signal.html#module-audio_signal" title="audio_signal"><code class="xref py py-attr docutils literal"><span class="pre">audio_signal</span></code></a>.
+Literally <code class="xref py py-attr docutils literal"><span class="pre">audio_signal.sample_rate</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.ideal_mask.IdealMask.stft_params">
+<code class="descname">stft_params</code><a class="headerlink" href="#separation.ideal_mask.IdealMask.stft_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="../../spectral_utils.html#spectral_utils.StftParams" title="spectral_utils.StftParams"><code class="xref py py-class docutils literal"><span class="pre">spectral_utils.StftParams</span></code></a>) – <a class="reference internal" href="../../spectral_utils.html#spectral_utils.StftParams" title="spectral_utils.StftParams"><code class="xref py py-class docutils literal"><span class="pre">spectral_utils.StftParams</span></code></a> of <a class="reference internal" href="../../audio_signal.html#module-audio_signal" title="audio_signal"><code class="xref py py-attr docutils literal"><span class="pre">audio_signal</span></code></a>
+Literally <code class="xref py py-attr docutils literal"><span class="pre">audio_signal.stft_params</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="separation.ideal_mask.IdealMask.make_audio_signals">
-<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.make_audio_signals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of signals (as <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects) created by applying the ideal masks.
-This creates the signals by element-wise multiply the masks with the mixture stft.
-Prior to running this, it is expected that <code class="docutils literal"><span class="pre">run()</span></code> has been called or else this will throw an error.
-These of signals is in the same order as the input ideal mixtures were when they were input (as a parameter
-to the constructor, <code class="docutils literal"><span class="pre">sources_list</span></code>).</p>
+<dt id="separation.ideal_mask.IdealMask.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.ideal_mask.IdealMask.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs JSON from the data stored in this object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>estimated_sources (list)</em> – List of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects that represent the sources created by applying
-a mask from the known source to the mixture</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(str) a JSON string containing all of the information to restore this object exactly as it was when this
+was called.</td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ideal_mask</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">IdealMask</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="p">[</span><span class="n">drums</span><span class="p">,</span> <span class="n">flute</span><span class="p">],</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>
-<span class="n">ideal_mask</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-<span class="n">ideal_drums</span><span class="p">,</span> <span class="n">ideal_flute</span> <span class="o">=</span> <span class="n">ideal_mask</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
-</pre></div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#separation.ideal_mask.IdealMask.from_json" title="separation.ideal_mask.IdealMask.from_json"><code class="xref py py-func docutils literal"><span class="pre">from_json()</span></code></a> to restore a JSON frozen object.</p>
 </div>
 </dd></dl>
 
@@ -321,6 +520,7 @@ a mask from the known source to the mixture</td>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

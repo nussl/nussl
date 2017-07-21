@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nussl Separation Classes" href="../src/separation/separation_classes.html" />
+    <link rel="next" title="AudioSignal Class" href="../src/audio_signal.html" />
     <link rel="prev" title="Spectrograms and STFTs" href="audio_signal_stft.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
@@ -65,6 +65,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../src/audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -106,7 +107,7 @@
     </a>
   </li>
   <li>
-    <a href="../src/separation/separation_classes.html" title="Next Chapter: nussl Separation Classes"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">nussl Separat... &raquo;</span>
+    <a href="../src/audio_signal.html" title="Next Chapter: AudioSignal Class"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">AudioSignal Class &raquo;</span>
     </a>
   </li>
               
@@ -150,13 +151,13 @@ principles outlined here work across all of the source separation algorithms in 
 “background” from a non-repeating “foreground”. REPET finds the repeating period in an audio signal, slices the signal
 into “frames” of the same length of the repeating period and “overlays” those frames. Once the frames are overlayed,
 REPET extracts the non-repeating part by filtering out values that are far from the median value at each frame.</p>
-<p>In order to run REPET in <em>nussl</em>, we first must create an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. We’re going to load a file as before.</p>
+<p>In order to run REPET in <em>nussl</em>, we first must create an <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object. We’re going to load a file as before.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">history</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;HistoryRepeatingPropellerHeads.wav&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Neat. Now, we need to instantiate a <code class="docutils literal"><span class="pre">Repet</span></code> object. <strong>Like all source separation algorithms</strong> in <em>nussl</em>, <code class="docutils literal"><span class="pre">Repet</span></code>
-needs an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object as its first parameter when we initialize it.</p>
+needs an <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object as its first parameter when we initialize it.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -217,8 +218,8 @@ all of our algorithms in <em>nussl</em> the same way, by calling <code class="do
 <span class="go">nussl.audio_signal.AudioSignal, nussl.audio_signal.AudioSignal</span>
 </pre></div>
 </div>
-<p>We can see that <code class="docutils literal"><span class="pre">make_audio_signals()</span></code> produces two new <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects. Why two? One for each source. Other
-algorithms (like DUET) may produce different numbers of <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects.</p>
+<p>We can see that <code class="docutils literal"><span class="pre">make_audio_signals()</span></code> produces two new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: objects. Why two? One for each source. Other
+algorithms (like DUET) may produce different numbers of <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: objects.</p>
 <p>Now, we can use these just like before. So let’s write our results to files:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">background</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;history_background.wav&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">foreground</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;history_foreground.wav&#39;</span><span class="p">)</span>
@@ -253,6 +254,7 @@ algorithms (like DUET) may produce different numbers of <code class="docutils li
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

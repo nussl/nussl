@@ -5,5 +5,6 @@ Duet Class
 
 .. automodule:: separation.Duet
     :members:
-    :undoc-members:
     :show-inheritance:
+    :undoc-members:
+    :inherited-members:

@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -141,8 +142,8 @@
 <em class="property">class </em><code class="descclassname">evaluation.evaluation_base.</code><code class="descname">EvaluationBase</code><span class="sig-paren">(</span><em>true_sources_list</em>, <em>estimated_sources_list</em>, <em>source_labels=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for all Evaluation classes for source separation algorithm in nussl.
 Contains common functions for all evaluation techniques. This class should not be instantiated directly.</p>
-<p>Both <cite>true_sources_list</cite> and <cite>estimated_sources_list</cite> get validated using the private method
-<cite>EvaluationBase._verify_input_list()</cite>. If your evaluation needs to verify that input is set correctly (recommended)
+<p>Both <code class="docutils literal"><span class="pre">true_sources_list</span></code> and <code class="docutils literal"><span class="pre">estimated_sources_list</span></code> get validated using the private method
+<a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase._verify_input_list" title="evaluation.evaluation_base.EvaluationBase._verify_input_list"><code class="xref py py-func docutils literal"><span class="pre">_verify_input_list()</span></code></a>. If your evaluation needs to verify that input is set correctly (recommended)
 overwrite that method to add checking.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -150,26 +151,51 @@ overwrite that method to add checking.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>true_sources_list</strong> (<em>list</em>) – List of objects that contain one ground truth source per object. In some instances
-(such as the BSSEval-objects) this list is filled with <span class="xref std std-ref">AudioSignals</span> but in other cases it is
-populated with <span class="xref std std-ref">MaskBase</span> -derived objects (i.e., either a <span class="xref std std-ref">BinaryMask</span>
-or <span class="xref std std-ref">SoftMask</span> object).</li>
+(such as the BSSEval-objects) this list is filled with <code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignals</span></code> but in other
+cases it is populated with <a class="reference internal" href="../separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> -derived objects (i.e., either a
+<a class="reference internal" href="../separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> object).</li>
 <li><strong>estimated_sources_list</strong> (<em>list</em>) – List of objects that contain source estimations from a source separation
 algorithm. List should be populated with the same type of objects and in the same order as
-<cite>true_sources_list</cite>.</li>
+<code class="docutils literal"><span class="pre">true_sources_list</span></code>.</li>
 <li><strong>source_labels</strong> (<em>list</em><em>, </em><em>Optional</em>) – List of strings that are labels for each source to be used as keys for
 the scores. Default value is <cite>None</cite> and in that case labels are <cite>Source 0</cite>, <cite>Source 1</cite>, etc.</li>
-<li><strong>do_mono</strong> (<em>bool</em><em>, </em><em>Optional</em>) – Whether to make the objects in <cite>true_sources_list</cite> and <cite>estimated_sources_list</cite> mono
-prior to doing the evaluation. This may not work for all <cite>EvaluationBase</cite>-derived objects.</li>
+<li><strong>do_mono</strong> (<em>bool</em><em>, </em><em>Optional</em>) – Whether to make the objects in <code class="docutils literal"><span class="pre">true_sources_list</span></code> and <code class="docutils literal"><span class="pre">estimated_sources_list</span></code>
+mono prior to doing the evaluation. This may not work for all <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">EvaluationBase</span></code></a>-derived objects.</li>
 <li><strong>**kwargs</strong> – Additional arguments for subclasses.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<dl class="staticmethod">
+<dt id="evaluation.evaluation_base.EvaluationBase._verify_input_list">
+<em class="property">static </em><code class="descname">_verify_input_list</code><span class="sig-paren">(</span><em>audio_signal_list</em><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase._verify_input_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base method for verifying a list of input objects for an <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">EvaluationBase</span></code></a>-derived object. Override this
+method when creating new <code class="xref py py-class docutils literal"><span class="pre">EvaluationBased</span></code>-derived class.</p>
+<p>By default calls <code class="xref py py-func docutils literal"><span class="pre">nussl.utils._verify_audio_signal_list_strict()</span></code>, which verifies that all objects in the
+input list are <a class="reference internal" href="../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects with the same length, sample rate and have identical
+number of channels.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>audio_signal_list</strong> (<em>list</em>) – List of objects that contain one signal per object. In some instances
+(such as the BSSEval-objects) this list is filled with <span class="xref std std-ref">AudioSignals</span> but in other cases it is
+populated with <a class="reference internal" href="../separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> -derived objects (i.e., either a
+<a class="reference internal" href="../separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a>
+object). In the latter case, this method is overridden with a specific function
+in <a class="reference internal" href="precision_recall_fscore.html#evaluation.precision_recall_fscore.PrecisionRecallFScore" title="evaluation.precision_recall_fscore.PrecisionRecallFScore"><code class="xref py py-class docutils literal"><span class="pre">evaluation.precision_recall_fscore.PrecisionRecallFScore</span></code></a>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A verified list of objects that are ready for running the evaluation method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="evaluation.evaluation_base.EvaluationBase.evaluate">
 <code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function runs the evaluation method. Do not call this directly from <cite>EvaluationBase</cite></p>
+<dd><p>This function runs the evaluation method. Do not call this directly from <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">EvaluationBase</span></code></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -183,7 +209,7 @@ prior to doing the evaluation. This may not work for all <cite>EvaluationBase</c
 <dl class="attribute">
 <dt id="evaluation.evaluation_base.EvaluationBase.scores">
 <code class="descname">scores</code><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase.scores" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary that stores all scores from the evaluation method. Gets populated when <span class="xref std std-ref">evaluate</span> gets run.</p>
+<dd><p>A dictionary that stores all scores from the evaluation method. Gets populated when <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase.evaluate" title="evaluation.evaluation_base.EvaluationBase.evaluate"><code class="xref py py-func docutils literal"><span class="pre">evaluate()</span></code></a> gets run.</p>
 </dd></dl>
 
 </dd></dl>
@@ -203,6 +229,7 @@ prior to doing the evaluation. This may not work for all <cite>EvaluationBase</c
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

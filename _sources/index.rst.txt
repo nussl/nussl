@@ -23,6 +23,7 @@ nussl Documentation
 .. toctree::
    :maxdepth: 3
 
+   AudioSignal </src/audio_signal>
    Separation Classes </src/separation/separation_classes>
    Evaluation Classes </src/evaluation/evaluation_classes>
    Transformer Classes </src/transformers/transformer_classes>

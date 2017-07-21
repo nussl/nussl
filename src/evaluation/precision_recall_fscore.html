@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -140,8 +141,18 @@ able to create a binary mask compared to a known binary mask. The metrics used h
 <a class="reference external" href="https://en.wikipedia.org/wiki/Precision_and_recall">Precision, Recall</a>,
 <a class="reference external" href="https://en.wikipedia.org/wiki/F1_score">F-Score</a> (sometimes called F-measure or F1-score), and Accuracy
 (though this is not reflected in the name of the class, it is simply   <code class="docutils literal"><span class="pre">#</span> <span class="pre">correct</span> <span class="pre">/</span> <span class="pre">total</span></code>).</p>
-<p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Run Repet</span>
+<p>Example:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Run Repet</span>
 <span class="n">repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mixture</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">)</span>  <span class="c1"># it&#39;s important to specify BinaryMask!</span>
 <span class="n">repet_masks</span> <span class="o">=</span> <span class="n">repet</span><span class="p">()</span>
 
@@ -153,7 +164,7 @@ able to create a binary mask compared to a known binary mask. The metrics used h
 <span class="n">prf_repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">PrecisionRecallFScore</span><span class="p">(</span><span class="n">ideal_masks</span><span class="p">,</span> <span class="n">repet_masks</span><span class="p">)</span>
 <span class="n">prf_repet_scores</span> <span class="o">=</span> <span class="n">prf_repet</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
 </pre></div>
-</div>
+</td></tr></table></div>
 <p>Scores for each source are stored in a nested dictionary aptly named <code class="docutils literal"><span class="pre">scores</span></code>. This is a dictionary of dictionaries
 where the key is the source label, and the value is another dictionary with scores for each of the metrics for that
 source. So, for instance, the format of the <code class="docutils literal"><span class="pre">prf_repet_scores</span></code> dictionary from above is shown below:</p>
@@ -185,7 +196,8 @@ they are expected to be in the correct order when they are passed into <code cla
 <dl class="class">
 <dt id="evaluation.precision_recall_fscore.PrecisionRecallFScore">
 <em class="property">class </em><code class="descclassname">evaluation.precision_recall_fscore.</code><code class="descname">PrecisionRecallFScore</code><span class="sig-paren">(</span><em>true_sources_mask_list</em>, <em>estimated_sources_mask_list</em>, <em>source_labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.precision_recall_fscore.PrecisionRecallFScore" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Bases: <a class="reference internal" href="evaluation_base.html#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">evaluation.evaluation_base.EvaluationBase</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -203,7 +215,8 @@ will be labeled <code class="docutils literal"><span class="pre">Source</span> <
 <dl class="attribute">
 <dt id="evaluation.precision_recall_fscore.PrecisionRecallFScore.scores">
 <code class="descname">scores</code><a class="headerlink" href="#evaluation.precision_recall_fscore.PrecisionRecallFScore.scores" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> – Dictionary storing the precision, recall, F1-Score, and accuracy. See <code class="docutils literal"><span class="pre">evaluate()</span></code> below.</p>
+<dd><p><em>dict</em> – Dictionary storing the precision, recall, F1-Score, and accuracy.
+See <span class="xref std std-ref">nussl.PrecisionRecallFScore.evaluate</span> below.</p>
 </dd></dl>
 
 <dl class="method">
@@ -236,6 +249,12 @@ and <code class="docutils literal"><span class="pre">estimated_sources_mask_list
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt>
+<code class="descname">scores</code></dt>
+<dd><p>A dictionary that stores all scores from the evaluation method. Gets populated when <a class="reference internal" href="#evaluation.precision_recall_fscore.PrecisionRecallFScore.evaluate" title="evaluation.precision_recall_fscore.PrecisionRecallFScore.evaluate"><code class="xref py py-func docutils literal"><span class="pre">evaluate()</span></code></a> gets run.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -253,6 +272,7 @@ and <code class="docutils literal"><span class="pre">estimated_sources_mask_list
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

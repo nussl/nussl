@@ -3,10 +3,9 @@
 
 """
 Base class for Mask objects. Contains many common utilities used for accessing masks. The mask itself is
-represented under the hood as a three dimensional numpy ``ndarray`` object. The dimensions are 
+represented under the hood as a three dimensional numpy :obj:`ndarray` object. The dimensions are 
 ``[NUM_FREQ, NUM_HOPS, NUM_CHAN]``. Safe accessors for these array indices are in :ref:`constants` as well as 
 below.
-
 """
 
 import numpy as np
@@ -21,12 +20,7 @@ class MaskBase(object):
     Args:
         mask (:obj:`np.ndarray`): A 2- or 3-dimensional numpy ``ndarray`` representing a mask.
         
-    Attributes:
-        
-        
-        
     """
-
     def __init__(self, input_mask):
         self._mask = None
         self.mask = input_mask
@@ -34,16 +28,19 @@ class MaskBase(object):
     @property
     def mask(self):
         """
-        The actual mask. This is represented as a three dimensional numpy ``ndarray`` object.
-        The input gets validated by ``_validate_mask``. In the case of :ref:`binary_mask` the validation checks that
-        the values are all 1 or 0 (or bools), in the case of :ref:`soft_mask` the validation checks that all values
-        are within the domain [0.0, 1.0].
+        PROPERTY
+        
+        The actual mask. This is represented as a three dimensional numpy :obj:`ndarray` object.
+        The input gets validated by :func:`_validate_mask`. In the case of 
+        :class:`separation.masks.binary_mask.BinaryMask` the validation checks that the values are all 1 or 0 
+        (or bools), in the case of :class:`separation.masks.soft_mask.SoftMask` the validation checks that all values
+        are within the domain ``[0.0, 1.0]``.
         
         This base class will throw a ``NotImplementedError`` if instantiated directly.
         
         Raises:
-            ``ValueError`` if ``mask.ndim`` is less than 2 or greater than 3, or if values fail validation.
-            ``NotImplementedError`` if instantiated directly.
+            :obj:`ValueError` if :attr:`mask.ndim` is less than 2 or greater than 3, or if values fail validation.
+            :obj:`NotImplementedError` if instantiated directly.
 
         """
         return self._mask
@@ -65,7 +62,8 @@ class MaskBase(object):
 
     def get_channel(self, n):
         """
-        Gets mask channel ``n`` and returns it as a 2D ``np.ndarray``
+        Gets mask channel ``n`` and returns it as a 2D :obj:`np.ndarray`
+        
         Args:
             n (int): Channel index to return (0-based).
 
@@ -73,8 +71,8 @@ class MaskBase(object):
             :obj:`np.array` with the mask channel
             
         Raises:
-            ``AttributeError`` if ``self.mask`` is ``None``
-            ``ValueError`` if ``n`` is less than 0 or greater than the number of channels that this mask object has.
+            :obj:`AttributeError` if :attr:`mask` is ``None``
+            :obj:`ValueError` if ``n`` is less than 0 or greater than the number of channels that this mask object has.
 
         """
         if self.mask is None:
@@ -142,7 +140,6 @@ class MaskBase(object):
     @staticmethod
     def _validate_mask(mask_):
         """
-        
         Args:
             mask_: 
 

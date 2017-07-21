@@ -63,6 +63,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformer_classes.html">Transformer Classes</a></li>
@@ -126,6 +127,26 @@
   <div class="section" id="module-Nmf">
 <span id="nmf-class"></span><span id="nmf"></span><h1>Nmf Class<a class="headerlink" href="#module-Nmf" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
+<dt id="Nmf.DistanceType">
+<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">DistanceType</code><a class="headerlink" href="#Nmf.DistanceType" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="Nmf.DistanceType.DEFAULT">
+<code class="descname">DEFAULT</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.DEFAULT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Nmf.DistanceType.DIVERGENCE">
+<code class="descname">DIVERGENCE</code><em class="property"> = 'divergence'</em><a class="headerlink" href="#Nmf.DistanceType.DIVERGENCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="Nmf.DistanceType.EUCLIDEAN">
+<code class="descname">EUCLIDEAN</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.EUCLIDEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="Nmf.NMF">
 <em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">NMF</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_templates</em>, <em>activation_matrix=None</em>, <em>templates=None</em>, <em>distance_measure=None</em>, <em>should_update_template=None</em>, <em>should_update_activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">nussl.separation.separation_base.SeparationBase</span></code></p>
@@ -138,6 +159,26 @@ and also allows the user to define distance measure function.</p>
 [1] Lee, Daniel D., and H. Sebastian Seung. “Algorithms for non-negative matrix factorization.”</p>
 <blockquote>
 <div>Advances in neural information processing systems. 2001.</div></blockquote>
+<dl class="method">
+<dt id="Nmf.NMF.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.randomize_input_matrices">
+<code class="descname">randomize_input_matrices</code><span class="sig-paren">(</span><em>shouldNormalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.randomize_input_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Nmf.NMF.recombine_calculated_matrices">
+<code class="descname">recombine_calculated_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.recombine_calculated_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="Nmf.NMF.run">
 <code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.run" title="Permalink to this definition">¶</a></dt>
@@ -154,46 +195,6 @@ and a set of template vectors (also 2d numpy array).</p>
 <dd><p>Computes a single update using the update function specified.
 :return: nothing</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="Nmf.NMF.make_audio_signals">
-<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.make_audio_signals" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Nmf.NMF.recombine_calculated_matrices">
-<code class="descname">recombine_calculated_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.recombine_calculated_matrices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Nmf.NMF.randomize_input_matrices">
-<code class="descname">randomize_input_matrices</code><span class="sig-paren">(</span><em>shouldNormalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.randomize_input_matrices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="Nmf.NMF.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="Nmf.DistanceType">
-<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">DistanceType</code><a class="headerlink" href="#Nmf.DistanceType" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="Nmf.DistanceType.EUCLIDEAN">
-<code class="descname">EUCLIDEAN</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.EUCLIDEAN" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="Nmf.DistanceType.DIVERGENCE">
-<code class="descname">DIVERGENCE</code><em class="property"> = 'divergence'</em><a class="headerlink" href="#Nmf.DistanceType.DIVERGENCE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="Nmf.DistanceType.DEFAULT">
-<code class="descname">DEFAULT</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#Nmf.DistanceType.DEFAULT" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -212,6 +213,7 @@ and a set of template vectors (also 2d numpy array).</p>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

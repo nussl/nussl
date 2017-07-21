@@ -5,5 +5,6 @@ Repet Class
 
 .. automodule:: separation.repet
     :members:
-    :undoc-members:
     :show-inheritance:
+    :undoc-members:
+    :inherited-members:

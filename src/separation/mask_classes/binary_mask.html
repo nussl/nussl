@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -135,21 +136,25 @@
       
   <div class="section" id="module-separation.masks.binary_mask">
 <span id="binarymask-class"></span><span id="binary-mask"></span><h1>BinaryMask Class<a class="headerlink" href="#module-separation.masks.binary_mask" title="Permalink to this headline">¶</a></h1>
-<p>The BinaryMask class is for creating a time-frequency mask with binary values. Like all <a class="reference internal" href="mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a> objects,
-BinaryMask is initialized with a 2D or 3D numpy array containing the mask data. The data type (numpy.dtype) of the
-initial mask can be either bool, int, or float. The mask is stored as a 3-dimensional boolean-valued numpy array.</p>
+<p>The <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a> class is for creating a time-frequency mask with binary values. Like all
+<a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> objects, <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a> is initialized with a 2D or 3D numpy array
+containing the mask data. The data type (numpy.dtype) of the initial mask can be either bool, int, or float.
+The mask is stored as a 3-dimensional boolean-valued numpy array.</p>
 <p>The best case scenario for the input mask np array is when the data type is bool. If the data type of the input mask
 upon init is int it is expected that all values are either 0 or 1. If the data type
 of the mask is float, all values must be within 1e-2 of either 1 or 0. If the array is not set as one of these,
-BinaryMask will raise an exception.</p>
-<p>BinaryMask (like <a class="reference internal" href="soft_mask.html#soft-mask"><span class="std std-ref">SoftMask Class</span></a>) is one of the return types for the <code class="docutils literal"><span class="pre">run()</span></code> methods of <a class="reference internal" href="../base_classes/mask_separation_base.html#mask-separation-base"><span class="std std-ref">MaskSeparationBase Class</span></a>
--derived objects (this is most of the separation methods in <cite>nussl</cite>.</p>
+<a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a> will raise an exception.</p>
+<p><a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a> (like <a class="reference internal" href="soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a>) is one of the return types for the <code class="xref py py-func docutils literal"><span class="pre">run()</span></code>
+methods of <code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>-derived objects (this is most of the
+separation methods in <cite>nussl</cite>.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a>: The base class for BinaryMask and SoftMask</li>
-<li><a class="reference internal" href="soft_mask.html#soft-mask"><span class="std std-ref">SoftMask Class</span></a>: Similar to BinaryMask, but instead of taking boolean values, takes floats between [0.0 and 1.0].</li>
-<li><a class="reference internal" href="../base_classes/mask_separation_base.html#mask-separation-base"><span class="std std-ref">MaskSeparationBase Class</span></a>: Base class for all mask-based separation methods in nussl.</li>
+<li><a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a>: The base class for BinaryMask and SoftMask</li>
+<li><a class="reference internal" href="soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a>: Similar to BinaryMask, but instead of taking boolean values,
+takes floats between <code class="docutils literal"><span class="pre">[0.0</span> <span class="pre">and</span> <span class="pre">1.0]</span></code>.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>: Base class for all mask-based separation methods
+in <cite>nussl</cite>.</li>
 </ul>
 </div>
 <p class="rubric">Examples</p>
@@ -191,7 +196,8 @@ BinaryMask will raise an exception.</p>
 <span class="n">bin_mask_int</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span><span class="p">(</span><span class="n">rand_float_mask</span><span class="p">)</span>
 </pre></div>
 </td></tr></table></div>
-<p><a class="reference internal" href="../base_classes/mask_separation_base.html#mask-separation-base"><span class="std std-ref">MaskSeparationBase Class</span></a> -derived methods return <a class="reference internal" href="mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a> masks, like so…</p>
+<p><code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>-derived methods return
+<a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> masks, like so…</p>
 <div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -224,35 +230,102 @@ BinaryMask will raise an exception.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_mask</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – 2- or 3-D <code class="docutils literal"><span class="pre">np.array</span></code> that represents the mask.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_mask</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – 2- or 3-D <code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> that represents the mask.</td>
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="separation.masks.binary_mask.BinaryMask.dtype">
+<code class="descname">dtype</code><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>(str) Returns the data type of the values of the mask.</p>
+</dd></dl>
+
 <dl class="method">
-<dt id="separation.masks.binary_mask.BinaryMask.mask_as_ints">
-<code class="descname">mask_as_ints</code><span class="sig-paren">(</span><em>channel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.mask_as_ints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns this <code class="docutils literal"><span class="pre">BinaryMask</span></code> as a numpy array of ints of 0’s and 1’s.</p>
+<dt id="separation.masks.binary_mask.BinaryMask.get_channel">
+<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.get_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets mask channel <code class="docutils literal"><span class="pre">n</span></code> and returns it as a 2D <code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">numpy <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> of this <code class="docutils literal"><span class="pre">BinaryMask</span></code> represented as ints instead of bools.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> (<em>int</em>) – Channel index to return (0-based).</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> with the mask channel</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-obj docutils literal"><span class="pre">AttributeError</span></code> if <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask.mask" title="separation.masks.binary_mask.BinaryMask.mask"><code class="xref py py-attr docutils literal"><span class="pre">mask</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code></li>
+<li><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code> if <code class="docutils literal"><span class="pre">n</span></code> is less than 0 or greater than the number of channels that this mask object has.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="separation.masks.binary_mask.BinaryMask.height">
+<code class="descname">height</code><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Number of frequency bins this mask has.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="separation.masks.binary_mask.BinaryMask.inverse_mask">
 <code class="descname">inverse_mask</code><span class="sig-paren">(</span><em>channel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.inverse_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a new <code class="docutils literal"><span class="pre">BinaryMask</span></code> object with a logical not applied to flip the values in this <code class="docutils literal"><span class="pre">BinaryMask</span></code> object.</p>
+<dd><p>Makes a new <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a> object with a logical not applied to flip the values in this <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a>
+object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>channel</strong> (<em>int</em><em>, </em><em>Optional</em>) – Channel number, 0-based.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <code class="docutils literal"><span class="pre">BinaryMask</span></code> object that has all of the boolean values flipped.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a> object that has all of the boolean values flipped.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.binary_mask.BinaryMask.length">
+<code class="descname">length</code><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Number of time hops that this mask represents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.binary_mask.BinaryMask.mask">
+<code class="descname">mask</code><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>PROPERTY</p>
+<p>The actual mask. This is represented as a three dimensional numpy <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> object.
+The input gets validated by <code class="xref py py-func docutils literal"><span class="pre">_validate_mask()</span></code>. In the case of
+<a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> the validation checks that the values are all 1 or 0
+(or bools), in the case of <a class="reference internal" href="soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> the validation checks that all values
+are within the domain <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</p>
+<p>This base class will throw a <code class="docutils literal"><span class="pre">NotImplementedError</span></code> if instantiated directly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code> if <code class="xref py py-attr docutils literal"><span class="pre">mask.ndim</span></code> is less than 2 or greater than 3, or if values fail validation.</li>
+<li><code class="xref py py-obj docutils literal"><span class="pre">NotImplementedError</span></code> if instantiated directly.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.masks.binary_mask.BinaryMask.mask_as_ints">
+<code class="descname">mask_as_ints</code><span class="sig-paren">(</span><em>channel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.mask_as_ints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns this <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a> as a numpy array of ints of 0’s and 1’s.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">numpy <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> of this <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-obj docutils literal"><span class="pre">BinaryMask</span></code></a> represented as ints instead of bools.</td>
 </tr>
 </tbody>
 </table>
@@ -261,10 +334,32 @@ BinaryMask will raise an exception.</p>
 <dl class="staticmethod">
 <dt id="separation.masks.binary_mask.BinaryMask.mask_to_binary">
 <em class="property">static </em><code class="descname">mask_to_binary</code><span class="sig-paren">(</span><em>mask_</em>, <em>threshold</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.mask_to_binary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a binary mask from a soft mask with a True/False threshold.
-:param <a href="#id1"><span class="problematic" id="id2">mask_</span></a>:
-:param threshold:</p>
+<dd><p>Makes a binary mask from a soft mask with a True/False threshold.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mask</strong> (<code class="xref py py-obj docutils literal"><span class="pre">MaskBase</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Soft mask to convert to <a class="reference internal" href="#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">BinaryMask</span></code></a></li>
+<li><strong>threshold</strong> (<em>float</em>) – Value between <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code> to determine the True/False cutoff</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <p>Returns:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.binary_mask.BinaryMask.num_channels">
+<code class="descname">num_channels</code><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.num_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Number of channels this mask has.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.masks.binary_mask.BinaryMask.shape">
+<code class="descname">shape</code><a class="headerlink" href="#separation.masks.binary_mask.BinaryMask.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>(tuple) Returns the shape of the whole mask. Identical to <code class="docutils literal"><span class="pre">np.ndarray.shape()</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -284,6 +379,7 @@ BinaryMask will raise an exception.</p>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

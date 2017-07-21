@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -138,22 +139,25 @@
 <dl class="class">
 <dt id="separation.MaskSeparationBase">
 <em class="property">class </em><code class="descclassname">separation.</code><code class="descname">MaskSeparationBase</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>mask_type='soft'</em>, <em>mask_threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for separation algorithms that create a mask (binary or soft) to do their separation. Most algorithms
-in nussl are derived from <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code>.</p>
+<dd><p>Bases: <a class="reference internal" href="separation_base.html#separation.separation_base.SeparationBase" title="separation.separation_base.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">separation.separation_base.SeparationBase</span></code></a></p>
+<p>Base class for separation algorithms that create a mask (binary or soft) to do their separation. Most algorithms
+in nussl are derived from <code class="xref py py-class docutils literal"><span class="pre">MaskSeparationBase</span></code>.</p>
 <p>Although this class will do nothing if you instantiate and run it by itself, algorithms that are derived from this
-class are expected to return a list of <a class="reference internal" href="../mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a> -derived objects (i.e., either a <span class="xref std std-ref">BinaryMask</span> or
-<code class="docutils literal"><span class="pre">SoftMask</span></code> object)
-by their <code class="docutils literal"><span class="pre">run()</span></code> method. Being a subclass of <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code> is an implicit contract assuring this.
-Returning a <code class="docutils literal"><span class="pre">MaskBase</span></code>-derived object standardizes algorithm return types for <code class="docutils literal"><span class="pre">EvaluationBase</span></code> -derived objects.</p>
+class are expected to return a list of <a class="reference internal" href="../mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> -derived objects
+(i.e., either a <a class="reference internal" href="../mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a>
+object) by their <code class="xref py py-func docutils literal"><span class="pre">run()</span></code> method. Being a subclass of <code class="xref py py-class docutils literal"><span class="pre">MaskSeparationBase</span></code> is an implicit contract
+assuring this.  Returning a <a class="reference internal" href="../mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a>-derived object standardizes
+algorithm return types for <a class="reference internal" href="../../evaluation/evaluation_base.html#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">evaluation.evaluation_base.EvaluationBase</span></code></a>-derived objects.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>input_audio_signal</strong> – (<code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>) An <code class="docutils literal"><span class="pre">AudioSignal</span></code> object containing the mixture to be separated.</li>
-<li><strong>mask_type</strong> – (str) Indicates whether to make binary or soft masks. See <code class="docutils literal"><span class="pre">mask_type</span></code> property for details.</li>
-<li><strong>mask_threshold</strong> – (float) Value between [0.0, 1.0] to convert a soft mask to a binary mask. See <code class="docutils literal"><span class="pre">mask_threshold</span></code>
-property for details.</li>
+<li><strong>input_audio_signal</strong> – (<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>) An <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> object containing
+the mixture to be separated.</li>
+<li><strong>mask_type</strong> – (str) Indicates whether to make binary or soft masks. See <code class="xref py py-attr docutils literal"><span class="pre">mask_type</span></code> property for details.</li>
+<li><strong>mask_threshold</strong> – (float) Value between [0.0, 1.0] to convert a soft mask to a binary mask. See
+<code class="xref py py-attr docutils literal"><span class="pre">mask_threshold</span></code> property for details.</li>
 </ul>
 </td>
 </tr>
@@ -162,83 +166,144 @@ property for details.</li>
 <dl class="attribute">
 <dt id="separation.MaskSeparationBase.BINARY_MASK">
 <code class="descname">BINARY_MASK</code><em class="property"> = 'binary'</em><a class="headerlink" href="#separation.MaskSeparationBase.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
-<dd><p>String alias for setting this object to return <code class="docutils literal"><span class="pre">BinaryMask</span></code> objects</p>
+<dd><p>String alias for setting this object to return <a class="reference internal" href="../mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> objects</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.MaskSeparationBase.SOFT_MASK">
 <code class="descname">SOFT_MASK</code><em class="property"> = 'soft'</em><a class="headerlink" href="#separation.MaskSeparationBase.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
-<dd><p>String alias for setting this object to return <code class="docutils literal"><span class="pre">SoftMask</span></code> objects</p>
+<dd><p>String alias for setting this object to return <a class="reference internal" href="../mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> objects</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.audio_signal">
+<code class="descname">audio_signal</code><a class="headerlink" href="#separation.MaskSeparationBase.audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>) – Copy of the <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> object passed in
+upon initialization.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.MaskSeparationBase.from_json">
+<code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code> object from the parameters stored in this JSON string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>str</em>) – A JSON string containing all the data to create a new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code>
+object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code>) A new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code> object from the JSON string.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">to_json()</span></code> to make a JSON string to freeze this object.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.MaskSeparationBase.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects after mask-based separation algorithm is run.
+Base class: Do not call directly!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.mask_threshold">
+<code class="descname">mask_threshold</code><a class="headerlink" href="#separation.MaskSeparationBase.mask_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>PROPERTY</p>
+<p>Threshold of determining True/False if <code class="xref py py-attr docutils literal"><span class="pre">mask_type</span></code> is <code class="xref py py-attr docutils literal"><span class="pre">BINARY_MASK</span></code>. Some algorithms will first
+make a soft mask and then convert that to a binary mask using this threshold parameter. All values of the
+soft mask are between <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code> and as such <code class="xref py py-func docutils literal"><span class="pre">mask_threshold()</span></code> is expected to be a float between
+<code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_threshold (float)</em> – Value between <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code> that indicates the True/False cutoff when converting a
+soft mask to binary mask.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if not a float or if set outside <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.MaskSeparationBase.mask_type">
 <code class="descname">mask_type</code><a class="headerlink" href="#separation.MaskSeparationBase.mask_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>This property indicates what type of mask the derived algorithm will create and be returned by <cite>run()</cite>.
+<dd><p>PROPERTY</p>
+<p>This property indicates what type of mask the derived algorithm will create and be returned by <code class="xref py py-func docutils literal"><span class="pre">run()</span></code>.
 Options are either ‘soft’ or ‘binary’.
-<code class="docutils literal"><span class="pre">mask_type</span></code> is usually set when initializing a <code class="docutils literal"><span class="pre">MaskSeparationBase</span></code>-derived class
-and defaults to <code class="docutils literal"><span class="pre">SOFT_MASK</span></code>
-.
-This property, though stored as a string, can be set in two ways when initializing:</p>
-<p>First, it is possible to set this property
-with a string. Only <code class="docutils literal"><span class="pre">'soft'</span></code> and <code class="docutils literal"><span class="pre">'binary'</span></code> are accepted (case insensitive), every other value will raise an
-error. When initializing with a string, two helper attributes are provided: <code class="docutils literal"><span class="pre">BINARY_MASK</span></code> and
-<code class="docutils literal"><span class="pre">SOFT_MASK</span></code>.</p>
-<p>It is HIGHLY encouraged to use these, as the API may change and code that uses bare strings
+<code class="xref py py-attr docutils literal"><span class="pre">mask_type</span></code> is usually set when initializing a <code class="xref py py-class docutils literal"><span class="pre">MaskSeparationBase</span></code>-derived class
+and defaults to <code class="xref py py-attr docutils literal"><span class="pre">SOFT_MASK</span></code>.</p>
+<p>This property, though stored as a string, can be set in two ways when initializing:</p>
+<ul>
+<li><p class="first">First, it is possible to set this property with a string. Only <code class="docutils literal"><span class="pre">'soft'</span></code> and <code class="docutils literal"><span class="pre">'binary'</span></code> are accepted
+(case insensitive), every other value will raise an error. When initializing with a string, two helper
+attributes are provided: <code class="xref py py-attr docutils literal"><span class="pre">BINARY_MASK</span></code> and <code class="xref py py-attr docutils literal"><span class="pre">SOFT_MASK</span></code>.</p>
+<p>It is <strong>HIGHLY</strong> encouraged to use these, as the API may change and code that uses bare strings
 (e.g. <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'soft'</span></code> or <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'binary'</span></code>) for assignment might not be future-proof.
-<code class="docutils literal"><span class="pre">BINARY_MASK</span></code> and <code class="docutils literal"><span class="pre">SOFT_MASK</span></code> are safe aliases in case these underlying types change.</p>
-<p>The second way to set this property is by using a class prototype of either the <code class="docutils literal"><span class="pre">SoftMask</span></code> or
-<code class="docutils literal"><span class="pre">BinaryMask</span></code> class
+<code class="xref py py-attr docutils literal"><span class="pre">BINARY_MASK`</span></code> and <code class="xref py py-attr docutils literal"><span class="pre">SOFT_MASK</span></code> are safe aliases in case these underlying types change.</p>
+</li>
+<li><p class="first">The second way to set this property is by using a class prototype of either the
+<a class="reference internal" href="../mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> class
 prototype. This is probably the most stable way to set this, and it’s fairly succinct.
 For example, <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.BinaryMask</span></code> or <code class="docutils literal"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.SoftMask</span></code> are both perfectly valid.</p>
-<p>Though uncommon, this can be set outside of <code class="docutils literal"><span class="pre">__init__()</span></code></p>
+</li>
+</ul>
+<p>Though uncommon, this can be set outside of <code class="xref py py-func docutils literal"><span class="pre">__init__()</span></code></p>
 <p>Examples of both methods are shown below.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_type (str)</em> – Either ‘soft’ or ‘binary’.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_type (str)</em> – Either <code class="docutils literal"><span class="pre">'soft'</span></code> or <code class="docutils literal"><span class="pre">'binary'</span></code>.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if set invalidly.</td>
 </tr>
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
 <span class="n">mixture_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">()</span>
 
 <span class="c1"># Two options for determining mask upon init...</span>
 
 <span class="c1"># Option 1: Init with a string (BINARY_MASK is a string &#39;constant&#39;)</span>
-<span class="n">projet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Projet</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">BINARY_MASK</span><span class="p">)</span>
+<span class="n">repet_sim</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">RepetSim</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">BINARY_MASK</span><span class="p">)</span>
 
 <span class="c1"># Option 2: Init with a class type</span>
 <span class="n">ola</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">OverlapAdd</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">SoftMask</span><span class="p">)</span>
 
 <span class="c1"># It&#39;s also possible to change these values after init by changing the `mask_type` property...</span>
-<span class="n">projet</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">SOFT_MASK</span>  <span class="c1"># using a string</span>
+<span class="n">repet_sim</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">SOFT_MASK</span>  <span class="c1"># using a string</span>
 <span class="n">ola</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span>  <span class="c1"># or using a class type</span>
 </pre></div>
-</div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="separation.MaskSeparationBase.mask_threshold">
-<code class="descname">mask_threshold</code><a class="headerlink" href="#separation.MaskSeparationBase.mask_threshold" title="Permalink to this definition">¶</a></dt>
-<dd><p>Threshold of determining True/False if <code class="docutils literal"><span class="pre">self.mask_type</span></code> is <code class="docutils literal"><span class="pre">BINARY_MASK</span></code>. Some algorithms will first make a
-soft mask and then convert that to a binary mask using this threshold parameter. All values of the soft mask
-are between [0.0, 1.0] and as such <code class="docutils literal"><span class="pre">self.mask_threshold</span></code> is expected to be a float between [0.0, 1.0].</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_threshold (float)</em> – Value between [0.0, 1.0] that indicates the True/False cutoff when converting a soft
-mask to binary mask.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if not a float or if set outside [0.0, 1.0].</td>
-</tr>
-</tbody>
-</table>
+</td></tr></table></div>
 </dd></dl>
 
 <dl class="method">
@@ -269,18 +334,37 @@ mask to binary mask.</td>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.sample_rate">
+<code class="descname">sample_rate</code><a class="headerlink" href="#separation.MaskSeparationBase.sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Sample rate of <a class="reference internal" href="../../audio_signal.html#module-audio_signal" title="audio_signal"><code class="xref py py-attr docutils literal"><span class="pre">audio_signal</span></code></a>.
+Literally <code class="xref py py-attr docutils literal"><span class="pre">audio_signal.sample_rate</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.MaskSeparationBase.stft_params">
+<code class="descname">stft_params</code><a class="headerlink" href="#separation.MaskSeparationBase.stft_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="../../spectral_utils.html#spectral_utils.StftParams" title="spectral_utils.StftParams"><code class="xref py py-class docutils literal"><span class="pre">spectral_utils.StftParams</span></code></a>) – <a class="reference internal" href="../../spectral_utils.html#spectral_utils.StftParams" title="spectral_utils.StftParams"><code class="xref py py-class docutils literal"><span class="pre">spectral_utils.StftParams</span></code></a> of <a class="reference internal" href="../../audio_signal.html#module-audio_signal" title="audio_signal"><code class="xref py py-attr docutils literal"><span class="pre">audio_signal</span></code></a>
+Literally <code class="xref py py-attr docutils literal"><span class="pre">audio_signal.stft_params</span></code>.</p>
+</dd></dl>
+
 <dl class="method">
-<dt id="separation.MaskSeparationBase.make_audio_signals">
-<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase.make_audio_signals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects after mask-based separation algorithm is run. Base class: Do not call directly!</p>
+<dt id="separation.MaskSeparationBase.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs JSON from the data stored in this object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> – Cannot call base class!</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(str) a JSON string containing all of the information to restore this object exactly as it was when this
+was called.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">from_json()</span></code> to restore a JSON frozen object.</p>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -300,6 +384,7 @@ mask to binary mask.</td>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

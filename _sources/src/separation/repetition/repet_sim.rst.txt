@@ -5,5 +5,6 @@ RepetSim Class
 
 .. automodule:: separation.repet_sim
     :members:
-    :undoc-members:
     :show-inheritance:
+    :undoc-members:
+    :inherited-members:

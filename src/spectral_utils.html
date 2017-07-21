@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -135,6 +136,335 @@
       
   <div class="section" id="module-spectral_utils">
 <span id="spectral-utils-py"></span><h1>spectral_utils.py<a class="headerlink" href="#module-spectral_utils" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="spectral_utils.StftParams">
+<em class="property">class </em><code class="descclassname">spectral_utils.</code><code class="descname">StftParams</code><span class="sig-paren">(</span><em>sample_rate</em>, <em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>n_fft_bins=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.StftParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>The StftParams class is a container for information needed to run an STFT or iSTFT.
+This is meant as a convenience and does not actually perform any calculations within. It should
+get “decomposed” by the time e_stft() or e_istft() are called, so that every attribute in this
+object is a parameter to one of those functions.</p>
+<p>Every class that inherits from the SeparationBase class has an StftParms object, and this
+is the only way that a top level user has access to the STFT parameter settings that
+all of the separation algorithms are built upon.
+This object will get passed around instead of each of these individual attributes.</p>
+<dl class="staticmethod">
+<dt id="spectral_utils.StftParams.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.StftParams.from_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spectral_utils.StftParams.hop_length">
+<code class="descname">hop_length</code><a class="headerlink" href="#spectral_utils.StftParams.hop_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spectral_utils.StftParams.n_fft_bins">
+<code class="descname">n_fft_bins</code><a class="headerlink" href="#spectral_utils.StftParams.n_fft_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spectral_utils.StftParams.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.StftParams.to_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spectral_utils.StftParams.window_length">
+<code class="descname">window_length</code><a class="headerlink" href="#spectral_utils.StftParams.window_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spectral_utils.StftParams.window_overlap">
+<code class="descname">window_overlap</code><a class="headerlink" href="#spectral_utils.StftParams.window_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of samples of overlap between adjacent time slices.
+This is calculated like self.window_length - self.hop_length
+This property is not settable.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="spectral_utils.e_istft">
+<code class="descclassname">spectral_utils.</code><code class="descname">e_istft</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>reconstruct_reflection=True</em>, <em>remove_padding=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_istft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes an inverse_mask short time fourier transform (STFT) from a 2D numpy array of complex values. By default
+this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
+reconstruct_reflection flag overrides that behavior.</p>
+<p>Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
+multichannel audio. If you want to do an iSTFT on multichannel audio see the AudioSignal object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stft</strong> – complex valued 2D numpy array containing STFT data</li>
+<li><strong>window_length</strong> – (int) number of samples per window</li>
+<li><strong>hop_length</strong> – (int) number of samples between the start of adjacent windows, or “hop”</li>
+<li><strong>window_type</strong> – (deprecated)</li>
+<li><strong>reconstruct_reflection</strong> – (bool) (Optional) if True, this will recreate the removed reflection</li>
+<li><strong>above the Nyquist. If False</strong><strong>, </strong><strong>this assumes that the input STFT is complete. Default is True.</strong> (<em>data</em>) – </li>
+<li><strong>remove_padding</strong> – (bool) (Optional) if True, this function will remove the first and
+last (window_length - hop_length) number of samples. Defaults to False.</li>
+<li><strong>massage the output so that it is in a format that it expects. remove_reflection is still works in this</strong> (<em>will</em>) – </li>
+<li><strong>Note</strong> (<em>mode.</em>) – librosa’s works differently than nussl’s and may produce different output.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">1D numpy array containing an audio signal representing the original signal used to make stft</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Set up sine wave parameters</span>
+<span class="n">sr</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Constants</span><span class="o">.</span><span class="n">DEFAULT_SAMPLE_RATE</span> <span class="c1"># 44.1kHz</span>
+<span class="n">n_sec</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># seconds</span>
+<span class="n">duration</span> <span class="o">=</span> <span class="n">n_sec</span> <span class="o">*</span> <span class="n">sr</span>
+<span class="n">freq</span> <span class="o">=</span> <span class="mi">300</span> <span class="c1"># Hz</span>
+
+<span class="c1"># Make sine wave array</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">freq</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Set up e_stft() parameters</span>
+<span class="n">win_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HANN</span>
+<span class="n">win_length</span> <span class="o">=</span> <span class="mi">2048</span>
+<span class="n">hop_length</span> <span class="o">=</span> <span class="n">win_length</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="c1"># Get an stft</span>
+<span class="n">stft</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">)</span>
+
+<span class="n">calculated_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_istft</span><span class="p">(</span><span class="n">stft</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spectral_utils.e_stft">
+<code class="descclassname">spectral_utils.</code><code class="descname">e_stft</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em>, <em>remove_padding=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_stft" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function computes a short time fourier transform (STFT) of a 1D numpy array input signal.
+This will zero pad the signal by half a hop_length at the beginning to reduce the window
+tapering effect from the first window. It also will zero pad at the end to get an integer number of hops.</p>
+<p>By default, this function removes the FFT data that is a reflection from over Nyquist. There is an option
+to suppress this behavior and have this function include data from above Nyquist, but since the
+inverse STFT function, e_istft(), expects data without the reflection, the onus is on the user to remember
+to set the reconstruct_reflection flag in e_istft() input.</p>
+<p>Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
+multichannel audio. If you want to do an STFT on multichannel audio see the AudioSignal object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>signal</strong> – 1D numpy array containing audio data. (REAL)</li>
+<li><strong>window_length</strong> – (int) number of samples per window</li>
+<li><strong>hop_length</strong> – (int) number of samples between the start of adjacent windows, or “hop”</li>
+<li><strong>window_type</strong> – (string) type of window to use. Using WindowType object is recommended.</li>
+<li><strong>n_fft_bins</strong> – (int) (Optional) number of fft bins per time window.</li>
+<li><strong>not specified</strong><strong>, </strong><strong>defaults to next highest power of 2 above window_length</strong> (<em>If</em>) – </li>
+<li><strong>remove_reflection</strong> – (bool) (Optional) if True, this will remove reflected STFT data above the Nyquist point.</li>
+<li><strong>not specified</strong><strong>, </strong><strong>defaults to True.</strong> (<em>If</em>) – </li>
+<li><strong>remove_padding</strong> – (bool) (Optional) if True, this will remove the extra padding added when doing the STFT.</li>
+<li><strong>to True.</strong> (<em>Defaults</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">2D  numpy array with complex STFT data.
+Data is of shape (num_time_blocks, num_fft_bins). These numbers are determined by length of the input signal,
+on internal zero padding (explained at top), and n_fft_bins/remove_reflection input (see example below).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Set up sine wave parameters</span>
+<span class="n">sr</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Constants</span><span class="o">.</span><span class="n">DEFAULT_SAMPLE_RATE</span> <span class="c1"># 44.1kHz</span>
+<span class="n">n_sec</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># seconds</span>
+<span class="n">duration</span> <span class="o">=</span> <span class="n">n_sec</span> <span class="o">*</span> <span class="n">sr</span>
+<span class="n">freq</span> <span class="o">=</span> <span class="mi">300</span> <span class="c1"># Hz</span>
+
+<span class="c1"># Make sine wave array</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">freq</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Set up e_stft() parameters</span>
+<span class="n">win_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HANN</span>
+<span class="n">win_length</span> <span class="o">=</span> <span class="mi">2048</span>
+<span class="n">hop_length</span> <span class="o">=</span> <span class="n">win_length</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="c1"># Run e_stft()</span>
+<span class="n">stft</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">)</span>
+<span class="c1"># stft has shape (win_length // 2 + 1 , duration / hop_length)</span>
+
+<span class="c1"># Get reflection</span>
+<span class="n">stft_with_reflection</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">,</span> <span class="n">remove_reflection</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="c1"># stft_with_reflection has shape (win_length, duration / hop_length)</span>
+
+<span class="c1"># Change number of fft bins per hop</span>
+<span class="n">num_bins</span> <span class="o">=</span> <span class="mi">4096</span>
+<span class="n">stft_more_bins</span> <span class="o">=</span> <span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">,</span> <span class="n">n_fft_bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">)</span>
+<span class="c1"># stft_more_bins has shape (num_bins // 2 + 1, duration / hop_length)</span>
+</pre></div>
+</td></tr></table></div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spectral_utils.e_stft_plus">
+<code class="descclassname">spectral_utils.</code><code class="descname">e_stft_plus</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>sample_rate</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_stft_plus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
+the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
+give you as many options as e_stft() (wrt removing the reflection and using librosa). If you need that
+flexibility, it is recommended that you either use e_stft() or use an AudioSignal object.</p>
+<p>Use this is situations where you need more than just the STFT data. For instance, this is used in plot_stft()
+to get the frequency vector to graph. In situations where you don’t need this extra data it is
+more efficient to use e_stft().</p>
+<p>Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
+multichannel audio. If you want to do an STFT on multichannel audio see the AudioSignal object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>signal</strong> – 1D numpy array containing audio data. (REAL?COMPLEX?INTEGER?)</li>
+<li><strong>window_length</strong> – (int) number of samples per window</li>
+<li><strong>hop_length</strong> – (int) number of samples between the start of adjacent windows, or “hop”</li>
+<li><strong>window_type</strong> – (string) type of window to use. Using WindowType object is recommended.</li>
+<li><strong>sample_rate</strong> – (int) the intended sample rate, this is used in the calculation of the frequency vector</li>
+<li><strong>n_fft_bins</strong> – (int) (Optional) number of fft bins per time window.</li>
+<li><strong>not specified</strong><strong>, </strong><strong>defaults to next highest power of 2 above window_length</strong> (<em>If</em>) – </li>
+<li><strong>remove_reflection</strong> (<em>bool</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>stft</em> – (np.ndarray) a 2D matrix short time fourier transform data</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spectral_utils.get_window_function">
+<code class="descclassname">spectral_utils.</code><code class="descname">get_window_function</code><span class="sig-paren">(</span><em>window_type</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.get_window_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a window function from scipy.signal
+:param window_type: (string) name of the window function from scipy.signal</p>
+<p>Returns: callable window function from scipy.signal</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="spectral_utils.librosa_istft_wrapper">
+<code class="descclassname">spectral_utils.</code><code class="descname">librosa_istft_wrapper</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>remove_reflection=False</em>, <em>center=True</em>, <em>original_signal_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_istft_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for calling into librosa’s istft function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stft</strong> – </li>
+<li><strong>window_length</strong> – </li>
+<li><strong>hop_length</strong> – </li>
+<li><strong>window_type</strong> – </li>
+<li><strong>remove_reflection</strong> – </li>
+<li><strong>center</strong> – </li>
+<li><strong>original_signal_length</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="spectral_utils.librosa_stft_wrapper">
+<code class="descclassname">spectral_utils.</code><code class="descname">librosa_stft_wrapper</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type=None</em>, <em>remove_reflection=True</em>, <em>center=True</em>, <em>n_fft_bins=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_stft_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>signal</strong> – </li>
+<li><strong>window_length</strong> – </li>
+<li><strong>hop_length</strong> – </li>
+<li><strong>window_type</strong> – </li>
+<li><strong>remove_reflection</strong> – </li>
+<li><strong>center</strong> – </li>
+<li><strong>n_fft_bins</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="spectral_utils.make_window">
+<code class="descclassname">spectral_utils.</code><code class="descname">make_window</code><span class="sig-paren">(</span><em>window_type</em>, <em>length</em>, <em>symmetric=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.make_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an <cite>np.array</cite> populated with samples of a normalized window of type <cite>window_type</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>window_type</strong> (<em>basestring</em>) – Type of window to create, string can be</li>
+<li><strong>length</strong> (<em>int</em>) – length of window</li>
+<li><strong>symmetric</strong> (<em>bool</em>) – False (default) generates a periodic window (for use in spectral analysis).
+True generates a symmetric window (for use in filter design).
+Does nothing for rectangular window</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>window (np.array)</em> – np array with a window of type window_type</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="function">
 <dt id="spectral_utils.plot_stft">
 <code class="descclassname">spectral_utils.</code><code class="descname">plot_stft</code><span class="sig-paren">(</span><em>signal</em>, <em>file_name</em>, <em>title=None</em>, <em>win_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>sample_rate=None</em>, <em>n_fft_bins=None</em>, <em>freq_max=None</em>, <em>show_interactive_plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.plot_stft" title="Permalink to this definition">¶</a></dt>
@@ -175,8 +505,19 @@ Defaults to False</li>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Set up sine wave parameters</span>
+<p>Example:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Set up sine wave parameters</span>
 <span class="n">sr</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Constants</span><span class="o">.</span><span class="n">DEFAULT_SAMPLE_RATE</span> <span class="c1"># 44.1kHz</span>
 <span class="n">n_sec</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># seconds</span>
 <span class="n">duration</span> <span class="o">=</span> <span class="n">n_sec</span> <span class="o">*</span> <span class="n">sr</span>
@@ -189,292 +530,7 @@ Defaults to False</li>
 <span class="c1"># plot it and save it in path &#39;path/to/sine_wav.png&#39;</span>
 <span class="n">nussl</span><span class="o">.</span><span class="n">plot_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;path/to/sine_wav.png&#39;</span><span class="p">)</span>
 </pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="spectral_utils.e_stft">
-<code class="descclassname">spectral_utils.</code><code class="descname">e_stft</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em>, <em>remove_padding=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_stft" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function computes a short time fourier transform (STFT) of a 1D numpy array input signal.
-This will zero pad the signal by half a hop_length at the beginning to reduce the window
-tapering effect from the first window. It also will zero pad at the end to get an integer number of hops.</p>
-<p>By default, this function removes the FFT data that is a reflection from over Nyquist. There is an option
-to suppress this behavior and have this function include data from above Nyquist, but since the
-inverse STFT function, e_istft(), expects data without the reflection, the onus is on the user to remember
-to set the reconstruct_reflection flag in e_istft() input.</p>
-<p>Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
-multichannel audio. If you want to do an STFT on multichannel audio see the AudioSignal object.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>signal</strong> – 1D numpy array containing audio data. (REAL)</li>
-<li><strong>window_length</strong> – (int) number of samples per window</li>
-<li><strong>hop_length</strong> – (int) number of samples between the start of adjacent windows, or “hop”</li>
-<li><strong>window_type</strong> – (string) type of window to use. Using WindowType object is recommended.</li>
-<li><strong>n_fft_bins</strong> – (int) (Optional) number of fft bins per time window.</li>
-<li><strong>not specified</strong><strong>, </strong><strong>defaults to next highest power of 2 above window_length</strong> (<em>If</em>) – </li>
-<li><strong>remove_reflection</strong> – (bool) (Optional) if True, this will remove reflected STFT data above the Nyquist point.</li>
-<li><strong>not specified</strong><strong>, </strong><strong>defaults to True.</strong> (<em>If</em>) – </li>
-<li><strong>remove_padding</strong> – (bool) (Optional) if True, this will remove the extra padding added when doing the STFT.</li>
-<li><strong>to True.</strong> (<em>Defaults</em>) – </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">2D  numpy array with complex STFT data.
-Data is of shape (num_time_blocks, num_fft_bins). These numbers are determined by length of the input signal,
-on internal zero padding (explained at top), and n_fft_bins/remove_reflection input (see example below).</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Set up sine wave parameters</span>
-<span class="n">sr</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Constants</span><span class="o">.</span><span class="n">DEFAULT_SAMPLE_RATE</span> <span class="c1"># 44.1kHz</span>
-<span class="n">n_sec</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># seconds</span>
-<span class="n">duration</span> <span class="o">=</span> <span class="n">n_sec</span> <span class="o">*</span> <span class="n">sr</span>
-<span class="n">freq</span> <span class="o">=</span> <span class="mi">300</span> <span class="c1"># Hz</span>
-
-<span class="c1"># Make sine wave array</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">freq</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="c1"># Set up e_stft() parameters</span>
-<span class="n">win_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HANN</span>
-<span class="n">win_length</span> <span class="o">=</span> <span class="mi">2048</span>
-<span class="n">hop_length</span> <span class="o">=</span> <span class="n">win_length</span> <span class="o">/</span> <span class="mi">2</span>
-
-<span class="c1"># Run e_stft()</span>
-<span class="n">stft</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">)</span>
-<span class="c1"># stft has shape (win_length // 2 + 1 , duration / hop_length)</span>
-
-<span class="c1"># Get reflection</span>
-<span class="n">stft_with_reflection</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">,</span> <span class="n">remove_reflection</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="c1"># stft_with_reflection has shape (win_length, duration / hop_length)</span>
-
-<span class="c1"># Change number of fft bins per hop</span>
-<span class="n">num_bins</span> <span class="o">=</span> <span class="mi">4096</span>
-<span class="n">stft_more_bins</span> <span class="o">=</span> <span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">,</span> <span class="n">n_fft_bins</span><span class="o">=</span><span class="n">num_bins</span><span class="p">)</span>
-<span class="c1"># stft_more_bins has shape (num_bins // 2 + 1, duration / hop_length)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="spectral_utils.librosa_stft_wrapper">
-<code class="descclassname">spectral_utils.</code><code class="descname">librosa_stft_wrapper</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type=None</em>, <em>remove_reflection=True</em>, <em>center=True</em>, <em>n_fft_bins=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_stft_wrapper" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>signal</strong> – </li>
-<li><strong>window_length</strong> – </li>
-<li><strong>hop_length</strong> – </li>
-<li><strong>window_type</strong> – </li>
-<li><strong>remove_reflection</strong> – </li>
-<li><strong>center</strong> – </li>
-<li><strong>n_fft_bins</strong> – </li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="spectral_utils.e_istft">
-<code class="descclassname">spectral_utils.</code><code class="descname">e_istft</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>reconstruct_reflection=True</em>, <em>remove_padding=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_istft" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes an inverse_mask short time fourier transform (STFT) from a 2D numpy array of complex values. By default
-this function assumes input STFT has no reflection above Nyquist and will rebuild it, but the
-reconstruct_reflection flag overrides that behavior.</p>
-<p>Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
-multichannel audio. If you want to do an iSTFT on multichannel audio see the AudioSignal object.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>stft</strong> – complex valued 2D numpy array containing STFT data</li>
-<li><strong>window_length</strong> – (int) number of samples per window</li>
-<li><strong>hop_length</strong> – (int) number of samples between the start of adjacent windows, or “hop”</li>
-<li><strong>window_type</strong> – (deprecated)</li>
-<li><strong>reconstruct_reflection</strong> – (bool) (Optional) if True, this will recreate the removed reflection</li>
-<li><strong>above the Nyquist. If False</strong><strong>, </strong><strong>this assumes that the input STFT is complete. Default is True.</strong> (<em>data</em>) – </li>
-<li><strong>remove_padding</strong> – (bool) (Optional) if True, this function will remove the first and
-last (window_length - hop_length) number of samples. Defaults to False.</li>
-<li><strong>massage the output so that it is in a format that it expects. remove_reflection is still works in this</strong> (<em>will</em>) – </li>
-<li><strong>Note</strong> (<em>mode.</em>) – librosa’s works differently than nussl’s and may produce different output.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">1D numpy array containing an audio signal representing the original signal used to make stft</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Set up sine wave parameters</span>
-<span class="n">sr</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Constants</span><span class="o">.</span><span class="n">DEFAULT_SAMPLE_RATE</span> <span class="c1"># 44.1kHz</span>
-<span class="n">n_sec</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># seconds</span>
-<span class="n">duration</span> <span class="o">=</span> <span class="n">n_sec</span> <span class="o">*</span> <span class="n">sr</span>
-<span class="n">freq</span> <span class="o">=</span> <span class="mi">300</span> <span class="c1"># Hz</span>
-
-<span class="c1"># Make sine wave array</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">freq</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="c1"># Set up e_stft() parameters</span>
-<span class="n">win_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">HANN</span>
-<span class="n">win_length</span> <span class="o">=</span> <span class="mi">2048</span>
-<span class="n">hop_length</span> <span class="o">=</span> <span class="n">win_length</span> <span class="o">/</span> <span class="mi">2</span>
-
-<span class="c1"># Get an stft</span>
-<span class="n">stft</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_stft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">,</span> <span class="n">win_type</span><span class="p">)</span>
-
-<span class="n">calculated_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">e_istft</span><span class="p">(</span><span class="n">stft</span><span class="p">,</span> <span class="n">win_length</span><span class="p">,</span> <span class="n">hop_length</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="spectral_utils.librosa_istft_wrapper">
-<code class="descclassname">spectral_utils.</code><code class="descname">librosa_istft_wrapper</code><span class="sig-paren">(</span><em>stft</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>remove_reflection=False</em>, <em>center=True</em>, <em>original_signal_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.librosa_istft_wrapper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper for calling into librosa’s istft function.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>stft</strong> – </li>
-<li><strong>window_length</strong> – </li>
-<li><strong>hop_length</strong> – </li>
-<li><strong>window_type</strong> – </li>
-<li><strong>remove_reflection</strong> – </li>
-<li><strong>center</strong> – </li>
-<li><strong>original_signal_length</strong> – </li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="spectral_utils.e_stft_plus">
-<code class="descclassname">spectral_utils.</code><code class="descname">e_stft_plus</code><span class="sig-paren">(</span><em>signal</em>, <em>window_length</em>, <em>hop_length</em>, <em>window_type</em>, <em>sample_rate</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.e_stft_plus" title="Permalink to this definition">¶</a></dt>
-<dd><p>Does a short time fourier transform (STFT) of the signal (by calling e_stft() ), but also calculates
-the power spectral density (PSD), frequency and time vectors for the calculated STFT. This function does not
-give you as many options as e_stft() (wrt removing the reflection and using librosa). If you need that
-flexibility, it is recommended that you either use e_stft() or use an AudioSignal object.</p>
-<p>Use this is situations where you need more than just the STFT data. For instance, this is used in plot_stft()
-to get the frequency vector to graph. In situations where you don’t need this extra data it is
-more efficient to use e_stft().</p>
-<p>Additionally, this function assumes a single channeled audio signal and is not guaranteed to work on
-multichannel audio. If you want to do an STFT on multichannel audio see the AudioSignal object.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>signal</strong> – 1D numpy array containing audio data. (REAL?COMPLEX?INTEGER?)</li>
-<li><strong>window_length</strong> – (int) number of samples per window</li>
-<li><strong>hop_length</strong> – (int) number of samples between the start of adjacent windows, or “hop”</li>
-<li><strong>window_type</strong> – (string) type of window to use. Using WindowType object is recommended.</li>
-<li><strong>sample_rate</strong> – (int) the intended sample rate, this is used in the calculation of the frequency vector</li>
-<li><strong>n_fft_bins</strong> – (int) (Optional) number of fft bins per time window.</li>
-<li><strong>not specified</strong><strong>, </strong><strong>defaults to next highest power of 2 above window_length</strong> (<em>If</em>) – </li>
-<li><strong>remove_reflection</strong> (<em>bool</em>) – </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>stft</em> – (np.ndarray) a 2D matrix short time fourier transform data</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="spectral_utils.make_window">
-<code class="descclassname">spectral_utils.</code><code class="descname">make_window</code><span class="sig-paren">(</span><em>window_type</em>, <em>length</em>, <em>symmetric=False</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.make_window" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an <cite>np.array</cite> populated with samples of a normalized window of type <cite>window_type</cite></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>window_type</strong> (<em>basestring</em>) – Type of window to create, string can be</li>
-<li><strong>length</strong> (<em>int</em>) – length of window</li>
-<li><strong>symmetric</strong> (<em>bool</em>) – False (default) generates a periodic window (for use in spectral analysis).
-True generates a symmetric window (for use in filter design).
-Does nothing for rectangular window</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>window (np.array)</em> – np array with a window of type window_type</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="spectral_utils.get_window_function">
-<code class="descclassname">spectral_utils.</code><code class="descname">get_window_function</code><span class="sig-paren">(</span><em>window_type</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.get_window_function" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a window function from scipy.signal
-:param window_type: (string) name of the window function from scipy.signal</p>
-<p>Returns: callable window function from scipy.signal</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="spectral_utils.StftParams">
-<em class="property">class </em><code class="descclassname">spectral_utils.</code><code class="descname">StftParams</code><span class="sig-paren">(</span><em>sample_rate</em>, <em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>n_fft_bins=None</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.StftParams" title="Permalink to this definition">¶</a></dt>
-<dd><p>The StftParams class is a container for information needed to run an STFT or iSTFT.
-This is meant as a convenience and does not actually perform any calculations within. It should
-get “decomposed” by the time e_stft() or e_istft() are called, so that every attribute in this
-object is a parameter to one of those functions.</p>
-<p>Every class that inherits from the SeparationBase class has an StftParms object, and this
-is the only way that a top level user has access to the STFT parameter settings that
-all of the separation algorithms are built upon.
-This object will get passed around instead of each of these individual attributes.</p>
-<dl class="attribute">
-<dt id="spectral_utils.StftParams.window_length">
-<code class="descname">window_length</code><a class="headerlink" href="#spectral_utils.StftParams.window_length" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="spectral_utils.StftParams.hop_length">
-<code class="descname">hop_length</code><a class="headerlink" href="#spectral_utils.StftParams.hop_length" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="spectral_utils.StftParams.n_fft_bins">
-<code class="descname">n_fft_bins</code><a class="headerlink" href="#spectral_utils.StftParams.n_fft_bins" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>Returns</em></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="spectral_utils.StftParams.window_overlap">
-<code class="descname">window_overlap</code><a class="headerlink" href="#spectral_utils.StftParams.window_overlap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns number of samples of overlap between adjacent time slices.
-This is calculated like self.window_length - self.hop_length
-This property is not settable.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="spectral_utils.StftParams.to_json">
-<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.StftParams.to_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="spectral_utils.StftParams.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#spectral_utils.StftParams.from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+</td></tr></table></div>
 </dd></dl>
 
 </div>
@@ -492,6 +548,7 @@ This property is not settable.</p>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

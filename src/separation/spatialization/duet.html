@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -172,33 +173,32 @@ Processing, IEEE transactions on 52.7 (2004): 1830-1847.</li>
 </table>
 <p class="rubric">Examples</p>
 <p><a class="reference internal" href="../../../examples/duet_demo.html#duet-demo"><span class="std std-ref">The DUET Demo Example</span></a></p>
-<dl class="method">
-<dt id="separation.Duet.Duet.run">
-<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)</p>
+<dl class="attribute">
+<dt id="separation.Duet.Duet.audio_signal">
+<code class="descname">audio_signal</code><a class="headerlink" href="#separation.Duet.Duet.audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>) – Copy of the <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> object passed in
+upon initialization.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="separation.Duet.Duet.find_peaks">
+<em class="property">static </em><code class="descname">find_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_num=1</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.find_peaks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receives a row vector of positive values (in [0,1]) and finds the peak values and corresponding indices.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
-<li><strong>xhat</strong> (<em>np.array</em>) - an N-row matrix containing time-domain estimates of sources</li>
-<li><strong>ad_est</strong> (<em>np.array</em>) - N by 2 Numpy matrix containing estimated attenuation and delay values
-corresponding to N sources</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>np.array</em>) – a 2D Numpy matrix containing real values (in [0,1])</li>
+<li><strong>min_thr</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – minimum threshold (in [0,1]) on data values. Defaults to 0.5</li>
+<li><strong>min_dist</strong> (<em>Optional</em><em>[</em><em>np.array</em><em>]</em>) – 1 by 2 matrix containing minimum distances (in # of time elements) between
+peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
+<li><strong>max_peaks</strong> – maximum number of peaks in the whole matrix. Defaults to 1</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">input_file_name</span> <span class="o">=</span> <span class="s1">&#39;../Input/dev1_female3_inst_mix.wav&#39;</span>
-<span class="n">signal</span> <span class="o">=</span> <span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_file_name</span><span class="p">)</span>
-
-<span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-<span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-
-<span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -226,25 +226,25 @@ peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
 </table>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="separation.Duet.Duet.find_peaks">
-<em class="property">static </em><code class="descname">find_peaks</code><span class="sig-paren">(</span><em>data</em>, <em>min_thr=0.5</em>, <em>min_dist=None</em>, <em>max_num=1</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.find_peaks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Receives a row vector of positive values (in [0,1]) and finds the peak values and corresponding indices.</p>
+<dl class="method">
+<dt id="separation.Duet.Duet.from_json">
+<code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code> object from the parameters stored in this JSON string.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>np.array</em>) – a 2D Numpy matrix containing real values (in [0,1])</li>
-<li><strong>min_thr</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – minimum threshold (in [0,1]) on data values. Defaults to 0.5</li>
-<li><strong>min_dist</strong> (<em>Optional</em><em>[</em><em>np.array</em><em>]</em>) – 1 by 2 matrix containing minimum distances (in # of time elements) between
-peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
-<li><strong>max_peaks</strong> – maximum number of peaks in the whole matrix. Defaults to 1</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>str</em>) – A JSON string containing all the data to create a new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code>
+object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code>) A new <code class="xref py py-class docutils literal"><span class="pre">SeparationBase</span></code> object from the JSON string.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#separation.Duet.Duet.to_json" title="separation.Duet.Duet.to_json"><code class="xref py py-func docutils literal"><span class="pre">to_json()</span></code></a> to make a JSON string to freeze this object.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -279,6 +279,68 @@ peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="separation.Duet.Duet.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>xhat</strong> (<em>np.array</em>) - an N-row matrix containing time-domain estimates of sources</li>
+<li><strong>ad_est</strong> (<em>np.array</em>) - N by 2 Numpy matrix containing estimated attenuation and delay values
+corresponding to N sources</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">input_file_name</span> <span class="o">=</span> <span class="s1">&#39;../Input/dev1_female3_inst_mix.wav&#39;</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="n">input_file_name</span><span class="p">)</span>
+
+<span class="n">duet</span> <span class="o">=</span> <span class="n">Duet</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">a_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">d_min</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_max</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">d_num</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="n">a_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">d_min_distance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">duet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.Duet.Duet.sample_rate">
+<code class="descname">sample_rate</code><a class="headerlink" href="#separation.Duet.Duet.sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Sample rate of <a class="reference internal" href="../../audio_signal.html#module-audio_signal" title="audio_signal"><code class="xref py py-attr docutils literal"><span class="pre">audio_signal</span></code></a>.
+Literally <code class="xref py py-attr docutils literal"><span class="pre">audio_signal.sample_rate</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="separation.Duet.Duet.stft_params">
+<code class="descname">stft_params</code><a class="headerlink" href="#separation.Duet.Duet.stft_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<a class="reference internal" href="../../spectral_utils.html#spectral_utils.StftParams" title="spectral_utils.StftParams"><code class="xref py py-class docutils literal"><span class="pre">spectral_utils.StftParams</span></code></a>) – <a class="reference internal" href="../../spectral_utils.html#spectral_utils.StftParams" title="spectral_utils.StftParams"><code class="xref py py-class docutils literal"><span class="pre">spectral_utils.StftParams</span></code></a> of <a class="reference internal" href="../../audio_signal.html#module-audio_signal" title="audio_signal"><code class="xref py py-attr docutils literal"><span class="pre">audio_signal</span></code></a>
+Literally <code class="xref py py-attr docutils literal"><span class="pre">audio_signal.stft_params</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="separation.Duet.Duet.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.Duet.Duet.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs JSON from the data stored in this object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(str) a JSON string containing all of the information to restore this object exactly as it was when this
+was called.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#separation.Duet.Duet.from_json" title="separation.Duet.Duet.from_json"><code class="xref py py-func docutils literal"><span class="pre">from_json()</span></code></a> to restore a JSON frozen object.</p>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -296,6 +358,7 @@ peaks row-wise and column-wise. Defaults to .25* matrix dimensions</li>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

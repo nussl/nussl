@@ -64,6 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="src/audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="src/separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="src/evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="src/transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -121,7 +122,8 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#A"><strong>A</strong></a>
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
@@ -144,6 +146,14 @@
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/evaluation/evaluation_base.html#evaluation.evaluation_base.EvaluationBase._verify_input_list">_verify_input_list() (evaluation.evaluation_base.EvaluationBase static method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -157,17 +167,29 @@
 </li>
       <li><a href="src/constants.html#constants.ALL_WINDOWS">ALL_WINDOWS (in module constants)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.apply_gain">apply_gain() (audio_signal.AudioSignal method)</a>
+</li>
+      <li><a href="src/audio_signal.html#audio_signal.AudioSignal.apply_mask">apply_mask() (audio_signal.AudioSignal method)</a>
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.audio_data">audio_data (audio_signal.AudioSignal attribute)</a>, <a href="src/audio_signal.html#audio_signal.AudioSignal.audio_data">[1]</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.audio_data_as_ints">audio_data_as_ints() (audio_signal.AudioSignal method)</a>
 </li>
       <li><a href="src/audio_signal.html#module-audio_signal">audio_signal (module)</a>
 
       <ul>
+        <li><a href="src/separation/spatialization/duet.html#separation.Duet.Duet.audio_signal">(separation.Duet.Duet attribute)</a>
+</li>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.audio_signal">(separation.MaskSeparationBase attribute)</a>
+</li>
+        <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.audio_signal">(separation.ideal_mask.IdealMask attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.audio_signal">(separation.repet.Repet attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.audio_signal">(separation.repet_sim.RepetSim attribute)</a>
+</li>
         <li><a href="src/separation/base_classes/separation_base.html#separation.separation_base.SeparationBase.audio_signal">(separation.separation_base.SeparationBase attribute)</a>
 </li>
       </ul></li>
@@ -183,10 +205,18 @@
 </li>
       <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.beat_spectrum">beat_spectrum (separation.repet.Repet attribute)</a>
 </li>
+      <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.BINARY_MASK">BINARY_MASK (separation.ideal_mask.IdealMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.BINARY_MASK">(separation.MaskSeparationBase attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.BINARY_MASK">(separation.repet.Repet attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.BINARY_MASK">(separation.repet_sim.RepetSim attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.BINARY_MASK">BINARY_MASK (separation.MaskSeparationBase attribute)</a>
-</li>
       <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask">BinaryMask (class in separation.masks.binary_mask)</a>
 </li>
   </ul></td>
@@ -225,16 +255,22 @@
 </li>
       <li><a href="src/constants.html#constants.DEFAULT_SAMPLE_RATE">DEFAULT_SAMPLE_RATE (in module constants)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/constants.html#constants.DEFAULT_WIN_LEN_PARAM">DEFAULT_WIN_LEN_PARAM (in module constants)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/transformers/Nmf.html#Nmf.DistanceType">DistanceType (class in Nmf)</a>
 </li>
       <li><a href="src/transformers/Nmf.html#Nmf.DistanceType.DIVERGENCE">DIVERGENCE (Nmf.DistanceType attribute)</a>
 </li>
-      <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.dtype">dtype (separation.masks.mask_base.MaskBase attribute)</a>
+      <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.dtype">dtype (separation.masks.binary_mask.BinaryMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.dtype">(separation.masks.mask_base.MaskBase attribute)</a>
 </li>
+        <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.dtype">(separation.masks.soft_mask.SoftMask attribute)</a>
+</li>
+      </ul></li>
       <li><a href="src/separation/spatialization/duet.html#separation.Duet.Duet">Duet (class in separation.Duet)</a>
 </li>
   </ul></td>
@@ -289,17 +325,27 @@
 </li>
       <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.find_repeating_period_complex">find_repeating_period_complex() (separation.repet.Repet static method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.find_repeating_period_simple">find_repeating_period_simple() (separation.repet.Repet static method)</a>
 </li>
       <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.foreground">foreground (separation.repet.Repet attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.freq_vector">freq_vector (audio_signal.AudioSignal attribute)</a>
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.from_json">from_json() (audio_signal.AudioSignal static method)</a>
 
       <ul>
+        <li><a href="src/separation/spatialization/duet.html#separation.Duet.Duet.from_json">(separation.Duet.Duet method)</a>
+</li>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.from_json">(separation.MaskSeparationBase method)</a>
+</li>
+        <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.from_json">(separation.ideal_mask.IdealMask method)</a>
+</li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.from_json">(separation.repet.Repet method)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.from_json">(separation.repet_sim.RepetSim method)</a>
+</li>
         <li><a href="src/separation/base_classes/separation_base.html#separation.separation_base.SeparationBase.from_json">(separation.separation_base.SeparationBase class method)</a>
 </li>
         <li><a href="src/spectral_utils.html#spectral_utils.StftParams.from_json">(spectral_utils.StftParams static method)</a>
@@ -318,15 +364,19 @@
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.get_channel">get_channel() (audio_signal.AudioSignal method)</a>
 
       <ul>
+        <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.get_channel">(separation.masks.binary_mask.BinaryMask method)</a>
+</li>
         <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.get_channel">(separation.masks.mask_base.MaskBase method)</a>
+</li>
+        <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.get_channel">(separation.masks.soft_mask.SoftMask method)</a>
 </li>
       </ul></li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.get_channels">get_channels() (audio_signal.AudioSignal method)</a>
 </li>
-      <li><a href="src/audio_signal.html#audio_signal.AudioSignal.get_closest_frequency_bin">get_closest_frequency_bin() (audio_signal.AudioSignal method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/audio_signal.html#audio_signal.AudioSignal.get_closest_frequency_bin">get_closest_frequency_bin() (audio_signal.AudioSignal method)</a>
+</li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.get_magnitude_spectrogram_channel">get_magnitude_spectrogram_channel() (audio_signal.AudioSignal method)</a>
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.get_power_spectrogram_channel">get_power_spectrogram_channel() (audio_signal.AudioSignal method)</a>
@@ -347,10 +397,16 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.has_data">has_data (audio_signal.AudioSignal attribute)</a>
 </li>
+      <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.height">height (separation.masks.binary_mask.BinaryMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.height">(separation.masks.mask_base.MaskBase attribute)</a>
+</li>
+        <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.height">(separation.masks.soft_mask.SoftMask attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.height">height (separation.masks.mask_base.MaskBase attribute)</a>
-</li>
       <li><a href="src/spectral_utils.html#spectral_utils.StftParams.hop_length">hop_length (spectral_utils.StftParams attribute)</a>
 </li>
   </ul></td>
@@ -409,12 +465,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/constants.html#constants.LEN_INDEX">LEN_INDEX (in module constants)</a>
 </li>
-      <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.length">length (separation.masks.mask_base.MaskBase attribute)</a>
+      <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.length">length (separation.masks.binary_mask.BinaryMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.length">(separation.masks.mask_base.MaskBase attribute)</a>
 </li>
-      <li><a href="src/spectral_utils.html#spectral_utils.librosa_istft_wrapper">librosa_istft_wrapper() (in module spectral_utils)</a>
+        <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.length">(separation.masks.soft_mask.SoftMask attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/spectral_utils.html#spectral_utils.librosa_istft_wrapper">librosa_istft_wrapper() (in module spectral_utils)</a>
+</li>
       <li><a href="src/spectral_utils.html#spectral_utils.librosa_stft_wrapper">librosa_stft_wrapper() (in module spectral_utils)</a>
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.load_audio_from_array">load_audio_from_array() (audio_signal.AudioSignal method)</a>
@@ -453,26 +515,50 @@
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.make_copy_with_stft_data">make_copy_with_stft_data() (audio_signal.AudioSignal method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.make_empty_copy">make_empty_copy() (audio_signal.AudioSignal method)</a>
 </li>
       <li><a href="src/spectral_utils.html#spectral_utils.make_window">make_window() (in module spectral_utils)</a>
 </li>
-      <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.mask">mask (separation.masks.mask_base.MaskBase attribute)</a>
+      <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.mangitude_spectrogram">mangitude_spectrogram (separation.repet.Repet attribute)</a>
 </li>
+      <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.mask">mask (separation.masks.binary_mask.BinaryMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.mask">(separation.masks.mask_base.MaskBase attribute)</a>
+</li>
+        <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.mask">(separation.masks.soft_mask.SoftMask attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.mask_as_ints">mask_as_ints() (separation.masks.binary_mask.BinaryMask method)</a>
 </li>
-      <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.mask_threshold">mask_threshold (separation.MaskSeparationBase attribute)</a>
+      <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.mask_threshold">mask_threshold (separation.ideal_mask.IdealMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.mask_threshold">(separation.MaskSeparationBase attribute)</a>
 </li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.mask_threshold">(separation.repet.Repet attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.mask_threshold">(separation.repet_sim.RepetSim attribute)</a>
+</li>
+      </ul></li>
       <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.mask_to_binary">mask_to_binary() (separation.masks.binary_mask.BinaryMask static method)</a>
 
       <ul>
         <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.mask_to_binary">(separation.masks.soft_mask.SoftMask method)</a>
 </li>
       </ul></li>
-      <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.mask_type">mask_type (separation.MaskSeparationBase attribute)</a>
+      <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.mask_type">mask_type (separation.ideal_mask.IdealMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.mask_type">(separation.MaskSeparationBase attribute)</a>
 </li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.mask_type">(separation.repet.Repet attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.mask_type">(separation.repet_sim.RepetSim attribute)</a>
+</li>
+      </ul></li>
       <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase">MaskBase (class in separation.masks.mask_base)</a>
 </li>
       <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase">MaskSeparationBase (class in separation)</a>
@@ -493,14 +579,18 @@
 </li>
       <li><a href="src/transformers/Nmf.html#module-Nmf">Nmf (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.num_channels">num_channels (audio_signal.AudioSignal attribute)</a>
 
       <ul>
+        <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.num_channels">(separation.masks.binary_mask.BinaryMask attribute)</a>
+</li>
         <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.num_channels">(separation.masks.mask_base.MaskBase attribute)</a>
 </li>
+        <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.num_channels">(separation.masks.soft_mask.SoftMask attribute)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.num_fft_bins">num_fft_bins (audio_signal.AudioSignal attribute)</a>
 </li>
       <li><a href="src/constants.html#constants.NUMPY_JSON_KEY">NUMPY_JSON_KEY (in module constants)</a>
@@ -521,6 +611,8 @@
         <li><a href="src/separation/spatialization/duet.html#separation.Duet.Duet.plot">(separation.Duet.Duet method)</a>
 </li>
         <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.plot">(separation.MaskSeparationBase method)</a>
+</li>
+        <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.plot">(separation.ideal_mask.IdealMask method)</a>
 </li>
         <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.plot">(separation.repet.Repet method)</a>
 </li>
@@ -553,16 +645,18 @@
 </li>
       <li><a href="src/transformers/Nmf.html#Nmf.NMF.recombine_calculated_matrices">recombine_calculated_matrices() (Nmf.NMF method)</a>
 </li>
+      <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.repeating_period">repeating_period (separation.repet.Repet attribute)</a>
+</li>
       <li><a href="src/separation/repetition/repet.html#separation.repet.Repet">Repet (class in separation.repet)</a>
 </li>
       <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim">RepetSim (class in separation.repet_sim)</a>
 </li>
       <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.residual">residual (separation.ideal_mask.IdealMask attribute)</a>
 </li>
-      <li><a href="src/audio_signal.html#audio_signal.AudioSignal.rms">rms() (audio_signal.AudioSignal method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/audio_signal.html#audio_signal.AudioSignal.rms">rms() (audio_signal.AudioSignal method)</a>
+</li>
       <li><a href="src/transformers/Nmf.html#Nmf.NMF.run">run() (Nmf.NMF method)</a>
 
       <ul>
@@ -588,13 +682,23 @@
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.sample_rate">sample_rate (audio_signal.AudioSignal attribute)</a>
 
       <ul>
+        <li><a href="src/separation/spatialization/duet.html#separation.Duet.Duet.sample_rate">(separation.Duet.Duet attribute)</a>
+</li>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.sample_rate">(separation.MaskSeparationBase attribute)</a>
+</li>
+        <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.sample_rate">(separation.ideal_mask.IdealMask attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.sample_rate">(separation.repet.Repet attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.sample_rate">(separation.repet_sim.RepetSim attribute)</a>
+</li>
         <li><a href="src/separation/base_classes/separation_base.html#separation.separation_base.SeparationBase.sample_rate">(separation.separation_base.SeparationBase attribute)</a>
 </li>
       </ul></li>
       <li><a href="src/evaluation/evaluation_base.html#evaluation.evaluation_base.EvaluationBase.scores">scores (evaluation.evaluation_base.EvaluationBase attribute)</a>
 
       <ul>
-        <li><a href="src/evaluation/precision_recall_fscore.html#evaluation.precision_recall_fscore.PrecisionRecallFScore.scores">(evaluation.precision_recall_fscore.PrecisionRecallFScore attribute)</a>
+        <li><a href="src/evaluation/precision_recall_fscore.html#evaluation.precision_recall_fscore.PrecisionRecallFScore.scores">(evaluation.precision_recall_fscore.PrecisionRecallFScore attribute)</a>, <a href="src/evaluation/precision_recall_fscore.html#evaluation.precision_recall_fscore.PrecisionRecallFScore.scores">[1]</a>
 </li>
       </ul></li>
       <li><a href="src/separation/spatialization/duet.html#module-separation.Duet">separation.Duet (module)</a>
@@ -623,23 +727,39 @@
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.set_active_region_to_default">set_active_region_to_default() (audio_signal.AudioSignal method)</a>
 </li>
+      <li><a href="src/separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask.shape">shape (separation.masks.binary_mask.BinaryMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.shape">(separation.masks.mask_base.MaskBase attribute)</a>
+</li>
+        <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask.shape">(separation.masks.soft_mask.SoftMask attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src/separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase.shape">shape (separation.masks.mask_base.MaskBase attribute)</a>
-</li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.signal_duration">signal_duration (audio_signal.AudioSignal attribute)</a>
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.signal_length">signal_length (audio_signal.AudioSignal attribute)</a>
 </li>
       <li><a href="src/separation/KAM.html#separation.KAM.Kernel.sim">sim() (separation.KAM.Kernel method)</a>
 </li>
-      <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.SOFT_MASK">SOFT_MASK (separation.MaskSeparationBase attribute)</a>
+      <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.SOFT_MASK">SOFT_MASK (separation.ideal_mask.IdealMask attribute)</a>
+
+      <ul>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.SOFT_MASK">(separation.MaskSeparationBase attribute)</a>
 </li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.SOFT_MASK">(separation.repet.Repet attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.SOFT_MASK">(separation.repet_sim.RepetSim attribute)</a>
+</li>
+      </ul></li>
       <li><a href="src/separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask">SoftMask (class in separation.masks.soft_mask)</a>
 </li>
       <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.sources">sources (separation.ideal_mask.IdealMask attribute)</a>
 </li>
       <li><a href="src/spectral_utils.html#module-spectral_utils">spectral_utils (module)</a>
+</li>
+      <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.stft">stft (separation.repet.Repet attribute)</a>
 </li>
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.stft">stft() (audio_signal.AudioSignal method)</a>
 </li>
@@ -654,6 +774,16 @@
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.stft_params">stft_params (audio_signal.AudioSignal attribute)</a>
 
       <ul>
+        <li><a href="src/separation/spatialization/duet.html#separation.Duet.Duet.stft_params">(separation.Duet.Duet attribute)</a>
+</li>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.stft_params">(separation.MaskSeparationBase attribute)</a>
+</li>
+        <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.stft_params">(separation.ideal_mask.IdealMask attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.stft_params">(separation.repet.Repet attribute)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.stft_params">(separation.repet_sim.RepetSim attribute)</a>
+</li>
         <li><a href="src/separation/base_classes/separation_base.html#separation.separation_base.SeparationBase.stft_params">(separation.separation_base.SeparationBase attribute)</a>
 </li>
       </ul></li>
@@ -676,6 +806,16 @@
       <li><a href="src/audio_signal.html#audio_signal.AudioSignal.to_json">to_json() (audio_signal.AudioSignal method)</a>
 
       <ul>
+        <li><a href="src/separation/spatialization/duet.html#separation.Duet.Duet.to_json">(separation.Duet.Duet method)</a>
+</li>
+        <li><a href="src/separation/base_classes/mask_separation_base.html#separation.MaskSeparationBase.to_json">(separation.MaskSeparationBase method)</a>
+</li>
+        <li><a href="src/separation/other/ideal_mask.html#separation.ideal_mask.IdealMask.to_json">(separation.ideal_mask.IdealMask method)</a>
+</li>
+        <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.to_json">(separation.repet.Repet method)</a>
+</li>
+        <li><a href="src/separation/repetition/repet_sim.html#separation.repet_sim.RepetSim.to_json">(separation.repet_sim.RepetSim method)</a>
+</li>
         <li><a href="src/separation/base_classes/separation_base.html#separation.separation_base.SeparationBase.to_json">(separation.separation_base.SeparationBase method)</a>
 </li>
         <li><a href="src/spectral_utils.html#spectral_utils.StftParams.to_json">(spectral_utils.StftParams method)</a>
@@ -697,9 +837,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="src/transformers/Nmf.html#Nmf.NMF.update">update() (Nmf.NMF method)</a>
 </li>
+      <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.update_periods">update_periods() (separation.repet.Repet method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.update_periods">update_periods() (separation.repet.Repet method)</a>
+      <li><a href="src/separation/repetition/repet.html#separation.repet.Repet.use_find_period_complex">use_find_period_complex (separation.repet.Repet attribute)</a>
 </li>
       <li><a href="src/utils.html#module-utils">utils (module)</a>
 </li>
@@ -754,6 +896,7 @@
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

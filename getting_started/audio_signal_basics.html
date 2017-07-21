@@ -65,6 +65,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../src/audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -232,13 +233,13 @@ changing <code class="docutils literal"><span class="pre">audio_data</span></cod
 </div>
 <p>If we hadn’t set <code class="docutils literal"><span class="pre">overwrite=True</span></code> then <code class="docutils literal"><span class="pre">to_mono()</span></code> would just return a np array of mono-ed <code class="docutils literal"><span class="pre">audio_data</span></code> and
 not change the representation of <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>. You will see this pattern come up again. In certain
-places, <code class="docutils literal"><span class="pre">AudioSignal</span></code>’s default behavior is to overwrite its internal data, and in other places the default is to
+places, <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>:’s default behavior is to overwrite its internal data, and in other places the default is to
 <strong>not</strong> overwrite data. See the reference pages for more info.</p>
 <p>Now, we can add the two signals as before:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span> <span class="o">=</span> <span class="n">signal1</span> <span class="o">+</span> <span class="n">signal2</span>
 </pre></div>
 </div>
-<p>No exceptions this time! Great! <code class="docutils literal"><span class="pre">signal3</span></code> is now a new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. We can similarly subtract two signals.</p>
+<p>No exceptions this time! Great! <code class="docutils literal"><span class="pre">signal3</span></code> is now a new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object. We can similarly subtract two signals.</p>
 <p>Let’s write this to a file:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal3</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;path/to/output.wav&#39;</span><span class="p">)</span>
 </pre></div>
@@ -273,6 +274,7 @@ places, <code class="docutils literal"><span class="pre">AudioSignal</span></cod
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

@@ -65,6 +65,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../src/audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../src/transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -155,12 +156,12 @@ at <code class="docutils literal"><span class="pre">signal1.stft_data</span></co
 <span class="go">None</span>
 </pre></div>
 </div>
-<p>Whoops! Because this object was initialized from a .wav file (i.e., time-series data), this <code class="docutils literal"><span class="pre">AudioSignal</span></code> object has
+<p>Whoops! Because this object was initialized from a .wav file (i.e., time-series data), this <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object has
 no frequency domain data by default. To populate it with frequency data we do thusly:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Aha! Now we can examine how STFT data is stored in the <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. Similar to <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>,
+<p>Aha! Now we can examine how STFT data is stored in the <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object. Similar to <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>,
 STFT data is stored in a (complex-valued) numpy array called <code class="docutils literal"><span class="pre">signal1.stft_data</span></code> <a class="footnote-reference" href="#f1" id="id1">[1]</a>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span>
 <span class="go">array([[[  5.65585184e+00 -0.00000000e+00j,</span>
@@ -194,7 +195,7 @@ STFT data is stored in a (complex-valued) numpy array called <code class="docuti
 </div>
 <p>By inspecting the shape we see that the first dimension represents the number of FFT bins taken at each hop,
 the second represents the length of our signal (in hops), and the third dimension is number of channels. There is
-an easy way to get all of this data from our <code class="docutils literal"><span class="pre">AudioSignal</span></code> object without having to do array indexing:</p>
+an easy way to get all of this data from our <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object without having to do array indexing:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_length</span>
 <span class="go">88</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">num_fft_bins</span>
@@ -241,9 +242,9 @@ shape as <code class="docutils literal"><span class="pre">signal1.stft_data</spa
 </div>
 <div class="section" id="inverse-stfts">
 <h2>Inverse STFTs<a class="headerlink" href="#inverse-stfts" title="Permalink to this headline">¶</a></h2>
-<p>Let’s do something a little more interesting with our <code class="docutils literal"><span class="pre">AudioSignal</span></code> object. Since <code class="docutils literal"><span class="pre">signal1.stft_data</span></code> is just
+<p>Let’s do something a little more interesting with our <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object. Since <code class="docutils literal"><span class="pre">signal1.stft_data</span></code> is just
 a regular numpy array, we can access and manipulate it as such. So let’s implement a low pass filter by creating a
-new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object and leaving <code class="docutils literal"><span class="pre">signal1</span></code> unaltered.</p>
+new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object and leaving <code class="docutils literal"><span class="pre">signal1</span></code> unaltered.</p>
 <p>Let’s eliminate all frequencies above about 400 Hz in our signal.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lp_stft</span> <span class="o">=</span> <span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lp_cutoff</span> <span class="o">=</span> <span class="mi">400</span>  <span class="c1"># Hz</span>
@@ -253,11 +254,11 @@ new <code class="docutils literal"><span class="pre">AudioSignal</span></code> o
 </pre></div>
 </div>
 <p>Okay, so now we have low passed STFT data in the numpy array <code class="docutils literal"><span class="pre">lp_stft</span></code>. Now we are going to see how we can initialize
-a new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object using this data.</p>
+a new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object using this data.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">stft</span><span class="o">=</span><span class="n">lp_stft</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Easy-peasy! Now <code class="docutils literal"><span class="pre">signal1_lp</span></code> is a new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object that has been initialized with STFT data instead of
+<p>Easy-peasy! Now <code class="docutils literal"><span class="pre">signal1_lp</span></code> is a new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object that has been initialized with STFT data instead of
 time series data. Before we can write this to a file, we need to do an Inverse STFT to get back time-series data.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">audio_data</span>
 <span class="go">None</span>
@@ -296,9 +297,9 @@ kind of bookkeeping.</p>
 <div class="section" id="stftparams-object">
 <h3>StftParams Object<a class="headerlink" href="#stftparams-object" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="xref py py-class docutils literal"><span class="pre">nussl.StftParams</span></code> is an object that stores parameters for doing STFTs and iSTFTs. Its main function is to
-keep track of user-set parameters for the duration of the <code class="docutils literal"><span class="pre">AudioSignal</span></code> object’s life. The separation
+keep track of user-set parameters for the duration of the <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object’s life. The separation
 objects (<code class="xref py py-class docutils literal"><span class="pre">nussl.Repet</span></code>, for instance) also have a <code class="docutils literal"><span class="pre">StftParams</span></code> object, which is copied from the input
-<code class="docutils literal"><span class="pre">AudioSignal</span></code> object.</p>
+<code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object.</p>
 <p>Let’s get to some examples to demonstrate.</p>
 <p>We can calculate an STFT with special, non-default parameters:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
@@ -307,7 +308,7 @@ objects (<code class="xref py py-class docutils literal"><span class="pre">nussl
 </div>
 <p>But the next time we do an STFT, we’ll have the default parameters again. And <em>furthermore</em>, any other code
 that calls <code class="docutils literal"><span class="pre">signal1.sift()</span></code> (like, <code class="docutils literal"><span class="pre">nussl.Repet</span></code>) will use the default parameters.</p>
-<p>If we want to have these settings saved for the life of this <code class="docutils literal"><span class="pre">AudioSignal</span></code> object, we have to set them
+<p>If we want to have these settings saved for the life of this <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object, we have to set them
 in <code class="docutils literal"><span class="pre">signal1</span></code>’s <code class="docutils literal"><span class="pre">StftParams</span></code> object, at <code class="docutils literal"><span class="pre">signal1.stft_params</span></code>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">4096</span>
@@ -371,6 +372,7 @@ for <code class="docutils literal"><span class="pre">my_repet</span></code> and 
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

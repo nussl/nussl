@@ -5,5 +5,6 @@ BinaryMask Class
 
 .. automodule:: separation.masks.binary_mask
     :members:
-    :undoc-members:
     :show-inheritance:
+    :undoc-members:
+    :inherited-members:

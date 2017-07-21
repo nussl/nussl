@@ -25,6 +25,8 @@
     <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nussl Separation Classes" href="separation/separation_classes.html" />
+    <link rel="prev" title="Using REPET" href="../getting_started/repet.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
@@ -62,7 +64,8 @@
       aria-labelledby="dLabelGlobalToc"><ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
-<ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -92,6 +95,14 @@
             
               
                 
+  <li>
+    <a href="../getting_started/repet.html" title="Previous Chapter: Using REPET"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Using REPET</span>
+    </a>
+  </li>
+  <li>
+    <a href="separation/separation_classes.html" title="Next Chapter: nussl Separation Classes"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">nussl Separat... &raquo;</span>
+    </a>
+  </li>
               
             
             
@@ -138,7 +149,7 @@ in all source separation objects in <em>nussl</em>.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>path_to_input_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to an input file to open upon initialization. Audio gets loaded
-into <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</li>
+into <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</li>
 <li><strong>audio_data_array</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>, optional) – Numpy array containing a real-valued, time-series representation
 of the audio.</li>
 <li><strong>offset</strong> (<em>int</em><em>, </em><em>optional</em>) – Starting point of the section to be extracted in seconds.
@@ -200,38 +211,68 @@ Short-Time Fourier Transform (STFT).
 object.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="audio_signal.AudioSignal.plot_time_domain">
-<code class="descname">plot_time_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_time_domain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not implemented yet – will raise and exception
-Returns:</p>
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.active_region_is_default">
+<code class="descname">active_region_is_default</code><a class="headerlink" href="#audio_signal.AudioSignal.active_region_is_default" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(bool)</em> – True if active region is the full length of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.set_active_region" title="audio_signal.AudioSignal.set_active_region"><code class="xref py py-func docutils literal"><span class="pre">set_active_region()</span></code></a> for a full description of active regions in <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a></li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.set_active_region_to_default" title="audio_signal.AudioSignal.set_active_region_to_default"><code class="xref py py-func docutils literal"><span class="pre">set_active_region_to_default()</span></code></a></li>
+</ul>
+</div>
 </dd></dl>
 
 <dl class="method">
-<dt id="audio_signal.AudioSignal.plot_spectrogram">
-<code class="descname">plot_spectrogram</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>ch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_spectrogram" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.signal_length">
-<code class="descname">signal_length</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_length" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> – Number of samples in the active region of <cite>self.audio_data</cite>
-The length of the audio signal represented by this object in samples</p>
+<dt id="audio_signal.AudioSignal.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds two audio signal objects.</p>
+<p>This does element-wise addition on the <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> array.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
+<li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>) – Other <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> to add.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>) – New <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object with the sum of <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.signal_duration">
-<code class="descname">signal_duration</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_duration" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(float)</em> – Duration of audio in seconds.
-The length of the audio signal represented by this object in seconds</p>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.apply_gain">
+<code class="descname">apply_gain</code><span class="sig-paren">(</span><em>value</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.apply_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a gain to self.audio_data
+:param value: (float) amount to multiply self.audio_data by
+:param overwrite: (bool) should overwrite audio_data in self</p>
+<p>Returns:</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.num_channels">
-<code class="descname">num_channels</code><a class="headerlink" href="#audio_signal.AudioSignal.num_channels" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> – Number of channels this AudioSignal has.
-Defaults to returning number of channels in <code class="docutils literal"><span class="pre">self.audio_data</span></code>. If that is <code class="docutils literal"><span class="pre">None</span></code>, returns number of
-channels in <code class="docutils literal"><span class="pre">self.stft_data</span></code>. If both are <code class="docutils literal"><span class="pre">None</span></code> then returns <code class="docutils literal"><span class="pre">None</span></code>.</p>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.apply_mask">
+<code class="descname">apply_mask</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.apply_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the input mask to the time-frequency representation in this AudioSignal object and returns a new
+AudioSignal object with the mask applied.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mask</strong> (<code class="xref py py-obj docutils literal"><span class="pre">MaskBase</span></code>-derived object) – A <a class="reference internal" href="separation/mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a>-derived object containing a mask</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object with the input mask applied to the STFT</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -243,119 +284,302 @@ channels in <code class="docutils literal"><span class="pre">self.stft_data</spa
 Usually, this is expected to be floats. Some functions will convert to floats if not already.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.file_name">
-<code class="descname">file_name</code><a class="headerlink" href="#audio_signal.AudioSignal.file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – The name of the file wth extension, NOT the full path
-.. seealso:: :ref: self.path_to_input_file</p>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.audio_data_as_ints">
+<code class="descname">audio_data_as_ints</code><span class="sig-paren">(</span><em>bit_depth=16</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.audio_data_as_ints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> as a numpy array of signed ints with a specified bit-depth.</p>
+<p>Available bit-depths are: 8-, 16-, 24-, or 32-bits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">bit_depth</span></code> is not one of the above bit-depths.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p><a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> is regularly stored as an array of floats. This will not affect <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bit_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – Bit depth of the integer array that will be returned.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Integer representation of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.concat">
+<code class="descname">concat</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.concat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate two <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> objects (by concatenating <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>).</p>
+<p>Puts <code class="docutils literal"><span class="pre">other.audio_data</span></code> after <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
+<li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first last"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>) – <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> to concatenate with the current one.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.crop_signal">
+<code class="descname">crop_signal</code><span class="sig-paren">(</span><em>before</em>, <em>after</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.crop_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get rid of samples before and after the signal on all channels. Contracts the length
+of self.audio_data by before + after. Useful to get rid of zero padding after the fact.
+:param before: (int) number of samples to remove at beginning of self.audio_data
+:param after: (int) number of samples to remove at end of self.audio_data</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="audio_signal.AudioSignal.time_vector">
-<code class="descname">time_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.time_vector" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – A 1D np array with timestamps (in seconds) for each sample in the time domain.</p>
+<dt id="audio_signal.AudioSignal.file_name">
+<code class="descname">file_name</code><a class="headerlink" href="#audio_signal.AudioSignal.file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – The name of the file wth extension, NOT the full path.</p>
+<p class="rubric">Notes</p>
+<p>This will return <code class="docutils literal"><span class="pre">None</span></code> if this <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object was not loaded from a file.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-attr docutils literal"><span class="pre">self.path_to_input_file</span></code></p>
+</div>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.freq_vector">
 <code class="descname">freq_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.freq_vector" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) –</p>
-<dl class="docutils">
-<dt>A 1D numpy array with frequency values that correspond</dt>
-<dd>to each frequency bin (vertical axis) for the STFT.</dd>
-</dl>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – A 1D numpy array with frequency values that correspond
+to each frequency bin (vertical axis) for the STFT.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code>. Run <a class="reference internal" href="#audio_signal.AudioSignal.stft" title="audio_signal.AudioSignal.stft"><code class="xref py py-func docutils literal"><span class="pre">stft()</span></code></a> before accessing this.</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.time_bins_vector">
-<code class="descname">time_bins_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.time_bins_vector" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) –</p>
-<dl class="docutils">
-<dt>A 1D numpy array with time values that correspond</dt>
-<dd>to each time bin (horizontal axis) in the STFT.</dd>
-</dl>
+<dl class="staticmethod">
+<dt id="audio_signal.AudioSignal.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object from a JSON encoded <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> string.</p>
+<p>For best results, <code class="docutils literal"><span class="pre">json_string</span></code> should be created from <code class="docutils literal"><span class="pre">AudioSignal.to_json()</span></code>.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#audio_signal.AudioSignal.to_json" title="audio_signal.AudioSignal.to_json"><code class="xref py py-func docutils literal"><span class="pre">to_json()</span></code></a></p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>string</em>) – a json encoded <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>(obj</em> – <cite>AudioSignal</cite>): an <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object based on the parameters in JSON string</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.stft_length">
-<code class="descname">stft_length</code><a class="headerlink" href="#audio_signal.AudioSignal.stft_length" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> – The number of time windows the STFT has.
-:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_dat``a</span> <span class="pre">is</span> <span class="pre">``None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.num_fft_bins">
-<code class="descname">num_fft_bins</code><a class="headerlink" href="#audio_signal.AudioSignal.num_fft_bins" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> – Number of FFT bins in self.stft_data
-:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.active_region_is_default">
-<code class="descname">active_region_is_default</code><a class="headerlink" href="#audio_signal.AudioSignal.active_region_is_default" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(bool)</em> – True if active region is the full length of <code class="docutils literal"><span class="pre">self.audio_data</span></code>
-.. seealso:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">:</span><span class="n">ref</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_active_region</span>
-<span class="p">:</span><span class="n">ref</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_active_region_to_default</span>
-</pre></div>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_channel">
+<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets audio data of n-th channel from <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> as a 1D <code class="docutils literal"><span class="pre">np.ndarray</span></code> of shape (n_samples,).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>int</em>) – index of channel to get. <strong>0-based</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – The audio data in the n-th channel of the signal, 1D</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_channels" title="audio_signal.AudioSignal.get_channels"><code class="xref py py-func docutils literal"><span class="pre">get_channels()</span></code></a>: Generator for looping through channels of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_stft_channel" title="audio_signal.AudioSignal.get_stft_channel"><code class="xref py py-func docutils literal"><span class="pre">get_stft_channel()</span></code></a>: Gets stft data from a specific channel.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_stft_channels" title="audio_signal.AudioSignal.get_stft_channels"><code class="xref py py-func docutils literal"><span class="pre">get_stft_channels()</span></code></a>: Generator for looping through channels from <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>.</li>
+</ul>
 </div>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.power_spectrogram_data">
-<code class="descname">power_spectrogram_data</code><a class="headerlink" href="#audio_signal.AudioSignal.power_spectrogram_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Returns a real valued 2D <code class="docutils literal"><span class="pre">np.array</span></code> with power spectrogram data.
-The power spectrogram is defined as Re(STFT)^2, where ^2 is element-wise squaring
-of entries of the STFT. Same shape as <code class="docutils literal"><span class="pre">self.stft_data</span></code>.
-:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_channels">
+<code class="descname">get_channels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator that will loop through channels of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – The audio data in the next channel of this signal as a 1D <code class="docutils literal"><span class="pre">np.ndarray</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_channel" title="audio_signal.AudioSignal.get_channel"><code class="xref py py-func docutils literal"><span class="pre">get_channel()</span></code></a>: Gets audio data from a specific channel.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_stft_channel" title="audio_signal.AudioSignal.get_stft_channel"><code class="xref py py-func docutils literal"><span class="pre">get_stft_channel()</span></code></a>: Gets stft data from a specific channel.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_stft_channels" title="audio_signal.AudioSignal.get_stft_channels"><code class="xref py py-func docutils literal"><span class="pre">get_stft_channels()</span></code></a>: Generator for looping through channels from <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>.</li>
+</ul>
+</div>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="audio_signal.AudioSignal.magnitude_spectrogram_data">
-<code class="descname">magnitude_spectrogram_data</code><a class="headerlink" href="#audio_signal.AudioSignal.magnitude_spectrogram_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Returns a real valued 2D <code class="docutils literal"><span class="pre">np.array</span></code> with magnitude spectrogram data.
-The power spectrogram is defined as Re(STFT). Same shape as <code class="docutils literal"><span class="pre">self.stft_data</span></code>.
-:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code>. Run <code class="docutils literal"><span class="pre">self.stft()</span></code> before accessing this.</p>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_closest_frequency_bin">
+<code class="descname">get_closest_frequency_bin</code><span class="sig-paren">(</span><em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_closest_frequency_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns index of the closest element to freq</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>freq</strong> – (int) frequency to retrieve in Hz</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(int) index of closest frequency to input freq</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_magnitude_spectrogram_channel">
+<code class="descname">get_magnitude_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_magnitude_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.magnitude_spectrogram_data</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of magnitude spectrogram channel to get <strong>0-based</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the magnitude spectrogram data in the n-th channel of the signal, 1D</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_power_spectrogram_channel">
+<code class="descname">get_power_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_power_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.power_spectrogram_data</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of power spectrogram channel to get <strong>0-based</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the power spectrogram data in the n-th channel of the signal, 1D</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_stft_channel">
+<code class="descname">get_stft_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns STFT data of n-th channel from <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> as a 2D <code class="docutils literal"><span class="pre">np.ndarray</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of stft channel to get. <strong>0-based</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the stft data in the n-th channel of the signal, 2D</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_stft_channels" title="audio_signal.AudioSignal.get_stft_channels"><code class="xref py py-func docutils literal"><span class="pre">get_stft_channels()</span></code></a>: Generator for looping through channels from <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_channel" title="audio_signal.AudioSignal.get_channel"><code class="xref py py-func docutils literal"><span class="pre">get_channel()</span></code></a>: Gets audio data from a specific channel.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_channels" title="audio_signal.AudioSignal.get_channels"><code class="xref py py-func docutils literal"><span class="pre">get_channels()</span></code></a>: Generator for looping through channels of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.get_stft_channels">
+<code class="descname">get_stft_channels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator that will loop through channels of <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – The STFT data in the next channel of this signal as a 2D <code class="docutils literal"><span class="pre">np.ndarray</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_stft_channel" title="audio_signal.AudioSignal.get_stft_channel"><code class="xref py py-func docutils literal"><span class="pre">get_stft_channel()</span></code></a>: Gets stft data from a specific channel.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_channel" title="audio_signal.AudioSignal.get_channel"><code class="xref py py-func docutils literal"><span class="pre">get_channel()</span></code></a>: Gets audio data from a specific channel.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_channels" title="audio_signal.AudioSignal.get_channels"><code class="xref py py-func docutils literal"><span class="pre">get_channels()</span></code></a>: Generator for looping through channels of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</li>
+</ul>
+</div>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="audio_signal.AudioSignal.has_data">
 <code class="descname">has_data</code><a class="headerlink" href="#audio_signal.AudioSignal.has_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns False if <code class="docutils literal"><span class="pre">self.audio_data</span></code> and <code class="docutils literal"><span class="pre">self.stft_data</span></code> are empty. Else, returns True.
-:returns: Returns False if <code class="docutils literal"><span class="pre">self.audio_data</span></code> and <code class="docutils literal"><span class="pre">self.stft_data</span></code> are empty. Else, returns True.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.load_audio_from_file">
-<code class="descname">load_audio_from_file</code><span class="sig-paren">(</span><em>input_file_path</em>, <em>offset=0</em>, <em>duration=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.load_audio_from_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads an audio signal from a file</p>
+<dd><p>Returns False if <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> and <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> are empty. Else, returns True.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>input_file_path</strong> (<em>str</em>) – Path to input file.</li>
-<li><strong>offset</strong> (<em>float</em><em>, </em><em>optional</em>) – The starting point of the section to be extracted (seconds).
-Defaults to 0 seconds.</li>
-<li><strong>duration</strong> (<em>float</em><em>, </em><em>optional</em>) – Length of signal to load in second.
-signal_length of 0 means read the whole file. Defaults to the full length of the signal.</li>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Returns False if <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> and <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> are empty. Else, returns True.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.istft">
+<code class="descname">istft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>overwrite=True</em>, <em>reconstruct_reflection=False</em>, <em>use_librosa=True</em>, <em>truncate_to_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.istft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and returns the inverse Short Time Fourier Transform (iSTFT).</p>
+<p>The results of the iSTFT calculation can be accessed from <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>
+if <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code> prior to running this function or <code class="docutils literal"><span class="pre">overwrite</span> <span class="pre">==</span> <span class="pre">True</span></code></p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If overwrite=True (default) this will overwrite any data in <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>!</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>window_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to do an FFT on</li>
+<li><strong>hop_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to skip ahead for the new FFT</li>
+<li><strong>window_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of scaling to apply to the window.</li>
+<li><strong>reconstruct_reflection</strong> (<em>bool</em><em>, </em><em>optional</em>) – Should reconstruct the reflection above Nyquist</li>
+<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – Overwrite <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> with current calculation</li>
+<li><strong>use_librosa</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use <em>librosa’s</em> stft function</li>
+<li><strong>truncate_to_length</strong> (<em>int</em><em>, </em><em>optional</em>) – truncate resultant signal to specified length. Default None.</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) Calculated, real-valued iSTFT from <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>, 2D numpy array
+with shape <cite>(n_channels, n_samples)</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -383,17 +607,19 @@ signal_length of 0 means read the whole file. Defaults to the full length of the
 </dd></dl>
 
 <dl class="method">
-<dt id="audio_signal.AudioSignal.write_audio_to_file">
-<code class="descname">write_audio_to_file</code><span class="sig-paren">(</span><em>output_file_path</em>, <em>sample_rate=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.write_audio_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Outputs the audio signal to a file</p>
+<dt id="audio_signal.AudioSignal.load_audio_from_file">
+<code class="descname">load_audio_from_file</code><span class="sig-paren">(</span><em>input_file_path</em>, <em>offset=0</em>, <em>duration=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.load_audio_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an audio signal from a file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>output_file_path</strong> (<em>str</em>) – Filename where output file will be saved.</li>
-<li><strong>sample_rate</strong> (<em>int</em><em>, </em><em>optional</em>) – The sample rate to write the file at. Default is <code class="docutils literal"><span class="pre">self.sample_rate</span></code>.</li>
-<li><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Print out a message if writing the file was successful.</li>
+<li><strong>input_file_path</strong> (<em>str</em>) – Path to input file.</li>
+<li><strong>offset</strong> (<em>float</em><em>, </em><em>optional</em>) – The starting point of the section to be extracted (seconds).
+Defaults to 0 seconds.</li>
+<li><strong>duration</strong> (<em>float</em><em>, </em><em>optional</em>) – Length of signal to load in second.
+signal_length of 0 means read the whole file. Defaults to the full length of the signal.</li>
 </ul>
 </td>
 </tr>
@@ -401,322 +627,41 @@ signal_length of 0 means read the whole file. Defaults to the full length of the
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="audio_signal.AudioSignal.set_active_region">
-<code class="descname">set_active_region</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.set_active_region" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determines the bounds of what gets returned when you access <code class="docutils literal"><span class="pre">self.audio_data</span></code>.
-None of the data in <code class="docutils literal"><span class="pre">self.audio_data</span></code> is discarded when you set the active region, it merely becomes
-inaccessible until the active region is set back to default (i.e., the full length of the signal).</p>
-<p>This is useful for reusing a single <code class="docutils literal"><span class="pre">AudioSignal</span></code> object to do multiple operations on only select parts of the
-audio data.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Many functions will raise exceptions while the active region is not default. Be aware that adding,
-subtracting, concatenating, truncating, and other utilities may not be available.</p>
-</div>
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.magnitude_spectrogram_data">
+<code class="descname">magnitude_spectrogram_data</code><a class="headerlink" href="#audio_signal.AudioSignal.magnitude_spectrogram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Returns a real valued <code class="docutils literal"><span class="pre">np.array</span></code> with magnitude spectrogram data.</p>
+<p>The power spectrogram is defined as Abs(STFT), the element-wise absolute value of every item in the STFT.
+Same shape as <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – if <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code>. Run <a class="reference internal" href="#audio_signal.AudioSignal.stft" title="audio_signal.AudioSignal.stft"><code class="xref py py-func docutils literal"><span class="pre">stft()</span></code></a> before accessing this.</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<table class="last docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">ref:</th><td class="field-body">set_active_region_to_default</td>
-</tr>
-<tr class="field-even field"><th class="field-name">ref:</th><td class="field-body">active_region_is_default</td>
-</tr>
-</tbody>
-</table>
-</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>start</strong> (<em>int</em>) – Beginning of active region (in samples). Cannot be less than 0.</li>
-<li><strong>end</strong> (<em>int</em>) – End of active region (in samples). Cannot be larger than self.signal_length.</li>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> complex-valued Short-time Fourier Transform data.</li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.power_spectrogram_data" title="audio_signal.AudioSignal.power_spectrogram_data"><code class="xref py py-attr docutils literal"><span class="pre">power_spectrogram_data</span></code></a></li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_magnitude_spectrogram_channel" title="audio_signal.AudioSignal.get_magnitude_spectrogram_channel"><code class="xref py py-func docutils literal"><span class="pre">get_magnitude_spectrogram_channel()</span></code></a></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.set_active_region_to_default">
-<code class="descname">set_active_region_to_default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.set_active_region_to_default" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resets the active region of this <code class="docutils literal"><span class="pre">AudioSignal</span></code> object to it default value of the entire <code class="docutils literal"><span class="pre">audio_data</span></code> array.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.next_window_generator">
-<code class="descname">next_window_generator</code><span class="sig-paren">(</span><em>window_size</em>, <em>hop_size</em>, <em>convert_to_samples=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.next_window_generator" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>window_size</strong> – </li>
-<li><strong>hop_size</strong> – </li>
-<li><strong>convert_to_samples</strong> – </li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.stft">
-<code class="descname">stft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em>, <em>overwrite=True</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.stft" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Computes the Short Time Fourier Transform (STFT) of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</dt>
-<dd>The results of the STFT calculation can be accessed from <code class="docutils literal"><span class="pre">self.stft_data</span></code>
-if <code class="docutils literal"><span class="pre">self.stft_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code> prior to running this function or <code class="docutils literal"><span class="pre">overwrite</span> <span class="pre">==</span> <span class="pre">True</span></code></dd>
-</dl>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">If overwrite=True (default) this will overwrite any data in <code class="docutils literal"><span class="pre">self.stft_data</span></code>!</p>
-</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>window_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to do an FFT on</li>
-<li><strong>hop_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to skip ahead for the new FFT</li>
-<li><strong>window_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of scaling to apply to the window.</li>
-<li><strong>n_fft_bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of FFT bins per each hop</li>
-<li><strong>remove_reflection</strong> (<em>bool</em><em>, </em><em>optional</em>) – Should remove reflection above Nyquist</li>
-<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – Overwrite <code class="docutils literal"><span class="pre">self.stft_data</span></code> with current calculation</li>
-<li><strong>use_librosa</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use <em>librosa’s</em> stft function</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) Calculated, complex-valued STFT from <code class="docutils literal"><span class="pre">self.audio_data</span></code>, 3D numpy array
-with shape <cite>(n_frequency_bins, n_hops, n_channels)</cite>.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.istft">
-<code class="descname">istft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>overwrite=True</em>, <em>reconstruct_reflection=False</em>, <em>use_librosa=True</em>, <em>truncate_to_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.istft" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes and returns the inverse Short Time Fourier Transform (iSTFT).</p>
-<blockquote>
-<div>The results of the iSTFT calculation can be accessed from <code class="docutils literal"><span class="pre">self.audio_data</span></code>
-if <code class="docutils literal"><span class="pre">self.audio_data</span></code> is <code class="docutils literal"><span class="pre">None</span></code> prior to running this function or <code class="docutils literal"><span class="pre">overwrite</span> <span class="pre">==</span> <span class="pre">True</span></code></div></blockquote>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">If overwrite=True (default) this will overwrite any data in <code class="docutils literal"><span class="pre">self.audio_data</span></code>!</p>
-</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>window_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to do an FFT on</li>
-<li><strong>hop_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to skip ahead for the new FFT</li>
-<li><strong>window_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of scaling to apply to the window.</li>
-<li><strong>reconstruct_reflection</strong> (<em>bool</em><em>, </em><em>optional</em>) – Should reconstruct the reflection above Nyquist</li>
-<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – Overwrite <code class="docutils literal"><span class="pre">self.stft_data</span></code> with current calculation</li>
-<li><strong>use_librosa</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use <em>librosa’s</em> stft function</li>
-<li><strong>truncate_to_length</strong> (<em>int</em><em>, </em><em>optional</em>) – truncate resultant signal to specified length. Default None.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) Calculated, real-valued iSTFT from <code class="docutils literal"><span class="pre">self.stft_data</span></code>, 2D numpy array
-with shape <cite>(n_channels, n_samples)</cite>.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.concat">
-<code class="descname">concat</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.concat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Concatenate two <code class="docutils literal"><span class="pre">AudioSignal</span></code> objects (by concatenating <code class="docutils literal"><span class="pre">self.audio_data</span></code>).</p>
-<p>Puts <code class="docutils literal"><span class="pre">other.audio_data</span></code> after <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
-<li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>:param (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>): <code class="docutils literal"><span class="pre">AudioSignal</span></code> to concatenate with the current one.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.truncate_samples">
-<code class="descname">truncate_samples</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.truncate_samples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Truncates the signal leaving only the first <code class="docutils literal"><span class="pre">n_samples</span></code> samples.
-This can only be done if <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is True.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <code class="docutils literal"><span class="pre">n_samples</span> <span class="pre">&gt;</span> <span class="pre">self.signal_length</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> – (int) number of samples that will be left.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.truncate_seconds">
-<code class="descname">truncate_seconds</code><span class="sig-paren">(</span><em>n_seconds</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.truncate_seconds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Truncates the signal leaving only the first n_seconds.
-This can only be done if self.active_region_is_default is True.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <code class="docutils literal"><span class="pre">n_seconds</span> <span class="pre">&gt;</span> <span class="pre">self.signal_duration</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_seconds</strong> – (float) number of seconds to truncate <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.crop_signal">
-<code class="descname">crop_signal</code><span class="sig-paren">(</span><em>before</em>, <em>after</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.crop_signal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get rid of samples before and after the signal on all channels. Contracts the length
-of self.audio_data by before + after. Useful to get rid of zero padding after the fact.
-:param before: (int) number of samples to remove at beginning of self.audio_data
-:param after: (int) number of samples to remove at end of self.audio_data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.zero_pad">
-<code class="descname">zero_pad</code><span class="sig-paren">(</span><em>before</em>, <em>after</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.zero_pad" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds zeros before and after the signal to all channels.
-Extends the length of self.audio_data by before + after.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>before</strong> – (int) number of zeros to be put before the current contents of self.audio_data</li>
-<li><strong>after</strong> – (int) number of zeros to be put after the current contents fo self.audio_data</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.peak_normalize">
-<code class="descname">peak_normalize</code><span class="sig-paren">(</span><em>overwrite=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.peak_normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalizes <code class="docutils literal"><span class="pre">abs(self.audio_data)</span></code> to 1.0.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">If <code class="docutils literal"><span class="pre">self.audio_data</span></code> is not represented as floats this will convert the representation to floats!</p>
 </div>
 </dd></dl>
 
 <dl class="method">
-<dt id="audio_signal.AudioSignal.add">
-<code class="descname">add</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds two audio signal objects.</p>
-<p>This does element-wise addition on the <code class="docutils literal"><span class="pre">self.audio_data</span></code> array.</p>
+<dt id="audio_signal.AudioSignal.make_audio_signal_from_channel">
+<code class="descname">make_audio_signal_from_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_audio_signal_from_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a new <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object from with data from channel <code class="docutils literal"><span class="pre">n</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
-<li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>int</em>) – index of channel to make a new signal from. <strong>0-based</strong></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – Other <code class="docutils literal"><span class="pre">AudioSignal</span></code> to add.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – New <code class="docutils literal"><span class="pre">AudioSignal</span></code> object with the sum of <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.subtract">
-<code class="descname">subtract</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.subtract" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subtracts two audio signal objects.</p>
-<p>This does element-wise subtraction on the <code class="docutils literal"><span class="pre">self.audio_data</span></code> array.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
-<li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – Other <code class="docutils literal"><span class="pre">AudioSignal</span></code> to subtract.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>) – New <code class="docutils literal"><span class="pre">AudioSignal</span></code> object with the difference between <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.audio_data_as_ints">
-<code class="descname">audio_data_as_ints</code><span class="sig-paren">(</span><em>bit_depth=16</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.audio_data_as_ints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">self.audio_data</span></code> as a numpy array of signed ints with a specified bit-depth.</p>
-<p>Available bit-depths are: 8-, 16-, 24-, or 32-bits.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">bit_depth</span></code> is not one of the above bit-depths.</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Notes</p>
-<p><code class="docutils literal"><span class="pre">self.audio_data</span></code> is regularly stored as an array of floats. This will not affect <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bit_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – Bit depth of the integer array that will be returned.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Integer representation of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.make_empty_copy">
-<code class="descname">make_empty_copy</code><span class="sig-paren">(</span><em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_empty_copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a copy of this <cite>AudioSignal</cite> object with <cite>audio_data</cite> and <cite>stft_data</cite>
-initialized to <a href="#id1"><span class="problematic" id="id2">`</span></a>np.ndarray`s of the same size, but populated with zeros.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code></a>)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>) new <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object with only data from channel <code class="docutils literal"><span class="pre">n</span></code>.</td>
 </tr>
 </tbody>
 </table>
@@ -759,167 +704,279 @@ numpy array.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="audio_signal.AudioSignal.to_json">
-<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.to_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts this <code class="docutils literal"><span class="pre">AudioSignal</span></code> object to JSON.</p>
+<dt id="audio_signal.AudioSignal.make_empty_copy">
+<code class="descname">make_empty_copy</code><span class="sig-paren">(</span><em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_empty_copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a copy of this <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object with <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> and <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>
+initialized to <a href="#id1"><span class="problematic" id="id2">``</span></a>np.ndarray``s of the same size, but populated with zeros.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(str)</em> – JSON representation of the current <code class="docutils literal"><span class="pre">AudioSignal</span></code> object.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>)</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="audio_signal.AudioSignal.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.from_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new <code class="docutils literal"><span class="pre">AudioSignal</span></code> object from a JSON encoded <code class="docutils literal"><span class="pre">AudioSignal</span></code> string.</p>
-<p>For best results, <code class="docutils literal"><span class="pre">json_string</span></code> should be created from <code class="docutils literal"><span class="pre">AudioSignal.to_json()</span></code>.</p>
+<dl class="method">
+<dt id="audio_signal.AudioSignal.next_window_generator">
+<code class="descname">next_window_generator</code><span class="sig-paren">(</span><em>window_size</em>, <em>hop_size</em>, <em>convert_to_samples=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.next_window_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>string</em>) – a json encoded <code class="docutils literal"><span class="pre">AudioSignal</span></code> string</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">NotImplemented</span></code></p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>(obj</em> – <cite>AudioSignal</cite>): an <code class="docutils literal"><span class="pre">AudioSignal</span></code> object based on the parameters in JSON string</td>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>window_size</strong> – </li>
+<li><strong>hop_size</strong> – </li>
+<li><strong>convert_to_samples</strong> – </li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.num_channels">
+<code class="descname">num_channels</code><a class="headerlink" href="#audio_signal.AudioSignal.num_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Number of channels this AudioSignal has.
+Defaults to returning number of channels in <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>. If that is <code class="docutils literal"><span class="pre">None</span></code>, returns number of
+channels in <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>. If both are <code class="docutils literal"><span class="pre">None</span></code> then returns <code class="docutils literal"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.num_fft_bins">
+<code class="descname">num_fft_bins</code><a class="headerlink" href="#audio_signal.AudioSignal.num_fft_bins" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Number of FFT bins in self.stft_data
+:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code>. Run <a class="reference internal" href="#audio_signal.AudioSignal.stft" title="audio_signal.AudioSignal.stft"><code class="xref py py-func docutils literal"><span class="pre">stft()</span></code></a> before accessing this.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.peak_normalize">
+<code class="descname">peak_normalize</code><span class="sig-paren">(</span><em>overwrite=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.peak_normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes <code class="docutils literal"><span class="pre">abs(self.audio_data)</span></code> to 1.0.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> is not represented as floats this will convert the representation to floats!</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.plot_spectrogram">
+<code class="descname">plot_spectrogram</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>ch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_spectrogram" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.plot_time_domain">
+<code class="descname">plot_time_domain</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.plot_time_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented yet – will raise and exception
+Returns:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.power_spectrogram_data">
+<code class="descname">power_spectrogram_data</code><a class="headerlink" href="#audio_signal.AudioSignal.power_spectrogram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – Returns a real valued <code class="docutils literal"><span class="pre">np.array</span></code> with power spectrogram data.
+The power spectrogram is defined as (STFT)^2, where ^2 is element-wise squaring
+of entries of the STFT. Same shape as <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – if <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code>. Run <a class="reference internal" href="#audio_signal.AudioSignal.stft" title="audio_signal.AudioSignal.stft"><code class="xref py py-func docutils literal"><span class="pre">stft()</span></code></a> before accessing this.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> complex-valued Short-time Fourier Transform data.</li>
+<li><code class="xref py py-attr docutils literal"><span class="pre">power_magnitude_data</span></code></li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.get_power_spectrogram_channel" title="audio_signal.AudioSignal.get_power_spectrogram_channel"><code class="xref py py-func docutils literal"><span class="pre">get_power_spectrogram_channel()</span></code></a></li>
+</ul>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="audio_signal.AudioSignal.rms">
 <code class="descname">rms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.rms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the root-mean-square of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.
-:returns: <em>(float)</em> – Root-mean-square of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.get_closest_frequency_bin">
-<code class="descname">get_closest_frequency_bin</code><span class="sig-paren">(</span><em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_closest_frequency_bin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns index of the closest element to freq
-:param freq: (int) frequency to retrieve in Hz</p>
-<p>Returns: (int) index of closest frequency to input freq</p>
-<p class="rubric">Examples</p>
-<p>Make a low pass filter starting around 1200 Hz
-&gt;&gt;&gt; signal = nussl.AudioSignal(‘path_to_song.wav’)
-&gt;&gt;&gt; signal.stft()
-&gt;&gt;&gt; idx = signal.get_closest_frequency_bin(1200)  # 1200 Hz
-&gt;&gt;&gt; signal.stft_data[idx:, :, :] = 0.0  # eliminate everything above idx</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.apply_gain">
-<code class="descname">apply_gain</code><span class="sig-paren">(</span><em>value</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.apply_gain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply a gain to self.audio_data
-:param value: (float) amount to multiply self.audio_data by
-:param overwrite: (bool) should overwrite audio_data in self</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.get_channel">
-<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the n-th channel from <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</p>
+<dd><p>Calculates the root-mean-square of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> (<em>int</em>) – index of channel to get. <strong>0-based</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the audio data in the n-th channel of the signal, 1D</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(float)</em> – Root-mean-square of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="audio_signal.AudioSignal.get_channels">
-<code class="descname">get_channels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_channels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yields:</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.get_stft_channel">
-<code class="descname">get_stft_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.stft_data</span></code>.</p>
+<dt id="audio_signal.AudioSignal.set_active_region">
+<code class="descname">set_active_region</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.set_active_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the bounds of what gets returned when you access <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.
+None of the data in <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> is discarded when you set the active region, it merely becomes
+inaccessible until the active region is set back to default (i.e., the full length of the signal).</p>
+<p>This is useful for reusing a single <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object to do multiple operations on only select parts of the
+audio data.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Many functions will raise exceptions while the active region is not default. Be aware that adding,
+subtracting, concatenating, truncating, and other utilities may not be available.</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.set_active_region_to_default" title="audio_signal.AudioSignal.set_active_region_to_default"><code class="xref py py-func docutils literal"><span class="pre">set_active_region_to_default()</span></code></a></li>
+<li><a class="reference internal" href="#audio_signal.AudioSignal.active_region_is_default" title="audio_signal.AudioSignal.active_region_is_default"><code class="xref py py-attr docutils literal"><span class="pre">active_region_is_default</span></code></a></li>
+</ul>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of stft channel to get. <strong>0-based</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the stft data in the n-th channel of the signal, 1D</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.get_stft_channels">
-<code class="descname">get_stft_channels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_stft_channels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns:</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="audio_signal.AudioSignal.make_audio_signal_from_channel">
-<code class="descname">make_audio_signal_from_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.make_audio_signal_from_channel" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>start</strong> (<em>int</em>) – Beginning of active region (in samples). Cannot be less than 0.</li>
+<li><strong>end</strong> (<em>int</em>) – End of active region (in samples). Cannot be larger than self.signal_length.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<p>Returns:</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="audio_signal.AudioSignal.get_power_spectrogram_channel">
-<code class="descname">get_power_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_power_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.power_spectrogram_data</span></code>.</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>Raises:</dt>
-<dd>Exception: If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</dd>
+<dt id="audio_signal.AudioSignal.set_active_region_to_default">
+<code class="descname">set_active_region_to_default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.set_active_region_to_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the active region of this <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object to it default value of the entire <code class="docutils literal"><span class="pre">audio_data</span></code> array.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#audio_signal.AudioSignal.set_active_region" title="audio_signal.AudioSignal.set_active_region"><code class="xref py py-func docutils literal"><span class="pre">set_active_region()</span></code></a> for an explanation of active regions within the <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>.</li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.signal_duration">
+<code class="descname">signal_duration</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_duration" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(float)</em> – Duration of audio in seconds.
+The length of the audio signal represented by this object in seconds</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.signal_length">
+<code class="descname">signal_length</code><a class="headerlink" href="#audio_signal.AudioSignal.signal_length" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Number of samples in the active region of <cite>self.audio_data</cite>
+The length of the audio signal represented by this object in samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.stft">
+<code class="descname">stft</code><span class="sig-paren">(</span><em>window_length=None</em>, <em>hop_length=None</em>, <em>window_type=None</em>, <em>n_fft_bins=None</em>, <em>remove_reflection=True</em>, <em>overwrite=True</em>, <em>use_librosa=True</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.stft" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Computes the Short Time Fourier Transform (STFT) of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</dt>
+<dd>The results of the STFT calculation can be accessed from <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>
+if <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code> prior to running this function or <code class="docutils literal"><span class="pre">overwrite</span> <span class="pre">==</span> <span class="pre">True</span></code></dd>
 </dl>
-</div></blockquote>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If overwrite=True (default) this will overwrite any data in <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a>!</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of power spectrogram channel to get <strong>0-based</strong></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>window_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to do an FFT on</li>
+<li><strong>hop_length</strong> (<em>int</em><em>, </em><em>optional</em>) – Amount of time (in samples) to skip ahead for the new FFT</li>
+<li><strong>window_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of scaling to apply to the window.</li>
+<li><strong>n_fft_bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of FFT bins per each hop</li>
+<li><strong>remove_reflection</strong> (<em>bool</em><em>, </em><em>optional</em>) – Should remove reflection above Nyquist</li>
+<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – Overwrite <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> with current calculation</li>
+<li><strong>use_librosa</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use <em>librosa’s</em> stft function</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the power spectrogram data in the n-th channel of the signal, 1D</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) Calculated, complex-valued STFT from <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>, 3D numpy array
+with shape <cite>(n_frequency_bins, n_hops, n_channels)</cite>.</p>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.stft_length">
+<code class="descname">stft_length</code><a class="headerlink" href="#audio_signal.AudioSignal.stft_length" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – The number of time windows the STFT has.
+:raises: <code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <code class="docutils literal"><span class="pre">self.stft_dat``a</span> <span class="pre">is</span> <span class="pre">``None</span></code>. Run <a class="reference internal" href="#audio_signal.AudioSignal.stft" title="audio_signal.AudioSignal.stft"><code class="xref py py-func docutils literal"><span class="pre">stft()</span></code></a> before accessing this.</p>
+</dd></dl>
+
 <dl class="method">
-<dt id="audio_signal.AudioSignal.get_magnitude_spectrogram_channel">
-<code class="descname">get_magnitude_spectrogram_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.get_magnitude_spectrogram_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the n-th channel from <code class="docutils literal"><span class="pre">self.magnitude_spectrogram_data</span></code>.</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>Raises:</dt>
-<dd>Exception: If not <code class="docutils literal"><span class="pre">0</span> <span class="pre">&lt;=</span> <span class="pre">n</span> <span class="pre">&lt;</span> <span class="pre">self.num_channels</span></code>.</dd>
-</dl>
-</div></blockquote>
+<dt id="audio_signal.AudioSignal.subtract">
+<code class="descname">subtract</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.subtract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subtracts two audio signal objects.</p>
+<p>This does element-wise subtraction on the <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> array.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – (int) index of magnitude spectrogram channel to get <strong>0-based</strong></td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">AssertionError</span></code> – If <code class="docutils literal"><span class="pre">self.sample_rate</span> <span class="pre">!=</span> <span class="pre">other.sample_rate</span></code>,</li>
+<li><code class="docutils literal"><span class="pre">self.num_channels</span> <span class="pre">!=</span> <span class="pre">other.num_channels</span></code>, or <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is <code class="docutils literal"><span class="pre">False</span></code>.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – the magnitude spectrogram data in the n-th channel of the signal, 1D</td>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>other</strong> (<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>) – Other <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> to subtract.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a>) – New <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object with the difference between <code class="docutils literal"><span class="pre">self</span></code> and <code class="docutils literal"><span class="pre">other</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.time_bins_vector">
+<code class="descname">time_bins_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.time_bins_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – A 1D numpy array with time values that correspond
+to each time bin (horizontal axis) in the STFT.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></code> – If <a class="reference internal" href="#audio_signal.AudioSignal.stft_data" title="audio_signal.AudioSignal.stft_data"><code class="xref py py-attr docutils literal"><span class="pre">stft_data</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code>. Run <a class="reference internal" href="#audio_signal.AudioSignal.stft" title="audio_signal.AudioSignal.stft"><code class="xref py py-func docutils literal"><span class="pre">stft()</span></code></a> before accessing this.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="audio_signal.AudioSignal.time_vector">
+<code class="descname">time_vector</code><a class="headerlink" href="#audio_signal.AudioSignal.time_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>(<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – A 1D np array with timestamps (in seconds) for each sample in the time domain.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts this <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object to JSON.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#audio_signal.AudioSignal.from_json" title="audio_signal.AudioSignal.from_json"><code class="xref py py-func docutils literal"><span class="pre">from_json()</span></code></a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(str)</em> – JSON representation of the current <a class="reference internal" href="#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code></a> object.</td>
 </tr>
 </tbody>
 </table>
@@ -928,18 +985,93 @@ numpy array.</p>
 <dl class="method">
 <dt id="audio_signal.AudioSignal.to_mono">
 <code class="descname">to_mono</code><span class="sig-paren">(</span><em>overwrite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.to_mono" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts <code class="docutils literal"><span class="pre">self.audio_data</span></code> to mono by averaging every sample.</p>
+<dd><p>Converts <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a> to mono by averaging every sample.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">If overwrite=True (default) this will overwrite any data in <code class="docutils literal"><span class="pre">self.audio_data</span></code>!</p>
+<p class="last">If overwrite=True (default) this will overwrite any data in <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>!</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal"><span class="pre">True</span></code> this function will overwrite <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>overwrite</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal"><span class="pre">True</span></code> this function will overwrite <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – Mono-ed version of <code class="docutils literal"><span class="pre">self.audio_data</span></code>.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code>) – Mono-ed version of <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.truncate_samples">
+<code class="descname">truncate_samples</code><span class="sig-paren">(</span><em>n_samples</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.truncate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncates the signal leaving only the first <code class="docutils literal"><span class="pre">n_samples</span></code> samples.
+This can only be done if <code class="docutils literal"><span class="pre">self.active_region_is_default</span></code> is True.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <code class="docutils literal"><span class="pre">n_samples</span> <span class="pre">&gt;</span> <span class="pre">self.signal_length</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_samples</strong> – (int) number of samples that will be left.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.truncate_seconds">
+<code class="descname">truncate_seconds</code><span class="sig-paren">(</span><em>n_seconds</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.truncate_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncates the signal leaving only the first n_seconds.
+This can only be done if self.active_region_is_default is True.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <code class="docutils literal"><span class="pre">n_seconds</span> <span class="pre">&gt;</span> <span class="pre">self.signal_duration</span></code> or <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_seconds</strong> – (float) number of seconds to truncate <a class="reference internal" href="#audio_signal.AudioSignal.audio_data" title="audio_signal.AudioSignal.audio_data"><code class="xref py py-attr docutils literal"><span class="pre">audio_data</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.write_audio_to_file">
+<code class="descname">write_audio_to_file</code><span class="sig-paren">(</span><em>output_file_path</em>, <em>sample_rate=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.write_audio_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs the audio signal to a file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_file_path</strong> (<em>str</em>) – Filename where output file will be saved.</li>
+<li><strong>sample_rate</strong> (<em>int</em><em>, </em><em>optional</em>) – The sample rate to write the file at. Default is <code class="docutils literal"><span class="pre">self.sample_rate</span></code>.</li>
+<li><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Print out a message if writing the file was successful.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="audio_signal.AudioSignal.zero_pad">
+<code class="descname">zero_pad</code><span class="sig-paren">(</span><em>before</em>, <em>after</em><span class="sig-paren">)</span><a class="headerlink" href="#audio_signal.AudioSignal.zero_pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds zeros before and after the signal to all channels.
+Extends the length of self.audio_data by before + after.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">Exception</span></code> – If <cite>self.active_region_is_default`</cite> is <code class="docutils literal"><span class="pre">False</span></code>.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>before</strong> – (int) number of zeros to be put before the current contents of self.audio_data</li>
+<li><strong>after</strong> – (int) number of zeros to be put after the current contents fo self.audio_data</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -962,6 +1094,7 @@ numpy array.</p>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>

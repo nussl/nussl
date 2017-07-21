@@ -100,14 +100,14 @@ changing ``audio_data``. We do that like this:
 
 If we hadn’t set ``overwrite=True`` then ``to_mono()`` would just return a np array of mono-ed ``audio_data`` and
 not change the representation of ``signal1.audio_data``. You will see this pattern come up again. In certain
-places, ``AudioSignal``'s default behavior is to overwrite its internal data, and in other places the default is to
+places, :class:`AudioSignal`:'s default behavior is to overwrite its internal data, and in other places the default is to
 **not** overwrite data. See the reference pages for more info.
 
 Now, we can add the two signals as before:
 
 >>> signal3 = signal1 + signal2
 
-No exceptions this time! Great! ``signal3`` is now a new ``AudioSignal`` object. We can similarly subtract two signals.
+No exceptions this time! Great! ``signal3`` is now a new :class:`AudioSignal`: object. We can similarly subtract two signals.
 
 Let’s write this to a file:
 

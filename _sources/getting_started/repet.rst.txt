@@ -15,13 +15,13 @@ The REpeating Pattern Extraction Technique, or REPET, is source separation algor
 into "frames" of the same length of the repeating period and "overlays" those frames. Once the frames are overlayed,
 REPET extracts the non-repeating part by filtering out values that are far from the median value at each frame.
 
-In order to run REPET in *nussl*, we first must create an ``AudioSignal`` object. We're going to load a file as before.
+In order to run REPET in *nussl*, we first must create an :class:`AudioSignal`: object. We're going to load a file as before.
 
 >>> import nussl
 >>> history = nussl.AudioSignal('HistoryRepeatingPropellerHeads.wav')
 
 Neat. Now, we need to instantiate a ``Repet`` object. **Like all source separation algorithms** in *nussl*, ``Repet``
-needs an ``AudioSignal`` object as its first parameter when we initialize it.
+needs an :class:`AudioSignal`: object as its first parameter when we initialize it.
 
 >>> repet = nussl.Repet(history)
 
@@ -83,8 +83,8 @@ all of our algorithms in *nussl* the same way, by calling ``make_audio_signals()
 >>> type(background), type(foreground)
 nussl.audio_signal.AudioSignal, nussl.audio_signal.AudioSignal
 
-We can see that ``make_audio_signals()`` produces two new ``AudioSignal`` objects. Why two? One for each source. Other
-algorithms (like DUET) may produce different numbers of ``AudioSignal`` objects.
+We can see that ``make_audio_signals()`` produces two new :class:`AudioSignal`: objects. Why two? One for each source. Other
+algorithms (like DUET) may produce different numbers of :class:`AudioSignal`: objects.
 
 Now, we can use these just like before. So let's write our results to files:
 

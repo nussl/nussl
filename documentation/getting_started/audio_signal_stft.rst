@@ -18,12 +18,12 @@ at ``signal1.stft_data``. Let's try that.
 >>> signal1.stft_data
 None
 
-Whoops! Because this object was initialized from a .wav file (i.e., time-series data), this ``AudioSignal`` object has
+Whoops! Because this object was initialized from a .wav file (i.e., time-series data), this :class:`AudioSignal`: object has
 no frequency domain data by default. To populate it with frequency data we do thusly:
 
 >>> signal1.stft()
 
-Aha! Now we can examine how STFT data is stored in the ``AudioSignal`` object. Similar to ``signal1.audio_data``,
+Aha! Now we can examine how STFT data is stored in the :class:`AudioSignal`: object. Similar to ``signal1.audio_data``,
 STFT data is stored in a (complex-valued) numpy array called ``signal1.stft_data`` [#f1]_.
 
 >>> signal1.stft_data
@@ -57,7 +57,7 @@ array([[[  5.65585184e+00 -0.00000000e+00j,
 
 By inspecting the shape we see that the first dimension represents the number of FFT bins taken at each hop,
 the second represents the length of our signal (in hops), and the third dimension is number of channels. There is
-an easy way to get all of this data from our ``AudioSignal`` object without having to do array indexing:
+an easy way to get all of this data from our :class:`AudioSignal`: object without having to do array indexing:
 
 >>> signal1.stft_length
 88
@@ -104,9 +104,9 @@ array([[[  1.52118325e+00],
 Inverse STFTs
 -------------
 
-Let's do something a little more interesting with our ``AudioSignal`` object. Since ``signal1.stft_data`` is just
+Let's do something a little more interesting with our :class:`AudioSignal`: object. Since ``signal1.stft_data`` is just
 a regular numpy array, we can access and manipulate it as such. So let's implement a low pass filter by creating a
-new ``AudioSignal`` object and leaving ``signal1`` unaltered.
+new :class:`AudioSignal`: object and leaving ``signal1`` unaltered.
 
 Let's eliminate all frequencies above about 400 Hz in our signal.
 
@@ -117,11 +117,11 @@ Let's eliminate all frequencies above about 400 Hz in our signal.
 >>> lp_stft[idx:, :, :] = 0.0j  # every freq above ~400 Hz is 0 now
 
 Okay, so now we have low passed STFT data in the numpy array ``lp_stft``. Now we are going to see how we can initialize
-a new ``AudioSignal`` object using this data.
+a new :class:`AudioSignal`: object using this data.
 
 >>> signal1_lp = nussl.AudioSignal(stft=lp_stft)
 
-Easy-peasy! Now ``signal1_lp`` is a new ``AudioSignal`` object that has been initialized with STFT data instead of
+Easy-peasy! Now ``signal1_lp`` is a new :class:`AudioSignal`: object that has been initialized with STFT data instead of
 time series data. Before we can write this to a file, we need to do an Inverse STFT to get back time-series data.
 
 >>> signal1_lp.audio_data
@@ -169,9 +169,9 @@ StftParams Object
 ^^^^^^^^^^^^^^^^^
 
 The :class:`nussl.StftParams` is an object that stores parameters for doing STFTs and iSTFTs. Its main function is to
-keep track of user-set parameters for the duration of the ``AudioSignal`` object's life. The separation
+keep track of user-set parameters for the duration of the :class:`AudioSignal`: object's life. The separation
 objects (:class:`nussl.Repet`, for instance) also have a ``StftParams`` object, which is copied from the input
-``AudioSignal`` object.
+:class:`AudioSignal`: object.
 
 Let's get to some examples to demonstrate.
 
@@ -183,7 +183,7 @@ We can calculate an STFT with special, non-default parameters:
 But the next time we do an STFT, we'll have the default parameters again. And *furthermore*, any other code
 that calls ``signal1.sift()`` (like, ``nussl.Repet``) will use the default parameters.
 
-If we want to have these settings saved for the life of this ``AudioSignal`` object, we have to set them
+If we want to have these settings saved for the life of this :class:`AudioSignal`: object, we have to set them
 in ``signal1``'s ``StftParams`` object, at ``signal1.stft_params``.
 
 >>> signal1 = nussl.AudioSignal(input_file_path)
