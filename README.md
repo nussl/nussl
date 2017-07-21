@@ -14,6 +14,20 @@ user fine tuned control of low-level parameters.
 
 Please see the issues page before contacting the authors.
 
+Branch Layout
+-------------
+
+- **Master** contains the most recent stable version, the version that you get when you pip install *nussl*.
+- **Development** contains the most recent work, but is not as stable as master. Most all of development work happens
+in this branch before being pushed to **master**.
+- **Experimental** has many more implementations, but many have not been vetted or properly tested. Some methods in this
+branch require extra functionality that cannot be included in a pip install, such as the Vamp binary files or 
+tensorflow. This branch is the bleeding edge.
+- **Refactorization** sometimes exists when having extra students work on specific features.
+- **gh-pages** is used to auto generate our documentation using Sphinx.
+
+
+
 Documentation
 -------------
 
@@ -25,7 +39,7 @@ Note: This package has been tested with python 2.7, but not python 3.x yet. Use 
 Features
 --------
 
-At its core, nussl contains (or will contain) implementations of the following source separation algorithms:
+At its core, nussl contains implementations of the following source separation algorithms:
 
 Spatialization algorithms:
 * Degenerate Unmixing Estimation Technique (DUET)
@@ -34,18 +48,23 @@ Spatialization algorithms:
 Median filtering algorithms:
 * REpeating Pattern Extraction Technique (REPET)
 * REPET using the cosine similarity matrix (REPET-SIM)
-* Harmonic/Percussive Source Separation (HPSS) (**Coming Soon**)
-* Kernel Adaptive Modeling (KAM) (**Coming Soon**)
+* Harmonic/Percussive Source Separation (HPSS)
+* Kernel Adaptive Modeling (KAM) 
 
 General matrix decomposition:
-* Non-negative Matrix Factorization (NMF) (**Coming Soon**)
-* Robust Principal Component Analysis (RPCA) (**Coming Soon**)
+* Non-negative Matrix Factorization (NMF)
+* Robust Principal Component Analysis (RPCA) 
+* Independent Component Analysis (ICA)
 
-Also coming: Deep methods (Deep Clustering, Huang et. al. Deep Separation, etc.) (with keras backend), Separation by Segmentation, Melody tracking methods (Melodia, SIMM), ICA, Ideal Masks, Overlap adding (windowing) functionality for existing methods, and many more!
+Other Separation Methods
+* Ideal Mask
+* Overlap Add
+
+Also coming: Deep methods (Deep Clustering, Huang et. al. Deep Separation, etc.) (with keras backend), Separation by 
+Segmentation, Melody tracking methods (Melodia, SIMM), and many more!
 
 The nussl team is also working on implementing an evaluation framework, which will include easy interoperability
-between nussl and `mir_eval` (`bss_eval`) as well as implementations of other evaluation methods. (See development
-branch)
+between nussl and `mir_eval` (aka `BSSEval`) as well as implementations of other evaluation methods. 
 
 
 Installation
@@ -58,36 +77,19 @@ Installation is easy if you have pip (recommended):
 $ pip install nussl
 ```
 
---or--
-
-Once you've downloaded and decompressed the tarball, run setup.py like this:
-```
-$ python setup.py install
-```
-
-You can also download and copy the nussl folder into your working directory.
-
-
-nussl requires:
-
-```
-numpy        version >= 1.8.0
-scipy        version >= 0.13.0
-matplotlib   version >= 1.3.1
-audioread    version >= 2.1.2
-librosa      version >= 0.4.1
-```
-
 
 Development Status
 ------------------
 
 Camera ready (in master and pip builds):
-* REPET
-* REPET-SIM
+* Repet
+* RepetSim
+* IdealMask
+* OverlapAdd
+* DUET 
+
 
 In Development Branch:
-* DUET (Just touch-up work)
 * NMF
 * RPCA
 * PROJET
@@ -98,6 +100,7 @@ Planned:
 * HPSS
 * SIMM
 * Separation via segmentation
+* Deep clustering
 * Your algorithm? (contact us for details)
 
 
