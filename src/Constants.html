@@ -65,6 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="separation/separation_classes.html">Separation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evaluation/evaluation_classes.html">Evaluation Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformers/transformer_classes.html">Transformer Classes</a></li>
@@ -138,15 +139,15 @@
 <p>A repository containing all of the constants frequently used in
 this wacky, mixed up source separation stuff.</p>
 <dl class="data">
-<dt id="constants.DEFAULT_SAMPLE_RATE">
-<code class="descclassname">constants.</code><code class="descname">DEFAULT_SAMPLE_RATE</code><em class="property"> = 44100</em><a class="headerlink" href="#constants.DEFAULT_SAMPLE_RATE" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> – Default sample rate. 44.1 kHz, CD-quality</p>
+<dt id="constants.ALL_WINDOWS">
+<code class="descclassname">constants.</code><code class="descname">ALL_WINDOWS</code><em class="property"> = ['hamming', 'rectangular', 'hann', 'blackman', 'triangular']</em><a class="headerlink" href="#constants.ALL_WINDOWS" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list(str)</em> – list of all available windows in <em>nussl</em></p>
 </dd></dl>
 
 <dl class="data">
-<dt id="constants.DEFAULT_WIN_LEN_PARAM">
-<code class="descclassname">constants.</code><code class="descname">DEFAULT_WIN_LEN_PARAM</code><em class="property"> = 0.04</em><a class="headerlink" href="#constants.DEFAULT_WIN_LEN_PARAM" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(float)</em> – Default window length. 40ms</p>
+<dt id="constants.CHAN_INDEX">
+<code class="descclassname">constants.</code><code class="descname">CHAN_INDEX</code><em class="property"> = 0</em><a class="headerlink" href="#constants.CHAN_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Index of the number of channels in an audio signal. Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a></p>
 </dd></dl>
 
 <dl class="data">
@@ -162,63 +163,21 @@ this wacky, mixed up source separation stuff.</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="constants.DEFAULT_SAMPLE_RATE">
+<code class="descclassname">constants.</code><code class="descname">DEFAULT_SAMPLE_RATE</code><em class="property"> = 44100</em><a class="headerlink" href="#constants.DEFAULT_SAMPLE_RATE" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Default sample rate. 44.1 kHz, CD-quality</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.DEFAULT_WIN_LEN_PARAM">
+<code class="descclassname">constants.</code><code class="descname">DEFAULT_WIN_LEN_PARAM</code><em class="property"> = 0.04</em><a class="headerlink" href="#constants.DEFAULT_WIN_LEN_PARAM" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(float)</em> – Default window length. 40ms</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="constants.EPSILON">
 <code class="descclassname">constants.</code><code class="descname">EPSILON</code><em class="property"> = 1e-16</em><a class="headerlink" href="#constants.EPSILON" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>(float)</em> – epsilon for determining small values</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.MAX_FREQUENCY">
-<code class="descclassname">constants.</code><code class="descname">MAX_FREQUENCY</code><em class="property"> = 22050</em><a class="headerlink" href="#constants.MAX_FREQUENCY" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> – Maximum frequency representable. 22050 Hz</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.WINDOW_HAMMING">
-<code class="descclassname">constants.</code><code class="descname">WINDOW_HAMMING</code><em class="property"> = 'hamming'</em><a class="headerlink" href="#constants.WINDOW_HAMMING" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – Name for calling Hamming window. ‘hamming’</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.WINDOW_RECTANGULAR">
-<code class="descclassname">constants.</code><code class="descname">WINDOW_RECTANGULAR</code><em class="property"> = 'rectangular'</em><a class="headerlink" href="#constants.WINDOW_RECTANGULAR" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – Name for calling Rectangular window. ‘rectangular’</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.WINDOW_HANN">
-<code class="descclassname">constants.</code><code class="descname">WINDOW_HANN</code><em class="property"> = 'hann'</em><a class="headerlink" href="#constants.WINDOW_HANN" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – Name for calling Hann window. ‘hann’</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.WINDOW_BLACKMAN">
-<code class="descclassname">constants.</code><code class="descname">WINDOW_BLACKMAN</code><em class="property"> = 'blackman'</em><a class="headerlink" href="#constants.WINDOW_BLACKMAN" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – Name for calling Blackman window. ‘blackman’</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.WINDOW_TRIANGULAR">
-<code class="descclassname">constants.</code><code class="descname">WINDOW_TRIANGULAR</code><em class="property"> = 'triangular'</em><a class="headerlink" href="#constants.WINDOW_TRIANGULAR" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – Name for calling Triangular window. ‘triangular’</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.WINDOW_DEFAULT">
-<code class="descclassname">constants.</code><code class="descname">WINDOW_DEFAULT</code><em class="property"> = 'hamming'</em><a class="headerlink" href="#constants.WINDOW_DEFAULT" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – Default window, Hamming.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.ALL_WINDOWS">
-<code class="descclassname">constants.</code><code class="descname">ALL_WINDOWS</code><em class="property"> = ['hamming', 'rectangular', 'hann', 'blackman', 'triangular']</em><a class="headerlink" href="#constants.ALL_WINDOWS" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list(str)</em> – list of all available windows in <em>nussl</em></p>
-</dd></dl>
-
-<dl class="data">
-<dt id="constants.NUMPY_JSON_KEY">
-<code class="descclassname">constants.</code><code class="descname">NUMPY_JSON_KEY</code><em class="property"> = 'py/numpy.ndarray'</em><a class="headerlink" href="#constants.NUMPY_JSON_KEY" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(str)</em> – key used when turning numpy arrays into json</p>
 </dd></dl>
 
 <dl class="data">
@@ -228,15 +187,21 @@ this wacky, mixed up source separation stuff.</p>
 </dd></dl>
 
 <dl class="data">
-<dt id="constants.CHAN_INDEX">
-<code class="descclassname">constants.</code><code class="descname">CHAN_INDEX</code><em class="property"> = 0</em><a class="headerlink" href="#constants.CHAN_INDEX" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>(int)</em> – Index of the number of channels in an audio signal. Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a></p>
+<dt id="constants.MAX_FREQUENCY">
+<code class="descclassname">constants.</code><code class="descname">MAX_FREQUENCY</code><em class="property"> = 22050</em><a class="headerlink" href="#constants.MAX_FREQUENCY" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(int)</em> – Maximum frequency representable. 22050 Hz</p>
 </dd></dl>
 
 <dl class="data">
-<dt id="constants.STFT_VERT_INDEX">
-<code class="descclassname">constants.</code><code class="descname">STFT_VERT_INDEX</code><em class="property"> = 0</em><a class="headerlink" href="#constants.STFT_VERT_INDEX" title="Permalink to this definition">¶</a></dt>
-<dd><p>(int) Index of the number of frequency (vertical) values in a time-frequency representation.
+<dt id="constants.NUMPY_JSON_KEY">
+<code class="descclassname">constants.</code><code class="descname">NUMPY_JSON_KEY</code><em class="property"> = 'py/numpy.ndarray'</em><a class="headerlink" href="#constants.NUMPY_JSON_KEY" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – key used when turning numpy arrays into json</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.STFT_CHAN_INDEX">
+<code class="descclassname">constants.</code><code class="descname">STFT_CHAN_INDEX</code><em class="property"> = 2</em><a class="headerlink" href="#constants.STFT_CHAN_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Index of the number of channels in a time-frequency representation.
 Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a> and in <a class="reference internal" href="separation/mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a>.</p>
 </dd></dl>
 
@@ -248,10 +213,46 @@ Used in <a class="reference internal" href="audio_signal.html#audio-signal"><spa
 </dd></dl>
 
 <dl class="data">
-<dt id="constants.STFT_CHAN_INDEX">
-<code class="descclassname">constants.</code><code class="descname">STFT_CHAN_INDEX</code><em class="property"> = 2</em><a class="headerlink" href="#constants.STFT_CHAN_INDEX" title="Permalink to this definition">¶</a></dt>
-<dd><p>(int) Index of the number of channels in a time-frequency representation.
+<dt id="constants.STFT_VERT_INDEX">
+<code class="descclassname">constants.</code><code class="descname">STFT_VERT_INDEX</code><em class="property"> = 0</em><a class="headerlink" href="#constants.STFT_VERT_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Index of the number of frequency (vertical) values in a time-frequency representation.
 Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a> and in <a class="reference internal" href="separation/mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase Class</span></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.WINDOW_BLACKMAN">
+<code class="descclassname">constants.</code><code class="descname">WINDOW_BLACKMAN</code><em class="property"> = 'blackman'</em><a class="headerlink" href="#constants.WINDOW_BLACKMAN" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – Name for calling Blackman window. ‘blackman’</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.WINDOW_DEFAULT">
+<code class="descclassname">constants.</code><code class="descname">WINDOW_DEFAULT</code><em class="property"> = 'hamming'</em><a class="headerlink" href="#constants.WINDOW_DEFAULT" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – Default window, Hamming.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.WINDOW_HAMMING">
+<code class="descclassname">constants.</code><code class="descname">WINDOW_HAMMING</code><em class="property"> = 'hamming'</em><a class="headerlink" href="#constants.WINDOW_HAMMING" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – Name for calling Hamming window. ‘hamming’</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.WINDOW_HANN">
+<code class="descclassname">constants.</code><code class="descname">WINDOW_HANN</code><em class="property"> = 'hann'</em><a class="headerlink" href="#constants.WINDOW_HANN" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – Name for calling Hann window. ‘hann’</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.WINDOW_RECTANGULAR">
+<code class="descclassname">constants.</code><code class="descname">WINDOW_RECTANGULAR</code><em class="property"> = 'rectangular'</em><a class="headerlink" href="#constants.WINDOW_RECTANGULAR" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – Name for calling Rectangular window. ‘rectangular’</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.WINDOW_TRIANGULAR">
+<code class="descclassname">constants.</code><code class="descname">WINDOW_TRIANGULAR</code><em class="property"> = 'triangular'</em><a class="headerlink" href="#constants.WINDOW_TRIANGULAR" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>(str)</em> – Name for calling Triangular window. ‘triangular’</p>
 </dd></dl>
 
 </div>
@@ -269,6 +270,7 @@ Used in <a class="reference internal" href="audio_signal.html#audio-signal"><spa
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
+      Last updated on Jul 20, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
     </p>
   </div>
