@@ -30,30 +30,37 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
     See Also:
         http://music.eecs.northwestern.edu/research.php?project=repet
+        :ref:`The REPET Demo Example <repet_demo>`
+        :class:`separation.repet_sim.RepetSim`
 
     Parameters:
-        input_audio_signal (:obj:`AudioSignal`): The ``AudioSignal`` object that REPET will be run on.
-            This makes a copy of ``input_audio_signal``
+        input_audio_signal (:class:`audio_signal.AudioSignal`): The :class:`audio_signal.AudioSignal` object that
+         REPET will be run on. This makes a copy of ``input_audio_signal``
         min_period (float, optional): minimum time to look for repeating period in terms of seconds.
         max_period (float, optional): maximum time to look for repeating period in terms of seconds.
         period (float, optional): exact time that the repeating period is (in seconds).
         high_pass_cutoff (float, optional): value (in Hz) for the high pass cutoff filter.
-        do_mono (bool, optional): Flattens ``AudioSignal`` to mono before running the algorithm (does not effect the
-                        input ``AudioSignal`` object)
-        use_find_period_complex (bool, optional): Will use a more complex peak picker to find the repeating period
+        do_mono (bool, optional): Flattens :class:`audio_signal.AudioSignal` to mono before running the 
+        algorithm (does not effect the input :class:`audio_signal.AudioSignal` object).
+        use_find_period_complex (bool, optional): Will use a more complex peak picker to find the repeating period.
         use_librosa_stft (bool, optional): Calls librosa's stft function instead of nussl's
         matlab_fidelity (bool, optional): If True, does repet with the same settings as the original MATLAB
                         implementation of REPET, warts and all. This will override ``use_librosa_stft`` and set
                         it to ``False``.
 
     Examples:
-        :ref:`The REPET Demo Example <repet_demo>`
+        
 
     Attributes:
-        background (:obj:`AudioSignal`): Calculated background. This is ``None`` until ``run()`` is called.
-        foreground (:obj:`AudioSignal`): Calculated foreground. This is ``None`` until ``make_audio_signals()``
-            is called.
+        background (:class:`audio_signal.AudioSignal`): Calculated background. This is ``None`` until :func:`run()` is 
+            called.
+        foreground (:class:`audio_signal.AudioSignal`): Calculated foreground. This is ``None`` until 
+            :func:`make_audio_signals()` is called.
         beat_spectrum (:obj:`np.array`): Beat spectrum calculated by Repet.
+        use_find_period_complex (bool): Determines whether to use complex peak picker to find the repeating period.
+        repeating_period (int): Repeating period in units of hops (stft time bins)
+        stft (:obj:`np.ndarray`): Local copy of the STFT input from ``input_audio_array``
+        mangitude_spectrogram (:obj:`np.ndarray`): Local copy of the mangitude spectrogram 
 
     """
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
@@ -78,7 +85,6 @@ class Repet(mask_separation_base.MaskSeparationBase):
         self.repeating_period = None
         self.magnitude_spectrogram = None
         self.stft = None
-        self.repeating_period = None
         self.matlab_fidelity = matlab_fidelity
         self._is_period_converted_to_hops = False
 
@@ -104,22 +110,25 @@ class Repet(mask_separation_base.MaskSeparationBase):
         """ Runs the original REPET algorithm
 
         Returns:
-            masks (:obj:`MaskBase`): A ``MaskBase``-derived object with repeating background time-frequency data.
-            (to get the corresponding non-repeating foreground run self.make_audio_signals())
+            masks (:obj:`MaskBase`): A :obj:`MaskBase`-derived object with repeating background time-frequency data.
+            (to get the corresponding non-repeating foreground run :func:`make_audio_signals`)
 
         Example:
-             ::
+            
+        .. code-block:: python
+            :linenos:
+            
             signal = nussl.AudioSignal(path_to_input_file='input_name.wav')
 
             # Set up and run Repet
-            repet = nussl.Repet(signal)
-            repet.run() # or repet()
+            repet = nussl.Repet(signal)  # Returns a soft mask by default
+            masks = repet.run() # or repet()
 
             # Get audio signals
             background, foreground = repet.make_audio_signals()
 
             # output the background
-            background.write_audio_to_file('output.wav')
+            background.write_audio_to_file('background.wav')
 
         """
         # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
@@ -172,8 +181,11 @@ class Repet(mask_separation_base.MaskSeparationBase):
         Returns:
             beat_spectrum (np.array): beat spectrum for the audio file
 
-        EXAMPLE::
+        Example:
 
+        .. code-block:: python
+            :linenos:
+            
             # Set up audio signal
             signal = nussl.AudioSignal('path_to_file.wav')
 
@@ -182,6 +194,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
             # I don't have to run repet to get a beat spectrum for signal
             beat_spec = repet.get_beat_spectrum()
+            
         """
         if recompute_stft or self.magnitude_spectrogram is None:
             self._compute_spectrograms()
@@ -202,7 +215,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
         if self.use_find_period_complex:
             self.repeating_period = self.find_repeating_period_complex(self.beat_spectrum)
         else:
-            # update the min and max so they're in units of frequency bin indices
+            # update the min and max so they're in units of time bin indices
             if not self._is_period_converted_to_hops:
                 self.min_period = self._update_period(self.min_period)
                 self.max_period = self._update_period(self.max_period)
@@ -214,24 +227,30 @@ class Repet(mask_separation_base.MaskSeparationBase):
         return self.repeating_period
 
     @staticmethod
-    def compute_beat_spectrum(power_spectrum):
-        """
-        Computes the beat spectrum averages (over freq's) the autocorrelation matrix of a one-sided spectrogram.
+    def compute_beat_spectrum(power_spectrogram):
+        """ Computes the beat spectrum averages (over freq's) the autocorrelation matrix of a one-sided spectrogram.
 
         The autocorrelation matrix is computed by taking the autocorrelation of each row of the spectrogram and
         dismissing the symmetric half.
 
-        Parameters:
-            power_spectrum (np.array): 2D matrix containing the one-sided power
-            spectrogram of the audio signal (Lf by Lt by num channels)
+        Args:
+            power_spectrogram (:obj:`np.array`): 2D matrix containing the one-sided power spectrogram of an audio signal
+            
         Returns:
-            (np.array): array containing the beat spectrum based on the power spectrogram
+            (:obj:`np.array`): array containing the beat spectrum based on the power spectrogram
+            
+        See Also:
+            J Foote's original derivation of the Beat Spectrum: 
+            Foote, Jonathan, and Shingo Uchihashi. "The beat spectrum: A new approach to rhythm analysis." 
+            Multimedia and Expo, 2001. ICME 2001. IEEE International Conference on. IEEE, 2001.
+            (`See PDF here <http://rotorbrain.com/foote/papers/icme2001.pdf>`_)
+            
         """
-        freq_bins, time_bins = power_spectrum.shape
+        freq_bins, time_bins = power_spectrogram.shape
 
         # row-wise autocorrelation according to the Wiener-Khinchin theorem
-        power_spectrum = np.vstack([power_spectrum, np.zeros_like(power_spectrum)])
-        fft_power_spec = scifft.fft(power_spectrum, axis=0)
+        power_spectrogram = np.vstack([power_spectrogram, np.zeros_like(power_spectrogram)])
+        fft_power_spec = scifft.fft(power_spectrogram, axis=0)
         abs_fft = np.abs(fft_power_spec) ** 2
         autocorrelation_rows = np.real(scifft.ifft(abs_fft, axis=0)[:freq_bins, :])  # ifft over columns
 
@@ -247,16 +266,20 @@ class Repet(mask_separation_base.MaskSeparationBase):
     @staticmethod
     def find_repeating_period_simple(beat_spectrum, min_period, max_period):
         """Computes the repeating period of the sound signal using the beat spectrum.
-           This algorithm just looks for the max value in the interval [min_period, max_period] inclusive.
+           This algorithm just looks for the max value in the interval ``[min_period, max_period]``, inclusive.
            It discards the first value, and returns the period in units of stft time bins.
 
         Parameters:
-            beat_spectrum (np.array): input beat spectrum array
+            beat_spectrum (:obj:`np.array`): input beat spectrum array
             min_period (int): minimum possible period value
             max_period (int): maximum possible period value
             
         Returns:
-             period (int) : The period of the sound signal in stft time bins
+             period (int): The period of the sound signal in stft time bins
+             
+        See Also:
+            :func:`find_repeating_period_complex`
+            
         """
         min_period, max_period = int(min_period), int(max_period)
         beat_spectrum = beat_spectrum[1:]  # discard the first element of beat_spectrum (lag 0)
@@ -271,13 +294,18 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
     @staticmethod
     def find_repeating_period_complex(beat_spectrum):
-        """
-
+        """ A more complicated approach to finding the repeating period. Use this by setting 
+        :attr:`use_find_period_complex`
+        
         Args:
-            beat_spectrum:
+            beat_spectrum (:obj:`np.array`): input beat spectrum array
 
         Returns:
-
+            period (int): The period of the sound signal in stft time bins
+            
+        See Also:
+            :func:`find_repeating_period_simple`
+        
         """
         auto_cosine = np.zeros((len(beat_spectrum), 1))
 
@@ -312,10 +340,11 @@ class Repet(mask_separation_base.MaskSeparationBase):
         """Computes the soft mask for the repeating part using the magnitude spectrogram and the repeating period
 
         Parameters:
-            magnitude_spectrogram_channel (np.array): 2D matrix containing the magnitude spectrogram of a signal
+            magnitude_spectrogram_channel (:obj:`np.array`): 2D matrix containing the magnitude spectrogram of a signal
+            
         Returns:
-            M (np.array): 2D matrix (Lf by Lt) containing the soft mask for the repeating part, elements of M take on
-            values in [0,1]
+            (:obj:`np.array`): 2D matrix (Lf by Lt) containing the soft mask for the repeating part, elements of M 
+            take on values in ``[0, 1]``
 
         """
         # this +1 is a kluge to make this implementation match the original MATLAB implementation
@@ -345,13 +374,16 @@ class Repet(mask_separation_base.MaskSeparationBase):
         return mask
 
     def update_periods(self):
-        """ Will update periods for use with ``self.find_repeating_period_simple()``.
+        """ Will update periods for use with :func:`find_repeating_period_simple`.
 
-        Updates from seconds to stft bin values.
-        Call this if you haven't done ``self.run()`` or else you won't get good results.
+        Updates from seconds to stft time bin values.
+        Call this if you haven't done :func:`run()` or else you won't get good results.
 
-        Examples:
-            ::
+        Example:
+            
+        .. code-block:: python
+            :linenos:
+
             a = nussl.AudioSignal('path/to/file.wav')
             r = nussl.Repet(a)
 
@@ -390,8 +422,10 @@ class Repet(mask_separation_base.MaskSeparationBase):
             show_repeating_period: (bool) if True, then adds a vertical line where repet things
                                 the repeating period is (if the repeating period has been computed already)
 
-        EXAMPLE:
-             ::
+        Example:
+        
+        .. code-block:: python
+            :linenos:
 
             signal = nussl.AudioSignal('Sample.wav')
             repet = nussl.Repet(signal)
@@ -431,17 +465,20 @@ class Repet(mask_separation_base.MaskSeparationBase):
         plt.savefig(output_file)
 
     def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run Repet.run() prior
-        to calling this function. This function will return None if run() has not been called.
+        """ Returns the background and foreground audio signals. You must have run :func:`run()` prior
+        to calling this function. This function will return ``None`` if :func:`run()` has not been called.
+        
+        Order of the list is ``[self.background, self.foreground]`` 
 
         Returns:
-            Audio Signals (List): 2 element list.
+            (list): List containing two :class:`audio_signal.AudioSignal` objects, one for the calculated background
+            and the next for the remaining foreground, in that order.
 
-                * bkgd: Audio signal with the calculated background track
-                * fkgd: Audio signal with the calculated foreground track
-
-        EXAMPLE:
-             ::
+        Example:
+            
+        .. code-block:: python
+            :linenos:
+            
             # set up AudioSignal object
             signal = nussl.AudioSignal('path_to_file.wav')
 
@@ -451,6 +488,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
             # get audio signals (AudioSignal objects)
             background, foreground = repet.make_audio_signals()
+            
         """
         if self.background is None:
             raise ValueError('Cannot make audio signals prior to running algorithm!')

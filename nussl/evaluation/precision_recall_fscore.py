@@ -9,8 +9,11 @@ able to create a binary mask compared to a known binary mask. The metrics used h
 (though this is not reflected in the name of the class, it is simply   ``# correct / total``).
 
 
-Examples:
-     ::
+Example:
+    
+.. code-block:: python
+    :linenos:
+
     # Run Repet
     repet = nussl.Repet(mixture, mask_type=nussl.BinaryMask)  # it's important to specify BinaryMask!
     repet_masks = repet()
@@ -69,7 +72,8 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
          will be labeled ``Source 0, Source 1, ...`` etc.
          
     Attributes:
-        scores (dict): Dictionary storing the precision, recall, F1-Score, and accuracy. See ``evaluate()`` below.
+        scores (dict): Dictionary storing the precision, recall, F1-Score, and accuracy. 
+         See :ref:`nussl.PrecisionRecallFScore.evaluate` below.
         
     """
 

@@ -81,6 +81,7 @@ class Duet(separation_base.SeparationBase):
             * **xhat** (*np.array*) - an N-row matrix containing time-domain estimates of sources
             * **ad_est** (*np.array*) - N by 2 Numpy matrix containing estimated attenuation and delay values
               corresponding to N sources
+              
         Example:
              ::
             input_file_name = '../Input/dev1_female3_inst_mix.wav'

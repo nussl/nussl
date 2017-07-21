@@ -49,8 +49,11 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         show_interactive_plot: (bool) (Optional) Flag indicating if plot should be shown when function is run.
             Defaults to False
 
-    Examples:
-         ::
+    Example:
+        
+    .. code-block:: python
+        :linenos:
+        
         # Set up sine wave parameters
         sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
         n_sec = 3 # seconds
@@ -137,8 +140,12 @@ def e_stft(signal, window_length, hop_length, window_type,
         Data is of shape (num_time_blocks, num_fft_bins). These numbers are determined by length of the input signal,
         on internal zero padding (explained at top), and n_fft_bins/remove_reflection input (see example below).
 
-    Examples:
-         ::
+    Example:
+        
+    .. code-block:: python
+        :linenos:
+        
+        
         # Set up sine wave parameters
         sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
         n_sec = 3 # seconds
@@ -251,8 +258,11 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     Returns:
         1D numpy array containing an audio signal representing the original signal used to make stft
 
-    Examples:
-         ::
+    Example:
+        
+    .. code-block:: python
+        :linenos:
+        
         # Set up sine wave parameters
         sr = nussl.Constants.DEFAULT_SAMPLE_RATE # 44.1kHz
         n_sec = 3 # seconds
