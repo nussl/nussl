@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import random
 import math
+import random
+
 import numpy as np
 
-import separation_base
 import audio_signal
 import constants
+from nussl.separation import separation_base
 
 
 class NMF(separation_base.SeparationBase):

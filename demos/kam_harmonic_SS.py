@@ -4,7 +4,7 @@
 import matplotlib.pyplot as plt
 plt.interactive('True')
 import numpy as np
-from nussl.KAM import AudioSignal,kam
+from nussl.separation.KAM import AudioSignal,kam
 import time  
 
 # close all figure windows
