@@ -3,6 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 # noinspection PyUnusedImport
 from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
@@ -30,15 +31,17 @@ class Duet(separation_base.SeparationBase):
     Parameters:
         input_audio_signal (np.array): a 2-row Numpy matrix containing samples of the two-channel mixture
         num_sources (int): number of sources to find
-        attenuation_min (Optional[int]): Minimum attenuation. Defaults to -3
-        attenuation_max (Optional[int]): Maximum attenuation. Defaults to 3
-        num_attenuation_bins (Optional[int]): Number of bins for attenuation. Defaults to 50
-        delay_min (Optional[int]): Minimum delay. Defaults to -3
-        delay_max (Optional[int]): Maximum delay. Defaults to 3
-        num_delay_bins (Optional[int]): Number of bins for delay. Defaults to 50
-        peak_threshold (Optional[float]): Value in [0, 1] for peak picking. Defaults to 0.2
-        attenuation_min_distance (Optional[int]): Minimum distance between peaks wrt attenuation. Defaults to 5
-        delay_min_distance (Optional[int]): Minimum distance between peaks wrt delay. Defaults to 5
+        attenuation_min (int): Minimum attenuation. 
+        attenuation_max (int): Maximum attenuation. 
+        num_attenuation_bins (int): Number of bins for attenuation. 
+        delay_min (int): Minimum delay.
+        delay_max (int): Maximum delay. 
+        num_delay_bins (int): Number of bins for delay. 
+        peak_threshold (float): Value in [0, 1] for peak picking. 
+        attenuation_min_distance (int): Minimum distance between peaks wrt attenuation. 
+        delay_min_distance (int): Minimum distance between peaks wrt delay.
+        p (int):
+        q (int):
 
     Attributes:
 
@@ -124,8 +127,9 @@ class Duet(separation_base.SeparationBase):
         #                                      np.array([self.attenuation_min_distance, self.delay_min_distance]),
         #                                      self.num_sources)
 
-        self.peak_indices = utils.find_peak_indices(hist, self.num_sources, threshold=self.peak_threshold,
-                                             min_dist=[self.attenuation_min_distance, self.delay_min_distance])
+        self.peak_indices = nussl.utils.find_peak_indices(hist, self.num_sources, threshold=self.peak_threshold,
+                                                          min_dist=[self.attenuation_min_distance,
+                                                                    self.delay_min_distance])
 
         # compute delay_peak, attenuation peak, and attenuation/delay estimates
         delay_peak, atn_delay_est, atn_peak = self.convert_peaks(atn_bins, delay_bins)
@@ -173,7 +177,7 @@ class Duet(separation_base.SeparationBase):
     def _compute_atn_delay(self):
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        inter_channel_ratio = (self.stft_ch1 + constants.EPSILON) / (self.stft_ch0 + constants.EPSILON)
+        inter_channel_ratio = (self.stft_ch1 + nussl.constants.EPSILON) / (self.stft_ch0 + nussl.constants.EPSILON)
         atn = np.abs(inter_channel_ratio)  # relative attenuation between the two channels
         symmetric_atn = atn - 1 / atn  # symmetric attenuation
         delay = -np.imag(np.log(inter_channel_ratio)) / (2 * np.pi * self.frequency_matrix)  # relative delay
@@ -379,7 +383,8 @@ class Duet(separation_base.SeparationBase):
         return best_ind, mask
 
     def convert_time_domain(self, best_ind, mask, atn_peak, delay_peak):
-        """Receives the attenuation and delay peaks, the mask and best indices and applies the mask to separate the sources
+        """Receives the attenuation and delay peaks, the mask and best indices and 
+        applies the mask to separate the sources
 
         Parameters:
             best_ind (np.array): The indices for where the masks are applied
@@ -397,11 +402,12 @@ class Duet(separation_base.SeparationBase):
             Xm = np.vstack([np.zeros((1, self.num_time_bins)),
                             (self.stft_ch0 + atn_peak[i] * np.exp(1j * self.frequency_matrix * delay_peak[i]) * self.stft_ch1) /
                             (1 + atn_peak[i] ** 2) * mask])
+
             # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
-            xi = spectral_utils.e_istft(Xm, self.stft_params.window_length,
+            xi = nussl.spectral_utils.e_istft(Xm, self.stft_params.window_length,
                                         self.stft_params.hop_length, self.stft_params.window_type)
 
-            source_estimates[i, :] = utils.add_mismatched_arrays(source_estimates[i, ], xi)[:self.audio_signal.signal_length]
+            source_estimates[i, :] = nussl.utils.add_mismatched_arrays(source_estimates[i, ], xi)[:self.audio_signal.signal_length]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # source_estimates=source_estimates+0.05*x[0,:]
