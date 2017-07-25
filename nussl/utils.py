@@ -11,6 +11,10 @@ import base64
 import json
 import constants
 
+from audio_signal import AudioSignal
+from separation import SeparationBase
+from separation import MaskSeparationBase
+
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
     """
@@ -326,3 +330,130 @@ def complex_randn(shape):
     Returns: (:obj:`np.ndarray`): a complex-valued numpy array of random values with shape `shape`
     """
     return np.random.randn(*shape) + 1j * np.random.randn(*shape)
+
+
+def _get_axis(array, axis_num, i):
+    """
+    Will get index 'i' along axis 'axis_num' of a 2- or 3-dimensional numpy array.
+    If array has 4+ dimensions or 'axis_num' is larger than number of axes, will return None.
+    Args:
+        array: 
+        axis_num: 
+        i: 
+
+    Returns:
+
+    """
+    if array.ndim == 2:
+        if axis_num == 0:
+            return array[i, :]
+        elif axis_num == 1:
+            return array[:, i]
+        else:
+            return None
+    elif array.ndim == 3:
+        if axis_num == 0:
+            return array[i, :, :]
+        elif axis_num == 1:
+            return array[:, i, :]
+        elif axis_num == 2:
+            return array[:, :, i]
+        else:
+            return None
+    else:
+        return None
+
+
+def _verify_audio_signal_list_lax(audio_signal_list):
+    """
+    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects. If not so, attempts 
+    to correct the list (if possible) and returns the corrected list.
+    Args:
+        audio_signal_list (list): List of :ref:`AudioSignal` objects
+
+    Returns:
+        audio_signal_list (list): Verified list of :ref:`AudioSignal` objects.
+
+    """
+    if isinstance(audio_signal_list, AudioSignal):
+        audio_signal_list = [audio_signal_list]
+    elif isinstance(audio_signal_list, list):
+        if not all(isinstance(s, AudioSignal) for s in audio_signal_list):
+            raise ValueError('All input objects must be AudioSignal objects!')
+        if not all(s.has_data for s in audio_signal_list):
+            raise ValueError('All AudioSignal objects in input list must have data!')
+    else:
+        raise ValueError('All input objects must be AudioSignal objects!')
+
+    return audio_signal_list
+
+
+def _verify_audio_signal_list_strict(audio_signal_list):
+    """
+    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects and that they all have the same
+    sample rate and same number of channels. If not true, attempts to correct the list (if possible) and returns 
+    the corrected list.
+    
+    Args:
+        audio_signal_list (list): List of :ref:`AudioSignal` objects
+
+    Returns: 
+        audio_signal_list (list): Verified list of :ref:`AudioSignal` objects, that all have 
+        the same sample rate and number of channels.
+
+    """
+    audio_signal_list = _verify_audio_signal_list_lax(audio_signal_list)
+
+    if not all(audio_signal_list[0].sample_rate == s.sample_rate for s in audio_signal_list):
+        raise ValueError('All input AudioSignal objects must have the same sample rate!')
+
+    if not all(audio_signal_list[0].num_channels == s.num_channels for s in audio_signal_list):
+        raise ValueError('All input AudioSignal objects must have the same number of channels!')
+
+    return audio_signal_list
+
+
+def _verify_separation_list(separation_list):
+    """
+    Verifies that all items in `separation_list` are :ref:`SeparationBase` -derived objects. If not so, attempts 
+    to correct the list if possible and returns the corrected list.
+    
+    Args:
+        separation_list: (list) List of :ref:`SeparationBase` -derived objects
+
+    Returns:
+        separation_list: (list) Verified list of :ref:`SeparationBase` -derived objects
+
+    """
+    if isinstance(separation_list, SeparationBase):
+        separation_list = [separation_list]
+    elif isinstance(separation_list, list):
+        if not all(isinstance(s, SeparationBase) for s in separation_list):
+            raise ValueError('All separation objects must be SeparationBase-derived objects!')
+    else:
+        raise ValueError('All separation objects must be SeparationBase-derived objects!')
+
+    return separation_list
+
+
+def _verify_mask_separation_list(mask_separation_list):
+    """
+    Verifies that all items in `separation_list` are :ref:`MaskSeparationBase` -derived objects. If not so, attempts 
+    to correct the list if possible and returns the corrected list.
+
+    Args:
+        mask_separation_list: (list) List of :ref:`MaskSeparationBase` -derived objects
+
+    Returns:
+        separation_list: (list) Verified list of :ref:`MaskSeparationBase` -derived objects
+
+    """
+    if isinstance(mask_separation_list, MaskSeparationBase):
+        mask_separation_list = [mask_separation_list]
+    elif isinstance(mask_separation_list, list):
+        if not all(isinstance(s, MaskSeparationBase) for s in mask_separation_list):
+            raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
+    else:
+        raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
+
+    return mask_separation_list

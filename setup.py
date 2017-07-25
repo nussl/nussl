@@ -23,7 +23,8 @@ REQUIREMENTS = [
     'matplotlib >= 1.3.0',
     'audioread >= 2.1.2',
     'librosa >= 0.4.1',
-    'mir_eval'
+    'mir_eval >= 0.4.0',
+    'sklearn'
 ]
 CLASSIFIERS = [
     'Development Status :: 3 - Alpha',

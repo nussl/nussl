@@ -31,7 +31,7 @@ def evaluate(evaluation_object, sources, algorithm_name):
         end = time.time()
         print end - start
 
-ideal_mask = nussl.IdealMask(mixture, sources = [mixture - vocals, vocals])
+ideal_mask = nussl.IdealMask(mixture, sources_list= [mixture - vocals, vocals])
 ideal_mask.run()
 sources = ideal_mask.make_audio_signals()
 print str(ideal_mask)
