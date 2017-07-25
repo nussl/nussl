@@ -21,6 +21,18 @@ class NMF(separation_base.SeparationBase):
     References:
     [1] Lee, Daniel D., and H. Sebastian Seung. "Algorithms for non-negative matrix factorization."
         Advances in neural information processing systems. 2001.
+
+    Parameters:
+    input_matrix (np.array): The audio signal matrix to factor into template and activation matrices
+    num_templates (int): The rank of the templates matrix
+    activation_matrix (np.array): An optional seed for the activation matrix
+    templates(np.array): An optional seed for the templates matrix
+    distance_measure(str): Specifies to use euclidean or divergence distance metrics
+    should_update_template(bool): Whether the template matrix should be updated for another iteration
+    should_update_activation (bool): Whether the activation matrix should be updated for another iteration
+
+    Examples:
+        :ref:'The Transformer NMF Demo Example <transformer_nmf_demo>'
     """
 
     def __str__(self):
