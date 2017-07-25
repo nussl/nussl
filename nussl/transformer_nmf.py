@@ -19,26 +19,17 @@ class TransformerNMF(object):
     [1] Lee, Daniel D., and H. Sebastian Seung. "Algorithms for non-negative matrix factorization."
         Advances in neural information processing systems. 2001.
 
-    :param: input_matrix: The matrix to factor into template and activation matrices
-    :type: input_matrix: 2D numpy array
+    Parameters:
+    input_matrix (np.array): The matrix to factor into template and activation matrices
+    num_templates (int): The rank of the templates matrix
+    activation_matrix (np.array): An optional seed for the activation matrix
+    templates(np.array): An optional seed for the templates matrix
+    distance_measure(str): Specifies to use euclidean or divergence distance metrics
+    should_update_template(bool): Whether the template matrix should be updated for another iteration
+    should_update_activation (bool): Whether the activation matrix should be updated for another iteration
 
-    :param: num_templates: The rank of the templates matrix
-    :type: num_templates: int
-
-    :param: activation_matrix: An optional seed for the activation matrix
-    :type: activation_matrix: 2D numpy array
-
-    :param: templates: An optional seed for the templates matrix
-    :type: templates: 2D numpy array
-
-    :param: distance_measure: Specifies to use euclidean or divergence distance metrics
-    :type: distance_measure: str
-
-    :param: should_update_template: Whether the template matrix should be updated for another iteration
-    :type: should_update_template: bool
-
-    :param: should_update_activation: Whether the activation matrix should be updated for another iteration
-    :type: should_update_activation: bool
+    Examples:
+        :ref:'The Transformer NMF Demo Example <transformer_nmf_demo>'
     """
 
     def __init__(self, input_matrix, num_templates,
@@ -91,8 +82,20 @@ class TransformerNMF(object):
 
         No inputs. N must be set prior to calling this function.
 
-        Returns an activation matrix (in a 2d numpy array)
-        and a set of template vectors (also 2d numpy array).
+        Returns:
+            * **activation_matrix** (*np.array*) - a 2D numpy matrix containing the estimated activation matrix
+            * **templates** (*np.array*) - a 2D numpy matrix containing the estimated templates
+
+        Example:
+            ::
+            input_matrix = np.random.rand(10, 10)
+            nussl_nmf = nussl.TransformerNMF(input_matrix, num_templates=2,
+                 activation_matrix=None, templates=None, distance_measure="euclidean",
+                 should_update_template=None, should_update_activation=None)
+
+            nussl_nmf.run()
+            signals = nussl_nmf.recombine_calculated_matrices()
+
         """
 
         if self.input_matrix is None or self.input_matrix.size == 0:
