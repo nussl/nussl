@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
-import separation_base
-from audio_signal import AudioSignal
 from sklearn.decomposition import FastICA
+
+from audio_signal import AudioSignal
+from nussl.separation import separation_base
 
 
 class ICA(separation_base.SeparationBase):
