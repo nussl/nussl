@@ -80,8 +80,21 @@ class NMF(separation_base.SeparationBase):
 
         No inputs. do_STFT and N must be set prior to calling this function.
 
-        Returns an activation matrix (in a 2d numpy array)
-        and a set of template vectors (also 2d numpy array).
+        Returns:
+            * **activation_matrix** (*np.array*) - a 2D numpy matrix containing the estimated activation matrix
+            * **templates** (*np.array*) - a 2D numpy matrix containing the estimated templates
+
+        Example:
+            ::
+            input_file_name = '../Input/mix1.wav'
+            signal = AudioSignal(path_to_input_file=input_file_name)
+
+            nussl_nmf = nussl.NMF(signal, num_templates=2,
+                 activation_matrix=None, templates=None, distance_measure="euclidean",
+                 should_update_template=None, should_update_activation=None)
+
+            nussl_nmf.run()
+            signals = nussl_nmf.recombine_calculated_matrices()
         """
 
         if self.stft is None or self.stft.size == 0:
