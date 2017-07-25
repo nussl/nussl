@@ -95,7 +95,6 @@ class TransformerNMF(object):
 
             nussl_nmf.run()
             signals = nussl_nmf.recombine_calculated_matrices()
-
         """
 
         if self.input_matrix is None or self.input_matrix.size == 0:
