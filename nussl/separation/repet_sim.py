@@ -231,11 +231,11 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
             # Set up audio signal
             signal = nussl.AudioSignal('path_to_file.wav')
 
-            # Set up a Repet object
-            repet = nussl.Repet(signal)
+            # Set up a RepetSim object
+            repet_sim = nussl.RepetSim(signal)
 
             # I don't have to run repet to get a similarity matrix for signal
-            sim_mat = repet.get_similarity_matrix()
+            sim_mat = repet_sim.get_similarity_matrix()
 
         """
         if self.magnitude_spectrogram is None:
@@ -261,12 +261,12 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
             # set up AudioSignal object
             signal = nussl.AudioSignal('path_to_file.wav')
 
-            # set up and run repet
-            repet = nussl.Repet(signal)
-            repet.run()
+            # set up and run RepetSim
+            repet_sim = nussl.RepetSim(signal)
+            repet_sim.run()
 
             # get audio signals (AudioSignal objects)
-            background, foreground = repet.make_audio_signals()
+            background, foreground = repet_sim.make_audio_signals()
         """
         if self.background is None:
             return None

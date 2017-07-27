@@ -14,6 +14,8 @@ import evaluation_base
 from precision_recall_fscore import PrecisionRecallFScore
 from nussl.separation.ideal_mask import IdealMask
 
+__all__ = ['run_and_evaluate', 'run_and_eval_prf']
+
 
 def run_and_evaluate(evaluation_object, evaluation_kwargs,
                      separation_object, separation_kwargs,

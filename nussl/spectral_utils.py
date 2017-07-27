@@ -13,6 +13,9 @@ import warnings
 
 import constants
 
+__all__ = ['plot_stft', 'e_stft', 'e_istft', 'e_stft_plus', 'librosa_stft_wrapper', 'librosa_istft_wrapper',
+           'make_window', 'StftParams']
+
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
               window_type=None, sample_rate=None, n_fft_bins=None,
@@ -336,7 +339,7 @@ def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
     Returns:
 
     """
-    window = get_window_function(window_type) if window_type is not None else None
+    window = _get_window_function(window_type) if window_type is not None else None
 
     if remove_reflection:
         n_fft = stft.shape[0]
@@ -487,7 +490,7 @@ def make_window(window_type, length, symmetric=False):
         return None
 
 
-def get_window_function(window_type):
+def _get_window_function(window_type):
     """
     Gets a window function from scipy.signal
     Args:

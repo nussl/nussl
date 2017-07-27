@@ -18,7 +18,7 @@ class MaskUnitTests(unittest.TestCase):
         # make sure Mask does NOT work
         with self.assertRaises(NotImplementedError):
             arr = np.random.randint(0, 2, size=[6, 6])
-            _ = nussl.MaskBase(arr)
+            _ = nussl.separation.MaskBase(arr)
 
     l = 1024
     h = 512
@@ -29,26 +29,26 @@ class MaskUnitTests(unittest.TestCase):
         # SoftMask initialized with ints => bad
         with self.assertRaises(ValueError):
             arr = np.random.randint(0, 2, size=[6, 6])
-            _ = nussl.SoftMask(arr)
+            _ = nussl.separation.SoftMask(arr)
 
         # SoftMask initialized out of range => bad
         with self.assertRaises(ValueError):
             arr = (np.random.random((6, 6)) * 10) - 5
-            _ = nussl.SoftMask(arr)
+            _ = nussl.separation.SoftMask(arr)
 
         # not enough dimensions
         with self.assertRaises(ValueError):
             arr = np.random.random(10)
-            _ = nussl.SoftMask(arr)
+            _ = nussl.separation.SoftMask(arr)
 
         # too many dimensions
         with self.assertRaises(ValueError):
             arr = np.random.random((10, 10, 10, 10))
-            _ = nussl.SoftMask(arr)
+            _ = nussl.separation.SoftMask(arr)
 
         # SoftMask initialized correctly
         arr = np.random.random((self.h, self.l))
-        soft_mask = nussl.SoftMask(arr)
+        soft_mask = nussl.separation.SoftMask(arr)
         assert soft_mask.dtype.kind in np.typecodes['AllFloat']
         assert soft_mask.length == self.l
         assert soft_mask.height == self.h
@@ -67,21 +67,21 @@ class MaskUnitTests(unittest.TestCase):
         # Try to initialize with floats far from 0.0 and 1.0 => bad
         with self.assertRaises(ValueError):
             arr = np.random.random((self.h, self.l))
-            _ = nussl.BinaryMask(arr)
+            _ = nussl.separation.BinaryMask(arr)
 
         # try to initialize with ints that are not 0, 1 => bad
         with self.assertRaises(ValueError):
             arr = np.random.randint(-10, 10, size=(self.h, self.l))
-            _ = nussl.BinaryMask(arr)
+            _ = nussl.separation.BinaryMask(arr)
 
         # try with floats that are very close to 0, 1, but above tolerance
         with self.assertRaises(ValueError):
             arr = np.random.randint(0, 2, size=(self.h, self.l)).astype('float')
             arr += np.random.random((self.h, self.l)) * 0.1
-            _ = nussl.BinaryMask(arr)
+            _ = nussl.separation.BinaryMask(arr)
 
         arr = np.random.random((self.h, self.l))
-        soft_mask = nussl.SoftMask(arr)
+        soft_mask = nussl.separation.SoftMask(arr)
 
         # Make a binary mask from SoftMax
         binary_mask = soft_mask.mask_to_binary()
@@ -89,3 +89,34 @@ class MaskUnitTests(unittest.TestCase):
 
     def test_chan(self):
         m = np.random.randint(0, 2, size=(1024, 512))
+
+    def test_ones_and_zeros(self):
+        shapes = [(1, 10, 100), (2, 1024, 1920)]
+
+        for shape in shapes:
+            ones_mask = nussl.separation.SoftMask.ones(shape)
+            assert np.all(ones_mask.mask == np.ones(shape).astype('float'))
+
+            ones_mask = nussl.separation.BinaryMask.ones(shape)
+            assert np.all(ones_mask.mask == np.ones(shape).astype('bool'))
+
+            zeros_mask = nussl.separation.SoftMask.zeros(shape)
+            assert np.all(zeros_mask.mask == np.zeros(shape).astype('float'))
+
+            zeros_mask = nussl.separation.BinaryMask.zeros(shape)
+            assert np.all(zeros_mask.mask == np.zeros(shape).astype('bool'))
+
+    def test_invert_mask(self):
+        shape = (1, 100, 100)
+        ones = np.ones(shape)
+
+        soft_mask = nussl.separation.SoftMask(ones)
+
+        inverse_soft_mask = soft_mask.invert_mask()
+        assert np.all(inverse_soft_mask.mask == np.zeros(shape))
+
+        binary_mask = nussl.separation.BinaryMask(ones)
+
+        inverse_binary_mask = binary_mask.invert_mask()
+        assert np.all(inverse_binary_mask.mask == np.zeros(shape))
+

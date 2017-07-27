@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sklearn.decomposition import FastICA
+import sklearn
 
-from audio_signal import AudioSignal
-from nussl.separation import separation_base
+import nussl.utils
+import nussl.audio_signal
+import separation_base
 
 
 class ICA(separation_base.SeparationBase):
@@ -18,7 +19,7 @@ class ICA(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal=None):
+    def __init__(self, input_audio_signal, observations_list):
         super(ICA, self).__init__(input_audio_signal=input_audio_signal)
         self.sources = None
         self.mixing = None
@@ -26,13 +27,15 @@ class ICA(separation_base.SeparationBase):
     @staticmethod
     def transform_observations_to_audio_signal(observations):
         lengths = set([o.signal_length for o in observations])
+
         if len(lengths) > 1:
             raise ValueError("All observation AudioSignal objects must have the same length!")
+
         observation_data = [o.audio_data for o in observations]
         observation_data = np.vstack(observation_data)
-        observations = AudioSignal(audio_data_array=observation_data, sample_rate = observations[0].sample_rate)
+        observations = nussl.audio_signal.AudioSignal(audio_data_array=observation_data,
+                                                      sample_rate=observations[0].sample_rate)
         return observations
-
 
     def run(self):
         """
@@ -45,7 +48,7 @@ class ICA(separation_base.SeparationBase):
              ::
 
         """
-        ica = FastICA(n_components=self.audio_signal.num_channels)
+        ica = sklearn.decomposition.FastICA(n_components=self.audio_signal.num_channels)
         max_input_amplitude = np.max(np.abs(self.audio_signal.audio_data))
         sources = ica.fit_transform(self.audio_signal.audio_data.T).T
         max_output_amplitude = np.max(np.abs(sources))
@@ -56,7 +59,9 @@ class ICA(separation_base.SeparationBase):
         self.mean = ica.mean_
         self.sources = []
         for i in range(sources.shape[0]):
-            self.sources.append(AudioSignal(audio_data_array=sources[i, :], sample_rate=self.audio_signal.sample_rate))
+            signal = nussl.audio_signal.AudioSignal(audio_data_array=sources[i, :],
+                                                    sample_rate=self.audio_signal.sample_rate)
+            self.sources.append(signal)
         return self.sources
 
     def make_audio_signals(self):

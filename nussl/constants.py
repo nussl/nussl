@@ -6,6 +6,13 @@ this wacky, mixed up source separation stuff.
 """
 import scipy.signal
 
+__all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
+           'DEFAULT_MAX_VAL', 'EPSILON', 'MAX_FREQUENCY',
+           'WINDOW_HAMMING', 'WINDOW_RECTANGULAR', 'WINDOW_HANN',
+           'WINDOW_BLACKMAN', 'WINDOW_TRIANGULAR', 'WINDOW_DEFAULT',
+           'ALL_WINDOWS', 'NUMPY_JSON_KEY', 'LEN_INDEX', 'CHAN_INDEX',
+           'STFT_VERT_INDEX', 'STFT_LEN_INDEX', 'STFT_CHAN_INDEX']
+
 DEFAULT_SAMPLE_RATE = 44100  #: (int): Default sample rate. 44.1 kHz, CD-quality
 DEFAULT_WIN_LEN_PARAM = 0.04  #: (float): Default window length. 40ms
 DEFAULT_BIT_DEPTH = 16  #: (int): Default bit depth. 16-bits, CD-quality

@@ -104,21 +104,12 @@ class SoftMask(mask_base.MaskBase):
         """
         return binary_mask.BinaryMask(self.mask > threshold)
 
-    def inverse_mask(self, channel=None):
+    def invert_mask(self):
         """
         Returns a new mask with inverted values set like ``1 - mask`` for :attr:`mask`.
-        
-        Args:
-            channel (int, Optional): If not ``None`` will only invert that channel. **0-based**
 
         Returns:
             A new :class:`SoftMask` object with values set at ``1 - mask``.
 
         """
-        if channel is None:
-            new_mask = np.abs(1 - self.mask)
-            return SoftMask(new_mask)
-        else:
-            # TODO: this does not give the 2D np.array!
-            new_mask = np.abs(1 - self.get_channel(channel))
-            return SoftMask(new_mask)
+        return SoftMask(np.abs(1 - self.mask))

@@ -23,7 +23,7 @@ import numpy as np
 import nussl.config
 import nussl.utils
 import separation_base
-from nussl.audio_signal import AudioSignal
+import nussl.audio_signal
 
 
 class Projet(separation_base.SeparationBase):
@@ -141,7 +141,7 @@ class Projet(separation_base.SeparationBase):
             source_stft = sigma_j / sigma * C
             source_stft = np.dot(source_stft, recompose_matrix.T)
             source_stft = np.reshape(source_stft, (num_freq_bins, num_time_bins, num_channels))
-            source = AudioSignal(stft = source_stft, sample_rate = self.audio_signal.sample_rate)
+            source = nussl.audio_signal.AudioSignal(stft = source_stft, sample_rate = self.audio_signal.sample_rate)
             source.istft(self.stft_params.window_length, self.stft_params.hop_length, 
                         self.stft_params.window_type, overwrite=True, 
                         use_librosa=self.use_librosa_stft, 
