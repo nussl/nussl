@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+AudioSignal object
+"""
+
 from __future__ import division
 import os.path
 import numpy as np
@@ -12,11 +16,13 @@ import json
 import warnings
 import copy
 
-import nussl.separation.masks.mask_base
+import separation.masks.mask_base
 import spectral_utils
 import config
 import constants
 import utils
+
+__all__ = ['AudioSignal']
 
 
 class AudioSignal(object):
@@ -353,6 +359,28 @@ class AudioSignal(object):
             return False
         return True
 
+    @property
+    def has_stft_data(self):
+        """ Returns False if :attr:`stft_data` is empty. Else, returns True.
+
+        Returns:
+            Returns False if :attr:`stft_data` is empty. Else, returns True.
+
+        """
+        return self.stft_data is None or self.stft_data.size == 0
+
+
+    @property
+    def has_audio_data(self):
+        """ Returns False if :attr:`audio_data` is empty. Else, returns True.
+
+        Returns:
+            Returns False if :attr:`audio_data` is empty. Else, returns True.
+
+        """
+        return self.audio_data is None or self.audio_data.size == 0
+
+
     ##################################################
     #                     I/O
     ##################################################
@@ -468,8 +496,8 @@ class AudioSignal(object):
         None of the data in :attr:`audio_data` is discarded when you set the active region, it merely becomes
         inaccessible until the active region is set back to default (i.e., the full length of the signal).
 
-        This is useful for reusing a single :class:`AudioSignal` object to do multiple operations on only select parts of the
-        audio data.
+        This is useful for reusing a single :class:`AudioSignal` object to do multiple operations on only
+        select parts of the audio data.
 
         Warnings:
             Many functions will raise exceptions while the active region is not default. Be aware that adding,
@@ -490,7 +518,8 @@ class AudioSignal(object):
 
     def set_active_region_to_default(self):
         """
-        Resets the active region of this :class:`AudioSignal` object to it default value of the entire ``audio_data`` array.
+        Resets the active region of this :class:`AudioSignal` object to it default value of the entire
+        :attr:`audio_data` array.
         
         See Also:
             * :func:`set_active_region` for an explanation of active regions within the :class:`AudioSignal`.
@@ -587,7 +616,7 @@ class AudioSignal(object):
 
         return np.array(stfts).transpose((1, 2, 0))
 
-    def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True, reconstruct_reflection=False,
+    def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True,
               use_librosa=config.USE_LIBROSA_STFT, truncate_to_length=None):
         """ Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
@@ -601,7 +630,6 @@ class AudioSignal(object):
             window_length (int, optional): Amount of time (in samples) to do an FFT on
             hop_length (int, optional): Amount of time (in samples) to skip ahead for the new FFT
             window_type (str, optional): Type of scaling to apply to the window.
-            reconstruct_reflection (bool, optional): Should reconstruct the reflection above Nyquist
             overwrite (bool, optional): Overwrite :attr:`stft_data` with current calculation
             use_librosa (bool, optional): Use *librosa's* stft function
             truncate_to_length (int, optional): truncate resultant signal to specified length. Default None.
@@ -619,7 +647,7 @@ class AudioSignal(object):
         # TODO: bubble up center
         window_type = self.stft_params.window_type if window_type is None else window_type
 
-        calculated_signal = self._do_istft(window_length, hop_length, window_type, reconstruct_reflection, use_librosa)
+        calculated_signal = self._do_istft(window_length, hop_length, window_type, use_librosa)
 
         # Make sure it's shaped correctly
         calculated_signal = np.expand_dims(calculated_signal, -1) if calculated_signal.ndim == 1 else calculated_signal
@@ -637,7 +665,7 @@ class AudioSignal(object):
 
         return calculated_signal
 
-    def _do_istft(self, window_length, hop_length, window_type, reconstruct_reflection, use_librosa):
+    def _do_istft(self, window_length, hop_length, window_type, use_librosa):
         if self.stft_data.size == 0:
             raise ValueError('Cannot do inverse STFT without self.stft_data!')
 
@@ -665,15 +693,15 @@ class AudioSignal(object):
             A new :class:`AudioSignal` object with the input mask applied to the STFT
 
         """
-        if not isinstance(mask, nussl.MaskBase):
+        if not isinstance(mask, separation.masks.mask_base.MaskBase):
             raise ValueError('mask is {} but is expected to be a MaskBase-derived object!'.format(type(mask)))
 
-        if mask.shape != self.stft_data.shape :
+        if mask.shape != self.stft_data.shape:
             raise ValueError('Input mask and self.stft_data are not the same shape! '
                              'mask: {}, self.stft_data: {}'.format(mask.shape, self.stft_data.shape))
 
         masked_stft = self.stft_data * mask.mask
-        return self.make_copy_with_audio_data(masked_stft, verbose=False)
+        return self.make_copy_with_stft_data(masked_stft, verbose=False)
 
     ##################################################
     #                  Utilities
@@ -734,7 +762,7 @@ class AudioSignal(object):
 
         n_samples = n_seconds * self.sample_rate
         self.truncate_samples(n_samples)
-    
+
     def crop_signal(self, before, after):
         """
         Get rid of samples before and after the signal on all channels. Contracts the length
@@ -869,6 +897,7 @@ class AudioSignal(object):
 
         Args:
             audio_data:
+            verbose (bool): If ``True`` prints warnings. If ``False``
 
         Returns:
 
@@ -1029,8 +1058,8 @@ class AudioSignal(object):
 
     def _verify_get_channel(self, n):
         if n >= self.num_channels:
-            raise ValueError( 'Cannot get channel {0} when this object only has {1} channels! (0-based)'
-                              .format(n, self.num_channels))
+            raise ValueError('Cannot get channel {0} when this object only has {1} channels! (0-based)'
+                             .format(n, self.num_channels))
 
         if n < 0:
             raise ValueError('Cannot get channel {}. This will cause unexpected results'.format(n))
@@ -1212,6 +1241,12 @@ class AudioSignal(object):
 
     def __div__(self, value):
         return self.apply_gain(1.0 / float(value), overwrite=True)
+
+    def __truediv__(self, value):
+        return self.__div__(value)
+
+    def __itruediv__(self, value):
+        return self.__idiv__(value)
 
     def __imul__(self, value):
         return self * value

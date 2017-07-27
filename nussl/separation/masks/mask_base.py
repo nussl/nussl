@@ -8,6 +8,7 @@ represented under the hood as a three dimensional numpy :obj:`ndarray` object. T
 below.
 """
 
+import numbers
 import numpy as np
 
 import nussl
@@ -18,7 +19,7 @@ import nussl.constants
 class MaskBase(object):
     """
     Args:
-        mask (:obj:`np.ndarray`): A 2- or 3-dimensional numpy ``ndarray`` representing a mask.
+        input_mask (:obj:`np.ndarray`): A 2- or 3-dimensional numpy ``ndarray`` representing a mask.
         
     """
     def __init__(self, input_mask):
@@ -147,3 +148,79 @@ class MaskBase(object):
 
         """
         raise NotImplementedError('Cannot call base class! Use BinaryMask or SoftMask!')
+
+    @classmethod
+    def ones(cls, shape):
+        """
+        Makes a mask with all ones with the specified shape. Exactly the same as ``np.ones()``.
+        Args:
+            shape (tuple): Shape of the resultant mask.
+
+        Returns:
+
+        """
+        return cls(np.ones(shape))
+
+    @classmethod
+    def zeros(cls, shape):
+        """
+        Makes a mask with all zeros with the specified shape. Exactly the same as ``np.zeros()``.
+        Args:
+            shape (tuple): Shape of the resultant mask.
+
+        Returns:
+
+        """
+        return cls(np.zeros(shape))
+
+    def invert_mask(self):
+        """
+
+        Returns:
+
+        """
+
+    def _add(self, other):
+        if isinstance(other, MaskBase):
+            return self.mask + other.mask
+        if isinstance(other, np.ndarray):
+            return self.mask + other
+
+        else:
+            raise ValueError('Cannot do arithmetic operation with MaskBase and {}'.format(type(other)))
+
+    def _mult(self, value):
+        if not isinstance(value, numbers.Real):
+            raise ValueError('Cannot do operation with MaskBase and {}'.format(type(value)))
+
+        return self.mask * value
+
+    def __add__(self, other):
+        return self._add(other)
+
+    def __sub__(self, other):
+        return self + (-1 * other)
+
+    def __iadd__(self, other):
+        return self + other
+
+    def __isub__(self, other):
+        return self - other
+
+    def __mul__(self, value):
+        return self._mult(value)
+
+    def __div__(self, value):
+        return self._mult(1 / float(value))
+
+    def __truediv__(self, value):
+        return self.__div__(value)
+
+    def __imul__(self, value):
+        return self * value
+
+    def __idiv__(self, value):
+        return self / value
+
+    def __itruediv__(self, value):
+        return self.__idiv__(value)

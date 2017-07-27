@@ -63,7 +63,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
         mangitude_spectrogram (:obj:`np.ndarray`): Local copy of the mangitude spectrogram 
 
     """
-    def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
+    def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=100.0,
                  do_mono=False, use_find_period_complex=False,
                  use_librosa_stft=nussl.config.USE_LIBROSA_STFT, matlab_fidelity=False,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
@@ -74,7 +74,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
         if (min_period or max_period) and period:
             raise ValueError('Cannot set both period and (min_period or max_period)!')
 
-        self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
+        self.high_pass_cutoff = float(high_pass_cutoff)
         self.background = None
         self.foreground = None
         self.beat_spectrum = None

@@ -5,8 +5,8 @@ import random
 
 import numpy as np
 
-import audio_signal
-import constants
+import nussl.audio_signal
+import nussl.constants
 from nussl.separation import separation_base
 
 
@@ -222,7 +222,7 @@ class NMF(separation_base.SeparationBase):
         raise NotImplementedError('This does not work yet.')
         signals = []
         for stft in self.recombine_calculated_matrices():
-            signal = audio_signal.AudioSignal(stft=stft)
+            signal = nussl.audio_signal.AudioSignal(stft=stft)
             signal.istft()
             signals.append(signal)
         return signals
@@ -248,7 +248,7 @@ class NMF(separation_base.SeparationBase):
                 M[i][j] = random.random()
 
                 if not shouldNormalize:
-                    M[i][j] *= constants.DEFAULT_MAX_VAL
+                    M[i][j] *= nussl.constants.DEFAULT_MAX_VAL
         return M
 
     def plot(self, outputFile, **kwargs):

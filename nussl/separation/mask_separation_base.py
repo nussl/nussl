@@ -171,6 +171,35 @@ class MaskSeparationBase(separation_base.SeparationBase):
 
         self._mask_threshold = value
 
+    def zeros_mask(self, shape):
+        """
+        Creates a new zeros mask with this object's type
+
+        Args:
+            shape:
+
+        Returns:
+
+        """
+        if self.mask_type == self.BINARY_MASK:
+            return masks.BinaryMask.zeros(shape)
+        else:
+            return masks.SoftMask.zeros(shape)
+
+    def ones_mask(self, shape):
+        """
+
+        Args:
+            shape:
+
+        Returns:
+
+        """
+        if self.mask_type == self.BINARY_MASK:
+            return masks.BinaryMask.ones(shape)
+        else:
+            return masks.SoftMask.ones(shape)
+
     def plot(self, output_name, **kwargs):
         """Plots relevant data for mask-based separation algorithm. Base class: Do not call directly!
 

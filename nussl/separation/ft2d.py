@@ -7,7 +7,7 @@ from scipy.ndimage.filters import maximum_filter, minimum_filter
 import nussl.config
 import nussl.spectral_utils
 import separation_base
-from nussl.audio_signal import AudioSignal
+import nussl.audio_signal
 
 
 class FT2D(separation_base.SeparationBase):
@@ -22,14 +22,14 @@ class FT2D(separation_base.SeparationBase):
         use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
 
     """
-    def __init__(self, input_audio_signal, high_pass_cutoff=None, neighborhood_size=None,
+    def __init__(self, input_audio_signal, high_pass_cutoff=None, neighborhood_size=(1, 25),
                  do_mono=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
         super(FT2D, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None
         self.foreground = None
         self.use_librosa_stft = use_librosa_stft
-        self.neighborhood_size = (1, 25) if neighborhood_size is None else neighborhood_size
+        self.neighborhood_size = neighborhood_size
 
         self.stft = None
         self.ft2d = None
@@ -66,7 +66,8 @@ class FT2D(separation_base.SeparationBase):
             background_stft.append(stft_with_mask)
 
         background_stft = np.array(background_stft).transpose((1, 2, 0))
-        self.background = AudioSignal(stft=background_stft, sample_rate=self.audio_signal.sample_rate)
+        self.background = nussl.audio_signal.AudioSignal(stft=background_stft,
+                                                         sample_rate=self.audio_signal.sample_rate)
         self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
                               overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)

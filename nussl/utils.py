@@ -15,6 +15,12 @@ from audio_signal import AudioSignal
 from separation import SeparationBase
 from separation import MaskSeparationBase
 
+__all__ = ['find_peak_indices', 'find_peak_values',
+           'json_ready_numpy_array', 'json_serialize_numpy_array', 'load_numpy_json', 'json_numpy_obj_hook',
+           'add_mismatched_arrays', 'add_mismatched_arrays2D', 'complex_randn',
+           '_get_axis', '_verify_audio_signal_list_lax', '_verify_audio_signal_list_strict',
+           '_verify_separation_list', '_verify_mask_separation_list']
+
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
     """
