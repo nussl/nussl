@@ -186,7 +186,7 @@ def e_stft(signal, window_length, hop_length, window_type,
 
     orig_signal_length = len(signal)
     signal, num_blocks = _add_zero_padding(signal, window_length, hop_length)
-
+    sig_zero_pad = len(signal)
     # figure out size of output stft
     stft_bins = n_fft_bins // 2 + 1 if remove_reflection else n_fft_bins  # only want just over half of each fft
 
@@ -205,7 +205,6 @@ def e_stft(signal, window_length, hop_length, window_type,
     stft = _remove_stft_padding(stft, orig_signal_length, window_length, hop_length) if remove_padding else stft
 
     return stft
-
 
 def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, remove_reflection=True,
                          center=True, n_fft_bins=None):

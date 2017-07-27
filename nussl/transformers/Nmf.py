@@ -22,12 +22,23 @@ class NMF(separation_base.SeparationBase):
     References:
     [1] Lee, Daniel D., and H. Sebastian Seung. "Algorithms for non-negative matrix factorization."
         Advances in neural information processing systems. 2001.
+
+    Parameters:
+    input_matrix (np.array): The audio signal matrix to factor into template and activation matrices
+    num_templates (int): The rank of the templates matrix
+    activation_matrix (np.array): An optional seed for the activation matrix
+    templates(np.array): An optional seed for the templates matrix
+    distance_measure(str): Specifies to use euclidean or divergence distance metrics
+    should_update_template(bool): Whether the template matrix should be updated for another iteration
+    should_update_activation (bool): Whether the activation matrix should be updated for another iteration
+
+    Examples:
+        :ref:'The Transformer NMF Demo Example <transformer_nmf_demo>'
     """
 
     def __str__(self):
         return "Nmf"
 
-    # TODO: Change this so that NMF accepts an AudioSignal object and not a raw stft
     def __init__(self, input_audio_signal, num_templates,
                  activation_matrix=None, templates=None, distance_measure=None,
                  should_update_template=None, should_update_activation=None):
@@ -69,8 +80,21 @@ class NMF(separation_base.SeparationBase):
 
         No inputs. do_STFT and N must be set prior to calling this function.
 
-        Returns an activation matrix (in a 2d numpy array)
-        and a set of template vectors (also 2d numpy array).
+        Returns:
+            * **activation_matrix** (*np.array*) - a 2D numpy matrix containing the estimated activation matrix
+            * **templates** (*np.array*) - a 2D numpy matrix containing the estimated templates
+
+        Example:
+            ::
+            input_file_name = '../Input/mix1.wav'
+            signal = AudioSignal(path_to_input_file=input_file_name)
+
+            nussl_nmf = nussl.NMF(signal, num_templates=2,
+                 activation_matrix=None, templates=None, distance_measure="euclidean",
+                 should_update_template=None, should_update_activation=None)
+
+            nussl_nmf.run()
+            signals = nussl_nmf.recombine_calculated_matrices()
         """
 
         if self.stft is None or self.stft.size == 0:
