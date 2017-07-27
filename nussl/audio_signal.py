@@ -353,11 +353,7 @@ class AudioSignal(object):
             Returns False if :attr:`audio_data` and :attr:`stft_data` are empty. Else, returns True.
             
         """
-        if self.audio_data is None and self.stft_data is None:
-            return False
-        if self.audio_data.size == 0 and self.stft_data.size == 0:
-            return False
-        return True
+        return self.has_audio_data or self.has_stft_data
 
     @property
     def has_stft_data(self):
@@ -367,7 +363,7 @@ class AudioSignal(object):
             Returns False if :attr:`stft_data` is empty. Else, returns True.
 
         """
-        return self.stft_data is None or self.stft_data.size == 0
+        return self.stft_data is not None and self.stft_data.size != 0
 
 
     @property
@@ -378,7 +374,7 @@ class AudioSignal(object):
             Returns False if :attr:`audio_data` is empty. Else, returns True.
 
         """
-        return self.audio_data is None or self.audio_data.size == 0
+        return self.audio_data is not None and self.audio_data.size != 0
 
 
     ##################################################

@@ -5,6 +5,7 @@
 Implements a simple high pass filter for audio source separation
 """
 
+from __future__ import division
 import numpy as np
 import scipy.signal
 
