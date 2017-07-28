@@ -18,7 +18,7 @@ __all__ = ['plot_stft', 'e_stft', 'e_istft', 'e_stft_plus', 'librosa_stft_wrappe
 
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
-              window_type=None, sample_rate=None, n_fft_bins=None,
+              window_type=None, sample_rate=constants.DEFAULT_SAMPLE_RATE, n_fft_bins=None,
               freq_max=None, show_interactive_plot=False):
     """
     Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
@@ -71,8 +71,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         nussl.plot_stft(x, 'path/to/sine_wav.png')
 
     """
-    sample_rate = constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
-    freq_max = constants.MAX_FREQUENCY if freq_max is None else freq_max
+    freq_max = freq_max if freq_max is not None else sample_rate // 2
 
     if title is None:
         title = os.path.basename(file_name)
