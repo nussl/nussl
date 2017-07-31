@@ -4,7 +4,7 @@ import random
 import math
 import numpy as np
 
-import constants
+import nussl.constants
 
 class TransformerNMF(object):
     """
@@ -294,7 +294,7 @@ class TransformerNMF(object):
                 M[i][j] = random.random()
 
                 if not shouldNormalize:
-                    M[i][j] *= constants.DEFAULT_MAX_VAL
+                    M[i][j] *= nussl.constants.DEFAULT_MAX_VAL
         return M
 
     def plot(self, outputFile, **kwargs):

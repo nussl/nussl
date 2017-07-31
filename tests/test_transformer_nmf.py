@@ -11,86 +11,54 @@ class DuetUnitTests(unittest.TestCase):
         A simple example of NMF using euclidean and divergence in nussl with a 4 by 4 matrix
         """
         # Make two simple matrices
-        n = 4
-        a = np.arange(n ** 2).reshape((n, n))
-        b = 2. * a + 3.
+        for n in range(4, 20, 4):
+            a = np.arange(n ** 2).reshape((n, n))
+            b = 2. * a + 3.
 
-        # Mix them together
-        mixture = np.dot(b, a)
+            # Mix them together
+            mixture = np.dot(b, a)
 
-        # Set up NMFs and run on euclidean while calculating error
-        n_bases = 2
-        iterations = 100
-        # Set error parameters
-        num_std_deviations = 5
-        percent_over_std_dev = .05
+            # Set up NMFs and run on euclidean while calculating error
+            n_bases = 2
+            iterations = 100
+            # Set error parameters
+            num_std_deviations = 5
+            percent_over_std_dev = .05
 
-        #Run on euclidean
-        type = "euclidean"
-        errors = self.calculate_nmfs_error(mixture, n_bases, type, iterations)
-        error_check_euclidean = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
+            #Run on euclidean
+            distance_type = "euclidean"
+            errors = self.calculate_nmfs_error(mixture, n_bases, distance_type, iterations)
+            error_check_euclidean = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
+            assert error_check_euclidean == True
 
-        # Run on divergence
-        type = "divergence"
-        errors = self.calculate_nmfs_error(mixture, n_bases, type, iterations)
-        error_check_divergence = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
+            # Run on divergence
+            distance_type = "divergence"
+            errors = self.calculate_nmfs_error(mixture, n_bases, distance_type, iterations)
+            error_check_divergence = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
+            assert error_check_divergence == True
 
-        assert error_check_euclidean == True
-        assert error_check_divergence == True
+    def test_random_matrix(self):
+        for n in range(4, 10, 2):
+            V = np.random.rand(n, n)
+            # Set up NMFs and run on euclidean while calculating error
+            n_bases = 2
+            iterations = 100
+            # Set error parameters
+            num_std_deviations = 10
+            percent_over_std_dev = .50
 
-    def test_big_mixture_matrix(self):
-        """
-               A simple example of NMF using euclidean and divergence in nussl with a 10 by 10 matrix
-               """
-        # Make two simple matrices
-        n = 10
-        a = np.arange(n ** 2).reshape((n, n))
-        b = 2. * a + 3.
+            # Run on euclidean
+            distance_type = "euclidean"
+            errors = self.calculate_nmfs_error(V, n_bases, distance_type, iterations)
+            error_check_euclidean = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
 
-        # Mix them together
-        mixture = np.dot(b, a)
+            # Run on divergence
+            distance_type = "divergence"
+            errors = self.calculate_nmfs_error(V, n_bases, distance_type, iterations)
+            error_check_divergence = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
 
-        # Set up NMFs and run on euclidean while calculating error
-        n_bases = 2
-        iterations = 100
-        # Set error parameters
-        num_std_deviations = 10
-        percent_over_std_dev = .80
-
-        # Run on euclidean
-        type = "euclidean"
-        errors = self.calculate_nmfs_error(mixture, n_bases, type, iterations)
-        error_check_euclidean = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
-
-        # Run on divergence
-        type = "divergence"
-        errors = self.calculate_nmfs_error(mixture, n_bases, type, iterations)
-        error_check_divergence = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
-
-        assert error_check_euclidean == True
-        assert error_check_divergence == True
-
-    def test_big_random_matrix(self):
-        V = np.random.rand(10, 10)
-        # Set up NMFs and run on euclidean while calculating error
-        n_bases = 2
-        iterations = 100
-        # Set error parameters
-        num_std_deviations = 10
-        percent_over_std_dev = .50
-
-        # Run on euclidean
-        type = "euclidean"
-        errors = self.calculate_nmfs_error(V, n_bases, type, iterations)
-        error_check_euclidean = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
-
-        # Run on divergence
-        type = "divergence"
-        errors = self.calculate_nmfs_error(V, n_bases, type, iterations)
-        error_check_divergence = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
-
-        assert error_check_euclidean == True
-        assert error_check_divergence == True
+            assert error_check_euclidean == True
+            assert error_check_divergence == True
 
     @staticmethod
     def calculate_nmfs_error(mixture, n_bases, type, iterations):
