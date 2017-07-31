@@ -11,9 +11,8 @@ below.
 import numbers
 import numpy as np
 
-import nussl
-import nussl.utils
-import nussl.constants
+from ... import utils
+from ... import constants
 
 
 class MaskBase(object):
@@ -54,7 +53,7 @@ class MaskBase(object):
             raise ValueError('Cannot support arrays with less than 2 dimensions!')
 
         if value.ndim == 2:
-            value = np.expand_dims(value, axis=nussl.constants.STFT_CHAN_INDEX)
+            value = np.expand_dims(value, axis=constants.STFT_CHAN_INDEX)
 
         if value.ndim > 3:
             raise ValueError('Cannot support arrays with more than 3 dimensions!')
@@ -86,7 +85,7 @@ class MaskBase(object):
         if n < 0:
             raise ValueError('Cannot get channel {}. This will cause unexpected results!'.format(n))
 
-        return nussl.utils._get_axis(self.mask, nussl.constants.STFT_CHAN_INDEX, n)
+        return utils._get_axis(self.mask, constants.STFT_CHAN_INDEX, n)
 
     @property
     def length(self):
@@ -96,7 +95,7 @@ class MaskBase(object):
         """
         if self.mask is None:
             raise AttributeError('Cannot get length of BinaryMask when there is no mask data!')
-        return self.mask.shape[nussl.constants.STFT_LEN_INDEX]
+        return self.mask.shape[constants.STFT_LEN_INDEX]
 
     @property
     def height(self):
@@ -106,7 +105,7 @@ class MaskBase(object):
         """
         if self.mask is None:
             raise AttributeError('Cannot get height of BinaryMask when there is no mask data!')
-        return self.mask.shape[nussl.constants.STFT_VERT_INDEX]
+        return self.mask.shape[constants.STFT_VERT_INDEX]
 
     @property
     def num_channels(self):
@@ -116,7 +115,7 @@ class MaskBase(object):
         """
         if self.mask is None:
             raise AttributeError('Cannot get num_channels of BinaryMask when there is no mask data!')
-        return self.mask.shape[nussl.constants.STFT_CHAN_INDEX]
+        return self.mask.shape[constants.STFT_CHAN_INDEX]
 
     @property
     def shape(self):

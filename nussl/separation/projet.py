@@ -20,10 +20,10 @@ modified by Ethan Manilow and Prem Seetharaman for incorporation into nussl.
 
 import numpy as np
 
-import nussl.config
-import nussl.utils
+from .. import config
+from .. import utils
+from .. import audio_signal
 import separation_base
-import nussl.audio_signal
 
 
 class Projet(separation_base.SeparationBase):
@@ -38,7 +38,7 @@ class Projet(separation_base.SeparationBase):
     def __init__(self, input_audio_signal, num_sources,
                  num_iterations=200, num_panning_directions=41, num_projections=15,
                  matrix_datatype='float32', panning_profiles = 30,
-                 verbose=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT, ):
+                 verbose=False, use_librosa_stft=config.USE_LIBROSA_STFT, ):
         super(Projet, self).__init__(input_audio_signal=input_audio_signal)
         
         if self.audio_signal.num_channels != 2:
@@ -83,13 +83,13 @@ class Projet(separation_base.SeparationBase):
                                                         num_sources)).astype(self.matrix_datatype) + 1
 
         # compute panning profiles
-        panning_matrix = np.concatenate((nussl.utils.complex_randn((num_channels,
-                                                                    self.num_panning_directions - self.panning_profiles)),
+        panning_matrix = np.concatenate((utils.complex_randn((num_channels,
+                                                              self.num_panning_directions - self.panning_profiles)),
                                          self.multichannel_grid(num_channels, self.panning_profiles)), axis=1)
         panning_matrix /= np.sqrt(np.sum(np.abs(panning_matrix) ** 2, axis=0))[None, ...]
 
         # compute projection matrix
-        projection_matrix = np.concatenate((nussl.utils.complex_randn((max(self.num_projections - 5, 0), num_channels)),
+        projection_matrix = np.concatenate((utils.complex_randn((max(self.num_projections - 5, 0), num_channels)),
                                             self.orthogonal_matrix(self.multichannel_grid(num_channels, min(self.num_projections, 5)))))
         projection_matrix /= np.sqrt(np.sum(np.abs(projection_matrix) ** 2, axis=1))[..., None]
 
@@ -141,7 +141,7 @@ class Projet(separation_base.SeparationBase):
             source_stft = sigma_j / sigma * C
             source_stft = np.dot(source_stft, recompose_matrix.T)
             source_stft = np.reshape(source_stft, (num_freq_bins, num_time_bins, num_channels))
-            source = nussl.audio_signal.AudioSignal(stft = source_stft, sample_rate = self.audio_signal.sample_rate)
+            source = audio_signal.AudioSignal(stft = source_stft, sample_rate=self.audio_signal.sample_rate)
             source.istft(self.stft_params.window_length, self.stft_params.hop_length, 
                         self.stft_params.window_type, overwrite=True, 
                         use_librosa=self.use_librosa_stft, 

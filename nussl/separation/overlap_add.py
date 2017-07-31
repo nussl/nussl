@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
-
 import warnings
-
 import numpy as np
 
-import nussl.config
-import nussl.constants
-import nussl.spectral_utils
+from .. import config
+from .. import constants
+from .. import spectral_utils
 import separation_base
 from ft2d import FT2D
 from repet import Repet
@@ -50,8 +48,8 @@ class OverlapAdd(separation_base.SeparationBase):
          
     """
     def __init__(self, input_audio_signal, separation_method,
-                 overlap_window_size=24, overlap_hop_size=12, overlap_window_type=nussl.constants.WINDOW_TRIANGULAR,
-                 do_mono=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
+                 overlap_window_size=24, overlap_hop_size=12, overlap_window_type=constants.WINDOW_TRIANGULAR,
+                 do_mono=False, use_librosa_stft=config.USE_LIBROSA_STFT):
         super(OverlapAdd, self).__init__(input_audio_signal=input_audio_signal)
         self.background = None
         self.foreground = None
@@ -225,7 +223,7 @@ class OverlapAdd(separation_base.SeparationBase):
         background_array = np.zeros_like(self.audio_signal.audio_data)
 
         # Make the window for multiple channels
-        window = nussl.spectral_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
+        window = spectral_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
         window = np.vstack([window for _ in range(self.audio_signal.num_channels)])
 
         # Main overlap-add loop
