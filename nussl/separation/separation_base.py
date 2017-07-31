@@ -3,14 +3,14 @@
 
 import copy
 import json
+import nussl.utils
 import numpy as np
 import inspect
 import warnings
 
-from .. import utils
-from .. import audio_signal
-from .. import spectral_utils
-from .. import constants
+import nussl.audio_signal
+import nussl.spectral_utils
+import nussl.constants
 
 
 class SeparationBase(object):
@@ -24,7 +24,7 @@ class SeparationBase(object):
     """
 
     def __init__(self, input_audio_signal):
-        if not isinstance(input_audio_signal, audio_signal.AudioSignal):
+        if not isinstance(input_audio_signal, nussl.audio_signal.AudioSignal):
             raise ValueError('input_audio_signal is not an AudioSignal object!')
 
         self._audio_signal = None
@@ -32,7 +32,7 @@ class SeparationBase(object):
         if input_audio_signal is not None:
             self.audio_signal = input_audio_signal
         else:
-            self.audio_signal = audio_signal.AudioSignal()
+            self.audio_signal = nussl.audio_signal.AudioSignal()
 
         if not self.audio_signal.has_data:
             warnings.warn('input_audio_signal has no data!')
@@ -115,8 +115,8 @@ class SeparationBase(object):
         d = copy.copy(o.__dict__)
         for k, v in d.items():
             if isinstance(v, np.ndarray):
-                d[k] = utils.json_ready_numpy_array(v)
-            if isinstance(v, audio_signal.AudioSignal) or isinstance(v, spectral_utils.StftParams):
+                d[k] = nussl.utils.json_ready_numpy_array(v)
+            if isinstance(v, nussl.audio_signal.AudioSignal) or isinstance(v, nussl.spectral_utils.StftParams):
                 d[k] = v.to_json()
 
         d['__class__'] = o.__class__.__name__
@@ -200,7 +200,7 @@ class SeparationBaseDecoder(json.JSONDecoder):
 
             # we know 'input_audio_signal' is always the first argument
             signal_json = json_dict.pop('_audio_signal')  # this is the AudioSignal object
-            signal = audio_signal.AudioSignal.from_json(signal_json)
+            signal = nussl.audio_signal.AudioSignal.from_json(signal_json)
 
             # get the rest of the required arguments
             signature = inspect.getargspec(class_.__init__)
@@ -214,10 +214,10 @@ class SeparationBaseDecoder(json.JSONDecoder):
 
             # fill out the rest of the fields
             for k, v in json_dict.items():
-                if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
-                    seperator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
-                elif isinstance(v, (str, bytes)) and audio_signal.__name__ in v: # TODO: test this
-                    seperator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
+                if isinstance(v, dict) and nussl.constants.NUMPY_JSON_KEY in v:
+                    seperator.__dict__[k] = nussl.utils.json_numpy_obj_hook(v[nussl.constants.NUMPY_JSON_KEY])
+                elif isinstance(v, (str, bytes)) and nussl.audio_signal.__name__ in v: # TODO: test this
+                    seperator.__dict__[k] = nussl.audio_signal.AudioSignal.from_json(v)
                 else:
                     seperator.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
 
