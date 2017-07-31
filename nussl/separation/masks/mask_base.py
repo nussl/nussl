@@ -179,6 +179,19 @@ class MaskBase(object):
         Returns:
 
         """
+        raise NotImplementedError('Cannot call base class! Use BinaryMask or SoftMask!')
+
+    def inverse_mask(self):
+        """
+        Alias for :func:`invert_mask`
+
+        See Also:
+            :func:`invert_mask`
+
+        Returns:
+
+        """
+        return self.invert_mask()
 
     def _add(self, other):
         if isinstance(other, MaskBase):
