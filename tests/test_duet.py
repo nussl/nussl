@@ -15,8 +15,7 @@ class DuetUnitTests(unittest.TestCase):
     def setUp(self):
         path = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
         self.signal = nussl.AudioSignal(path)
-        # Call benchmarks
-        self.duet = nussl.Duet(self.signal, 3)
+        # Call benchmarks\
         self.benchmark_dict = self.load_benchmarks()
 
     def load_benchmarks(self):
@@ -36,7 +35,8 @@ class DuetUnitTests(unittest.TestCase):
         benchmark_source_estimates = np.load(source_estimates_path)
         benchmark_atn_delay_est = np.load(atn_delay_est_path)
 
-        duet_source_estimates, duet_atn_delay_est = self.duet.run()
+        duet = nussl.Duet(signal, 3)
+        duet_source_estimates, duet_atn_delay_est = duet.run()
         assert np.all(benchmark_source_estimates == duet_source_estimates)
         assert np.all(benchmark_atn_delay_est == duet_atn_delay_est)
 
@@ -189,7 +189,7 @@ class DuetUnitTests(unittest.TestCase):
         source_estimates_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_source_estimates.npy')
         benchmark_source_estimates = np.load(source_estimates_path)
 
-        source_estimates = duet.convert_time_domain(duet.best_ind, duet.mask, duet.atn_peak, duet.delay_peak)
+        source_estimates = duet.convert_to_time_domain(duet.best_ind, duet.mask, duet.atn_peak, duet.delay_peak)
 
         assert np.all(benchmark_source_estimates == source_estimates)
 

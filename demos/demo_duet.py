@@ -1,6 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
 import nussl
-
 
 def main():
     # Load input file
@@ -13,7 +14,6 @@ def main():
 
     # Set up DUET
     duet = nussl.Duet(signal, num_sources=3)
-
 
     # and run
     duet.run()
@@ -28,7 +28,6 @@ def main():
         output_file_name = output_name_stem + str(i) + '.wav'
         s.write_audio_to_file(output_file_name)
         i += 1
-
 
 if __name__ == '__main__':
     main()
