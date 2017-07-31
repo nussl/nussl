@@ -7,10 +7,11 @@ import numpy as np
 from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
-import nussl.audio_signal
-import nussl.constants
-import nussl.spectral_utils
-import nussl.utils
+from .. import audio_signal
+from .. import constants
+from .. import spectral_utils
+from .. import utils
+
 import separation_base
 
 
@@ -123,7 +124,7 @@ class Duet(separation_base.SeparationBase):
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        R21 = (stft_ch1 + nussl.constants.EPSILON) / (stft_ch0 + nussl.constants.EPSILON)
+        R21 = (stft_ch1 + constants.EPSILON) / (stft_ch0 + constants.EPSILON)
         relative_attenuation = np.abs(R21)  # relative attenuation between the two channels
         symmetric_attenuation = relative_attenuation - 1 / relative_attenuation
         relative_delay = -np.imag(np.log(R21)) / (2 * np.pi * frequency_matrix)  # relative delay
@@ -199,9 +200,9 @@ class Duet(separation_base.SeparationBase):
                             (stft_ch0 + atnpeak[i] * np.exp(1j * frequency_matrix * deltapeak[i]) * stft_ch1) /
                             (1 + atnpeak[i] ** 2) * mask])
             # xi = spectral_utils.f_istft(Xm, L, winType, hop, fs)
-            xi = nussl.spectral_utils.e_istft(Xm, L, hop, win_type)
+            xi = spectral_utils.e_istft(Xm, L, hop, win_type)
 
-            xhat[i, :] = nussl.utils.add_mismatched_arrays(xhat[i,], xi)[:self.audio_signal.signal_length]
+            xhat[i, :] = utils.add_mismatched_arrays(xhat[i,], xi)[:self.audio_signal.signal_length]
             # add back to the separated signal a portion of the mixture to eliminate
             # most of the masking artifacts
             # xhat=xhat+0.05*x[0,:]
@@ -371,8 +372,8 @@ class Duet(separation_base.SeparationBase):
         """
         signals = []
         for i in range(self.num_sources):
-            cur_signal = nussl.audio_signal.AudioSignal(audio_data_array=self.separated_sources[i],
-                                                        sample_rate=self.sample_rate)
+            cur_signal = audio_signal.AudioSignal(audio_data_array=self.separated_sources[i],
+                                                  sample_rate=self.sample_rate)
             signals.append(cur_signal)
         return signals
 

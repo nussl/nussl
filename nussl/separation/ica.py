@@ -4,8 +4,9 @@
 import numpy as np
 import sklearn
 
-import nussl.utils
-import nussl.audio_signal
+from .. import utils
+from .. import audio_signal
+
 import separation_base
 
 
@@ -33,8 +34,8 @@ class ICA(separation_base.SeparationBase):
 
         observation_data = [o.audio_data for o in observations]
         observation_data = np.vstack(observation_data)
-        observations = nussl.audio_signal.AudioSignal(audio_data_array=observation_data,
-                                                      sample_rate=observations[0].sample_rate)
+        observations = audio_signal.AudioSignal(audio_data_array=observation_data,
+                                                sample_rate=observations[0].sample_rate)
         return observations
 
     def run(self):
@@ -59,8 +60,8 @@ class ICA(separation_base.SeparationBase):
         self.mean = ica.mean_
         self.sources = []
         for i in range(sources.shape[0]):
-            signal = nussl.audio_signal.AudioSignal(audio_data_array=sources[i, :],
-                                                    sample_rate=self.audio_signal.sample_rate)
+            signal = audio_signal.AudioSignal(audio_data_array=sources[i, :],
+                                              sample_rate=self.audio_signal.sample_rate)
             self.sources.append(signal)
         return self.sources
 
