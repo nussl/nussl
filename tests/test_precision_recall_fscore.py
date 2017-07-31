@@ -25,10 +25,10 @@ class PrecisionRecallFScoreUnitTest(unittest.TestCase):
 
         mixture = drums + flute
 
-        repet = nussl.Repet(mixture, mask_type=nussl.BinaryMask)
+        repet = nussl.Repet(mixture, mask_type=nussl.separation.BinaryMask)
         repet_mask_list = repet()
 
-        ideal_mask = nussl.IdealMask(mixture, [drums, flute], mask_type=nussl.BinaryMask)
+        ideal_mask = nussl.IdealMask(mixture, [drums, flute], mask_type=nussl.separation.BinaryMask)
         ideal_mask_list = ideal_mask()
 
         prf = nussl.PrecisionRecallFScore(ideal_mask_list, repet_mask_list)
