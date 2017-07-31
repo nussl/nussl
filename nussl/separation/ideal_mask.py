@@ -17,8 +17,9 @@ This class is derived from :class:`separation.mask_separation_base.MaskSeparatio
 import numpy as np
 import warnings
 
-from .. import config
-from .. import utils
+import nussl.config
+import nussl.utils
+import nussl.spectral_utils
 import mask_separation_base
 import masks
 
@@ -79,10 +80,10 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
     def __init__(self, input_audio_mixture, sources_list,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
-                 use_librosa_stft=config.USE_LIBROSA_STFT):
+                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
         super(IdealMask, self).__init__(input_audio_signal=input_audio_mixture, mask_type=mask_type)
 
-        self.sources = utils._verify_audio_signal_list_strict(sources_list)
+        self.sources = nussl.utils._verify_audio_signal_list_strict(sources_list)
 
         # Make sure input_audio_signal has the same settings as sources_list
         if self.audio_signal.sample_rate != self.sources[0].sample_rate:
@@ -225,9 +226,12 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         self.estimated_sources = []
 
         for cur_mask in self.estimated_masks:
-            new_signal = self.audio_signal.apply_mask(cur_mask)
-            new_signal.stft_params = self.stft_params
-            new_signal.istft(overwrite=True)
+            estimated_stft = np.multiply(cur_mask.mask, self.audio_signal.stft_data)
+            new_signal = self.audio_signal.make_copy_with_stft_data(estimated_stft, verbose=False)
+            new_signal.istft(self.stft_params.window_length, self.stft_params.hop_length,
+                             self.stft_params.window_type, overwrite=True,
+                             use_librosa=self.use_librosa_stft,
+                             truncate_to_length=self.audio_signal.signal_length)
 
             self.estimated_sources.append(new_signal)
 
