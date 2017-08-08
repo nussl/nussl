@@ -16,7 +16,7 @@ class AudioSignalUnitTests(unittest.TestCase):
     length = dur * sr
 
     def setUp(self):
-        input_folder = os.path.join('..', 'Input')
+        input_folder = os.path.join('..', 'input')
         output_folder = os.path.join('..', 'Output')
         ext = '.wav'
         self.all_inputs = [os.path.join(input_folder, f) for f in os.listdir(input_folder)
