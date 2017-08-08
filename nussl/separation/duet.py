@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # noinspection PyUnusedImport
-from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
 import nussl.audio_signal
@@ -310,7 +309,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             mask_array[mask] = True
             background_mask = masks.BinaryMask(np.array(mask_array))
             self.masks.append(background_mask)
-            self.masks[0].mask = np.logical_or(self.masks[i].mask, self.masks[0].mask)
+            self.masks[0].mask = np.logical_xor(self.masks[i].mask, self.masks[0].mask)
             best_so_far[mask] = score[mask]
 
         #Compute first mask based on what the other masks left remaining
@@ -341,7 +340,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             new_sig = self.audio_signal.make_copy_with_stft_data(stft_sources, verbose=False)
             new_sig = new_sig.apply_mask(self.masks[i])  # Ask Ethan if we can have a apply_mask that doesn't return a new mask!
             new_sig.stft_params = self.stft_params
-            source_estimates[i, :] = new_sig.istft(overwrite=True)
+            source_estimates[i, :] = new_sig.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
         return source_estimates
 
     @staticmethod
