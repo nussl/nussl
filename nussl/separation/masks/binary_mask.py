@@ -81,8 +81,8 @@ class BinaryMask(mask_base.MaskBase):
         input_mask (:obj:`np.ndarray`): 2- or 3-D :obj:`np.array` that represents the mask.
     """
 
-    def __init__(self, input_mask):
-        super(BinaryMask, self).__init__(input_mask)
+    def __init__(self, input_mask=None, mask_shape=None):
+        super(BinaryMask, self).__init__(input_mask, mask_shape)
 
     @staticmethod
     def _validate_mask(mask_):

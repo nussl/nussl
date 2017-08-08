@@ -207,7 +207,11 @@ class AudioSignal(object):
 
     @audio_data.setter
     def audio_data(self, value):
-        assert isinstance(value, np.ndarray), 'Type of self.audio_data must be np.ndarray!'
+        if value is None:
+            self._audio_data = None
+
+        if not isinstance(value, np.ndarray):
+            raise ValueError('Type of self.audio_data must be of type np.ndarray!')
 
         if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
             warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
@@ -235,7 +239,11 @@ class AudioSignal(object):
 
     @stft_data.setter
     def stft_data(self, value):
-        assert isinstance(value, np.ndarray), 'Type of self.stft_data must be np.ndarray!'
+        if value is None:
+            self._stft_data = None
+
+        if not isinstance(value, np.ndarray):
+            raise ValueError('Type of self.stft_data must be of type np.ndarray!')
 
         if value.ndim == 1:
             raise ValueError('Cannot support arrays with less than 2 dimensions!')
@@ -393,7 +401,6 @@ class AudioSignal(object):
         """
         return self.stft_data is not None and self.stft_data.size != 0
 
-
     @property
     def has_audio_data(self):
         """ Returns False if :attr:`audio_data` is empty. Else, returns True.
@@ -403,7 +410,6 @@ class AudioSignal(object):
 
         """
         return self.audio_data is not None and self.audio_data.size != 0
-
 
     ##################################################
     #                     I/O
@@ -935,7 +941,7 @@ class AudioSignal(object):
 
         new_signal = copy.deepcopy(self)
         new_signal.audio_data = audio_data
-        new_signal.stft_data = np.zeros_like(self.stft_data)
+        new_signal.stft_data = None
         return new_signal
 
     def make_copy_with_stft_data(self, stft_data, verbose=True):
@@ -958,7 +964,7 @@ class AudioSignal(object):
 
         new_signal = copy.deepcopy(self)
         new_signal.stft_data = stft_data
-        new_signal.audio_data = np.zeros_like(self.audio_data)
+        new_signal.audio_data = None
         return new_signal
 
     def to_json(self):
