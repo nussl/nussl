@@ -210,19 +210,20 @@ class AudioSignal(object):
 
         if value is None:
             self._audio_data = None
+            return
+
         elif not isinstance(value, np.ndarray):
             raise ValueError('Type of self.audio_data must be of type np.ndarray!')
 
-        else:
-            if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
-                warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
-                value = value.T
+        if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
+            warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
+            value = value.T
 
-            if value.ndim > 2:
-                raise ValueError('self.audio_data cannot have more than 2 dimensions!')
+        if value.ndim > 2:
+            raise ValueError('self.audio_data cannot have more than 2 dimensions!')
 
-            if self._audio_data.ndim < 2:
-                self._audio_data = np.expand_dims(self._audio_data, axis=constants.CHAN_INDEX)
+        if value.ndim < 2:
+            value = np.expand_dims(value, axis=constants.CHAN_INDEX)
 
         self._audio_data = value
 
@@ -243,6 +244,8 @@ class AudioSignal(object):
 
         if value is None:
             self._stft_data = None
+            return
+
         elif not isinstance(value, np.ndarray):
             raise ValueError('Type of self.stft_data must be of type np.ndarray!')
 
