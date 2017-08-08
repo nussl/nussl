@@ -22,9 +22,21 @@ class MaskBase(object):
         input_mask (:obj:`np.ndarray`): A 2- or 3-dimensional numpy ``ndarray`` representing a mask.
         
     """
-    def __init__(self, input_mask):
+    def __init__(self, input_mask=None, mask_shape=None):
         self._mask = None
-        self.mask = input_mask
+
+        if mask_shape is None and input_mask is None:
+            raise ValueError('Cannot initialize mask without mask_shape or input_mask!')
+
+        if mask_shape is not None and input_mask is not None:
+            raise ValueError('Cannot initialize mask with both mask_shape and input_mask!')
+
+        assert isinstance(mask_shape, tuple), 'mask_shape must be a tuple!'
+
+        if mask_shape is not None:
+            self.mask = np.zeros(mask_shape)
+        else:
+            self.mask = input_mask
 
     @property
     def mask(self):
