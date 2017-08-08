@@ -207,10 +207,10 @@ class AudioSignal(object):
 
     @audio_data.setter
     def audio_data(self, value):
+
         if value is None:
             self._audio_data = None
-
-        if not isinstance(value, np.ndarray):
+        elif not isinstance(value, np.ndarray):
             raise ValueError('Type of self.audio_data must be of type np.ndarray!')
 
         if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
@@ -239,10 +239,10 @@ class AudioSignal(object):
 
     @stft_data.setter
     def stft_data(self, value):
+
         if value is None:
             self._stft_data = None
-
-        if not isinstance(value, np.ndarray):
+        elif not isinstance(value, np.ndarray):
             raise ValueError('Type of self.stft_data must be of type np.ndarray!')
 
         if value.ndim == 1:
