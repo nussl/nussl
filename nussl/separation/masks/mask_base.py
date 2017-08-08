@@ -31,12 +31,14 @@ class MaskBase(object):
         if mask_shape is not None and input_mask is not None:
             raise ValueError('Cannot initialize mask with both mask_shape and input_mask!')
 
-        assert isinstance(mask_shape, tuple), 'mask_shape must be a tuple!'
-
-        if mask_shape is not None:
-            self.mask = np.zeros(mask_shape)
-        else:
+        if isinstance(input_mask, np.ndarray):
             self.mask = input_mask
+
+        elif isinstance(mask_shape, tuple):
+            self.mask = np.zeros(mask_shape)
+
+        else:
+            raise ValueError('input_mask must be a np.ndarray, or mask_shape must be a tuple!')
 
     @property
     def mask(self):
