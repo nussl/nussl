@@ -224,3 +224,9 @@ class MaskBase(object):
 
     def __itruediv__(self, value):
         return self.__idiv__(value)
+
+    def __eq__(self, other):
+        return np.all(self.mask == other.mask)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
