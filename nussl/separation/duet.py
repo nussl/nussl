@@ -14,7 +14,6 @@ import nussl.spectral_utils
 import nussl.utils
 import mask_separation_base
 import masks
-from ideal_mask import IdealMask
 
 
 class Duet(mask_separation_base.MaskSeparationBase):
@@ -46,22 +45,23 @@ class Duet(mask_separation_base.MaskSeparationBase):
         p (int): Weight the histogram with the symmetric attenuation estimator
         q (int): Weight the histogram with the delay estimator
 
+
     Attributes:
-        stft_ch0 (np.array):
-        stft_ch1 (np.array):
-        frequency_matrix (np.array):
-        symmetric_atn = None
-        delay = None
-        num_time_bins = None
-        num_frequency_bins = None
-        attenuation_bins = None
-        delay_bins = None
-        normalized_attenuation_delay_histogram (np.array):
-        attenuation_delay_histogram (np.array):
-        peak_indices (np.array):
-        separated_sources (np.array):
-
-
+        stft_ch0 (np.array): A Numpy matrix containing the stft data of channel 0.
+        stft_ch1 (np.array): A Numpy matrix containing the stft data of channel 0.
+        frequency_matrix (np.array): A Numpy matrix containing the frequencies of analysis.
+        symmetric_atn (np.array): A Numpy matrix containing the symmetric attenuation between the two channels.
+        delay (np.array): A Numpy matrix containing the delay between the two channels.
+        num_time_bins (np.array): The number of time bins for the frequency matrix and mask arrays.
+        num_frequency_bins (int): The number of frequency bins for the mask arrays.
+        attenuation_bins (int): A Numpy array containing the attenuation bins for the histogram.
+        delay_bins (np.array): A Numpy array containing the delay bins for the histogram.
+        normalized_attenuation_delay_histogram (np.array): A normalized Numpy matrix containing the
+                                                           attenuation delay histogram, which has peaks for each source.
+        attenuation_delay_histogram (np.array): A non-normalized Numpy matrix containing the
+                                                attenuation delay histogram, which has peaks for each source.
+        peak_indices (np.array): A Numpy array containing the indices of the peaks for the histogram.
+        separated_sources (np.array): A Numpy array of arrays containing each separated source.
 
     Examples:
         :ref:`The DUET Demo Example <duet_demo>`
@@ -157,7 +157,6 @@ class Duet(mask_separation_base.MaskSeparationBase):
         self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = self._make_histogram()
 
         # Find the location of peaks in the attenuation-delay plane
-
         self.peak_indices = nussl.utils.find_peak_indices(self.normalized_attenuation_delay_histogram, self.num_sources,
                                                           threshold=self.peak_threshold,
                                                           min_dist=[self.attenuation_min_distance,
@@ -167,9 +166,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         delay_peak, atn_delay_est, atn_peak = self._convert_peaks()
 
         # compute masks for separation
-        self._compute_masks(atn_peak, delay_peak)
-
-
+        self._compute_masks(delay_peak, atn_peak)
 
         # demix with ML alignment and convert to time domain
         source_estimates = self._convert_to_time_domain(atn_peak, delay_peak)
@@ -209,7 +206,8 @@ class Duet(mask_separation_base.MaskSeparationBase):
         wmat += nussl.constants.EPSILON
         return stft_ch0, stft_ch1, wmat
 
-    def _compute_atn_delay(self, stft_ch0, stft_ch1, frequency_matrix):
+    @staticmethod
+    def _compute_atn_delay(stft_ch0, stft_ch1, frequency_matrix):
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
         inter_channel_ratio = (stft_ch1 + nussl.constants.EPSILON) / (stft_ch0 + nussl.constants.EPSILON)
@@ -254,8 +252,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         histogram, atn_bins, delay_bins = np.histogram2d(symmetric_attenuation_vector, delay_vector,
                                                      bins=np.array([self.num_attenuation_bins, self.num_delay_bins]),
                                                      range=np.array([[self.attenuation_min, self.attenuation_max],
-                                           [self.delay_min, self.delay_max]]), normed=False,
-                           weights=time_frequency_weights_vector)
+                                           [self.delay_min, self.delay_max]]), weights=time_frequency_weights_vector)
 
         #Save non-normalized as an option for plotting later
         self.attenuation_delay_histogram = histogram
@@ -295,46 +292,40 @@ class Duet(mask_separation_base.MaskSeparationBase):
         atn_peak = (symmetric_atn_peak + np.sqrt(symmetric_atn_peak ** 2 + 4)) / 2
         return delay_peak, atn_delay_est, atn_peak
 
-    def _compute_masks(self, atn_peak, delay_peak):
+    def _compute_masks(self, delay_peak, atn_peak):
         """Receives the attenuation and delay peaks and computes a mask to be applied to the signal for source
         separation.
 
         Parameters:
             atn_peak (np.array): Attenuation peaks determined from histogram
             delay_peak (np.array): Delay peaks determined from histogram
-        Returns:
-           best_ind(np.array): The indices for where the masks are applied
-           mask (np.array): A binary mask used to separate the sources
 
         """
         # compute masks for separation
         best_so_far = np.inf * np.ones((self.num_frequency_bins, self.num_time_bins))
-
         for i in range(0, self.num_sources):
-            mask_array = np.zeros((self.num_frequency_bins, self.num_time_bins), dtype=int)
-            phase = np.exp(-1j * self.frequency_matrix * delay_peak[i])
-            score = np.abs(atn_peak[i] * phase * self.stft_ch0 - self.stft_ch1) ** 2 / (1 + atn_peak[i] ** 2)
+            mask_array = np.zeros((self.num_frequency_bins, self.num_time_bins), dtype=bool)
+            score = self._compute_mask_score(delay_peak[i], atn_peak[i])
             mask = (score < best_so_far)
-            #First pass will be all zeros
-            if i == 0:
-                mask_array[mask] = 0.0
-            else:
-                mask_array[mask] = 1.0
+            mask_array[mask] = True
             background_mask = masks.BinaryMask(np.array(mask_array))
-            best_so_far[mask] = score[mask]
             self.masks.append(background_mask)
+            self.masks[0].mask = np.logical_or(self.masks[i].mask, self.masks[0].mask)
+            best_so_far[mask] = score[mask]
+
         #Compute first mask based on what the other masks left remaining
-        for i in range(1, self.num_sources):
-            self.masks[0].mask += self.masks[i].mask
-        self.masks[0].mask = abs(self.masks[0].mask - 1)
+        self.masks[0].mask = np.logical_not(self.masks[0].mask)
+
+    def _compute_mask_score(self, delay_peak_val, atn_peak_val):
+        phase = np.exp(-1j * self.frequency_matrix * delay_peak_val)
+        score = np.abs(atn_peak_val * phase * self.stft_ch0 - self.stft_ch1) ** 2 / (1 + atn_peak_val ** 2)
+        return score
 
     def _convert_to_time_domain(self, atn_peak, delay_peak):
         """Receives the attenuation and delay peaks, the mask and best indices and 
         applies the mask to separate the sources
 
         Parameters:
-            best_ind (np.array): The indices for where the masks are applied
-            mask (np.array): binary mask used to separate the sources
             atn_peak (np.array): Attenuation peaks determined from histogram
             delay_peak (np.array): Delay peaks determined from histogram
 
@@ -343,22 +334,14 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         """
         source_estimates = np.zeros((self.num_sources, self.audio_signal.signal_length))
-        for i in range(0, self.num_sources):
-            mask_apply = self.masks[i]
-            mask_apply = np.squeeze(mask_apply.mask, axis=2)
+        for i in range(self.num_sources):
             #Apply masks to stft channels using equation provided by Rickard
-            stft_sources =((self.stft_ch0 + atn_peak[i] * np.exp(1j * self.frequency_matrix * delay_peak[i])
-                            * self.stft_ch1) / (1 + atn_peak[i] ** 2))*mask_apply
-
-            # istft_sources = spectral_utils.f_istft(stft_sources, L, winType, hop, fs)
-            istft_sources = nussl.spectral_utils.e_istft(stft_sources, self.stft_params.window_length,
-                                        self.stft_params.hop_length, self.stft_params.window_type)
-
-            source_estimates[i, :] = nussl.utils.add_mismatched_arrays(source_estimates[i, ],
-                                                                       istft_sources)[:self.audio_signal.signal_length]
-            # add back to the separated signal a portion of the mixture to eliminate
-            # most of the masking artifacts
-            # source_estimates=source_estimates+0.05*x[0,:]
+            stft_sources = ((self.stft_ch0 + atn_peak[i] * np.exp(1j * self.frequency_matrix * delay_peak[i])
+                             * self.stft_ch1) / (1 + atn_peak[i] ** 2))
+            new_sig = self.audio_signal.make_copy_with_stft_data(stft_sources, verbose=False)
+            new_sig = new_sig.apply_mask(self.masks[i])  # Ask Ethan if we can have a apply_mask that doesn't return a new mask!
+            new_sig.stft_params = self.stft_params
+            source_estimates[i, :] = new_sig.istft(overwrite=True)
         return source_estimates
 
     @staticmethod

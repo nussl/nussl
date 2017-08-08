@@ -12,9 +12,12 @@ import warnings
 
 
 class DuetUnitTests(unittest.TestCase):
+
+    # Update this if the benchmark file changes and rerun freeze_duet_values() (below)
+    path_to_benchmark_file = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
+
     def setUp(self):
-        path = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
-        self.signal = nussl.AudioSignal(path)
+        self.signal = nussl.AudioSignal(self.path_to_benchmark_file)
         # Call benchmarks\
         self.benchmark_dict = self.load_benchmarks()
 
@@ -52,7 +55,7 @@ class DuetUnitTests(unittest.TestCase):
     def test_compute_spectrogram_wmat(self):
         # Load Duet values to benchmark against
         duet = nussl.Duet(self.signal, 3)
-        duet_sft0, duet_sft1, duet_wmat = duet._compute_spectrogram(self.duet.sample_rate)
+        duet_sft0, duet_sft1, duet_wmat = duet._compute_spectrogram(duet.sample_rate)
         assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch0']) == duet_sft0)
         assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch1']) == duet_sft1)
         assert np.all(np.array(self.benchmark_dict['benchmark_wmat']) == duet_wmat)
@@ -197,7 +200,31 @@ class DuetUnitTests(unittest.TestCase):
 
         # TODO: fix this function before writing test for it
 
+def freeze_duet_values():
+    path = DuetUnitTests.path_to_benchmark_file
 
+    signal = nussl.AudioSignal(path)
+    duet = nussl.Duet(signal, 3)
+
+    duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix = duet._compute_spectrogram(duet.sample_rate)
+
+    duet.symmetric_atn, duet.delay = duet._compute_atn_delay(duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix)
+
+    duet.normalized_attenuation_delay_histogram, duet.attenuation_bins, duet.delay_bins = duet._make_histogram()
+
+    duet.peak_indices = nussl.utils.find_peak_indices(duet.normalized_attenuation_delay_histogram, duet.num_sources,
+                                                      threshold=duet.peak_threshold,
+                                                      min_dist=[duet.attenuation_min_distance,
+                                                                duet.delay_min_distance])
+
+    delay_peak, atn_delay_est, atn_peak = duet._convert_peaks()
+
+    duet._compute_masks(delay_peak, atn_peak)
+
+    source_estimates = duet._convert_to_time_domain(atn_peak, delay_peak)
+
+    duet.separated_sources = source_estimates
 if __name__ == '__main__':
     unittest.main()
+
 
