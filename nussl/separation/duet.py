@@ -3,8 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-# noinspection PyUnusedImport
+from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
 import nussl.audio_signal
@@ -105,6 +104,8 @@ class Duet(mask_separation_base.MaskSeparationBase):
         self.normalized_attenuation_delay_histogram = None
         self.attenuation_delay_histogram = None
         self.peak_indices = None
+        self.delay_peak = None
+        self.atn_peak = None
         self.separated_sources = None
 
     def run(self):
@@ -162,17 +163,12 @@ class Duet(mask_separation_base.MaskSeparationBase):
                                                                     self.delay_min_distance])
 
         # compute delay_peak, attenuation peak, and attenuation/delay estimates
-        delay_peak, atn_delay_est, atn_peak = self._convert_peaks()
+        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks()
 
         # compute masks for separation
-        self._compute_masks(delay_peak, atn_peak)
+        masks = self._compute_masks()
 
-        # demix with ML alignment and convert to time domain
-        source_estimates = self._convert_to_time_domain(atn_peak, delay_peak)
-
-        self.separated_sources = source_estimates
-        # self._apply_masks()
-        return source_estimates, atn_delay_est
+        return masks
 
     def _compute_spectrogram(self, sample_rate):
         """ Creates the stfts matrices for channel 0 and 1, and computes the frequency matrix.
@@ -191,17 +187,14 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         stft_ch0 = self.audio_signal.get_stft_channel(0)
         stft_ch1 = self.audio_signal.get_stft_channel(1)
-        frequency_vector = self.audio_signal.freq_vector
-        time_vector = self.audio_signal.time_bins_vector
 
         # remove dc component to avoid dividing by zero freq. in the delay estimation
         stft_ch0 += nussl.constants.EPSILON
         stft_ch1 += nussl.constants.EPSILON
-        self.num_frequency_bins = len(frequency_vector)
-        self.num_time_bins = len(time_vector)
 
         # Compute the freq. matrix for later use in phase calculations
-        wmat = np.array(np.tile(np.mat(frequency_vector).T, (1, self.num_time_bins))) * (2 * np.pi / sample_rate)
+        n_time_bins = len(self.audio_signal.time_bins_vector)
+        wmat = np.array(np.tile(np.mat(self.audio_signal.freq_vector).T, (1, n_time_bins))) * (2 * np.pi / sample_rate)
         wmat += nussl.constants.EPSILON
         return stft_ch0, stft_ch1, wmat
 
@@ -261,7 +254,6 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         # smooth the normalized histogram - local average 3-by-3 neighboring bins
         histogram = self._smooth_matrix(histogram, np.array([3]))
-
         return histogram, atn_bins, delay_bins
 
     def _convert_peaks(self):
@@ -291,7 +283,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         atn_peak = (symmetric_atn_peak + np.sqrt(symmetric_atn_peak ** 2 + 4)) / 2
         return delay_peak, atn_delay_est, atn_peak
 
-    def _compute_masks(self, delay_peak, atn_peak):
+    def _compute_masks(self):
         """Receives the attenuation and delay peaks and computes a mask to be applied to the signal for source
         separation.
 
@@ -301,10 +293,12 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         """
         # compute masks for separation
-        best_so_far = np.inf * np.ones((self.num_frequency_bins, self.num_time_bins))
+        best_so_far = np.inf * np.ones_like(self.stft_ch0, dtype=float)
+
         for i in range(0, self.num_sources):
-            mask_array = np.zeros((self.num_frequency_bins, self.num_time_bins), dtype=bool)
-            score = self._compute_mask_score(delay_peak[i], atn_peak[i])
+            mask_array = np.zeros_like(self.stft_ch0, dtype=bool)
+            phase = np.exp(-1j * self.frequency_matrix * self.delay_peak[i])
+            score = np.abs(self.atn_peak[i] * phase * self.stft_ch0 - self.stft_ch1) ** 2 / (1 + self.atn_peak[i] ** 2)
             mask = (score < best_so_far)
             mask_array[mask] = True
             background_mask = masks.BinaryMask(np.array(mask_array))
@@ -314,34 +308,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         #Compute first mask based on what the other masks left remaining
         self.masks[0].mask = np.logical_not(self.masks[0].mask)
-
-    def _compute_mask_score(self, delay_peak_val, atn_peak_val):
-        phase = np.exp(-1j * self.frequency_matrix * delay_peak_val)
-        score = np.abs(atn_peak_val * phase * self.stft_ch0 - self.stft_ch1) ** 2 / (1 + atn_peak_val ** 2)
-        return score
-
-    def _convert_to_time_domain(self, atn_peak, delay_peak):
-        """Receives the attenuation and delay peaks, the mask and best indices and 
-        applies the mask to separate the sources
-
-        Parameters:
-            atn_peak (np.array): Attenuation peaks determined from histogram
-            delay_peak (np.array): Delay peaks determined from histogram
-
-        Returns:
-           source_estimates (np.array): The arrays of the separated source signals
-
-        """
-        source_estimates = np.zeros((self.num_sources, self.audio_signal.signal_length))
-        for i in range(self.num_sources):
-            #Apply masks to stft channels using equation provided by Rickard
-            stft_sources = ((self.stft_ch0 + atn_peak[i] * np.exp(1j * self.frequency_matrix * delay_peak[i])
-                             * self.stft_ch1) / (1 + atn_peak[i] ** 2))
-            new_sig = self.audio_signal.make_copy_with_stft_data(stft_sources, verbose=False)
-            new_sig = new_sig.apply_mask(self.masks[i])  # Ask Ethan if we can have a apply_mask that doesn't return a new mask!
-            new_sig.stft_params = self.stft_params
-            source_estimates[i, :] = new_sig.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
-        return source_estimates
+        return self.masks
 
     @staticmethod
     def _smooth_matrix(matrix, kernel):
@@ -417,7 +384,15 @@ class Duet(mask_separation_base.MaskSeparationBase):
         """
         signals = []
         for i in range(self.num_sources):
-            cur_signal = nussl.audio_signal.AudioSignal(audio_data_array=self.separated_sources[i],
+            # Apply masks to stft channels using equation provided by Rickard
+            stft_sources = ((self.stft_ch0 + self.atn_peak[i] * np.exp(1j * self.frequency_matrix * self.delay_peak[i])
+                             * self.stft_ch1) / (1 + self.atn_peak[i] ** 2))
+            new_sig = self.audio_signal.make_copy_with_stft_data(stft_sources, verbose=False)
+            new_sig = new_sig.apply_mask(
+                self.masks[i])  # Ask Ethan if we can have a apply_mask that doesn't return a new mask!
+            new_sig.stft_params = self.stft_params
+            source_estimate = new_sig.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
+            cur_signal = nussl.audio_signal.AudioSignal(audio_data_array=source_estimate,
                                                         sample_rate=self.sample_rate)
             signals.append(cur_signal)
         return signals
