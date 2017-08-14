@@ -31,6 +31,20 @@ class DuetUnitTests(unittest.TestCase):
             benchmark_dict[key] = value
         return benchmark_dict
 
+    def test_multiple_duet(self):
+        mask_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_masks.npy')
+        benchmark_mask = np.load(mask_path)
+        duet = nussl.Duet(self.signal, 3)
+        duet_masks = duet.run()
+        path_to_benchmark_file = os.path.join('..', 'Input', 'dev1_wdrums_inst_mix.wav')
+        duet.audio_signal = nussl.AudioSignal(path_to_benchmark_file)
+        duet_masks = duet.run()
+        path_to_benchmark_file = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
+        duet.audio_signal = nussl.AudioSignal(path_to_benchmark_file)
+        duet_masks = duet.run()
+        for i in range(len(duet_masks)):
+            assert np.all(benchmark_mask[i].mask == duet_masks[i].mask)
+
     def test_duet_final_outputs(self):
         #Test final outputs
         mask_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_masks.npy')
@@ -188,7 +202,7 @@ def freeze_duet_values():
 
     signal = nussl.AudioSignal(path)
     duet = nussl.Duet(signal, 3)
-    output_folder = os.path.abspath('duet_reference/duet_benchmarks')
+    output_folder = os.path.abspath('duet_reference/test')
 
     duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix = duet._compute_spectrogram(duet.sample_rate)
     np.save(os.path.join(output_folder, "benchmark_stft_ch0"), duet.stft_ch0)
@@ -224,5 +238,5 @@ def freeze_duet_values():
 if __name__ == '__main__':
     unittest.main()
 
-#freeze_duet_values()
+# freeze_duet_values()
 
