@@ -109,13 +109,15 @@ class AudioSignal(object):
     #                   Plotting
     ##################################################
 
-    def plot_time_domain(self):
-        """
-        Not implemented yet -- will raise and exception
-        Returns:
+    # def plot_time_domain(self):
+    #     """
+    #     Not implemented yet -- will raise and exception
+    #     Returns:
+    #
+    #     """
+    #     signal = self.audio_data
+    #     for channel in num_channels
 
-        """
-        raise NotImplementedError('Not ready yet!')
 
     _NAME_STEM = 'audio_signal'
 
@@ -231,8 +233,8 @@ class AudioSignal(object):
 
     @property
     def stft_data(self):
-        """ (:obj:`np.ndarray`): Real-valued, uncompressed, time-domain representation of the audio.
-            2D numpy array with shape `(n_channels, n_samples)`.
+        """ (:obj:`np.ndarray`): Complex-valued, time-frequency representation of the audio.
+            2D numpy array with shape `(n_frequency_bins, n_time_bins)`.
             ``None`` by default, this can be initialized at instantiation.
             Usually, this is expected to be floats. Some functions will convert to floats if not already.
         """
@@ -1228,7 +1230,7 @@ class AudioSignal(object):
 
         Args:
             overwrite (bool, optional): If ``True`` this function will overwrite :attr:`audio_data`.
-
+            remove_channels (bool, optional): If ``True`` this function will remove the channel index axis.
         Returns:
             (:obj:`np.array`): Mono-ed version of :attr:`audio_data`.
 
@@ -1241,23 +1243,24 @@ class AudioSignal(object):
             self.audio_data = mono
         return mono
 
-    def stft_to_mono(self, overwrite=False):
-        """ Converts :attr:`stft_data` to mono by averaging every sample.
+    def stft_to_one_channel(self, overwrite=False):
+        """ Converts :attr:`stft_data` to a single channel by averaging every sample.
+        Shape: stft_data.shape will be (num_freq, num_time, 1) where the last axis is the channel number
 
         Warning:
-            If overwrite=True (default) this will overwrite any data in :attr:`audio_data`!
+            If overwrite=True (default) this will overwrite any data in :attr:`stft_data`!
 
         Args:
             overwrite (bool, optional): If ``True`` this function will overwrite :attr:`stft_data`.
 
         Returns:
-            (:obj:`np.array`): Mono-ed version of :attr:`stft_data`.
+            (:obj:`np.array`): Single channel version of :attr:`stft_data`.
 
         """
-        mono_stft = np.mean(self.stft_data, axis=constants.CHAN_INDEX)
+        one_channel_stft = np.mean(self.stft_data, axis=constants.CHAN_INDEX)
         if overwrite:
-            self.stft_data = mono_stft
-        return mono_stft
+            self.stft_data = one_channel_stft
+        return one_channel_stft
 
     ##################################################
     #              Operator overloading
