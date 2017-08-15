@@ -24,6 +24,7 @@ class AudioSignalUnitTests(unittest.TestCase):
 
         self.input_path1 = os.path.join(input_folder, 'k0140_int.wav')
         self.input_path2 = os.path.join(input_folder, 'k0140.wav')
+        self.input_path3 = os.path.join(input_folder, 'dev1_female3_inst_mix.wav')
 
         self.out_path1 = os.path.join(output_folder, 'k0140_int_output.wav')
         self.out_path2 = os.path.join(output_folder, 'k0140_output.wav')
@@ -131,6 +132,10 @@ class AudioSignalUnitTests(unittest.TestCase):
         duration = dur
         a = nussl.AudioSignal()
         a.load_audio_from_file(path, offset=offset, duration=duration)
+
+    def test_plot_time_domain(self):
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain('time',save=True, name='test_signal', output_path='../')
 
     def test_write_to_file_path1(self):
         a = nussl.AudioSignal(self.input_path1)
