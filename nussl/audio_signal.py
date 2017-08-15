@@ -15,6 +15,7 @@ import audioread
 import json
 import warnings
 import copy
+import matplotlib.pyplot as plt
 
 import separation.masks.mask_base
 import spectral_utils
@@ -108,16 +109,34 @@ class AudioSignal(object):
     ##################################################
     #                   Plotting
     ##################################################
-
-    # def plot_time_domain(self):
-    #     """
-    #     Not implemented yet -- will raise and exception
-    #     Returns:
     #
-    #     """
-    #     signal = self.audio_data
-    #     for channel in num_channels
 
+    def plot_time_domain(self, x_label='time', save=False, name=None, output_path=None):
+        """
+        Parameters:
+            x_label (str): Label the x axis with time or samples
+            save (bool): Save a png of the plot to the current folder
+            name (str): The name of the audio signal. Applies to title and filename
+            output_path (str): The output path of where the plot is saved if save is True
+
+        """
+        signal = self.audio_data
+        for i in range(self.num_channels):
+            plt.subplot(self.num_channels+1, 1, i+1)
+            if x_label == 'time':
+                x_axis = np.linspace(0, len(signal[i])/self.sample_rate, len(signal[i]))
+                plt.plot(x_axis, signal[i])
+            else:
+                plt.plot(signal[i])
+            channel_num_plot = 'Channel ' + str(i)
+            plt.ylabel(channel_num_plot)
+        plot_title = name if name else 'Audio Signal'
+        plt.suptitle(plot_title)
+        if save:
+            output_name_path = output_path if output_path else ''
+            output_name_path += name if name else 'audio_signal'
+            plt.savefig(output_name_path)
+        plt.show()
 
     _NAME_STEM = 'audio_signal'
 
