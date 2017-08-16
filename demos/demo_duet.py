@@ -1,10 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
 import nussl
 
-
 def main():
     # Load input file
-    input_file_name = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
+    input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_file_name)
 
     # make a directory to store output if needed
@@ -16,7 +17,6 @@ def main():
 
     # and run
     duet.run()
-
     # plot histogram results
     duet.plot(os.path.join('..', 'Output', 'duet_2d.png'))
     duet.plot(os.path.join('..', 'Output', 'duet_3d.png'), three_d_plot=True)
@@ -28,7 +28,6 @@ def main():
         output_file_name = output_name_stem + str(i) + '.wav'
         s.write_audio_to_file(output_file_name)
         i += 1
-
 
 if __name__ == '__main__':
     main()
