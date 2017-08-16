@@ -15,7 +15,6 @@ import masks
 
 
 class Duet(mask_separation_base.MaskSeparationBase):
-
     """Implements the Degenerate Unmixing Estimation Technique (DUET) algorithm.
 
     The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
@@ -173,9 +172,9 @@ class Duet(mask_separation_base.MaskSeparationBase):
         self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks()
 
         # compute masks for separation
-        masks = self._compute_masks()
+        computed_masks = self._compute_masks()
 
-        return masks
+        return computed_masks
 
     def _compute_spectrogram(self, sample_rate):
         """ Creates the stfts matrices for channel 0 and 1, and computes the frequency matrix.
@@ -234,7 +233,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         # only consider time-freq. points yielding estimates in bounds
 
         attenuation_premask = np.logical_and(self.attenuation_min < self.symmetric_atn,
-                                        self.symmetric_atn < self.attenuation_max)
+                                             self.symmetric_atn < self.attenuation_max)
         delay_premask = np.logical_and(self.delay_min < self.delay, self.delay < self.delay_max)
         attenuation_delay_premask = np.logical_and(attenuation_premask, delay_premask)
 
@@ -249,7 +248,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
                                                      range=np.array([[self.attenuation_min, self.attenuation_max],
                                            [self.delay_min, self.delay_max]]), weights=time_frequency_weights_vector)
 
-        #Save non-normalized as an option for plotting later
+        # Save non-normalized as an option for plotting later
         self.attenuation_delay_histogram = histogram
 
         # Scale histogram from 0 to 1
@@ -309,7 +308,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             self.masks[0].mask = np.logical_xor(self.masks[i].mask, self.masks[0].mask)
             best_so_far[mask] = score[mask]
 
-        #Compute first mask based on what the other masks left remaining
+        # Compute first mask based on what the other masks left remaining
         self.masks[0].mask = np.logical_not(self.masks[0].mask)
         return self.masks
 
@@ -387,6 +386,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         """
         if len(self.masks) == 0:
             raise ValueError('Cannot make audio signals with no masks to apply!')
+
         signals = []
         for i in range(self.num_sources):
             # Apply masks to stft channels using equation 8.34 (pg. 11) provided by Rickard
@@ -411,8 +411,10 @@ class Duet(mask_separation_base.MaskSeparationBase):
             normalize (Optional[bool]): Flags whether the matrix should be normalized or not
         """
         plt.close('all')
+
         if self.attenuation_delay_histogram is None:
             raise ValueError('Cannot plot with no histogram data!')
+
         aa = np.tile(self.attenuation_bins[1:], (self.num_delay_bins, 1)).T
         dd = np.tile(self.delay_bins[1:].T, (self.num_attenuation_bins, 1))
 
