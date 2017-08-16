@@ -12,7 +12,7 @@ import nussl.constants
 import nussl.spectral_utils
 import separation_base
 from ft2d import FT2D
-from nussl.audio_signal import AudioSignal
+#from nussl.audio_signal import AudioSignal
 from repet import Repet
 from repet_sim import RepetSim
 
@@ -26,7 +26,7 @@ class OverlapAdd(separation_base.SeparationBase):
         Currently supports ``Repet``, ``RepetSim``, and ``FT2D``.
 
     Parameters:
-        input_audio_signal (:class:`audio_signal.AudioSignal`): The :class:`audio_signal.AudioSignal` object that the 
+        input_audio_signal (:class:`audio_signal.AudioSignal`): The :class:`audio_signal.AudioSignal` object that the
         OverlapAdd algorithm will be run on. This makes a copy of ``input_audio_signal``
 
         separation_method:
@@ -40,15 +40,15 @@ class OverlapAdd(separation_base.SeparationBase):
 
     .. code-block:: python
         :linenos:
-        
+
          import nussl
-         
+
          signal = nussl.AudioSignal('path/to/audio.wav')
-         
+
          ola = nussl.OverlapAdd(signal, nussl.Repet)  # initialize with class
          ola = nussl.OverlapAdd(signal, 'repet')  # initialize with string (case insensitive)
          ola.run()
-         
+
     """
     def __init__(self, input_audio_signal, separation_method,
                  overlap_window_size=24, overlap_hop_size=12, overlap_window_type=nussl.constants.WINDOW_TRIANGULAR,

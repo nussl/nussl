@@ -1,14 +1,14 @@
 """
-This module implements the Kernel Additive Modeling (KAM) algorithm and its light 
-version (KAML) for source separation. 
+This module implements the Kernel Additive Modeling (KAM) algorithm and its light
+version (KAML) for source separation.
 
 References:
-[1] Liutkus, Antoine, et al. "Kernel additive models for source separation." 
+[1] Liutkus, Antoine, et al. "Kernel additive models for source separation."
     Signal Processing, IEEE Transactions on 62.16 (2014): 4298-4310.
-[2] Liutkus, Antoine, Derry Fitzgerald, and Zafar Rafii. "Scalable audio 
-    separation with light kernel additive modelling." IEEE International 
-    Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.    
-    
+[2] Liutkus, Antoine, Derry Fitzgerald, and Zafar Rafii. "Scalable audio
+    separation with light kernel additive modelling." IEEE International
+    Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.
+
 Required packages:
 1. Numpy
 2. Scipy
@@ -26,44 +26,44 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import scipy.ndimage.filters
 import scipy
-from nussl.audio_signal import AudioSignal
+#from nussl.audio_signal import AudioSignal
 
 
 def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=False):
     """
-    The 'kam' function implements the kernel backfitting algorithm to extract 
+    The 'kam' function implements the kernel backfitting algorithm to extract
     J audio sources from I channel mixtures.
-    
-    Inputs: 
-    Inputfile: (list) It can contain either:                 
-               - Up to 3 elements: A string indicating the path of the .wav file containing 
-                 the I-channel audio mixture as the first element. The second (optional) 
-                 element indicates the length of the portion of the signal to be extracted 
-                 in seconds(defult is the full lengths of the siganl) The third (optional) 
-                 element indicates the starting point of the portion of the signal to be 
+
+    Inputs:
+    Inputfile: (list) It can contain either:
+               - Up to 3 elements: A string indicating the path of the .wav file containing
+                 the I-channel audio mixture as the first element. The second (optional)
+                 element indicates the length of the portion of the signal to be extracted
+                 in seconds(defult is the full lengths of the siganl) The third (optional)
+                 element indicates the starting point of the portion of the signal to be
                  extracted (default is 0 sec).
                OR
-               - 2 elements: An I-column Numpy matrix containing samples of the time-domain 
+               - 2 elements: An I-column Numpy matrix containing samples of the time-domain
                  mixture as the first element and the sampling rate as the second element.
-          
-    SourceKernels: a list containg J sub-lists, each of which contains properties of 
+
+    SourceKernels: a list containg J sub-lists, each of which contains properties of
                    one of source kernels. Kernel properties are:
-                   -kernel type: (string) determines whether the kernel is one of the 
-                                 pre-defined kernel types or a user-defined lambda function. 
+                   -kernel type: (string) determines whether the kernel is one of the
+                                 pre-defined kernel types or a user-defined lambda function.
                                  Choices are: 'cross','horizontal','vertical','periodic','userdef'
-                   -kparams (for pre-defined kernels): a Numpy matrix containing the numerical 
+                   -kparams (for pre-defined kernels): a Numpy matrix containing the numerical
                              values of the kernel parameters.
-                   -knhood (for user-defined kernels): logical lambda function which defines 
+                   -knhood (for user-defined kernels): logical lambda function which defines
                             receives the coordinates of two time-frequency bins and determines
                             whether they are neighbours (outputs TRUE if neighbour).
-                   -kwfunc (optional): lambda function which receives the coordinates of two 
+                   -kwfunc (optional): lambda function which receives the coordinates of two
                             neighbouring time-frequency bins and computes the weight value at
                             the second bin given its distance from the first bin. The weight
-                            values fall in the interval [0,1]. Default: all ones over the 
+                            values fall in the interval [0,1]. Default: all ones over the
                             neighbourhood (binary kernel).
-    
-    Numit: (optional) number of iterations of the backfitting algorithm - default: 1     
-                   
+
+    Numit: (optional) number of iterations of the backfitting algorithm - default: 1
+
     SpecParams: (optional) structured containing spectrogram parameters including:
                          - windowtype (default is Hamming)
                          - windowlength (default is 60 ms)
@@ -71,31 +71,31 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
                          - num_fft_bins (default is windowlength)
                          - makeplot in {0,1} (default is 0)
                          - fmaxplot in Hz (default is fs/2)
-                         example: 
+                         example:
                          SpecParams=np.zeros(1,dtype=[('windowtype','|S1'),
                                                       ('windowlength',int),
                                                       ('overlap_samples',int),
                                                       ('num_fft_bins',int),
                                                       ('makeplot',int),
                                                       ('fmaxplot',float)])
-                         SpecParams['windowlength']=1024   
+                         SpecParams['windowlength']=1024
 
     FullKernel: (optional) binary input which determines the method used for median filtering.
                If the kernel has a limited support and the same shape over all time-freq. bins,
-               then instead of the full kernel method a sliding window can be used in the median 
+               then instead of the full kernel method a sliding window can be used in the median
                filtering stage in order to make the algorithm run faster (linear computational
                complexity). The default value is False.
-               A True value means implementing the case where the similarity measure is 
-               computed for all possible combinations of TF bins, resulting in quadratic 
-               computational complexity, and hence longer running time. 
-                                        
-        
+               A True value means implementing the case where the similarity measure is
+               computed for all possible combinations of TF bins, resulting in quadratic
+               computational complexity, and hence longer running time.
+
+
     Outputs:
-    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
-    fhat: a LF by LT by J Numpy array containing J power spectral dencities      
+    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels
+    fhat: a LF by LT by J Numpy array containing J power spectral dencities
     """
 
-    # Step (1): 
+    # Step (1):
     # Load the audio mixture from the input path
     if len(Inputfile) == 2:
         Mixture = AudioSignal(audiosig=Inputfile[0], fs=Inputfile[1])
@@ -188,7 +188,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             InvSumFR = np.linalg.inv(SumFR)
         InvSumFR.shape = (LF * LT, I * I)
 
-        # compute sources, update PSDs and covariance matrices 
+        # compute sources, update PSDs and covariance matrices
         for ns in range(0, J):
             FRinvsum = fj[:, :, ns] * Rj[:, :, ns] * InvSumFR
             Stemp = 1j * np.zeros((LF * LT, I))
@@ -290,44 +290,44 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
 
 def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecParams=np.array([]), FullKernel=False):
     """
-    The 'kaml' function implements a computationally less expensive version of the 
-    kernel backfitting algorithm. The KBF algorithm extracts J audio sources from 
+    The 'kaml' function implements a computationally less expensive version of the
+    kernel backfitting algorithm. The KBF algorithm extracts J audio sources from
     I channel mixtures.
-    
-    Inputs: 
-    Inputfile: (list) It can contain either:                 
-               - Up to 3 elements: A string indicating the path of the .wav file containing 
-                 the I-channel audio mixture as the first element. The second (optional) 
-                 element indicates the length of the portion of the signal to be extracted 
-                 in seconds(defult is the full lengths of the siganl) The third (optional) 
-                 element indicates the starting point of the portion of the signal to be 
+
+    Inputs:
+    Inputfile: (list) It can contain either:
+               - Up to 3 elements: A string indicating the path of the .wav file containing
+                 the I-channel audio mixture as the first element. The second (optional)
+                 element indicates the length of the portion of the signal to be extracted
+                 in seconds(defult is the full lengths of the siganl) The third (optional)
+                 element indicates the starting point of the portion of the signal to be
                  extracted (default is 0 sec).
                OR
-               - 2 elements: An I-column Numpy matrix containing samples of the time-domain 
+               - 2 elements: An I-column Numpy matrix containing samples of the time-domain
                  mixture as the first element and the sampling rate as the second element.
-          
-    SourceKernels: a list containg J sub-lists, each of which contains properties of 
+
+    SourceKernels: a list containg J sub-lists, each of which contains properties of
                    one of source kernels. Kernel properties are:
-                   -kernel type: (string) determines whether the kernel is one of the 
-                                 pre-defined kernel types or a user-defined lambda function. 
+                   -kernel type: (string) determines whether the kernel is one of the
+                                 pre-defined kernel types or a user-defined lambda function.
                                  Choices are: 'cross','horizontal','vertical','periodic','userdef'
-                   -kparams (for pre-defined kernels): a Numpy matrix containing the numerical 
+                   -kparams (for pre-defined kernels): a Numpy matrix containing the numerical
                              values of the kernel parameters.
-                   -knhood (for user-defined kernels): logical lambda function which defines 
+                   -knhood (for user-defined kernels): logical lambda function which defines
                             receives the coordinates of two time-frequency bins and determines
                             whether they are neighbours (outputs TRUE if neighbour).
-                   -kwfunc (optional): lambda function which receives the coordinates of two 
+                   -kwfunc (optional): lambda function which receives the coordinates of two
                             neighbouring time-frequency bins and computes the weight value at
                             the second bin given its distance from the first bin. The weight
-                            values fall in the interval [0,1]. Default: all ones over the 
+                            values fall in the interval [0,1]. Default: all ones over the
                             neighbourhood (binary kernel).
-                          
+
     AlgParams: Numpy array of length 2, containing algorithm parameters. The first element is
                the number of components or equivalently the rank of the mixture PSD, K, (default: 10),
-               and the second element the compression exponent gamma (default: 1).                      
-    
-    Numit: (optional) number of iterations of the backfitting algorithm - default: 1     
-                   
+               and the second element the compression exponent gamma (default: 1).
+
+    Numit: (optional) number of iterations of the backfitting algorithm - default: 1
+
     SpecParams: (optional) structured containing spectrogram parameters including:
                          - windowtype (default is Hamming)
                          - windowlength (default is 60 ms)
@@ -335,30 +335,30 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
                          - num_fft_bins (default is windowlength)
                          - makeplot in {0,1} (default is 0)
                          - fmaxplot in Hz (default is fs/2)
-                         example: 
+                         example:
                          SpecParams=np.zeros(1,dtype=[('windowtype','|S1'),
                                                       ('windowlength',int),
                                                       ('overlap_samples',int),
                                                       ('num_fft_bins',int),
                                                       ('makeplot',int),
                                                       ('fmaxplot',float)])
-                         SpecParams['windowlength']=1024                             
-    
+                         SpecParams['windowlength']=1024
+
     FullKernel: (optional) binary input which determines the method used for median filtering.
                If the kernel has a limited support and the same shape over all time-freq. bins,
-               then instead of the full kernel method a sliding window can be used in the median 
+               then instead of the full kernel method a sliding window can be used in the median
                filtering stage in order to make the algorithm run faster (linear computational
                complexity). The default value is False.
-               A True value means implementing the case where the similarity measure is 
-               computed for all possible combinations of TF bins, resulting in quadratic 
-               computational complexity, and hence longer running time.  
-        
+               A True value means implementing the case where the similarity measure is
+               computed for all possible combinations of TF bins, resulting in quadratic
+               computational complexity, and hence longer running time.
+
     Outputs:
-    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels   
-    fhat: a LF by LT by J Numpy array containing J power spectral dencities      
+    shat: a Ls by I by J Numpy array containing J time-domain source images on I channels
+    fhat: a LF by LT by J Numpy array containing J power spectral dencities
     """
 
-    # Step (1): 
+    # Step (1):
     # Load the audio mixture from the input path
     if len(Inputfile) == 2:
         Mixture = AudioSignal(audiosig=Inputfile[0], fs=Inputfile[1])
@@ -465,7 +465,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
         InvSumPR.shape = (LF * LT, I * I)
         del SumPR
 
-        # compute sources, update PSDs and covariance matrices 
+        # compute sources, update PSDs and covariance matrices
         for ns in range(0, J):
             Pj_gamma = np.abs(np.dot(U[ns], np.conj(V[ns].T)) ** (1 / gamma))
             Pj_reshape = np.reshape(Pj_gamma.T, (LF * LT, 1))
@@ -578,14 +578,14 @@ def randSVD(A, K, mode='normal'):
     The function randSVD implements the randomized computation of truncated SVD
     of K components over a m by n matrix A.
     Inputs:
-    A: Numpy array (m by n) 
+    A: Numpy array (m by n)
     K: number of components
     mode: one of three cases
          - 'normal' (default): S is a K by K diagonal matrix
          - 'diagonal': S is the K by 1 vector containing the singular values
          - 'compact': U and V are both multiplied by sqrt(S), and S is set to 1.
-     
-    Outputs: 
+
+    Outputs:
     U: Numpy array (m by K) containing basis vectors in C^m
     S: Numpy array (K by K) containing singular values
     V: Numpy array (n by K) containing basis vectors in C^n
@@ -623,42 +623,42 @@ def randSVD(A, K, mode='normal'):
 
 class Kernel:
     """
-    The class Kernel defines the properties of the time-freq proximity kernel. The weight values of 
+    The class Kernel defines the properties of the time-freq proximity kernel. The weight values of
     the proximity kernel over time-frequecy bins that are considered as neighbours are given
     by a pre-defined or a user-defined function. The value of the proximity kernel is zero over
     time-frequency bins outside the neighbourhood.
-    
+
     Properties:
-    
-    -kType: (string) determines whether the kernel is one of the pre-defined kernel types 
-             or a user-defined lambda function. 
+
+    -kType: (string) determines whether the kernel is one of the pre-defined kernel types
+             or a user-defined lambda function.
              Predefined choices are: 'cross','horizontal','vertical','periodic'
              To define a new kernel type, kType should be set to: 'userdef'
-             
+
     -kParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any
-             of the pre-defined kernel type is selected, the parameter values should be provided 
+             of the pre-defined kernel type is selected, the parameter values should be provided
              through kParamVal. Parameters corresponding to the pre-defined kernels are:
              Cross: (neighbourhood width along the freq. axis in # of freq. bins, neighbour width
                      along the time axis in # of time frames)
              Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
              Horizontal: (neighbourhood width along the time axis in # of time frames)
-             Periodic: (period in # of time frames,# of periods along the time axis) 
-                        
+             Periodic: (period in # of time frames,# of periods along the time axis)
+
              Note: neighbourhood width is measured in only one direction, e.g. only to the
                    right of a time-freq bin in the case of a horizontal kernel, so the whole
                    length of the neighbourhood would be twice the specified width.
-             
+
     -kNhood: logical lambda funcion which receives the coordinates of two time-frequency
              bins and determines whether they are neighbours (outputs TRUE if neighbour).
-             
+
     -kWfunc: lambda function which receives the coordinates of two time-frequency bins that are
-             considered neighbours by kNhood and computes the weight value at the second bin given 
-             its distance from the first bin. The weight values fall in the interval [0,1] with 
-             1 indicating zero-distance or equivalently perfect similarity. 
+             considered neighbours by kNhood and computes the weight value at the second bin given
+             its distance from the first bin. The weight values fall in the interval [0,1] with
+             1 indicating zero-distance or equivalently perfect similarity.
              Default: all ones over the neighbourhood (binary kernel)
-    
-    EXAMPLE: 
-    
+
+    EXAMPLE:
+
     FF,TT=np.meshgrid(np.arange(5),np.arange(7))
     TFcoords1=np.mat('2,3')
     TFcoords2=np.mat(np.zeros((35,2)))
@@ -668,35 +668,35 @@ class Kernel:
     W=lambda TFcoords1,TFcoords2: np.exp(-(TFcoords1-TFcoords2)*(TFcoords1-TFcoords2).T)
     k_cross=Kernel('cross',np.mat([3,2]),W)
     simVal_cross=np.reshape(k_cross.sim(TFcoords1,TFcoords2),(5,7))
-                      
+
     """
 
     def __init__(self, Type='', ParamVal=np.mat([]), Nhood=None, Wfunc=None):
 
         """
         Inputs:
-        Type: (string) determines whether the kernel is one of the pre-defined kernel types 
-             or a user-defined lambda function. 
+        Type: (string) determines whether the kernel is one of the pre-defined kernel types
+             or a user-defined lambda function.
              Predefined choices are: 'cross','horizontal','vertical','periodic','harmonic'
              To define a new kernel type, kType should be set to: 'userdef'
-             
+
         ParamVal: a Numpy matrix containing the numerical values of the kernel parameters. If any
-             of the pre-defined kernel type is selected, the parameter values should be provided 
+             of the pre-defined kernel type is selected, the parameter values should be provided
              through kParamVal. Parameters corresponding to the pre-defined kernels are:
              Cross: (neighbourhood width along the freq. axis in # of freq. bins, neighbour width
                      along the time axis in # of time frames)
              Vertical: (neighbourhood width along the freq. axis in # of freq. bins)
              Horizontal: (neighbourhood width along the time axis in # of time frames)
-             Periodic: (period in # of time frames,# of periods along the time axis) 
+             Periodic: (period in # of time frames,# of periods along the time axis)
              Harmonic: (period in # of freq. bins, # of periods along the freq. axis)
-             
+
         Nhood: logical lambda funcion which receives the coordinates of two time-frequency
              bins and determines whether they are neighbours (outputs TRUE if neighbour).
-             
+
         Wfunc: lambda function which receives the coordinates of two time-frequency bins that are
-             considered neighbours by kNhood and computes the weight value at the second bin given 
-             its distance from the first bin. The weight values fall in the interval [0,1] with 
-             1 indicating zero-distance or equivalently perfect similarity. 
+             considered neighbours by kNhood and computes the weight value at the second bin given
+             its distance from the first bin. The weight values fall in the interval [0,1] with
+             1 indicating zero-distance or equivalently perfect similarity.
              Default: all ones over the neighbourhood (binary kernel)
         """
 
