@@ -1,4 +1,3 @@
 *.pyc
 .idea/
-Output/
-demos/.DS_Store
+*.DS_Store
