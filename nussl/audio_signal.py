@@ -75,6 +75,7 @@ class AudioSignal(object):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
+        self._stft_data = None
         self.sample_rate = sample_rate
         self._active_start = None
         self._active_end = None
@@ -95,7 +96,9 @@ class AudioSignal(object):
             self.load_audio_from_array(audio_data_array, sample_rate)
 
         # stft data
-        self.stft_data = stft  # complex spectrogram data
+        if stft is not None:
+            self.stft_data = stft  # complex spectrogram data
+
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
         self.use_librosa_stft = config.USE_LIBROSA_STFT
 
@@ -204,7 +207,13 @@ class AudioSignal(object):
 
     @audio_data.setter
     def audio_data(self, value):
-        assert isinstance(value, np.ndarray), 'Type of self.audio_data must be np.ndarray!'
+
+        if value is None:
+            self._audio_data = None
+            return
+
+        elif not isinstance(value, np.ndarray):
+            raise ValueError('Type of self.audio_data must be of type np.ndarray!')
 
         if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
             warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
@@ -213,12 +222,43 @@ class AudioSignal(object):
         if value.ndim > 2:
             raise ValueError('self.audio_data cannot have more than 2 dimensions!')
 
+        if value.ndim < 2:
+            value = np.expand_dims(value, axis=constants.CHAN_INDEX)
+
         self._audio_data = value
 
-        if self._audio_data.ndim < 2:
-            self._audio_data = np.expand_dims(self._audio_data, axis=constants.CHAN_INDEX)
-
         self.set_active_region_to_default()
+
+    @property
+    def stft_data(self):
+        """ (:obj:`np.ndarray`): Complex-valued, time-frequency representation of the audio.
+            2D numpy array with shape `(n_frequency_bins, n_time_bins)`.
+            ``None`` by default, this can be initialized at instantiation.
+            Usually, this is expected to be floats. Some functions will convert to floats if not already.
+        """
+
+        return self._stft_data
+
+    @stft_data.setter
+    def stft_data(self, value):
+
+        if value is None:
+            self._stft_data = None
+            return
+
+        elif not isinstance(value, np.ndarray):
+            raise ValueError('Type of self.stft_data must be of type np.ndarray!')
+
+        if value.ndim == 1:
+            raise ValueError('Cannot support arrays with less than 2 dimensions!')
+
+        if value.ndim == 2:
+            value = np.expand_dims(value, axis=constants.STFT_CHAN_INDEX)
+
+        if value.ndim > 3:
+            raise ValueError('Cannot support arrays with more than 3 dimensions!')
+
+        self._stft_data = value
 
     @property
     def file_name(self):
@@ -365,7 +405,6 @@ class AudioSignal(object):
         """
         return self.stft_data is not None and self.stft_data.size != 0
 
-
     @property
     def has_audio_data(self):
         """ Returns False if :attr:`audio_data` is empty. Else, returns True.
@@ -375,7 +414,6 @@ class AudioSignal(object):
 
         """
         return self.audio_data is not None and self.audio_data.size != 0
-
 
     ##################################################
     #                     I/O
@@ -907,7 +945,7 @@ class AudioSignal(object):
 
         new_signal = copy.deepcopy(self)
         new_signal.audio_data = audio_data
-        new_signal.stft_data = np.zeros_like(self.stft_data)
+        new_signal.stft_data = None
         return new_signal
 
     def make_copy_with_stft_data(self, stft_data, verbose=True):
@@ -930,7 +968,7 @@ class AudioSignal(object):
 
         new_signal = copy.deepcopy(self)
         new_signal.stft_data = stft_data
-        new_signal.audio_data = np.zeros_like(self.audio_data)
+        new_signal.audio_data = None
         return new_signal
 
     def to_json(self):
@@ -1199,6 +1237,25 @@ class AudioSignal(object):
         if overwrite:
             self.audio_data = mono
         return mono
+
+    def stft_to_one_channel(self, overwrite=False):
+        """ Converts :attr:`stft_data` to a single channel by averaging every sample.
+        Shape: stft_data.shape will be (num_freq, num_time, 1) where the last axis is the channel number
+
+        Warning:
+            If overwrite=True (default) this will overwrite any data in :attr:`stft_data`!
+
+        Args:
+            overwrite (bool, optional): If ``True`` this function will overwrite :attr:`stft_data`.
+
+        Returns:
+            (:obj:`np.array`): Single channel version of :attr:`stft_data`.
+
+        """
+        one_channel_stft = np.mean(self.stft_data, axis=constants.CHAN_INDEX)
+        if overwrite:
+            self.stft_data = one_channel_stft
+        return one_channel_stft
 
     ##################################################
     #              Operator overloading
