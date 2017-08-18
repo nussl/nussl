@@ -133,10 +133,6 @@ class AudioSignalUnitTests(unittest.TestCase):
         a = nussl.AudioSignal()
         a.load_audio_from_file(path, offset=offset, duration=duration)
 
-    def test_plot_time_domain(self):
-        a = nussl.AudioSignal(self.input_path3)
-        a.plot_time_domain('time',save=True, name='test_signal', output_path='../')
-
     def test_write_to_file_path1(self):
         a = nussl.AudioSignal(self.input_path1)
         a.write_audio_to_file(self.out_path1)
@@ -183,6 +179,41 @@ class AudioSignalUnitTests(unittest.TestCase):
 
     freq = 30
     sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
+
+    def test_plot_time_domain_stereo(self):
+        # Stereo signal that should plot both channels on same plot
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_specific_channel(self):
+        # Stereo signal that should only plot the specified channel
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(channel=0)
+
+    def test_plot_time_domain_mono(self):
+        # Mono signal plotting
+        a = nussl.AudioSignal(self.input_path3)
+        a.to_mono(overwrite=True)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_multi_channel(self):
+        # Plotting a signal with 5 channels
+        num_test_channels = 6
+        freq_multiple = 5
+        freqs = [i * freq_multiple for i in range(1, num_test_channels)]
+        test_signal = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:num_test_channels]])
+        a = nussl.AudioSignal(audio_data_array = test_signal)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_sample_xaxis(self):
+        # Plotting a stereo signal with sample numbers on the x axis instead of time
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(x_label_time=False)
+
+    def test_plot_time_domain_save_to_path_and_rename(self):
+        # Plotting and saving the plot with a new name to a folder
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(save=True, name='Test Graph', output_path='../')
 
     def test_stft_istft_simple1(self):
         """

@@ -111,41 +111,84 @@ class AudioSignal(object):
     ##################################################
     #
 
-    def plot_time_domain(self, x_label='time', save=False, name=None, output_path=None):
+    _NAME_STEM = 'audio_signal'
+
+    def plot_time_domain(self, channel=None, x_label_time=True, save=False, name=None, output_path=None):
         """
+        Plots a graph of the time domain audio signal
         Parameters:
             x_label (str): Label the x axis with time or samples
             save (bool): Save a png of the plot to the current folder
             name (str): The name of the audio signal. Applies to title and filename
-            output_path (str): The output path of where the plot is saved if save is True
+            output_path (str): The output path of where the plot is saved if save is True. Should include '/' at the end
 
         """
-        signal = self.audio_data
-        for i in range(self.num_channels):
-            plt.subplot(self.num_channels+1, 1, i+1)
-            if x_label == 'time':
-                x_axis = np.linspace(0, len(signal[i])/self.sample_rate, len(signal[i]))
-                plt.plot(x_axis, signal[i])
+
+        if self.audio_data is None:
+            raise ValueError('Cannot plot with no audio data!')
+
+        if channel > self.num_channels-1:
+            raise ValueError('Channel selected does not exist!')
+
+        # Mono or single specific channel selected for plotting
+        if self.num_channels == 1 or channel is not None:
+            plot_channels = channel if channel else self.num_channels-1
+            if x_label_time is True:
+                plt.plot(self.time_vector, self.audio_data[plot_channels])
+                plt.xlim(self.time_vector[0], self.time_vector[-1])
             else:
-                plt.plot(signal[i])
-            channel_num_plot = 'Channel ' + str(i)
+                plt.plot(self.audio_data[plot_channels])
+                plt.xlim(0, self.signal_length)
+            channel_num_plot = 'Channel {}'.format(plot_channels)
             plt.ylabel(channel_num_plot)
-        plot_title = name if name else 'Audio Signal'
-        plt.suptitle(plot_title)
+
+        # Stereo signal plotting
+        elif self.num_channels == 2 and channel is None:
+            top_plot = abs(self.audio_data[0])
+            bottom_plot = -abs(self.audio_data[1])
+            if x_label_time is True:
+                plt.plot(self.time_vector, top_plot)
+                plt.plot(self.time_vector, bottom_plot, 'C0')
+                plt.xlim(self.time_vector[0], self.time_vector[-1])
+            else:
+                plt.plot(top_plot)
+                plt.plot(bottom_plot, 'C0')
+                plt.xlim(0, self.signal_length)
+
+        # Plotting more than 2 channels each on their own plots in a stack
+        elif self.num_channels > 2 and channel is None:
+            for i in range(self.num_channels):
+                plt.subplot(self.num_channels+1, 1, i+1)
+                if x_label_time is True:
+                    plt.plot(self.time_vector, self.audio_data[i])
+                    plt.xlim(self.time_vector[0], self.time_vector[-1])
+                else:
+                    plt.plot(self.audio_data[i])
+                    plt.xlim(0, self.signal_length)
+                channel_num_plot = 'Channel {}'.format(i)
+                plt.ylabel(channel_num_plot)
+
+        if name is None:
+            name = self.file_name if self.file_name is not None else self._NAME_STEM
+        else:
+            name = os.path.splitext(name)[0]
+
+        plt.suptitle(name)
+        name = name if self._check_if_valid_img_type(name) else name + '.png'
+
         if save:
             output_name_path = output_path if output_path else ''
-            output_name_path += name if name else 'audio_signal'
+            output_name_path += name
             plt.savefig(output_name_path)
-        plt.show()
 
-    _NAME_STEM = 'audio_signal'
+        plt.show()
 
     def plot_spectrogram(self, file_name=None, ch=None):
         # TODO: use self.stft_data if not None
         # TODO: flatten to mono be default
         # TODO: make other parameters adjustable
         if file_name is None:
-            name = self.file_name if self.file_name is not None else self._NAME_STEM
+            name = self.file_name if self.file_name is not None else self._NAME_STEM + '_spectrogram'
         else:
             name = os.path.splitext(file_name)[0]
 
@@ -160,7 +203,9 @@ class AudioSignal(object):
     def _check_if_valid_img_type(name):
         import matplotlib.pyplot as plt
         fig = plt.figure()
-        return any([name[len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
+        result = any([name[len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
+        plt.close()
+        return result
 
     ##################################################
     #                 Properties
@@ -463,7 +508,7 @@ class AudioSignal(object):
                 warnings.warn('offset + duration are longer than the signal. Reading until end of signal...',
                               UserWarning)
 
-            audio_input, self.sample_rate = librosa.load(input_file_path,
+            audio_input, self._sample_rate = librosa.load(input_file_path,
                                                          sr=None,
                                                          offset=offset,
                                                          duration=duration,
@@ -507,7 +552,7 @@ class AudioSignal(object):
             signal = signal.astype('float') / (np.iinfo(np.dtype('int16')).max + 1.0)
 
         self.audio_data = signal
-        self.sample_rate = sample_rate
+        self._sample_rate = sample_rate
         self.set_active_region_to_default()
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
