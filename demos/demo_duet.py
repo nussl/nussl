@@ -5,7 +5,7 @@ import nussl
 
 def main():
     # Load input file
-    input_file_name = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
+    input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_file_name)
 
     # make a directory to store output if needed
