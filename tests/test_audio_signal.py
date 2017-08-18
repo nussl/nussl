@@ -205,7 +205,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         a = nussl.AudioSignal(audio_data_array = test_signal)
         a.plot_time_domain()
 
-    def test_plot_time_domain_sample_xaxis(self):
+    def test_plot_time_domain_sample_on_xaxis(self):
         # Plotting a stereo signal with sample numbers on the x axis instead of time
         a = nussl.AudioSignal(self.input_path3)
         a.plot_time_domain(x_label_time=False)

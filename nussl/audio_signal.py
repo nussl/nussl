@@ -181,8 +181,6 @@ class AudioSignal(object):
             output_name_path += name
             plt.savefig(output_name_path)
 
-        plt.show()
-
     def plot_spectrogram(self, file_name=None, ch=None):
         # TODO: use self.stft_data if not None
         # TODO: flatten to mono be default
