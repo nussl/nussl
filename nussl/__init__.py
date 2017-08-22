@@ -9,6 +9,7 @@ from nussl.audio_signal import AudioSignal
 from nussl.separation import *
 from nussl.separation.masks import *
 from nussl.evaluation import *
+from nussl.Nmf import *
 
 __version__ = '0.1.5a11'
 

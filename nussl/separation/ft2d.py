@@ -7,7 +7,7 @@ from scipy.ndimage.filters import maximum_filter, minimum_filter
 import nussl.config
 import nussl.spectral_utils
 import separation_base
-from nussl.audio_signal import AudioSignal
+#from nussl.audio_signal import AudioSignal
 
 
 class FT2D(separation_base.SeparationBase):
@@ -77,7 +77,7 @@ class FT2D(separation_base.SeparationBase):
         #     self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
 
         return self.background
-    
+
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
         self.ft2d = np.stack([np.fft.fft2(np.abs(self.stft[:, :, i]))
@@ -94,7 +94,7 @@ class FT2D(separation_base.SeparationBase):
         data = np.abs(np.fft.fftshift(ft2d))
         data /= np.max(data)
         threshold = np.std(data)
-        
+
         data_max = maximum_filter(data, self.neighborhood_size)
         maxima = (data == data_max)
         data_min = minimum_filter(data, self.neighborhood_size)
@@ -102,7 +102,7 @@ class FT2D(separation_base.SeparationBase):
         maxima[diff == 0] = 0
         maxima = np.maximum(maxima, np.fliplr(maxima), np.flipud(maxima))
         maxima = np.fft.ifftshift(maxima)
-        
+
         background_ft2d = np.multiply(maxima, ft2d)
         foreground_ft2d = np.multiply(1 - maxima, ft2d)
         return background_ft2d, foreground_ft2d
