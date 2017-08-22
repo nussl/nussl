@@ -15,7 +15,6 @@ import audioread
 import json
 import warnings
 import copy
-import resampy
 import matplotlib.pyplot as plt
 
 import separation.masks.mask_base
@@ -1176,7 +1175,7 @@ class AudioSignal(object):
         Returns:
 
         """
-        resampled_signal = resampy.resample(self.audio_data, self.sample_rate, new_sample_rate)
+        resampled_signal = librosa.resample(self.audio_data, self.sample_rate, new_sample_rate)
         self.audio_data = resampled_signal
         self._sample_rate = new_sample_rate
 
