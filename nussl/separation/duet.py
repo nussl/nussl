@@ -331,7 +331,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         # check the dimensions of the Kernel matrix and set the values of the averaging
         # matrix, kernel_matrix
         if np.prod(kernel.shape) == 1:
-            kernel_matrix = np.ones((kernel, kernel)) / kernel ** 2
+            kernel_matrix = np.ones((kernel[0], kernel[0])) / kernel[0] ** 2
         else:
             kernel_matrix = kernel
 
