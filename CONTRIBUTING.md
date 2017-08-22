@@ -132,7 +132,7 @@ After switching to the ``gh-pages`` branch, you can edit the documentation
 using any text editor and then generate
 the HTML output by typing ``make html`` from the docs/ directory.
 The resulting HTML files will be placed in _build/html/ and are viewable 
-in a web browser. See (this wiki page)[https://github.com/interactiveaudiolab/nussl/wiki/Generating-Documentation] for more information.
+in a web browser. See [this wiki page](https://github.com/interactiveaudiolab/nussl/wiki/Generating-Documentation) for more information.
 Documentation in nussl follows the [Google Python Style guide](http://www.sphinx-doc.org/en/stable/ext/example_google.html).
 
 For building the documentation, you will need 
