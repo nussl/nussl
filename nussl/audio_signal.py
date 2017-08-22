@@ -15,6 +15,7 @@ import audioread
 import json
 import warnings
 import copy
+import resampy
 import matplotlib.pyplot as plt
 
 import separation.masks.mask_base
@@ -77,7 +78,7 @@ class AudioSignal(object):
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
         self._stft_data = None
-        self.sample_rate = sample_rate
+        self._sample_rate = sample_rate
         self._active_start = None
         self._active_end = None
 
@@ -105,105 +106,6 @@ class AudioSignal(object):
 
     def __str__(self):
         return self.__class__.__name__
-
-    ##################################################
-    #                   Plotting
-    ##################################################
-    #
-
-    _NAME_STEM = 'audio_signal'
-
-    def plot_time_domain(self, channel=None, x_label_time=True, save=False, name=None, output_path=None):
-        """
-        Plots a graph of the time domain audio signal
-        Parameters:
-            x_label (str): Label the x axis with time or samples
-            save (bool): Save a png of the plot to the current folder
-            name (str): The name of the audio signal. Applies to title and filename
-            output_path (str): The output path of where the plot is saved if save is True. Should include '/' at the end
-
-        """
-
-        if self.audio_data is None:
-            raise ValueError('Cannot plot with no audio data!')
-
-        if channel > self.num_channels-1:
-            raise ValueError('Channel selected does not exist!')
-
-        # Mono or single specific channel selected for plotting
-        if self.num_channels == 1 or channel is not None:
-            plot_channels = channel if channel else self.num_channels-1
-            if x_label_time is True:
-                plt.plot(self.time_vector, self.audio_data[plot_channels])
-                plt.xlim(self.time_vector[0], self.time_vector[-1])
-            else:
-                plt.plot(self.audio_data[plot_channels])
-                plt.xlim(0, self.signal_length)
-            channel_num_plot = 'Channel {}'.format(plot_channels)
-            plt.ylabel(channel_num_plot)
-
-        # Stereo signal plotting
-        elif self.num_channels == 2 and channel is None:
-            top_plot = abs(self.audio_data[0])
-            bottom_plot = -abs(self.audio_data[1])
-            if x_label_time is True:
-                plt.plot(self.time_vector, top_plot)
-                plt.plot(self.time_vector, bottom_plot, 'C0')
-                plt.xlim(self.time_vector[0], self.time_vector[-1])
-            else:
-                plt.plot(top_plot)
-                plt.plot(bottom_plot, 'C0')
-                plt.xlim(0, self.signal_length)
-
-        # Plotting more than 2 channels each on their own plots in a stack
-        elif self.num_channels > 2 and channel is None:
-            for i in range(self.num_channels):
-                plt.subplot(self.num_channels+1, 1, i+1)
-                if x_label_time is True:
-                    plt.plot(self.time_vector, self.audio_data[i])
-                    plt.xlim(self.time_vector[0], self.time_vector[-1])
-                else:
-                    plt.plot(self.audio_data[i])
-                    plt.xlim(0, self.signal_length)
-                channel_num_plot = 'Channel {}'.format(i)
-                plt.ylabel(channel_num_plot)
-
-        if name is None:
-            name = self.file_name if self.file_name is not None else self._NAME_STEM
-        else:
-            name = os.path.splitext(name)[0]
-
-        plt.suptitle(name)
-        name = name if self._check_if_valid_img_type(name) else name + '.png'
-
-        if save:
-            output_name_path = output_path if output_path else ''
-            output_name_path += name
-            plt.savefig(output_name_path)
-
-    def plot_spectrogram(self, file_name=None, ch=None):
-        # TODO: use self.stft_data if not None
-        # TODO: flatten to mono be default
-        # TODO: make other parameters adjustable
-        if file_name is None:
-            name = self.file_name if self.file_name is not None else self._NAME_STEM + '_spectrogram'
-        else:
-            name = os.path.splitext(file_name)[0]
-
-        name = name if self._check_if_valid_img_type(name) else name + '.png'
-
-        if ch is None:
-            spectral_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
-        else:
-            spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
-
-    @staticmethod
-    def _check_if_valid_img_type(name):
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        result = any([name[len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
-        plt.close()
-        return result
 
     ##################################################
     #                 Properties
@@ -337,6 +239,11 @@ class AudioSignal(object):
         if self.path_to_input_file is not None:
             return os.path.split(self.path_to_input_file)[1]
         return None
+
+    @property
+    def sample_rate(self):
+        return self._sample_rate
+
 
     @property
     def time_vector(self):
@@ -483,7 +390,7 @@ class AudioSignal(object):
     #                     I/O
     ##################################################
 
-    def load_audio_from_file(self, input_file_path, offset=0, duration=None):
+    def load_audio_from_file(self, input_file_path, offset=0, duration=None, new_sample_rate=None):
         # type: (str, float, float) -> None
         """Loads an audio signal from a file
 
@@ -518,6 +425,10 @@ class AudioSignal(object):
 
             self.audio_data = audio_input
 
+            if new_sample_rate is not None and new_sample_rate != self._sample_rate:
+                warnings.warn("Input sample rate is different than the sample rate read from the file! Resampling...", UserWarning)
+                self.resample(new_sample_rate)
+
         except Exception as e:
             if isinstance(e, ValueError):  # This is the error we just raise, re-raise it
                 raise e
@@ -527,7 +438,7 @@ class AudioSignal(object):
         self.path_to_input_file = input_file_path
         self.set_active_region_to_default()
 
-    def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
+    def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE, new_sample_rate=None):
         """Loads an audio signal from a numpy array.
 
         Notes:
@@ -551,6 +462,11 @@ class AudioSignal(object):
 
         self.audio_data = signal
         self._sample_rate = sample_rate
+
+        if new_sample_rate is not None and new_sample_rate != self._sample_rate:
+            warnings.warn("Input sample rate is different than the default sample rate! Resampling...", UserWarning)
+            self.resample(new_sample_rate)
+
         self.set_active_region_to_default()
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
@@ -800,6 +716,106 @@ class AudioSignal(object):
 
         masked_stft = self.stft_data * mask.mask
         return self.make_copy_with_stft_data(masked_stft, verbose=False)
+
+    ##################################################
+    #                   Plotting
+    ##################################################
+    #
+
+    _NAME_STEM = 'audio_signal'
+
+    def plot_time_domain(self, channel=None, x_label_time=True, save=False, name=None, output_path=None):
+        """
+        Plots a graph of the time domain audio signal
+        Parameters:
+            channel (int): The index of the single channel to be plotted
+            x_label_time (True): Label the x axis with time (True) or samples (False)
+            save (bool): Save a png of the plot to the current folder
+            name (str): The name of the audio signal. Applies to title and filename
+            output_path (str): The output path of where the plot is saved if save is True. Should include '/' at the end
+
+        """
+
+        if self.audio_data is None:
+            raise ValueError('Cannot plot with no audio data!')
+
+        if channel > self.num_channels - 1:
+            raise ValueError('Channel selected does not exist!')
+
+        # Mono or single specific channel selected for plotting
+        if self.num_channels == 1 or channel is not None:
+            plot_channels = channel if channel else self.num_channels - 1
+            if x_label_time is True:
+                plt.plot(self.time_vector, self.audio_data[plot_channels])
+                plt.xlim(self.time_vector[0], self.time_vector[-1])
+            else:
+                plt.plot(self.audio_data[plot_channels])
+                plt.xlim(0, self.signal_length)
+            channel_num_plot = 'Channel {}'.format(plot_channels)
+            plt.ylabel(channel_num_plot)
+
+        # Stereo signal plotting
+        elif self.num_channels == 2 and channel is None:
+            top_plot = abs(self.audio_data[0])
+            bottom_plot = -abs(self.audio_data[1])
+            if x_label_time is True:
+                plt.plot(self.time_vector, top_plot)
+                plt.plot(self.time_vector, bottom_plot, 'C0')
+                plt.xlim(self.time_vector[0], self.time_vector[-1])
+            else:
+                plt.plot(top_plot)
+                plt.plot(bottom_plot, 'C0')
+                plt.xlim(0, self.signal_length)
+
+        # Plotting more than 2 channels each on their own plots in a stack
+        elif self.num_channels > 2 and channel is None:
+            for i in range(self.num_channels):
+                plt.subplot(self.num_channels + 1, 1, i + 1)
+                if x_label_time is True:
+                    plt.plot(self.time_vector, self.audio_data[i])
+                    plt.xlim(self.time_vector[0], self.time_vector[-1])
+                else:
+                    plt.plot(self.audio_data[i])
+                    plt.xlim(0, self.signal_length)
+                channel_num_plot = 'Channel {}'.format(i)
+                plt.ylabel(channel_num_plot)
+
+        if name is None:
+            name = self.file_name if self.file_name is not None else self._NAME_STEM
+        else:
+            name = os.path.splitext(name)[0]
+
+        plt.suptitle(name)
+        name = name if self._check_if_valid_img_type(name) else name + '.png'
+
+        if save:
+            output_name_path = output_path if output_path else ''
+            output_name_path += name
+            plt.savefig(output_name_path)
+
+    def plot_spectrogram(self, file_name=None, ch=None):
+        # TODO: use self.stft_data if not None
+        # TODO: flatten to mono be default
+        # TODO: make other parameters adjustable
+        if file_name is None:
+            name = self.file_name if self.file_name is not None else self._NAME_STEM + '_spectrogram'
+        else:
+            name = os.path.splitext(file_name)[0]
+
+        name = name if self._check_if_valid_img_type(name) else name + '.png'
+
+        if ch is None:
+            spectral_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
+        else:
+            spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
+
+    @staticmethod
+    def _check_if_valid_img_type(name):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        result = any([name[len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
+        plt.close()
+        return result
 
     ##################################################
     #                  Utilities
@@ -1149,6 +1165,20 @@ class AudioSignal(object):
         if overwrite:
             self.audio_data = audio_data
         return self
+
+    def resample(self, new_sample_rate):
+        """
+        Resample an audio signal using resample
+        Args:
+            new_sample_rate: (int) The new sample rate to apply to the audio signal
+            overwrite: (bool) should overwrite audio_data in self
+
+        Returns:
+
+        """
+        resampled_signal = resampy.resample(self.audio_data, self.sample_rate, new_sample_rate)
+        self.audio_data = resampled_signal
+        self._sample_rate = new_sample_rate
 
     ##################################################
     #              Channel Utilities

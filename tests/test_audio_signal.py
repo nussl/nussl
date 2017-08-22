@@ -180,6 +180,30 @@ class AudioSignalUnitTests(unittest.TestCase):
     freq = 30
     sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
 
+    def test_resample(self):
+        a = nussl.AudioSignal(self.input_path1)
+        b = nussl.AudioSignal(self.input_path1)
+        b.resample(a.sample_rate/2)
+        assert (b.sample_rate == a.sample_rate/2)
+
+    def test_resample_on_load_from_file(self):
+        a = nussl.AudioSignal(self.input_path1)
+        a.resample(48000)
+        b = nussl.AudioSignal()
+        b.load_audio_from_file(self.input_path1, new_sample_rate=48000)
+        assert (a.sample_rate== b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
+
+    def test_resample_on_load_from_array(self):
+        sr, data = wav.read(self.input_path1)
+        a = nussl.AudioSignal()
+        a.load_audio_from_array(data, sample_rate=sr)
+        a.resample(48000)
+        b = nussl.AudioSignal()
+        b.load_audio_from_array(data, sample_rate=sr, new_sample_rate=48000)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
+
     def test_plot_time_domain_stereo(self):
         # Stereo signal that should plot both channels on same plot
         a = nussl.AudioSignal(self.input_path3)
