@@ -72,12 +72,12 @@ class AudioSignal(object):
     """
 
     def __init__(self, path_to_input_file=None, audio_data_array=None, stft=None,
-                 sample_rate=constants.DEFAULT_SAMPLE_RATE, stft_params=None, offset=0, duration=None):
+                 sample_rate=None, stft_params=None, offset=0, duration=None):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
         self._stft_data = None
-        self._sample_rate = sample_rate
+        self._sample_rate = None
         self._active_start = None
         self._active_end = None
 
@@ -92,9 +92,11 @@ class AudioSignal(object):
             raise ValueError('Can only initialize AudioSignal object with one of [path, audio, stft]!')
 
         if path_to_input_file is not None:
-            self.load_audio_from_file(self.path_to_input_file, offset, duration)
+            self.load_audio_from_file(self.path_to_input_file, offset, duration, sample_rate)
         elif audio_data_array is not None:
             self.load_audio_from_array(audio_data_array, sample_rate)
+        else:
+            self._sample_rate = constants.DEFAULT_SAMPLE_RATE
 
         # stft data
         if stft is not None:
@@ -425,7 +427,8 @@ class AudioSignal(object):
             self.audio_data = audio_input
 
             if new_sample_rate is not None and new_sample_rate != self._sample_rate:
-                warnings.warn("Input sample rate is different than the sample rate read from the file! Resampling...", UserWarning)
+                warnings.warn("Input sample rate is different than the sample rate read from the file! Resampling...",
+                              UserWarning)
                 self.resample(new_sample_rate)
 
         except Exception as e:
@@ -437,7 +440,7 @@ class AudioSignal(object):
         self.path_to_input_file = input_file_path
         self.set_active_region_to_default()
 
-    def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE, new_sample_rate=None):
+    def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
         """Loads an audio signal from a numpy array.
 
         Notes:
@@ -460,11 +463,7 @@ class AudioSignal(object):
             signal = signal.astype('float') / (np.iinfo(np.dtype('int16')).max + 1.0)
 
         self.audio_data = signal
-        self._sample_rate = sample_rate
-
-        if new_sample_rate is not None and new_sample_rate != self._sample_rate:
-            warnings.warn("Input sample rate is different than the default sample rate! Resampling...", UserWarning)
-            self.resample(new_sample_rate)
+        self._sample_rate = sample_rate if sample_rate is not None else constants.DEFAULT_SAMPLE_RATE
 
         self.set_active_region_to_default()
 
@@ -723,15 +722,14 @@ class AudioSignal(object):
 
     _NAME_STEM = 'audio_signal'
 
-    def plot_time_domain(self, channel=None, x_label_time=True, save=False, name=None, output_path=None):
+    def plot_time_domain(self, channel=None, x_label_time=True, title=None, file_path_name=None):
         """
         Plots a graph of the time domain audio signal
         Parameters:
             channel (int): The index of the single channel to be plotted
             x_label_time (True): Label the x axis with time (True) or samples (False)
-            save (bool): Save a png of the plot to the current folder
-            name (str): The name of the audio signal. Applies to title and filename
-            output_path (str): The output path of where the plot is saved if save is True. Should include '/' at the end
+            title (str): The title of the audio signal plot
+            file_path_name (str): The output path of where the plot is saved, including the file name
 
         """
 
@@ -768,29 +766,28 @@ class AudioSignal(object):
 
         # Plotting more than 2 channels each on their own plots in a stack
         elif self.num_channels > 2 and channel is None:
+            f, axarr = plt.subplots(self.num_channels, sharex=True)
             for i in range(self.num_channels):
-                plt.subplot(self.num_channels + 1, 1, i + 1)
                 if x_label_time is True:
-                    plt.plot(self.time_vector, self.audio_data[i])
-                    plt.xlim(self.time_vector[0], self.time_vector[-1])
+                    axarr[i].plot(self.time_vector, self.audio_data[i])
+                    axarr[i].set_xlim(self.time_vector[0], self.time_vector[-1])
                 else:
-                    plt.plot(self.audio_data[i])
-                    plt.xlim(0, self.signal_length)
-                channel_num_plot = 'Channel {}'.format(i)
-                plt.ylabel(channel_num_plot)
+                    axarr[i].plot(self.audio_data[i], sharex=True)
+                    axarr[i].set_xlim(0, self.signal_length)
+                channel_num_plot = 'Ch {}'.format(i)
+                axarr[i].set_ylabel(channel_num_plot)
 
-        if name is None:
-            name = self.file_name if self.file_name is not None else self._NAME_STEM
-        else:
-            name = os.path.splitext(name)[0]
+        if title is None:
+            title = self.file_name if self.file_name is not None else self._NAME_STEM
 
-        plt.suptitle(name)
-        name = name if self._check_if_valid_img_type(name) else name + '.png'
+        plt.suptitle(title)
 
-        if save:
-            output_name_path = output_path if output_path else ''
-            output_name_path += name
-            plt.savefig(output_name_path)
+        if file_path_name:
+            file_path_name = file_path_name if self._check_if_valid_img_type(file_path_name) \
+                                            else file_path_name + '.png'
+            plt.savefig(file_path_name)
+
+        plt.show()
 
     def plot_spectrogram(self, file_name=None, ch=None):
         # TODO: use self.stft_data if not None
@@ -812,7 +809,7 @@ class AudioSignal(object):
     def _check_if_valid_img_type(name):
         import matplotlib.pyplot as plt
         fig = plt.figure()
-        result = any([name[len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
+        result = any([name[-len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
         plt.close()
         return result
 
@@ -1170,13 +1167,14 @@ class AudioSignal(object):
         Resample an audio signal using resample
         Args:
             new_sample_rate: (int) The new sample rate to apply to the audio signal
-            overwrite: (bool) should overwrite audio_data in self
-
-        Returns:
 
         """
-        resampled_signal = librosa.resample(self.audio_data, self.sample_rate, new_sample_rate)
-        self.audio_data = resampled_signal
+
+        resampled_signal = []
+        for channel in self.get_channels():
+            resampled_channel = librosa.resample(channel, self.sample_rate, new_sample_rate)
+            resampled_signal.append(resampled_channel)
+        self.audio_data = np.array(resampled_signal)
         self._sample_rate = new_sample_rate
 
     ##################################################
