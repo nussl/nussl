@@ -7,6 +7,7 @@ import nussl
 import numpy as np
 import scipy.io.wavfile as wav
 import os
+import librosa
 import warnings
 
 
@@ -181,12 +182,14 @@ class AudioSignalUnitTests(unittest.TestCase):
     sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
 
     def test_resample(self):
+        # Check that sample rate property changes
         a = nussl.AudioSignal(self.input_path1)
         b = nussl.AudioSignal(self.input_path1)
         b.resample(a.sample_rate/2)
         assert (b.sample_rate == a.sample_rate/2)
 
     def test_resample_on_load_from_file(self):
+        # Test resample right when loading from file vs resampling after loading
         a = nussl.AudioSignal(self.input_path1)
         a.resample(48000)
         b = nussl.AudioSignal()
@@ -194,13 +197,27 @@ class AudioSignalUnitTests(unittest.TestCase):
         assert (a.sample_rate== b.sample_rate)
         assert (np.allclose(a.audio_data, b.audio_data))
 
-    def test_resample_on_load_from_array(self):
+    def test_resample_vs_librosa_load(self):
+        # Check against librosa load function
+        a = nussl.AudioSignal(self.input_path1)
+        a.resample(48000)
+        b_audio_data, b_sample_rate = librosa.load(self.input_path1, sr=48000)
+        assert (a.sample_rate== b_sample_rate)
+        assert (np.allclose(a.audio_data, b_audio_data))
+
+    def test_default_sr_on_load_from_array(self):
+        # Check that the default sample rate is set when no sample rate is provided load_audio_from_array
         sr, data = wav.read(self.input_path1)
         a = nussl.AudioSignal()
-        a.load_audio_from_array(data, sample_rate=sr)
-        a.resample(48000)
+        a.load_audio_from_array(data)
+        assert(a.sample_rate == nussl.constants.DEFAULT_SAMPLE_RATE)
+
+    def test_sr_on_load_from_array(self):
+        # Check that the passed in sample rate is being set in load_audio_from_array
+        a = nussl.AudioSignal(self.input_path1)
+        sr, data = wav.read(self.input_path1)
         b = nussl.AudioSignal()
-        b.load_audio_from_array(data, sample_rate=sr, new_sample_rate=48000)
+        b.load_audio_from_array(data, sample_rate=sr)
         assert (a.sample_rate == b.sample_rate)
         assert (np.allclose(a.audio_data, b.audio_data))
 
@@ -222,9 +239,9 @@ class AudioSignalUnitTests(unittest.TestCase):
 
     def test_plot_time_domain_multi_channel(self):
         # Plotting a signal with 5 channels
-        num_test_channels = 6
+        num_test_channels = 5
         freq_multiple = 5
-        freqs = [i * freq_multiple for i in range(1, num_test_channels)]
+        freqs = [i * freq_multiple for i in range(1, num_test_channels+1)]
         test_signal = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:num_test_channels]])
         a = nussl.AudioSignal(audio_data_array = test_signal)
         a.plot_time_domain()
@@ -237,7 +254,7 @@ class AudioSignalUnitTests(unittest.TestCase):
     def test_plot_time_domain_save_to_path_and_rename(self):
         # Plotting and saving the plot with a new name to a folder
         a = nussl.AudioSignal(self.input_path3)
-        a.plot_time_domain(save=True, name='Test Graph', output_path='../')
+        a.plot_time_domain(file_path_name='test_graph.png')
 
     def test_stft_istft_simple1(self):
         """
