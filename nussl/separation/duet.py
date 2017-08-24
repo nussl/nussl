@@ -3,6 +3,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+# noinspection PyUnusedImport
 from mpl_toolkits.mplot3d import axes3d
 from scipy import signal
 
