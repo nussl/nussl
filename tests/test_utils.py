@@ -18,6 +18,15 @@ class TestUtils(unittest.TestCase):
         min_idx = int(np.pi * 100)
         triangle = np.abs(signal.sawtooth(np.arange(0, 10, 0.01)))
 
+        arr = np.arange(0, 100)
+        peak = nussl.find_peak_indices(arr, 1)
+        assert peak == 99
+
+        arr = np.arange(0, 100).reshape(10, 10)
+        peak = nussl.find_peak_indices(arr, 1)
+        assert peak == (9, 9)
+
+
     def test_add_mismatched_arrays(self):
         long_array = np.ones((20,))
         short_array = np.arange(10)

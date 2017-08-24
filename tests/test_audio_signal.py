@@ -7,6 +7,7 @@ import nussl
 import numpy as np
 import scipy.io.wavfile as wav
 import os
+import librosa
 import warnings
 
 
@@ -16,7 +17,7 @@ class AudioSignalUnitTests(unittest.TestCase):
     length = dur * sr
 
     def setUp(self):
-        input_folder = os.path.join('..', 'Input')
+        input_folder = os.path.join('..', 'input')
         output_folder = os.path.join('..', 'Output')
         ext = '.wav'
         self.all_inputs = [os.path.join(input_folder, f) for f in os.listdir(input_folder)
@@ -24,6 +25,7 @@ class AudioSignalUnitTests(unittest.TestCase):
 
         self.input_path1 = os.path.join(input_folder, 'k0140_int.wav')
         self.input_path2 = os.path.join(input_folder, 'k0140.wav')
+        self.input_path3 = os.path.join(input_folder, 'dev1_female3_inst_mix.wav')
 
         self.out_path1 = os.path.join(output_folder, 'k0140_int_output.wav')
         self.out_path2 = os.path.join(output_folder, 'k0140_output.wav')
@@ -178,6 +180,81 @@ class AudioSignalUnitTests(unittest.TestCase):
 
     freq = 30
     sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
+
+    def test_resample(self):
+        # Check that sample rate property changes
+        a = nussl.AudioSignal(self.input_path1)
+        b = nussl.AudioSignal(self.input_path1)
+        b.resample(a.sample_rate/2)
+        assert (b.sample_rate == a.sample_rate/2)
+
+    def test_resample_on_load_from_file(self):
+        # Test resample right when loading from file vs resampling after loading
+        a = nussl.AudioSignal(self.input_path1)
+        a.resample(48000)
+        b = nussl.AudioSignal()
+        b.load_audio_from_file(self.input_path1, new_sample_rate=48000)
+        assert (a.sample_rate== b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
+
+    def test_resample_vs_librosa_load(self):
+        # Check against librosa load function
+        a = nussl.AudioSignal(self.input_path1)
+        a.resample(48000)
+        b_audio_data, b_sample_rate = librosa.load(self.input_path1, sr=48000)
+        assert (a.sample_rate== b_sample_rate)
+        assert (np.allclose(a.audio_data, b_audio_data))
+
+    def test_default_sr_on_load_from_array(self):
+        # Check that the default sample rate is set when no sample rate is provided load_audio_from_array
+        sr, data = wav.read(self.input_path1)
+        a = nussl.AudioSignal()
+        a.load_audio_from_array(data)
+        assert(a.sample_rate == nussl.constants.DEFAULT_SAMPLE_RATE)
+
+    def test_sr_on_load_from_array(self):
+        # Check that the passed in sample rate is being set in load_audio_from_array
+        a = nussl.AudioSignal(self.input_path1)
+        sr, data = wav.read(self.input_path1)
+        b = nussl.AudioSignal()
+        b.load_audio_from_array(data, sample_rate=sr)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
+
+    def test_plot_time_domain_stereo(self):
+        # Stereo signal that should plot both channels on same plot
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_specific_channel(self):
+        # Stereo signal that should only plot the specified channel
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(channel=0)
+
+    def test_plot_time_domain_mono(self):
+        # Mono signal plotting
+        a = nussl.AudioSignal(self.input_path3)
+        a.to_mono(overwrite=True)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_multi_channel(self):
+        # Plotting a signal with 5 channels
+        num_test_channels = 5
+        freq_multiple = 5
+        freqs = [i * freq_multiple for i in range(1, num_test_channels+1)]
+        test_signal = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:num_test_channels]])
+        a = nussl.AudioSignal(audio_data_array = test_signal)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_sample_on_xaxis(self):
+        # Plotting a stereo signal with sample numbers on the x axis instead of time
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(x_label_time=False)
+
+    def test_plot_time_domain_save_to_path_and_rename(self):
+        # Plotting and saving the plot with a new name to a folder
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(file_path_name='test_graph.png')
 
     def test_stft_istft_simple1(self):
         """

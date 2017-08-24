@@ -4,6 +4,6 @@
 Imports for transformers classes
 """
 
-from .Nmf import NMF
+from .transformer_nmf import TransformerNMF
 
-__all__ = ['NMF']
+__all__ = ['TransformerNMF']

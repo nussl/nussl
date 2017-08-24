@@ -38,12 +38,12 @@ class Duet(mask_separation_base.MaskSeparationBase):
         num_sources (int): Number of sources to find.
         attenuation_min (int): Minimum distance in utils.find_peak_indices, change if not enough peaks are identified.
         attenuation_max (int): Used for creating a histogram without outliers.
-        num_attenuation_bins (int): Number of bins for attenuation.
+        num_attenuation_bins (int): Number of bins for attenuation. 
         delay_min (int): Lower bound on delay, used as minimum distance in utils.find_peak_indices.
         delay_max (int): Upper bound on delay, used for creating a histogram without outliers.
-        num_delay_bins (int): Number of bins for delay.
-        peak_threshold (float): Value in [0, 1] for peak picking.
-        attenuation_min_distance (int): Minimum distance between peaks wrt attenuation.
+        num_delay_bins (int): Number of bins for delay. 
+        peak_threshold (float): Value in [0, 1] for peak picking. 
+        attenuation_min_distance (int): Minimum distance between peaks wrt attenuation. 
         delay_min_distance (int): Minimum distance between peaks wrt delay.
         p (int): Weight the histogram with the symmetric attenuation estimator.
         q (int): Weight the histogram with the delay estimator
@@ -332,7 +332,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         # check the dimensions of the Kernel matrix and set the values of the averaging
         # matrix, kernel_matrix
         if np.prod(kernel.shape) == 1:
-            kernel_matrix = np.ones((kernel, kernel)) / kernel ** 2
+            kernel_matrix = np.ones((kernel[0], kernel[0])) / kernel[0] ** 2
         else:
             kernel_matrix = kernel
 
