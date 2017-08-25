@@ -19,13 +19,13 @@ def simple_example():
     n_bases = 2
     n_iter = 100
     nussl_nmf = nussl.TransformerNMF(mixture, n_bases)
-    nussl_nmf.should_use_epsilon = False
+    nussl_nmf.should_do_epsilon = False
     nussl_nmf.max_num_iterations = n_iter
-    nussl_nmf.distance_measure = nussl.DistanceType.DIVERGENCE
+    nussl_nmf.distance_measure = nussl_nmf.DIVERGENCE
 
     # run NU NMF
-    nussl_nmf.run()
-    signals = nussl_nmf.recombine_calculated_matrices()
+    nussl_nmf.transform()
+    # signals = nussl_nmf.recombine_calculated_matrices()
 
 if __name__ == '__main__':
     simple_example()
