@@ -56,7 +56,7 @@ def audio_example():
     nmf = nussl.NMF(numNotes)
     nmf.max_num_iterations = 100
     start = time.time()
-    nmf.run()
+    nmf.transform()
     print '{0:.3f}'.format(time.time() - start), 'seconds for NUSSL'
 
     # Make output files

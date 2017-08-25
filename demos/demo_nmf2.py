@@ -27,7 +27,7 @@ def sine_example():
     # Start NMF and time it
     start = time.time()
     nmf = nussl.NMF(3)
-    activation, dictionary = nmf.run()
+    activation, dictionary = nmf.transform()
     print '{0:.3f}'.format(time.time() - start), 'sec'
 
     # plot results

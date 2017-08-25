@@ -1,10 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import unittest
 import numpy as np
 import nussl
 
 import nimfa
 
-class DuetUnitTests(unittest.TestCase):
+
+class TransformerNMFUnitTests(unittest.TestCase):
 
     def test_small_mixture_matrix(self):
         """
@@ -13,7 +17,7 @@ class DuetUnitTests(unittest.TestCase):
         # Make two simple matrices
         for n in range(4, 20, 4):
             a = np.arange(n ** 2).reshape((n, n))
-            b = 2. * a + 3.
+            b = np.add(np.multiply(2., a), 3.)
 
             # Mix them together
             mixture = np.dot(b, a)
@@ -25,21 +29,21 @@ class DuetUnitTests(unittest.TestCase):
             num_std_deviations = 5
             percent_over_std_dev = .05
 
-            #Run on euclidean
-            distance_type = "euclidean"
-            errors = self.calculate_nmfs_error(mixture, n_bases, distance_type, iterations)
+            # Run with euclidean distance
+            distance_type = 'euclidean'
+            errors = self.calculate_nmf_error(mixture, n_bases, distance_type, iterations)
             error_check_euclidean = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
-            assert error_check_euclidean == True
+            assert error_check_euclidean
 
-            # Run on divergence
-            distance_type = "divergence"
-            errors = self.calculate_nmfs_error(mixture, n_bases, distance_type, iterations)
+            # Run with divergence
+            distance_type = 'divergence'
+            errors = self.calculate_nmf_error(mixture, n_bases, distance_type, iterations)
             error_check_divergence = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
-            assert error_check_divergence == True
+            assert error_check_divergence
 
     def test_random_matrix(self):
         for n in range(4, 10, 2):
-            V = np.random.rand(n, n)
+            matrix = np.random.rand(n, n)
             # Set up NMFs and run on euclidean while calculating error
             n_bases = 2
             iterations = 100
@@ -49,40 +53,41 @@ class DuetUnitTests(unittest.TestCase):
 
             # Run on euclidean
             distance_type = "euclidean"
-            errors = self.calculate_nmfs_error(V, n_bases, distance_type, iterations)
+            errors = self.calculate_nmf_error(matrix, n_bases, distance_type, iterations)
             error_check_euclidean = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
 
             # Run on divergence
             distance_type = "divergence"
-            errors = self.calculate_nmfs_error(V, n_bases, distance_type, iterations)
+            errors = self.calculate_nmf_error(matrix, n_bases, distance_type, iterations)
             error_check_divergence = self.analyze_errors(errors, iterations, num_std_deviations, percent_over_std_dev)
 
-            assert error_check_euclidean == True
-            assert error_check_divergence == True
+            assert error_check_euclidean
+            assert error_check_divergence
 
     @staticmethod
-    def calculate_nmfs_error(mixture, n_bases, type, iterations):
+    def calculate_nmf_error(mixture, n_bases, type, iterations):
         nussl_nmf = nussl.TransformerNMF(mixture, n_bases)
-        nussl_nmf.should_use_epsilon = False
+        nussl_nmf.should_do_epsilon = False
         nussl_nmf.max_num_iterations = iterations
         if type == "euclidean":
-            nussl_nmf.distance_measure = nussl.DistanceType.EUCLIDEAN
+            nussl_nmf.distance_measure = nussl.transformers.TransformerNMF.EUCLIDEAN
         elif type == "divergence":
-            nussl_nmf.distance_measure = nussl.DistanceType.DIVERGENCE
+            nussl_nmf.distance_measure = nussl.transformers.TransformerNMF.DIVERGENCE
         else:
             return "Use either euclidean or divergence!"
+
         # set up nimfa NMF
-        V = mixture
-        nimfa_nmf = nimfa.Nmf(V, max_iter=iterations, rank=n_bases, update=type)
+        matrix = mixture
+        nimfa_nmf = nimfa.Nmf(matrix, max_iter=iterations, rank=n_bases, update=type)
 
         # calculate errors
         errors = []
         for i in range(iterations):
             # run NU NMF
-            nussl_nmf.run()
-            signals = nussl_nmf.recombine_calculated_matrices()
+            nussl_nmf.transform()
+            # signals = nussl_nmf.recombine_calculated_matrices()
 
-            #run nimfa NMF
+            # run nimfa NMF
             nmf_fit = nimfa_nmf()
             W = nmf_fit.basis()
             H = nmf_fit.coef()
@@ -110,6 +115,3 @@ class DuetUnitTests(unittest.TestCase):
             std_check = False
 
         return std_check
-
-if __name__ == '__main__':
-    simple_example()
