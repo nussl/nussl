@@ -20,7 +20,7 @@ def simple_example():
 
     # Set up NU NMF
     num_templates = 2
-    nmf = nussl.transformers.TransformerNMF(mixture, num_templates=num_templates)
+    nmf = nussl.transformers.TransformerNMF(mixture, num_components=num_templates)
     nmf.should_do_epsilon = False
     nmf.max_num_iterations = 100
     nmf.distance_measure = nmf.EUCLIDEAN
