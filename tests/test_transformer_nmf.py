@@ -66,13 +66,11 @@ class TransformerNMFUnitTests(unittest.TestCase):
 
     @staticmethod
     def calculate_nmf_error(mixture, n_bases, type, iterations):
-        nussl_nmf = nussl.TransformerNMF(mixture, n_bases)
-        nussl_nmf.should_do_epsilon = False
-        nussl_nmf.max_num_iterations = iterations
+        nussl_nmf = nussl.TransformerNMF(mixture, n_bases, max_num_iterations=iterations, should_do_epsilon=False)
         if type == "euclidean":
             nussl_nmf.distance_measure = nussl.transformers.TransformerNMF.EUCLIDEAN
         elif type == "divergence":
-            nussl_nmf.distance_measure = nussl.transformers.TransformerNMF.DIVERGENCE
+            nussl_nmf.distance_measure = nussl.transformers.TransformerNMF.KL_DIVERGENCE
         else:
             return "Use either euclidean or divergence!"
 

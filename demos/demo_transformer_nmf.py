@@ -1,31 +1,46 @@
-import time
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+A simple example of NMF in nussl showing some common-used features.
+"""
+import os
+
 import numpy as np
 import nussl
-import nimfa
 
-def simple_example():
+
+def simple_nmf():
     """
     A simple example of NMF in nussl
     """
-    # Make two simple matrices
-    n = 4
-    a = np.arange(n ** 2).reshape((n, n))
-    b = 2. * a + 3.
+    # Make a simple matrix
+    n = 50
+    mixture = np.ones((n, n))
 
-    # Mix them together
-    mixture = np.dot(b, a)
+    num_lines = 12
+    val = 10
 
-    # Set up NU NMF
-    n_bases = 2
-    n_iter = 100
-    nussl_nmf = nussl.TransformerNMF(mixture, n_bases)
-    nussl_nmf.should_do_epsilon = False
-    nussl_nmf.max_num_iterations = n_iter
-    nussl_nmf.distance_measure = nussl_nmf.DIVERGENCE
+    for i in np.arange(0, n+1, n / num_lines):
+        mixture[i, :] += val
 
-    # run NU NMF
-    nussl_nmf.transform()
-    # signals = nussl_nmf.recombine_calculated_matrices()
+    # Make a cool design
+    mixture[n/3:, :n/3] = 1
+    mixture[2*n/3:, n/3:2*n/3] = 1
+    mixture[:2*n/3, 2*n/3:] = 1
+    mixture[:n/3, n/3:] = 1
+
+    # Set up NMF
+    n_iter = 10
+    nmf = nussl.TransformerNMF(mixture, num_components=num_lines*3, max_num_iterations=n_iter,
+                               distance_measure=nussl.TransformerNMF.KL_DIVERGENCE, seed=0)
+
+    # run  NMF
+    nmf.transform()
+
+    output_path = os.path.abspath(os.path.join('Output', 'simple_nmf.png'))
+    nmf.plot(output_file=output_path, matrix_to_db=False)
+
 
 if __name__ == '__main__':
-    simple_example()
+    simple_nmf()

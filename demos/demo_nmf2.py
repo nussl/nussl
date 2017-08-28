@@ -11,24 +11,24 @@ def sine_example():
         os.mkdir(os.path.join('..', 'Output/'))
 
     # Make signals
-    nSamples = 44100  # 1 second per each frequency
+    n_samples = 44100  # 1 second per each frequency
 
-    sin1 = np.sin(np.linspace(0, 100 * 2 * np.pi, nSamples))  # Freq = 100 Hz
-    sin2 = np.sin(np.linspace(0, 200 * 2 * np.pi, nSamples))  # Freq = 200 Hz
-    sin3 = np.sin(np.linspace(0, 300 * 2 * np.pi, nSamples))  # Freq = 300 Hz
+    sin1 = np.sin(np.linspace(0, 100 * 2 * np.pi, n_samples))  # Freq = 100 Hz
+    sin2 = np.sin(np.linspace(0, 200 * 2 * np.pi, n_samples))  # Freq = 200 Hz
+    sin3 = np.sin(np.linspace(0, 300 * 2 * np.pi, n_samples))  # Freq = 300 Hz
 
     sines = np.concatenate((sin1, sin2, sin3))
 
     # load into AudioSignal object and get stft
     signal = nussl.AudioSignal(audio_data_array=sines)
     signal.stft()
-    stft = signal.get_stft_channel(1)
+    stft = signal.get_stft_channel(0)
 
     # Start NMF and time it
     start = time.time()
     nmf = nussl.NMF(3)
     activation, dictionary = nmf.transform()
-    print '{0:.3f}'.format(time.time() - start), 'sec'
+    print('{0:.3f} sec'.format(time.time() - start))
 
     # plot results
     plt.imshow(activation, interpolation='none', aspect='auto')
