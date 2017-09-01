@@ -15,10 +15,12 @@ from .duet import Duet
 from .projet import Projet
 
 # Others
+from .nmf_mfcc import NMF_MFCC
 from .ideal_mask import IdealMask
 from .overlap_add import OverlapAdd
 from .ica import ICA
 from .high_low_pass_filter import HighLowPassFilter
 
 __all__ = ['SeparationBase', 'MaskSeparationBase',
-           'Repet', 'RepetSim', 'FT2D', 'Duet', 'Projet', 'IdealMask', 'OverlapAdd', 'ICA', 'HighLowPassFilter']
+           'Repet', 'RepetSim', 'FT2D', 'Duet', 'Projet', 'IdealMask', 'OverlapAdd',
+           'ICA', 'HighLowPassFilter', 'NMF_MFCC']
