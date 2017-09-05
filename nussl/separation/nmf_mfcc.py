@@ -70,39 +70,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             mask_object = masks.BinaryMask(np.array(mask))
             self.masks.append(mask_object)
 
-            # self.extract_masks(clustered_templates=self.templates_matrix[:, source_indices],
-            #                                         signal_stft=self.signal_stft)
         return self.masks  # FREEZE!
-
-    # def extract_masks(self, clustered_templates, signal_stft):
-    #     """ Extracts the binary mask objects for each source.
-    #     Parameters:
-    #         clustered_templates (np.matrix): The columns from self.templates_matrix that correspond to the current
-    #                                          source being extracted
-    #         signal_stft (np.matrix): The stft of the input audio signal
-    #     """
-    #     new_templates_stft = np.abs(np.squeeze(signal_stft))  # TODO: multichannel
-    #
-    #     # Set up and run NMF using each clustered template
-    #     reconstruct_nmf = transformer_nmf.TransformerNMF(input_matrix=new_templates_stft, templates=clustered_templates,
-    #                                                      num_components=clustered_templates.shape[1], should_update_template=False)
-    #     reconstruct_nmf.should_use_epsilon = False
-    #     reconstruct_nmf.max_num_iterations = self.num_iterations
-    #     reconstruct_nmf.distance_measure = self.distance_measure
-    #     activation_matrix, new_templates_matrix = reconstruct_nmf.transform()
-    #
-    #     # Reconstruct the signal
-    #     reconstructed_signal = new_templates_matrix.dot(activation_matrix)
-    #
-    #     # Mask the input signal
-    #     music_stft_max = np.maximum(reconstructed_signal, np.abs(new_templates_stft))
-    #     mask = np.divide(reconstructed_signal, music_stft_max)
-    #     mask = np.nan_to_num(mask)
-    #
-    #     # Create the binary mask
-    #     mask = np.round(mask)
-    #     mask_object = masks.BinaryMask(np.array(mask))
-    #     self.masks.append(mask_object)
 
     def make_audio_signals(self):
         """ Applies each mask in self.masks and returns a list of audio_signal objects for each source.
@@ -117,9 +85,3 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             source_audio_signal.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
             self.sources.append(source_audio_signal)
         return self.sources # FREEZE!
-
-        # # template - extracted template, residual - everything that's leftover.
-        # template = np.multiply(np.squeeze(signal_stft), mask)
-        # residual = np.multiply(np.squeeze(signal_stft), 1 - mask)
-        #
-        # return template, residual
