@@ -91,7 +91,7 @@ class TransformerNMFUnitTests(unittest.TestCase):
             H = nmf_fit.coef()
 
             nimfa_est = np.dot(W, H)
-            nussl_est = np.dot(nussl_nmf.templates, nussl_nmf.activation_matrix)
+            nussl_est = np.dot(nussl_nmf.template_dictionary, nussl_nmf.activation_matrix)
             error = np.abs(nussl_est - nimfa_est) / nimfa_est * 100
             errors.append(error.flatten())
         return errors
