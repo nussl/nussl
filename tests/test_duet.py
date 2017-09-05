@@ -202,7 +202,7 @@ def freeze_duet_values():
 
     signal = nussl.AudioSignal(path)
     duet = nussl.Duet(signal, 3)
-    output_folder = os.path.abspath('duet_reference/test')
+    output_folder = os.path.abspath('duet_reference/duet_benchmarks')
 
     duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix = duet._compute_spectrogram(duet.sample_rate)
     np.save(os.path.join(output_folder, "benchmark_stft_ch0"), duet.stft_ch0)
