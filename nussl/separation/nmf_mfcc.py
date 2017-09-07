@@ -101,12 +101,12 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             self.labeled_templates = self.clusterer.labels_
 
             # Extract sources from signal
-            channel_masks = self.extract_masks(channel_stft, channel_templates_matrix, channel_activation_matrix)
+            channel_masks = self._extract_masks(channel_stft, channel_templates_matrix, channel_activation_matrix)
             self.masks.append(channel_masks)
 
         return self.masks
 
-    def extract_masks(self, signal_stft, templates_matrix, activation_matrix):
+    def _extract_masks(self, signal_stft, templates_matrix, activation_matrix):
         """ Creates binary masks from clustered templates and activation matrices
         Parameters:
             signal_stft (np.matrix): A 2D Numpy matrix containing the stft of the current channel
