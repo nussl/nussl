@@ -5,6 +5,7 @@ import nussl
 import numpy as np
 import os
 
+
 class TestJson(unittest.TestCase):
 
     def test_audio_signal(self):

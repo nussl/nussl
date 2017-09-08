@@ -8,8 +8,8 @@ if not path in sys.path:
 import nussl
 
 def main():
-    path_to_file1 = '../Input/src1.wav'
-    path_to_file2 = '../Input/src2.wav'
+    path_to_file1 = '../input/src1.wav'
+    path_to_file2 = '../input/src2.wav'
 
     # Load the file into the AudioSignal object
     signal1 = nussl.AudioSignal(path_to_file1)

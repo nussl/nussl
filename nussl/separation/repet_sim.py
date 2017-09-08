@@ -56,7 +56,7 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         self.similarity_indices = None
         self.magnitude_spectrogram = None
         self.stft = None
-        self.masks = None
+        self.result_masks = None
         self.use_librosa_stft = use_librosa_stft
         self.matlab_fidelity = matlab_fidelity
 
@@ -105,9 +105,9 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         if self.mask_type == self.BINARY_MASK:
             background_mask = background_mask.mask_to_binary(self.mask_threshold)
 
-        self.masks = [background_mask, background_mask.inverse_mask()]
+        self.result_masks = [background_mask, background_mask.inverse_mask()]
 
-        return self.masks
+        return self.result_masks
 
     def _make_background_signal(self, background_stft):
         self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
@@ -271,8 +271,8 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         if self.background is None:
             return None
 
-        self.foreground = self.audio_signal - self.background
-        self.foreground.sample_rate = self.audio_signal.sample_rate
+        foreground_array = self.audio_signal.audio_data - self.background.audio_data
+        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
         return [self.background, self.foreground]
 
     def plot(self, output_file, **kwargs):
