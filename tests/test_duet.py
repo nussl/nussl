@@ -188,42 +188,9 @@ class DuetUnitTests(unittest.TestCase):
 
         final_signals = duet.make_audio_signals()
 
-        assert np.all(benchmark_final_signals == final_signals)
+        # Is the audio data the same?
+        assert all(np.array_equal(benchmark_final_signals[i].audio_data, final_signals[i].audio_data)
+                   for i in range(len(final_signals)))
 
-def freeze_duet_values():
-    path = DuetUnitTests.path_to_benchmark_file
-
-    signal = nussl.AudioSignal(path)
-    duet = nussl.Duet(signal, 3)
-    output_folder = os.path.abspath('duet_reference/test')
-
-    duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix = duet._compute_spectrogram(duet.sample_rate)
-    np.save(os.path.join(output_folder, "benchmark_stft_ch0"), duet.stft_ch0)
-    np.save(os.path.join(output_folder, "benchmark_stft_ch1"), duet.stft_ch1)
-    np.save(os.path.join(output_folder, "benchmark_wmat"), duet.frequency_matrix)
-
-    duet.symmetric_atn, duet.delay = duet._compute_atn_delay(duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix)
-    np.save(os.path.join(output_folder, "benchmark_sym_atn"), duet.symmetric_atn)
-    np.save(os.path.join(output_folder, "benchmark_delay"), duet.delay)
-
-    duet.normalized_attenuation_delay_histogram, duet.attenuation_bins, duet.delay_bins = duet._make_histogram()
-    np.save(os.path.join(output_folder, "benchmark_hist"), duet.normalized_attenuation_delay_histogram)
-    np.save(os.path.join(output_folder, "benchmark_atn_bins"), duet.attenuation_bins)
-    np.save(os.path.join(output_folder, "benchmark_delay_bins"), duet.delay_bins)
-
-    duet.peak_indices = nussl.utils.find_peak_indices(duet.normalized_attenuation_delay_histogram, duet.num_sources,
-                                                      threshold=duet.peak_threshold,
-                                                      min_dist=[duet.attenuation_min_distance,
-                                                                duet.delay_min_distance])
-    np.save(os.path.join(output_folder, "benchmark_peak_indices"), duet.peak_indices)
-
-    duet.delay_peak, duet.atn_delay_est, duet.atn_peak = duet._convert_peaks()
-    np.save(os.path.join(output_folder, "benchmark_delay_peak"), duet.delay_peak)
-    np.save(os.path.join(output_folder, "benchmark_atn_delay_est"), duet.atn_delay_est)
-    np.save(os.path.join(output_folder, "benchmark_atn_peak"), duet.atn_peak)
-
-    duet.result_masks = duet._compute_masks()
-    np.save(os.path.join(output_folder, "benchmark_masks"), duet.result_masks)
-
-    final_signals = duet.make_audio_signals()
-    np.save(os.path.join(output_folder, "benchmark_final_signals"), final_signals)
+        # Check to see if AudioSignal's API changed; do we need to refreeze?
+        assert all(benchmark_final_signals[i] == final_signals[i] for i in range(len(final_signals)))
