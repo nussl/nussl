@@ -24,12 +24,12 @@ class TransformerNMF(object):
         Advances in neural information processing systems. 2001.
 
     Parameters:
-        input_matrix (:obj:`np.array`): The matrix to factor into template and activation matrices
+        input_matrix (:obj:`np.array`): The matrix to factor into template and activation matrices (`V`)
         num_components (int): The rank of the resultant factorization matrix
         activation_matrix (:obj:`np.array`): Initial state for the activation matrix
-        template_dictionary (:obj:`np.array`): Initial state for the template dictionary
+        template_dictionary (:obj:`np.array`): Initial state for the template dictionary (`W`)
         (also called 'components' and 'bases')
-        distance_measure (str): Specifies whether to use euclidean or divergence distance metrics
+        distance_measure (str): Specifies whether to use euclidean or divergence distance metrics (`H`)
         should_update_activation (bool): Whether the activation matrix should be updated for another iteration
         should_update_template (bool): Whether the template matrix should be updated at every iteration
         seed (int): A seed value for the random numbers. If None, no seed is used.
