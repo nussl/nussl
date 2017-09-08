@@ -66,9 +66,9 @@ class DuetUnitTests(unittest.TestCase):
         # Load Duet values to benchmark against
         duet = nussl.Duet(self.signal, 3)
         duet_sft0, duet_sft1, duet_wmat = duet._compute_spectrogram(duet.sample_rate)
-        assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch0']) == duet_sft0)
-        assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch1']) == duet_sft1)
-        assert np.all(np.array(self.benchmark_dict['benchmark_wmat']) == duet_wmat)
+        assert np.allclose(self.benchmark_dict['benchmark_stft_ch0'], duet_sft0)
+        assert np.allclose(self.benchmark_dict['benchmark_stft_ch1'], duet_sft1)
+        assert np.allclose(self.benchmark_dict['benchmark_wmat'], duet_wmat)
 
     def test_compute_atn_delay(self):
         # Use the same stfts for comparing the two functions' outputs
@@ -79,8 +79,8 @@ class DuetUnitTests(unittest.TestCase):
 
         symmetric_atn, delay = duet._compute_atn_delay(duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix)
 
-        assert np.all(np.array(self.benchmark_dict['benchmark_sym_atn']) == symmetric_atn)
-        assert np.all(np.array(self.benchmark_dict['benchmark_delay']) == delay)
+        assert np.allclose(self.benchmark_dict['benchmark_sym_atn'], symmetric_atn)
+        assert np.allclose(self.benchmark_dict['benchmark_delay'], delay)
 
     def test_make_histogram(self):
         # Use the same stfts for comparing this function's outputs
@@ -101,7 +101,7 @@ class DuetUnitTests(unittest.TestCase):
 
         hist, atn_bins, delay_bins = duet._make_histogram()
 
-        assert np.all(benchmark_hist == hist)
+        assert np.allclose(benchmark_hist, hist)
         assert np.all(benchmark_atn_bins == atn_bins)
         assert np.all(benchmark_delay_bins == delay_bins)
 
