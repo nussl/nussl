@@ -102,8 +102,8 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
     peak_indices = []
     for i in range(n_peaks):
         # np.unravel_index for 2D indices e.g., index 5 in a 3x3 array should be (1, 2)
-        # Also, wrap in tuple for duck typing
-        cur_peak_idx = tuple(np.unravel_index(np.argmax(input_array), input_array.shape))
+        # Also, wrap in list for duck typing
+        cur_peak_idx = list(np.unravel_index(np.argmax(input_array), input_array.shape))
         peak_indices.append(cur_peak_idx)
 
         # zero out peak and its surroundings

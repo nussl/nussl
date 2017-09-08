@@ -5,10 +5,7 @@ from __future__ import division
 import unittest
 import nussl
 import numpy as np
-import scipy.io.wavfile as wav
-import scipy.io
 import os
-import warnings
 
 
 class DuetUnitTests(unittest.TestCase):
@@ -21,7 +18,8 @@ class DuetUnitTests(unittest.TestCase):
         # Call benchmarks
         self.benchmark_dict = self.load_benchmarks()
 
-    def load_benchmarks(self):
+    @staticmethod
+    def load_benchmarks():
         benchmark_dict = {}
         directory = 'duet_reference/duet_benchmarks'
         for filename in os.listdir(directory):
@@ -43,18 +41,17 @@ class DuetUnitTests(unittest.TestCase):
         duet.audio_signal = nussl.AudioSignal(path_to_benchmark_file)
         duet_masks = duet.run()
         for i in range(len(duet_masks)):
-            assert np.all(benchmark_mask[i].mask == duet_masks[i].mask)
+            assert np.array_equal(benchmark_mask[i].mask, duet_masks[i].mask)
 
     def test_duet_final_outputs(self):
-        #Test final outputs
+        # Test final outputs
         mask_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_masks.npy')
         benchmark_mask = np.load(mask_path)
 
         duet = nussl.Duet(self.signal, 3)
         duet_masks = duet.run()
         for i in range(len(duet_masks)):
-            assert np.all(benchmark_mask[i].mask == duet_masks[i].mask)
-
+            assert np.array_equal(benchmark_mask[i].mask, duet_masks[i].mask)
 
     def test_compute_spectrogram_1_channel(self):
         # Test with one channel, should throw value error
@@ -170,7 +167,7 @@ class DuetUnitTests(unittest.TestCase):
 
         masks = duet._compute_masks()
         for i in range(len(masks)):
-            assert np.all(benchmark_mask[i].mask == masks[i].mask)
+            assert np.array_equal(benchmark_mask[i].mask, masks[i].mask)
 
     def test_make_audio_signals(self):
         duet = nussl.Duet(self.signal, 3)
@@ -184,7 +181,7 @@ class DuetUnitTests(unittest.TestCase):
         duet.peak_indices = self.benchmark_dict['benchmark_peak_indices']
         duet.delay_peak = self.benchmark_dict['benchmark_delay_peak']
         duet.atn_peak = self.benchmark_dict['benchmark_atn_peak']
-        duet.masks = self.benchmark_dict['benchmark_masks']
+        duet.result_masks = self.benchmark_dict['benchmark_masks']
 
         final_signals_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_final_signals.npy')
         benchmark_final_signals = np.load(final_signals_path)
@@ -192,10 +189,6 @@ class DuetUnitTests(unittest.TestCase):
         final_signals = duet.make_audio_signals()
 
         assert np.all(benchmark_final_signals == final_signals)
-
-        # test_smooth_matrix
-
-        # TODO: fix this function before writing test for it
 
 def freeze_duet_values():
     path = DuetUnitTests.path_to_benchmark_file
@@ -222,21 +215,15 @@ def freeze_duet_values():
                                                       threshold=duet.peak_threshold,
                                                       min_dist=[duet.attenuation_min_distance,
                                                                 duet.delay_min_distance])
-    np.save(os.path.join(output_folder,"benchmark_peak_indices"), duet.peak_indices)
+    np.save(os.path.join(output_folder, "benchmark_peak_indices"), duet.peak_indices)
 
     duet.delay_peak, duet.atn_delay_est, duet.atn_peak = duet._convert_peaks()
     np.save(os.path.join(output_folder, "benchmark_delay_peak"), duet.delay_peak)
     np.save(os.path.join(output_folder, "benchmark_atn_delay_est"), duet.atn_delay_est)
     np.save(os.path.join(output_folder, "benchmark_atn_peak"), duet.atn_peak)
 
-    duet.masks = duet._compute_masks()
-    np.save(os.path.join(output_folder, "benchmark_masks"), duet.masks)
+    duet.result_masks = duet._compute_masks()
+    np.save(os.path.join(output_folder, "benchmark_masks"), duet.result_masks)
 
     final_signals = duet.make_audio_signals()
     np.save(os.path.join(output_folder, "benchmark_final_signals"), final_signals)
-
-if __name__ == '__main__':
-    unittest.main()
-
-# freeze_duet_values()
-

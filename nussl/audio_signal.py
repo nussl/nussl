@@ -152,6 +152,26 @@ class AudioSignal(object):
         return None
 
     @property
+    def is_mono(self):
+        """
+        PROPERTY
+        Returns:
+            (bool): Whether or not this signal is mono (i.e., has exactly `one` channel).
+
+        """
+        return self.num_channels == 1
+
+    @property
+    def is_stereo(self):
+        """
+        PROPERTY
+        Returns:
+            (bool): Whether or not this signal is stereo (i.e., has exactly `two` channels).
+
+        """
+        return self.num_channels == 2
+
+    @property
     def audio_data(self):
         """ (:obj:`np.ndarray`): Real-valued, uncompressed, time-domain representation of the audio.
             2D numpy array with shape `(n_channels, n_samples)`.
@@ -181,6 +201,9 @@ class AudioSignal(object):
 
         elif not isinstance(value, np.ndarray):
             raise ValueError('Type of self.audio_data must be of type np.ndarray!')
+
+        if not np.isfinite(value).all():
+            raise ValueError('Not all values of audio_data are finite!')
 
         if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
             warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
@@ -787,8 +810,6 @@ class AudioSignal(object):
                                             else file_path_name + '.png'
             plt.savefig(file_path_name)
 
-        plt.show()
-
     def plot_spectrogram(self, file_name=None, ch=None):
         # TODO: use self.stft_data if not None
         # TODO: flatten to mono be default
@@ -1063,7 +1084,7 @@ class AudioSignal(object):
     def _to_json_helper(o):
         if not isinstance(o, AudioSignal):
             raise TypeError
-        import copy
+
         d = copy.copy(o.__dict__)
         for k, v in d.items():
             if isinstance(v, np.ndarray):
@@ -1093,14 +1114,22 @@ class AudioSignal(object):
 
     @staticmethod
     def _from_json_helper(json_dict):
-        if '__class__' in json_dict:
+        if '__class__' in json_dict and '__module__' in json_dict:
             class_name = json_dict.pop('__class__')
             module = json_dict.pop('__module__')
             if class_name != AudioSignal.__name__ or module != AudioSignal.__module__:
-                raise TypeError
+                raise TypeError('Expected {}.{} but got {}.{} from json!'.format(AudioSignal.__module__,
+                                                                                 AudioSignal.__name__,
+                                                                                 module, class_name))
+
             a = AudioSignal()
+
+            if 'stft_params' not in json_dict:
+                raise TypeError('JSON string must contain StftParams object!')
+
             stft_params = json_dict.pop('stft_params')
             a.stft_params = spectral_utils.StftParams.from_json(stft_params)
+
             for k, v in json_dict.items():
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
                     a.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
@@ -1144,22 +1173,17 @@ class AudioSignal(object):
             raise ValueError('Cannot get frequency bin until self.stft() is run!')
         return (np.abs(self.freq_vector - freq)).argmin()
 
-    def apply_gain(self, value, overwrite=False):
+    def apply_gain(self, value):
         """
         Apply a gain to self.audio_data
         Args:
             value: (float) amount to multiply self.audio_data by
-            overwrite: (bool) should overwrite audio_data in self
-
-        Returns:
 
         """
         if not isinstance(value, numbers.Real):
             raise ValueError('Can only multiply/divide by a scalar!')
 
-        audio_data = self.audio_data * value
-        if overwrite:
-            self.audio_data = audio_data
+        self.audio_data = self.audio_data * value
         return self
 
     def resample(self, new_sample_rate):
@@ -1384,10 +1408,16 @@ class AudioSignal(object):
         return self - other
 
     def __mul__(self, value):
-        return self.apply_gain(value, overwrite=True)
+        if not isinstance(value, numbers.Real):
+            raise ValueError('Can only multiply/divide by a scalar!')
+
+        return self.make_copy_with_audio_data(np.multiply(self.audio_data, value), verbose=False)
 
     def __div__(self, value):
-        return self.apply_gain(1.0 / float(value), overwrite=True)
+        if not isinstance(value, numbers.Real):
+            raise ValueError('Can only multiply/divide by a scalar!')
+
+        return self.make_copy_with_audio_data(np.divide(self.audio_data, float(value)), verbose=False)
 
     def __truediv__(self, value):
         return self.__div__(value)
@@ -1396,10 +1426,10 @@ class AudioSignal(object):
         return self.__idiv__(value)
 
     def __imul__(self, value):
-        return self * value
+        return self.apply_gain(value)
 
     def __idiv__(self, value):
-        return self / value
+        return self.apply_gain(1 / float(value))
 
     def __len__(self):
         return self.signal_length

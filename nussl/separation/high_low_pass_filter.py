@@ -86,7 +86,9 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             self.high_pass_mask = self.low_pass_mask.invert_mask()
 
-        return [self.high_pass_mask, self.low_pass_mask]
+        self.result_masks = [self.high_pass_mask, self.low_pass_mask]
+
+        return self.result_masks
 
     def _get_stft(self):
         """
