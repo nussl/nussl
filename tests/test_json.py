@@ -51,7 +51,6 @@ class TestJson(unittest.TestCase):
         path = os.path.join('..', 'Input', 'mix1.wav')
         a = nussl.AudioSignal(path)
         r = nussl.RepetSim(a)
-        t = nussl.Repet(a)
         r()
 
         j = r.to_json()
