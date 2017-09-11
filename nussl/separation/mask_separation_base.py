@@ -267,7 +267,9 @@ class MaskSeparationBaseDecoder(separation_base.SeparationBaseDecoder):
             for k, v in json_dict.items():
                 if isinstance(v, dict) and nussl.constants.NUMPY_JSON_KEY in v:
                     separator.__dict__[k] = nussl.utils.json_numpy_obj_hook(v[nussl.constants.NUMPY_JSON_KEY])
-                elif isinstance(v, (str, bytes)) and nussl.audio_signal.__name__ in v:  # TODO: test this
+
+                # TODO: test this in python3
+                elif isinstance(v, (str, bytes, unicode)) and nussl.audio_signal.__name__ in v:
                     separator.__dict__[k] = nussl.audio_signal.AudioSignal.from_json(v)
                 elif k == 'result_masks':
                     # for mask_json in v:
