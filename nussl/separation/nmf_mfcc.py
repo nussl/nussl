@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sklearn.cluster import KMeans
+import sklearn.cluster
 import librosa
 import nussl.audio_signal
 import nussl.constants
@@ -16,14 +16,15 @@ import masks
 
 class NMF_MFCC(mask_separation_base.MaskSeparationBase):
     """
-        NMF MFCC (Non Negative Matrix Factorization using Mel Frequency Cepstral Coefficients) is a source separation
+        Non Negative Matrix Factorization using K-Means Clustering on MFCC (NMF MFCC) is a source separation
         algorithm that runs Transformer NMF on the magnitude spectrogram of an input audio signal.
         It uses K means clustering to cluster the templates and activations returned by the NMF. The dot product of the
-        clustered templates and activations result in a magnitude spectrogram only containing the separated source.
+        clustered templates and activations results in a magnitude spectrogram only containing the separated source.
         This is used to create a Binary Mask object, which can then be applied to return a list of Audio Signal objects
         corresponding to each separated source.
 
         References:
+            Mel Frequency Cepstral Coefficients(MFCC): https://en.wikipedia.org/wiki/Mel-frequency_cepstrum
 
         Parameters:
             input_audio_signal (np.array): a 2-row Numpy matrix containing samples of the two-channel mixture.
@@ -37,7 +38,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         Attributes:
             input_audio_signal (object): An Audio Signal object of the input audio signal
             clusterer (object): A KMeans object for clustering the templates and activations
-            signal_stft (np.matrix): The stft data for the current
+            signal_stft (np.matrix): The stft data for the input audio signal
             templates_matrix (np.matrix): A Numpy matrix containing the templates matrix from running NMF on the
                                                 current channel from the input signal stft data.
             activation_matrix (np.matrix): A Numpy matrix containing the activation matrix from running NMF on the
@@ -49,54 +50,85 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
         """
     def __init__(self, input_audio_signal, num_sources, num_templates=50, distance_measure='euclidean',
-                 num_iterations=50, random_seed=0, convert_to_mono=False):
-        super(NMF_MFCC, self).__init__(input_audio_signal=input_audio_signal,
-                                   mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK)
+                 num_iterations=50, random_seed=None, kmeans_kwargs=None, convert_to_mono=False,
+                 mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK, mfcc_range=(1, 14), n_mfcc=20):
+        super(NMF_MFCC, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
 
         self.num_sources = num_sources
         self.num_templates = num_templates
         self.distance_measure = distance_measure
         self.num_iterations = num_iterations
         self.random_seed = random_seed
+        self.kmeans_kwargs = kmeans_kwargs
         self.convert_to_mono = convert_to_mono
+        self.n_mfcc = n_mfcc
+        self.mask_type = mask_type
 
-        self.input_audio_signal = input_audio_signal
-        self.clusterer = None
         self.signal_stft = None
+        self.input_audio_signal = input_audio_signal
         self.templates_matrix = None
         self.activation_matrix = None
         self.labeled_templates = None
-        self.sources = None
+        self.sources = []
         self.masks = []
 
         # Convert the stereo signal to mono if indicated
         if self.convert_to_mono:
             self.input_audio_signal.to_mono(overwrite=True, remove_channels=False)
 
+        # Set the MFCC range
+        if isinstance(mfcc_range, int) and mfcc_range < n_mfcc:
+            self.mfcc_start, self.mfcc_end = 1, mfcc_range
+        elif isinstance(mfcc_range, (tuple, list)) and len(mfcc_range) == 2:
+            self.mfcc_start, self.mfcc_end = mfcc_range[0], mfcc_range[1]
+        else:
+            raise ValueError('mfcc_range is not set correctly! Must be a tuple or list with min and max, or int (max)')
+
+        # If provided, add random_seed to kmeans_kwargs
+        if self.random_seed is not None:
+            if self.kmeans_kwargs is None:
+                self.kmeans_kwargs = {'random_state': self.random_seed}
+            if 'random_state' not in self.kmeans_kwargs or self.kmeans_kwargs['random_state'] is None:
+                self.kmeans_kwargs['random_state'] = self.random_seed
+
+        # Set number of clusters to number of sources
+        if self.kmeans_kwargs is None:
+            self.kmeans_kwargs = {'n_clusters': self.num_sources}
+        else:
+            self.kmeans_kwargs['n_clusters'] = self.num_sources
+
         # Initialize the K Means clusterer
-        self.clusterer = KMeans(n_clusters=self.num_sources)
+        self.clusterer = sklearn.cluster.KMeans(**self.kmeans_kwargs)
+
+    def run(self):
+        """ This function calls TransformerNMF on the magnitude spectrogram of each channel in the input audio signal.
+        The templates and activation matrices returned are clustered using K-Means clustering. These clusters are used
+        to create mask objects for each source. Note: The masks are not returned in a particular order, but they are in
+        the same order for each channel.
+
+        Returns:
+            self.masks (np.array): A list of binary mask objects that can be used to extract the sources
+        """
+        self.masks = []
         self.input_audio_signal.stft_params = self.stft_params
         self.signal_stft = self.input_audio_signal.stft()
 
-    def run(self):
-        """ Extracts N sources from a given mixture
-
-            Returns:
-                self.masks (np.array): A list of binary mask objects that can be used to extract the sources
-        """
         for i in range(self.input_audio_signal.num_channels):
-            channel_stft = self.signal_stft[:, :, i]
+            channel_stft = self.input_audio_signal.get_magnitude_spectrogram_channel(i)
 
             # Set up NMF and run
-            nmf = transformer_nmf.TransformerNMF(input_matrix=np.abs(channel_stft), num_components=self.num_templates,
+            nmf = transformer_nmf.TransformerNMF(input_matrix=channel_stft, num_components=self.num_templates,
                                                  seed=self.random_seed)
+
+            # Pass these to constructor (above)
             nmf.should_use_epsilon = False
             nmf.max_num_iterations = self.num_iterations
             nmf.distance_measure = self.distance_measure
             channel_activation_matrix, channel_templates_matrix = nmf.transform()
 
             # Cluster the templates matrix into Mel frequencies and retrieve labels
-            cluster_templates = librosa.feature.mfcc(S=channel_templates_matrix)[1:14]
+            cluster_templates = librosa.feature.mfcc(S=channel_templates_matrix,
+                                                     n_mfcc=self.n_mfcc)[self.mfcc_start:self.mfcc_end]
             self.clusterer.fit_transform(cluster_templates.T)
             self.labeled_templates = self.clusterer.labels_
 
@@ -108,6 +140,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
     def _extract_masks(self, signal_stft, templates_matrix, activation_matrix):
         """ Creates binary masks from clustered templates and activation matrices
+
         Parameters:
             signal_stft (np.matrix): A 2D Numpy matrix containing the stft of the current channel
             templates_matrix (np.matrix): A 2D Numpy matrix containing the templates matrix after running NMF on
@@ -138,8 +171,11 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             music_stft_max = np.maximum(mask_matrix, np.abs(signal_stft))
             mask_matrix = np.divide(mask_matrix, music_stft_max)
             mask = np.nan_to_num(mask_matrix)
-            mask = np.round(mask)
-            mask_object = masks.BinaryMask(np.array(mask))
+            if self.mask_type == self.BINARY_MASK:
+                mask = np.round(mask)
+                mask_object = masks.BinaryMask(np.array(mask))
+            else:
+                mask_object = masks.SoftMask(np.array(mask))
             channel_mask_list.append(mask_object)
         return channel_mask_list
 
@@ -149,10 +185,12 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         Returns:
             self.sources (np.array): An array of audio_signal objects containing each separated source
         """
+        self.sources = []
         for i in range(self.input_audio_signal.num_channels):
             channel_mask = self.masks[i]
             for j in range(self.num_sources):
-                source = self.audio_signal.make_copy_with_stft_data((self.signal_stft[:, :, i]), verbose=False)
+                channel_stft = self.input_audio_signal.get_stft_channel(i)
+                source = self.audio_signal.make_copy_with_stft_data(channel_stft, verbose=False)
                 source = source.apply_mask(channel_mask[j])
                 source.stft_params = self.stft_params
                 source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
