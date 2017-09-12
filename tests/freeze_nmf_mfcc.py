@@ -9,13 +9,13 @@ import os
 def main():
     path_to_benchmark_file = os.path.join('..', 'Input', 'piano_and_synth_arp_chord_mono.wav')
     signal = nussl.AudioSignal(path_to_benchmark_file)
+
+    # Set random seed in NMF and KMeans to 0
     nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, distance_measure="euclidean",
-                              num_iterations=150, random_seed=0)
-    output_folder = os.path.abspath('nmf_mfcc_reference/nmf_mfcc_benchmarks')
+                              num_iterations=100, random_seed=0)
+    output_folder = os.path.abspath('nmf_mfcc_reference/new')
 
     nmf_mfcc.run()
-    np.save(os.path.join(output_folder, "benchmark_activation_matrix"), nmf_mfcc.activation_matrix)
-    np.save(os.path.join(output_folder, "benchmark_templates_matrix"), nmf_mfcc.templates_matrix)
     np.save(os.path.join(output_folder, "benchmark_labeled_templates"), nmf_mfcc.labeled_templates)
     np.save(os.path.join(output_folder, "benchmark_masks"), nmf_mfcc.masks)
 
