@@ -57,3 +57,16 @@ class TestJson(unittest.TestCase):
         f = nussl.RepetSim.from_json(j)
         worked = r == f
         return worked
+
+    def test_nmf_mfcc(self):
+        path = os.path.join('..', 'Input', 'piano_and_synth_arp_chord_mono.wav')
+        a = nussl.AudioSignal(path)
+        n = nussl.NMF_MFCC(a, num_sources=2)
+        n()
+
+        j = n.to_json()
+        f = nussl.NMF_MFCC.from_json(j)
+        worked = n == f
+        return worked
+
+

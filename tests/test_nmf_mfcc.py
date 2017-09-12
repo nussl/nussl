@@ -150,5 +150,3 @@ class NMFMFCCUnitTests(unittest.TestCase):
         assert np.all(benchmark_labeled_templates == nmf_mfcc.labeled_templates)
         assert np.all(benchmark_masks == nmf_mfcc.masks)
         assert np.all(benchmark_sources == nmf_mfcc.sources)
-
-

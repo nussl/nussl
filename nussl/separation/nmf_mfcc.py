@@ -25,6 +25,10 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
         References:
             Mel Frequency Cepstral Coefficients(MFCC): https://en.wikipedia.org/wiki/Mel-frequency_cepstrum
+            Volker Gnann, Martin Spiertz. "Source-filter based clustering for monaural blind source separation"
+            October 2002: https://www.researchgate.net/profile/Martin_Spiertz/publication/228567105_Source-filter_based
+            _clustering_for_monaural_blind_source_separation/links/0c960526b56dae0c69000000.pdf
+            scikit-learn's KMeans: http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
 
         Parameters:
             input_audio_signal (np.array): a 2-row Numpy matrix containing samples of the two-channel mixture.
@@ -33,20 +37,20 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             distance_measure (str): The type of distance measure to use in NMF - euclidean or divergence.
             num_iterations (int): The number of iterations to go through in NMF.
             random_seed (int): The seed to use in the numpy random generator
-            convert_to_mono (bool): Given a stereo signal, convert to mono
+            kmeans_kwargs (dict): The kwargs for KMeans parameters.
+            convert_to_mono (bool): Given a stereo signal, convert to mono.
+            mask_type (object): A soft or binary mask object used for the source separation.
+            mfcc_range (int/list/tuple): The range of mfcc to use for clustering.
+            n_mfcc (int): The max number of mfccs to use.
 
         Attributes:
-            input_audio_signal (object): An Audio Signal object of the input audio signal
-            clusterer (object): A KMeans object for clustering the templates and activations
-            signal_stft (np.matrix): The stft data for the input audio signal
-            templates_matrix (np.matrix): A Numpy matrix containing the templates matrix from running NMF on the
-                                                current channel from the input signal stft data.
-            activation_matrix (np.matrix): A Numpy matrix containing the activation matrix from running NMF on the
-                                                current channel from the input signal stft data.
+            input_audio_signal (object): An Audio Signal object of the input audio signal.
+            clusterer (object): A KMeans object for clustering the templates and activations.
+            signal_stft (np.matrix): The stft data for the input audio signal.
             labeled_templates (np.array): A Numpy array containing the labeled templates columns
-                                               from the templates matrix for a particular source
-            sources (np.array): A Numpy array containing the list of Audio Signal objects for each source
-            masks (np.array): A Numpy array containing the lists of Binary Mask objects for each channel
+                                               from the templates matrix for a particular source.
+            sources (np.array): A Numpy array containing the list of Audio Signal objects for each source.
+            masks (np.array): A Numpy array containing the lists of Binary Mask objects for each channel.
 
         """
     def __init__(self, input_audio_signal, num_sources, num_templates=50, distance_measure='euclidean',
@@ -66,8 +70,6 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
         self.signal_stft = None
         self.input_audio_signal = input_audio_signal
-        self.templates_matrix = None
-        self.activation_matrix = None
         self.labeled_templates = None
         self.sources = []
         self.masks = []
@@ -84,21 +86,18 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         else:
             raise ValueError('mfcc_range is not set correctly! Must be a tuple or list with min and max, or int (max)')
 
-        # If provided, add random_seed to kmeans_kwargs
-        if self.random_seed is not None:
-            if self.kmeans_kwargs is None:
-                self.kmeans_kwargs = {'random_state': self.random_seed}
-            if 'random_state' not in self.kmeans_kwargs or self.kmeans_kwargs['random_state'] is None:
-                self.kmeans_kwargs['random_state'] = self.random_seed
+        # If kmeans_kwargs does not include the 'random_state', use the random_seed instead. Else, use the value
+        # provided in the dictionary. If kmeans_kwargs is None, use the random_seed.
 
-        # Set number of clusters to number of sources
-        if self.kmeans_kwargs is None:
-            self.kmeans_kwargs = {'n_clusters': self.num_sources}
-        else:
-            self.kmeans_kwargs['n_clusters'] = self.num_sources
+        self.kmeans_random_seed = kmeans_kwargs.pop('random_state', random_seed) \
+            if isinstance(kmeans_kwargs, dict) else random_seed
 
         # Initialize the K Means clusterer
-        self.clusterer = sklearn.cluster.KMeans(**self.kmeans_kwargs)
+        if isinstance(self.kmeans_kwargs, dict):
+            self.clusterer = sklearn.cluster.KMeans(n_clusters=self.num_sources, random_state=self.kmeans_random_seed,
+                                                    **kmeans_kwargs)
+        else:
+            self.clusterer = sklearn.cluster.KMeans(n_clusters=self.num_sources, random_state=self.kmeans_random_seed)
 
     def run(self):
         """ This function calls TransformerNMF on the magnitude spectrogram of each channel in the input audio signal.
@@ -108,6 +107,25 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
         Returns:
             self.masks (np.array): A list of binary mask objects that can be used to extract the sources
+
+        Example:
+
+        .. code-block:: python
+            :linenos:
+
+            signal = nussl.AudioSignal(path_to_input_file='input_name.wav')
+
+            # Set up and run Repet
+            nmf_mfcc =  nussl.NMF_MFCC(signal, num_sources=2) # Returns a binary mask by default
+            masks = nmf_mfcc.run()
+
+            # Get audio signals
+            sources = nmf_mfcc.make_audio_signals()
+
+            # output the background
+            for i, source in enumerate(sources):
+                output_file_name = str(i) + '.wav'
+                source.write_audio_to_file(output_file_name)
         """
         self.masks = []
         self.input_audio_signal.stft_params = self.stft_params
