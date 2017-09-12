@@ -88,7 +88,6 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
         # If kmeans_kwargs does not include the 'random_state', use the random_seed instead. Else, use the value
         # provided in the dictionary. If kmeans_kwargs is None, use the random_seed.
-
         self.kmeans_random_seed = kmeans_kwargs.pop('random_state', random_seed) \
             if isinstance(kmeans_kwargs, dict) else random_seed
 
