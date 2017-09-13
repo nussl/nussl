@@ -19,19 +19,19 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         Non Negative Matrix Factorization using K-Means Clustering on MFCC (NMF MFCC) is a source separation
         algorithm that runs Transformer NMF on the magnitude spectrogram of an input audio signal.
         It uses K means clustering to cluster the templates and activations returned by the NMF. The dot product of the
-        clustered templates and activations results in a magnitude spectrogram only containing the separated source.
-        This is used to create a Binary Mask object, which can then be applied to return a list of Audio Signal objects
-        corresponding to each separated source.
+        clustered templates and activations results in a magnitude spectrogram only containing a separated source.
+        This is used to create a Binary Mask object, and the whole process can be applied for each cluster to
+        return a list of Audio Signal objects corresponding to each separated source.
 
         References:
             Mel Frequency Cepstral Coefficients(MFCC): https://en.wikipedia.org/wiki/Mel-frequency_cepstrum
             Volker Gnann, Martin Spiertz. "Source-filter based clustering for monaural blind source separation"
             October 2002: https://www.researchgate.net/profile/Martin_Spiertz/publication/228567105_Source-filter_based
             _clustering_for_monaural_blind_source_separation/links/0c960526b56dae0c69000000.pdf
-            scikit-learn's KMeans: http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
+            scikit-learn KMeans: http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
 
         Parameters:
-            input_audio_signal (np.array): a 2-row Numpy matrix containing samples of the two-channel mixture.
+            input_audio_signal (np.array): An Audio Signal object of the input audio signal.
             num_sources (int): Number of sources to find.
             num_templates (int): Number of template vectors to used in NMF.
             distance_measure (str): The type of distance measure to use in NMF - euclidean or divergence.
@@ -105,7 +105,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         the same order for each channel.
 
         Returns:
-            self.masks (np.array): A list of binary mask objects that can be used to extract the sources
+            self.masks (np.array): A list of binary mask objects that can be used to extract the sources.
 
         Example:
 
@@ -114,14 +114,14 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
             signal = nussl.AudioSignal(path_to_input_file='input_name.wav')
 
-            # Set up and run Repet
+            # Set up and run NMF MFCC
             nmf_mfcc =  nussl.NMF_MFCC(signal, num_sources=2) # Returns a binary mask by default
             masks = nmf_mfcc.run()
 
             # Get audio signals
             sources = nmf_mfcc.make_audio_signals()
 
-            # output the background
+            # Output the sources
             for i, source in enumerate(sources):
                 output_file_name = str(i) + '.wav'
                 source.write_audio_to_file(output_file_name)
