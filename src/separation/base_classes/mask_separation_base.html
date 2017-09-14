@@ -3,9 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>MaskSeparationBase Class &#8212; nussl 0.1.5a10 documentation</title>
+    
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -21,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -138,7 +141,7 @@
 <span id="mask-separation-base"></span><h1>MaskSeparationBase Class<a class="headerlink" href="#maskseparationbase-class" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="separation.MaskSeparationBase">
-<em class="property">class </em><code class="descclassname">separation.</code><code class="descname">MaskSeparationBase</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>mask_type='soft'</em>, <em>mask_threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">separation.</code><code class="descname">MaskSeparationBase</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>mask_type=’soft’</em>, <em>mask_threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.MaskSeparationBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="separation_base.html#separation.separation_base.SeparationBase" title="separation.separation_base.SeparationBase"><code class="xref py py-class docutils literal"><span class="pre">separation.separation_base.SeparationBase</span></code></a></p>
 <p>Base class for separation algorithms that create a mask (binary or soft) to do their separation. Most algorithms
 in nussl are derived from <code class="xref py py-class docutils literal"><span class="pre">MaskSeparationBase</span></code>.</p>
@@ -165,13 +168,13 @@ the mixture to be separated.</li>
 </table>
 <dl class="attribute">
 <dt id="separation.MaskSeparationBase.BINARY_MASK">
-<code class="descname">BINARY_MASK</code><em class="property"> = 'binary'</em><a class="headerlink" href="#separation.MaskSeparationBase.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
+<code class="descname">BINARY_MASK</code><em class="property"> = ‘binary’</em><a class="headerlink" href="#separation.MaskSeparationBase.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
 <dd><p>String alias for setting this object to return <a class="reference internal" href="../mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> objects</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.MaskSeparationBase.SOFT_MASK">
-<code class="descname">SOFT_MASK</code><em class="property"> = 'soft'</em><a class="headerlink" href="#separation.MaskSeparationBase.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SOFT_MASK</code><em class="property"> = ‘soft’</em><a class="headerlink" href="#separation.MaskSeparationBase.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
 <dd><p>String alias for setting this object to return <a class="reference internal" href="../mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> objects</p>
 </dd></dl>
 
@@ -384,8 +387,8 @@ was called.</td>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Jul 20, 2017.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+      Last updated on Sep 14, 2017.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
     </p>
   </div>
 </footer>

@@ -3,9 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>KAM Class &#8212; nussl 0.1.5a10 documentation</title>
+    
     <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
@@ -21,7 +24,7 @@
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -147,7 +150,7 @@ Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.</dd>
 2. f_istft</p>
 <dl class="class">
 <dt id="separation.KAM.Kernel">
-<em class="property">class </em><code class="descclassname">separation.KAM.</code><code class="descname">Kernel</code><span class="sig-paren">(</span><em>Type=''</em>, <em>ParamVal=matrix([]</em>, <em>shape=(1</em>, <em>0)</em>, <em>dtype=float64)</em>, <em>Nhood=None</em>, <em>Wfunc=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.KAM.Kernel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">separation.KAM.</code><code class="descname">Kernel</code><span class="sig-paren">(</span><em>Type=”</em>, <em>ParamVal=matrix([]</em>, <em>shape=(1L</em>, <em>0L)</em>, <em>dtype=float64)</em>, <em>Nhood=None</em>, <em>Wfunc=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.KAM.Kernel" title="Permalink to this definition">¶</a></dt>
 <dd><p>The class Kernel defines the properties of the time-freq proximity kernel. The weight values of
 the proximity kernel over time-frequecy bins that are considered as neighbours are given
 by a pre-defined or a user-defined function. The value of the proximity kernel is zero over
@@ -374,7 +377,7 @@ fhat: a LF by LT by J Numpy array containing J power spectral dencities</p>
 
 <dl class="function">
 <dt id="separation.KAM.randSVD">
-<code class="descclassname">separation.KAM.</code><code class="descname">randSVD</code><span class="sig-paren">(</span><em>A</em>, <em>K</em>, <em>mode='normal'</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.KAM.randSVD" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">separation.KAM.</code><code class="descname">randSVD</code><span class="sig-paren">(</span><em>A</em>, <em>K</em>, <em>mode=’normal’</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.KAM.randSVD" title="Permalink to this definition">¶</a></dt>
 <dd><p>The function randSVD implements the randomized computation of truncated SVD
 of K components over a m by n matrix A.
 Inputs:
@@ -409,8 +412,8 @@ V: Numpy array (n by K) containing basis vectors in C^n</p>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Jul 20, 2017.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+      Last updated on Sep 14, 2017.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
     </p>
   </div>
 </footer>

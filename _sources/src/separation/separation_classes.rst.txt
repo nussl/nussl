@@ -12,4 +12,5 @@ This is a list of all of the classes for end-user source separation in nussl. Th
    Mask Classes <mask_classes/mask_classes>
    Repetition-based Separation Classes <repetition/repetition>
    Spatialization Separation Classes <spatialization/spatialization>
+   Non-negative Matrix Factorization Separation Classes <nmf_classes/nmf_classes>
    Other Types of Separation Classes <other/other_classes>

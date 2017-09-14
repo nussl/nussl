@@ -3,9 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Repet Class &#8212; nussl 0.1.5a10 documentation</title>
+    
     <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
@@ -21,7 +24,7 @@
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../../../_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -138,7 +141,7 @@
 <span id="repet-class"></span><span id="repet"></span><h1>Repet Class<a class="headerlink" href="#module-separation.repet" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="separation.repet.Repet">
-<em class="property">class </em><code class="descclassname">separation.repet.</code><code class="descname">Repet</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>min_period=None</em>, <em>max_period=None</em>, <em>period=None</em>, <em>high_pass_cutoff=None</em>, <em>do_mono=False</em>, <em>use_find_period_complex=False</em>, <em>use_librosa_stft=True</em>, <em>matlab_fidelity=False</em>, <em>mask_type='soft'</em>, <em>mask_threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.repet.Repet" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">separation.repet.</code><code class="descname">Repet</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>min_period=None</em>, <em>max_period=None</em>, <em>period=None</em>, <em>high_pass_cutoff=None</em>, <em>do_mono=False</em>, <em>use_find_period_complex=False</em>, <em>use_librosa_stft=True</em>, <em>matlab_fidelity=False</em>, <em>mask_type=’soft’</em>, <em>mask_threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.repet.Repet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code></p>
 <p>Implements the original REpeating Pattern Extraction Technique algorithm using the beat spectrum.</p>
 <p>REPET is a simple method for separating a repeating background from a non-repeating foreground in an
@@ -227,12 +230,12 @@ called.</p>
 
 <dl class="attribute">
 <dt id="separation.repet.Repet.BINARY_MASK">
-<code class="descname">BINARY_MASK</code><em class="property"> = 'binary'</em><a class="headerlink" href="#separation.repet.Repet.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
+<code class="descname">BINARY_MASK</code><em class="property"> = ‘binary’</em><a class="headerlink" href="#separation.repet.Repet.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="separation.repet.Repet.SOFT_MASK">
-<code class="descname">SOFT_MASK</code><em class="property"> = 'soft'</em><a class="headerlink" href="#separation.repet.Repet.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SOFT_MASK</code><em class="property"> = ‘soft’</em><a class="headerlink" href="#separation.repet.Repet.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -639,8 +642,8 @@ Call this if you haven’t done <a class="reference internal" href="#separation.
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Jul 20, 2017.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.<br/>
+      Last updated on Sep 14, 2017.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
     </p>
   </div>
 </footer>
