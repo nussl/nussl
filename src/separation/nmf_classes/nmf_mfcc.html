@@ -141,14 +141,15 @@
 <span id="nmf-mfcc-class"></span><span id="nmf-mfcc"></span><h1>NMF MFCC Class<a class="headerlink" href="#module-separation.nmf_mfcc" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="separation.nmf_mfcc.NMF_MFCC">
-<em class="property">class </em><code class="descclassname">separation.nmf_mfcc.</code><code class="descname">NMF_MFCC</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_sources</em>, <em>num_templates=50</em>, <em>distance_measure=’euclidean’</em>, <em>num_iterations=50</em>, <em>random_seed=None</em>, <em>kmeans_kwargs=None</em>, <em>convert_to_mono=False</em>, <em>mask_type=’binary’</em>, <em>mfcc_range=(1</em>, <em>14)</em>, <em>n_mfcc=20</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">separation.nmf_mfcc.</code><code class="descname">NMF_MFCC</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_sources</em>, <em>num_templates=50</em>, <em>num_iterations=50</em>, <em>random_seed=None</em>, <em>distance_measure=’euclidean’</em>, <em>kmeans_kwargs=None</em>, <em>convert_to_mono=False</em>, <em>mask_type=’binary’</em>, <em>mfcc_range=(1</em>, <em>14)</em>, <em>n_mfcc=20</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code></p>
 <p>Non Negative Matrix Factorization using K-Means Clustering on MFCC (NMF MFCC) is a source separation
-algorithm that runs Transformer NMF on the magnitude spectrogram of an input audio signal.
-It uses K means clustering to cluster the templates and activations returned by the NMF. The dot product of the
-clustered templates and activations results in a magnitude spectrogram only containing a separated source.
-This is used to create a Binary Mask object, and the whole process can be applied for each cluster to
-return a list of Audio Signal objects corresponding to each separated source.</p>
+algorithm that runs Transformer NMF on the magnitude spectrogram of an input audio signal. The templates matrix
+is then converted to mel-space to reduce the dimensionality. The K means clustering then clusters the converted
+templates and activations matrices. The dot product of the clustered templates and activations results in a
+magnitude spectrogram only containing a separated source. This is used to create a Binary Mask object, and the
+whole process can be applied for each cluster to return a list of Audio Signal objects corresponding to each
+separated source.</p>
 <p class="rubric">References</p>
 <ul class="simple">
 <li><a class="reference external" href="https://en.wikipedia.org/wiki/Mel-frequency_cepstrum">Mel Frequency Cepstral Coefficients (MFCC)</a></li>
@@ -171,17 +172,19 @@ return a list of Audio Signal objects corresponding to each separated source.</p
 <li><strong>input_audio_signal</strong> (<a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a>) – The <a class="reference internal" href="../../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> object that
 NMF MFCC will be run on. This makes a copy of <code class="docutils literal"><span class="pre">input_audio_signal</span></code></li>
 <li><strong>num_sources</strong> (<em>int</em>) – Number of sources to find.</li>
-<li><strong>num_templates</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of template vectors to used in NMF. Defaults to 50</li>
-<li><strong>distance_measure</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The type of distance measure to use in NMF - euclidean or divergence.
+<li><strong>num_templates</strong> (<em>int</em>) – Number of template vectors to used in NMF. Defaults to 50.</li>
+<li><strong>num_iterations</strong> (<em>int</em>) – The number of iterations to go through in NMF. Defaults to 50.</li>
+<li><strong>random_seed</strong> (<em>int</em>) – The seed to use in the numpy random generator in NMF and KMeans. See code examples below
+for how this is used. Default uses no seed.</li>
+<li><strong>distance_measure</strong> (<em>str</em>) – The type of distance measure to use in NMF - euclidean or divergence.
 Defaults to euclidean.</li>
-<li><strong>num_iterations</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of iterations to go through in NMF. Defaults to 50.</li>
-<li><strong>random_seed</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The seed to use in the numpy random generator. Default uses no seed.</li>
-<li><strong>kmeans_kwargs</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – The kwargs for KMeans parameters. Default is none.</li>
-<li><strong>convert_to_mono</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Given a stereo signal, convert to mono. Default set to False.</li>
-<li><strong>mask_type</strong> (<em>Optional</em><em>[</em><em>object</em><em>]</em>) – A soft or binary mask object used for the source separation.
+<li><strong>kmeans_kwargs</strong> (<em>dict</em>) – The kwargs for KMeans parameters. Can be initialized with a dictionary of keys
+corresponding to parameters in KMeans. See below for an example. Default is none.</li>
+<li><strong>convert_to_mono</strong> (<em>bool</em>) – Given a stereo signal, convert to mono. Default set to False.</li>
+<li><strong>mask_type</strong> (<em>str</em>) – A soft or binary mask object used for the source separation.
 Defaults to Binary.</li>
-<li><strong>mfcc_range</strong> (<em>Optional</em><em>[</em><em>int/list/tuple</em><em>]</em>) – The range of mfcc to use for clustering. Defaults to 1:14.</li>
-<li><strong>n_mfcc</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The max number of mfccs to use. Defaults to 20.</li>
+<li><strong>mfcc_range</strong> (<em>int</em><em>,</em><em>list</em><em>,</em><em>tuple</em>) – The range of mfcc for clustering. See code examples below. Defaults to 1:14.</li>
+<li><strong>n_mfcc</strong> (<em>int</em>) – The max number of mfccs to use. Defaults to 20.</li>
 </ul>
 </td>
 </tr>
@@ -197,36 +200,100 @@ NMF MFCC will be run on. This makes a copy of <code class="docutils literal"><sp
 <dl class="attribute">
 <dt id="separation.nmf_mfcc.NMF_MFCC.clusterer">
 <code class="descname">clusterer</code><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.clusterer" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">object</span></code> – A KMeans object for clustering the templates and activations.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">KMeans</span></code> – A scikit-learn KMeans object for clustering the templates and activations.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.nmf_mfcc.NMF_MFCC.signal_stft">
 <code class="descname">signal_stft</code><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.signal_stft" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.matrix</span></code> – The stft data for the input audio signal.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code> – The stft data for the input audio signal.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.nmf_mfcc.NMF_MFCC.labeled_templates">
 <code class="descname">labeled_templates</code><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.labeled_templates" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> – A Numpy array containing the labeled templates columns
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">list</span></code> – A Numpy array containing the labeled templates columns
 from the templates matrix for a particular source.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="separation.nmf_mfcc.NMF_MFCC.sources">
 <code class="descname">sources</code><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.sources" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> – A Numpy array containing the list of Audio Signal objects for each source.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">list</span></code> – A list containing the lists of Audio Signal objects for each source.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="separation.nmf_mfcc.NMF_MFCC.masks">
-<code class="descname">masks</code><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.masks" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> – A Numpy array containing the lists of Binary Mask objects for each channel.</div></blockquote>
-<p>Example:</p>
+<dt id="separation.nmf_mfcc.NMF_MFCC.result_masks">
+<code class="descname">result_masks</code><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.result_masks" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">list</span></code> – A list containing the lists of Binary Mask objects for each channel.</p>
 </dd></dl>
 
+<p>Initializing Examples:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Initialize input signal</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">path_to_input_file</span><span class="o">=</span><span class="s1">&#39;input_name.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># Default initialization</span>
+ <span class="n">nmf_mfcc</span> <span class="o">=</span>  <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Random Seeding initialization</span>
+<span class="c1"># Set NMF and KMeans seeds to 0 (no kmeans_kwarg initialized, so random_seed is used for random_state)</span>
+<span class="n">nmf_mfcc</span> <span class="o">=</span>  <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Use individual seeding</span>
+<span class="n">nmf_mfcc</span> <span class="o">=</span>  <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">kmeans_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">random_state</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+
+<span class="c1"># Only set random_seed and not random_state</span>
+<span class="n">nmf_mfcc</span> <span class="o">=</span>  <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">kmeans_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">random_state</span><span class="p">:</span> <span class="bp">None</span><span class="p">})</span>
+
+<span class="c1"># MFCC range initialization</span>
+<span class="c1"># Set up the max of the MFCC range by only using an int</span>
+<span class="n">nmf_mfcc</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_templates</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">mfcc_range</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># Set up the MFCC range by using a list [min, max]</span>
+<span class="n">nmf_mfcc</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_templates</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">mfcc_range</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">])</span>
+
+<span class="c1"># Set up the MFCC range by using a tuple (min, max)</span>
+<span class="n">nmf_mfcc</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_templates</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">mfcc_range</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">14</span><span class="p">))</span>
+
+<span class="c1"># KMeans initialization</span>
+<span class="c1"># Initialize all KMeans arguments, see KMeans documentation for more detail.</span>
+<span class="n">kmeans_kwargs</span> <span class="o">=</span> <span class="p">{</span> <span class="n">n_clusters</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="n">init</span><span class="p">:</span> <span class="s1">&#39;k-means++&#39;</span><span class="p">,</span> <span class="n">n_init</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="mf">1e-4</span><span class="p">,</span>
+                  <span class="n">precompute_distances</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">random_state</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="n">copy_x</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                  <span class="n">n_jobs</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="s1">&#39;auto&#39;</span><span class="p">}</span>
+<span class="n">nmf_mfcc</span> <span class="o">=</span>  <span class="n">nussl</span><span class="o">.</span><span class="n">NMF_MFCC</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">num_sources</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmeans_kwargs</span><span class="o">=</span><span class="n">kmeans_kwargs</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
 <dl class="attribute">
 <dt id="separation.nmf_mfcc.NMF_MFCC.BINARY_MASK">
 <code class="descname">BINARY_MASK</code><em class="property"> = ‘binary’</em><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
@@ -386,13 +453,13 @@ For example, <code class="docutils literal"><span class="pre">mask_type</span> <
 <code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#separation.nmf_mfcc.NMF_MFCC.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function calls TransformerNMF on the magnitude spectrogram of each channel in the input audio signal.
 The templates and activation matrices returned are clustered using K-Means clustering. These clusters are used
-to create mask objects for each source. Note: The masks are not returned in a particular order, but they are in
-the same order for each channel.</p>
+to create mask objects for each source. Note: The masks in self.result_masks are not returned in a particular
+order corresponding to the sources, but they are in the same order for each channel.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">masks (<code class="xref py py-obj docutils literal"><span class="pre">list</span></code>) – A list of <code class="xref py py-obj docutils literal"><span class="pre">MaskBase</span></code>-derived objects for each source.
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">result_masks (<code class="xref py py-obj docutils literal"><span class="pre">list</span></code>) – A list of <code class="xref py py-obj docutils literal"><span class="pre">MaskBase</span></code>-derived objects for each source.
 (to get a list of <code class="xref py py-obj docutils literal"><span class="pre">AudioSignal</span></code>-derived objects run <a class="reference internal" href="#separation.nmf_mfcc.NMF_MFCC.make_audio_signals" title="separation.nmf_mfcc.NMF_MFCC.make_audio_signals"><code class="xref py py-func docutils literal"><span class="pre">make_audio_signals()</span></code></a>)</td>
 </tr>
 </tbody>
@@ -477,7 +544,7 @@ was called.</td>
     </p>
     <p>
         &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Sep 14, 2017.<br/>
+      Last updated on Sep 15, 2017.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
     </p>
   </div>
