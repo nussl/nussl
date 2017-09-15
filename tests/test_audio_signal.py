@@ -327,12 +327,12 @@ class AudioSignalUnitTests(unittest.TestCase):
         signal = nussl.AudioSignal(path_to_input_file=input_file_name)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
-        assert (signal_stft.shape[2] == 2)
+        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX] == 2)
 
         signal.to_mono(overwrite=True)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
-        assert (signal_stft.shape[2] == 1)
+        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX]== 1)
 
     def test_stft(self):
         """

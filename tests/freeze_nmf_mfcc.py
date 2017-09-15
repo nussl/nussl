@@ -5,7 +5,9 @@ import numpy as np
 import nussl
 import os
 
-#Freeze key NMF MFCC values to the benchmark folder
+
+# Freezes essential values from NMF MFCC in its current implementation for benchmarking
+# See test_benchmark_nmf_mfcc() in test_nmf_mfcc.py for usage
 def main():
     path_to_benchmark_file = os.path.join('..', 'Input', 'piano_and_synth_arp_chord_mono.wav')
     signal = nussl.AudioSignal(path_to_benchmark_file)
