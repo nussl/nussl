@@ -21,12 +21,14 @@ class NMFMFCCUnitTests(unittest.TestCase):
             benchmark_dict[key] = value
         return benchmark_dict
 
-    def test_mfcc_initialization(self):
+    def test_nmf_mfcc_initialization(self):
+        # Test initializing the MFCC range
+
         # Load input file
         input_file_name = os.path.join('..', 'input', 'piano_and_synth_arp_chord_mono.wav')
         signal = nussl.AudioSignal(path_to_input_file=input_file_name)
 
-        # Set up NMMF MFCC using an int
+        # Set up the max of the MFCC range by only using an int
         nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, mfcc_range=5, num_iterations=5)
         assert nmf_mfcc.mfcc_start == 1
         assert nmf_mfcc.mfcc_end == 5
@@ -34,12 +36,12 @@ class NMFMFCCUnitTests(unittest.TestCase):
         nmf_mfcc.run()
         sources = nmf_mfcc.make_audio_signals()
 
-        # Using a list
+        # Set up the MFCC range by using a list [min, max]
         nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, mfcc_range=[3, 15], num_iterations=5)
         assert nmf_mfcc.mfcc_start == 3
         assert nmf_mfcc.mfcc_end == 15
 
-        # Using a tuple
+        # Set up the MFCC range by using a tuple (min, max)
         nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, mfcc_range=(2, 14), num_iterations=5)
         assert nmf_mfcc.mfcc_start == 2
         assert nmf_mfcc.mfcc_end == 14
@@ -97,9 +99,6 @@ class NMFMFCCUnitTests(unittest.TestCase):
         # and run
         nmf_mfcc.run()
         sources = nmf_mfcc.make_audio_signals()
-        for i, source in enumerate(sources):
-            output_file_name = str(i) + '.wav'
-            source.write_audio_to_file(output_file_name)
 
     def test_piano_and_synth_stereo(self):
         # Load input file
@@ -111,9 +110,6 @@ class NMFMFCCUnitTests(unittest.TestCase):
         # and run
         nmf_mfcc.run()
         sources = nmf_mfcc.make_audio_signals()
-        for i, source in enumerate(sources):
-            output_file_name = str(i) + '.wav'
-            source.write_audio_to_file(output_file_name)
 
     def test_piano_and_synth_stereo_to_mono(self):
         # Load input file
@@ -126,9 +122,6 @@ class NMFMFCCUnitTests(unittest.TestCase):
         # and run
         nmf_mfcc.run()
         sources = nmf_mfcc.make_audio_signals()
-        for i, source in enumerate(sources):
-            output_file_name = str(i) + '.wav'
-            source.write_audio_to_file(output_file_name)
 
     def benchmark_nmf_mfcc(self):
         # Load input file
@@ -137,16 +130,19 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
         # Set up NMMF MFCC
         nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, distance_measure="euclidean",
-                                  num_iterations=150, random_seed=0)
+                                  num_iterations=100, random_seed=0)
         # and run
         nmf_mfcc.run()
 
-        benchmark_labeled_templates = np.load(os.path.join('nmf_mfcc_reference', 'test', 'benchmark_labeled_templates.npy'))
-        benchmark_masks = np.load(os.path.join('nmf_mfcc_reference', 'test', 'benchmark_masks.npy'))
+        benchmark_labeled_templates = np.load(os.path.join('nmf_mfcc_reference', 'nmf_mfcc_benchmarks',
+                                                           'benchmark_labeled_templates.npy'))
+        benchmark_masks = np.load(os.path.join('nmf_mfcc_reference', 'nmf_mfcc_benchmarks', 'benchmark_masks.npy'))
 
         nmf_mfcc.make_audio_signals()
-        benchmark_sources = np.load(os.path.join('nmf_mfcc_reference', 'test', 'benchmark_sources.npy'))
+        benchmark_sources = np.load(os.path.join('nmf_mfcc_reference', 'nmf_mfcc_benchmarks', 'benchmark_sources.npy'))
 
         assert np.all(benchmark_labeled_templates == nmf_mfcc.labeled_templates)
         assert np.all(benchmark_masks == nmf_mfcc.masks)
-        assert np.all(benchmark_sources == nmf_mfcc.sources)
+        for i in range(nmf_mfcc.num_sources):
+            assert np.all(benchmark_sources[i].audio_data == nmf_mfcc.sources[i].audio_data)
+        assert all(benchmark_sources[i] == nmf_mfcc.sources[i] for i in range(len(nmf_mfcc.sources)))
