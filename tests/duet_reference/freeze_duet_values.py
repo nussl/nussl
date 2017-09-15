@@ -14,7 +14,7 @@ import warnings
 # Freezes essential values from DUET in its current implementation for benchmarking
 # See test_benchmark_duet() in test_duet.py for usage
 def freeze_duet_values():
-    signal = nussl.AudioSignal(os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav'))
+    signal = nussl.AudioSignal(os.path.join('..', 'input', 'dev1_female3_inst_mix.wav'))
     duet = nussl.Duet(signal, 3)
     output_folder = os.path.abspath('duet_reference/duet_benchmarks')
 

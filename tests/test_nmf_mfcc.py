@@ -9,7 +9,7 @@ import os
 class NMFMFCCUnitTests(unittest.TestCase):
 
     # Update this if the benchmark file changes and rerun freeze_duet_values() (below)
-    path_to_benchmark_file = os.path.join('..', 'Input', 'piano_and_synth_arp_chord_mono.wav')
+    path_to_benchmark_file = os.path.join('..', 'input', 'piano_and_synth_arp_chord_mono.wav')
 
     def load_benchmarks(self):
         benchmark_dict = {}
@@ -85,20 +85,19 @@ class NMFMFCCUnitTests(unittest.TestCase):
         nmf_mfcc.run()
         sources = nmf_mfcc.make_audio_signals()
 
-        for i, source in enumerate(sources):
-            output_file_name = str(i) + '.wav'
-            source.write_audio_to_file(output_file_name)
-
     def test_piano_and_synth(self):
         # Load input file
         input_file_name = os.path.join('..', 'input', 'piano_and_synth_arp_chord_mono.wav')
         signal = nussl.AudioSignal(path_to_input_file=input_file_name)
 
         # Set up NMMF MFCC
-        nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, num_iterations=50, random_seed=0)
+        nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, num_iterations=10, random_seed=0)
         # and run
         nmf_mfcc.run()
         sources = nmf_mfcc.make_audio_signals()
+        for i, source in enumerate(sources):
+            output_file_name = str(i) + '.wav'
+            source.write_audio_to_file(output_file_name)
 
     def test_piano_and_synth_stereo(self):
         # Load input file
@@ -130,19 +129,19 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
         # Set up NMMF MFCC
         nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, distance_measure="euclidean",
-                                  num_iterations=100, random_seed=0)
+                                  num_iterations=10, random_seed=0)
         # and run
         nmf_mfcc.run()
 
-        benchmark_labeled_templates = np.load(os.path.join('nmf_mfcc_reference', 'nmf_mfcc_benchmarks',
+        benchmark_labeled_templates = np.load(os.path.join('nmf_mfcc_reference', 'new',
                                                            'benchmark_labeled_templates.npy'))
-        benchmark_masks = np.load(os.path.join('nmf_mfcc_reference', 'nmf_mfcc_benchmarks', 'benchmark_masks.npy'))
+        benchmark_masks = np.load(os.path.join('nmf_mfcc_reference', 'new', 'benchmark_masks.npy'))
 
         nmf_mfcc.make_audio_signals()
-        benchmark_sources = np.load(os.path.join('nmf_mfcc_reference', 'nmf_mfcc_benchmarks', 'benchmark_sources.npy'))
+        for source in nmf_mfcc.sources:
+            source.path_to_input_file = ''
+        benchmark_sources = np.load(os.path.join('nmf_mfcc_reference', 'new', 'benchmark_sources.npy'))
 
+        assert np.all(benchmark_sources == nmf_mfcc.sources)
         assert np.all(benchmark_labeled_templates == nmf_mfcc.labeled_templates)
-        assert np.all(benchmark_masks == nmf_mfcc.masks)
-        for i in range(nmf_mfcc.num_sources):
-            assert np.all(benchmark_sources[i].audio_data == nmf_mfcc.sources[i].audio_data)
-        assert all(benchmark_sources[i] == nmf_mfcc.sources[i] for i in range(len(nmf_mfcc.sources)))
+        assert np.all(benchmark_masks == nmf_mfcc.result_masks)

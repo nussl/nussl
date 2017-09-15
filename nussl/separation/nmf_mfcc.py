@@ -173,9 +173,10 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         """
         self.result_masks = []
         self.audio_signal.stft_params = self.stft_params
+        self.audio_signal.stft()
 
-        for i in range(self.audio_signal.num_channels):
-            channel_stft = self.audio_signal.get_magnitude_spectrogram_channel(i)
+        for ch in range(self.audio_signal.num_channels):
+            channel_stft = self.audio_signal.get_magnitude_spectrogram_channel(ch)
 
             # Set up NMF and run
             nmf = transformer_nmf.TransformerNMF(input_matrix=channel_stft, num_components=self.num_templates,
@@ -192,12 +193,12 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             self.labeled_templates = self.clusterer.labels_
 
             # Extract sources from signal
-            channel_masks = self._extract_masks(channel_stft, channel_templates_matrix, channel_activation_matrix)
+            channel_masks = self._extract_masks(channel_templates_matrix, channel_activation_matrix, ch)
             self.result_masks.append(channel_masks)
 
         return self.result_masks
 
-    def _extract_masks(self, templates_matrix, activation_matrix):
+    def _extract_masks(self, templates_matrix, activation_matrix, ch):
         """ Creates binary masks from clustered templates and activation matrices
 
         Parameters:
@@ -226,7 +227,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
                 activation_mask[i, :] = 0 if i in source_indices else activation_matrix[i, :]
 
             mask_matrix = templates_mask.dot(activation_mask)
-            music_stft_max = np.maximum(mask_matrix, np.abs(signal_stft))
+            music_stft_max = np.maximum(mask_matrix, np.abs(self.audio_signal.get_stft_channel(ch)))
             mask_matrix = np.divide(mask_matrix, music_stft_max)
             mask = np.nan_to_num(mask_matrix)
 
