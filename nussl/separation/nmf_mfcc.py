@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
+
 import numpy as np
 import sklearn.cluster
 import librosa
-import nussl.audio_signal
-import nussl.constants
-import nussl.spectral_utils
-import nussl.utils
+
 from nussl.transformers import transformer_nmf
-from nussl.separation import separation_base
 import mask_separation_base
 import masks
 
@@ -101,8 +99,8 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             nmf_mfcc =  nussl.NMF_MFCC(signal, num_sources=2, kmeans_kwargs=kmeans_kwargs)
 
         """
-    def __init__(self, input_audio_signal, num_sources, num_templates=50,  num_iterations=50, random_seed=None,
-                 distance_measure=transformer_nmf.TransformerNMF.EUCLIDEAN, kmeans_kwargs=None, convert_to_mono=False,
+    def __init__(self, input_audio_signal, num_sources, num_templates=50, num_iterations=50, random_seed=None,
+                 distance_measure=transformer_nmf.TransformerNMF.EUCLIDEAN, kmeans_kwargs=None, to_mono=False,
                  mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK, mfcc_range=(1, 14), n_mfcc=20):
         super(NMF_MFCC, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
 
@@ -119,8 +117,8 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         self.sources = []
 
         # Convert the stereo signal to mono if indicated
-        if convert_to_mono:
-            self.audio_signal.to_mono(overwrite=True, remove_channels=False)
+        if to_mono:
+            self.audio_signal.to_mono(overwrite=True)
 
         # Set the MFCC range
         if isinstance(mfcc_range, int) and mfcc_range < n_mfcc:
@@ -149,7 +147,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         order corresponding to the sources, but they are in the same order for each channel.
 
         Returns:
-            result_masks (:obj:`list`): A list of :obj:`MaskBase`-derived objects for each source.
+            result_masks (list): A list of :obj:`MaskBase`-derived objects for each source.
             (to get a list of :obj:`AudioSignal`-derived objects run :func:`make_audio_signals`)
 
         Example:
@@ -171,11 +169,12 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
                 output_file_name = str(i) + '.wav'
                 source.write_audio_to_file(output_file_name)
         """
-        self.result_masks = []
         self.audio_signal.stft_params = self.stft_params
         self.audio_signal.stft()
 
-        for ch in range(self.audio_signal.num_channels):
+        uncollated_masks = []
+        n_chan = self.audio_signal.num_channels
+        for ch in range(n_chan):
             channel_stft = self.audio_signal.get_magnitude_spectrogram_channel(ch)
 
             # Set up NMF and run
@@ -193,8 +192,23 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             self.labeled_templates = self.clusterer.labels_
 
             # Extract sources from signal
-            channel_masks = self._extract_masks(channel_templates_matrix, channel_activation_matrix, ch)
-            self.result_masks.append(channel_masks)
+            uncollated_masks += self._extract_masks(channel_templates_matrix, channel_activation_matrix, ch)
+
+        # Reorder mask arrays so that the channels are collated correctly (this allows for multichannel signals)
+        collated_masks = [np.dstack([uncollated_masks[ch + s * n_chan] for ch in range(n_chan)])
+                          for s in range(self.num_sources)]
+
+        # Put each numpy array mask into a MaskBase object
+        self.result_masks = []
+        for mask in collated_masks:
+            if self.mask_type == self.BINARY_MASK:
+                mask = np.round(mask)
+                mask_object = masks.BinaryMask(mask)
+            elif self.mask_type == self.SOFT_MASK:
+                mask_object = masks.SoftMask(mask)
+            else:
+                raise ValueError('Unknown mask type {}!'.format(self.mask_type))
+            self.result_masks.append(mask_object)
 
         return self.result_masks
 
@@ -214,7 +228,6 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         if self.audio_signal.stft_data is None:
             raise ValueError('Cannot extract masks with no signal_stft data')
 
-        self.sources = []
         channel_mask_list = []
         for source_index in range(self.num_sources):
             source_indices = np.where(self.labeled_templates == source_index)[0]
@@ -231,12 +244,8 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             mask_matrix = np.divide(mask_matrix, music_stft_max)
             mask = np.nan_to_num(mask_matrix)
 
-            if self.mask_type == self.BINARY_MASK:
-                mask = np.round(mask)
-                mask_object = masks.BinaryMask(np.array(mask))
-            else:
-                mask_object = masks.SoftMask(np.array(mask))
-            channel_mask_list.append(mask_object)
+            channel_mask_list.append(mask)
+
         return channel_mask_list
 
     def make_audio_signals(self):
@@ -246,13 +255,12 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             self.sources (np.array): An array of audio_signal objects containing each separated source
         """
         self.sources = []
-        for i in range(self.audio_signal.num_channels):
-            channel_mask = self.result_masks[i]
-            for j in range(self.num_sources):
-                channel_stft = self.audio_signal.get_stft_channel(i)
-                source = self.audio_signal.make_copy_with_stft_data(channel_stft, verbose=False)
-                source = source.apply_mask(channel_mask[j])
-                source.stft_params = self.stft_params
-                source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
-                self.sources.append(source)
+        for mask in self.result_masks:
+
+            source = copy.deepcopy(self.audio_signal)
+            source = source.apply_mask(mask)
+            source.stft_params = self.stft_params
+            source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
+            self.sources.append(source)
+
         return self.sources

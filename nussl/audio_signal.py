@@ -152,6 +152,26 @@ class AudioSignal(object):
         return None
 
     @property
+    def is_mono(self):
+        """
+        PROPERTY
+        Returns:
+            (bool): Whether or not this signal is mono (i.e., has exactly `one` channel).
+
+        """
+        return self.num_channels == 1
+
+    @property
+    def is_stereo(self):
+        """
+        PROPERTY
+        Returns:
+            (bool): Whether or not this signal is stereo (i.e., has exactly `two` channels).
+
+        """
+        return self.num_channels == 2
+
+    @property
     def audio_data(self):
         """ (:obj:`np.ndarray`): Real-valued, uncompressed, time-domain representation of the audio.
             2D numpy array with shape `(n_channels, n_samples)`.
@@ -1311,23 +1331,22 @@ class AudioSignal(object):
         # np.array helps with duck typing
         return utils._get_axis(np.array(self.magnitude_spectrogram_data), constants.STFT_CHAN_INDEX, n)
 
-    def to_mono(self, overwrite=False, remove_channels=True):
+    def to_mono(self, overwrite=False, keep_dims=True):
         """ Converts :attr:`audio_data` to mono by averaging every sample.
 
         Warning:
             If overwrite=True (default) this will overwrite any data in :attr:`audio_data`!
 
         Args:
-            overwrite (bool, optional): If ``True`` this function will overwrite :attr:`audio_data`.
-            remove_channels (bool, optional): If ``True`` this function will remove the channel index axis.
+            overwrite (bool): If `True` this function will overwrite :attr:`audio_data`.
+            keep_dims (bool): If `True` this function will return a 1D array,
+            else will return array with shape `(1, n_samples)`.
         Returns:
             (:obj:`np.array`): Mono-ed version of :attr:`audio_data`.
 
         """
-        if remove_channels:
-            mono = np.mean(self.audio_data, axis=constants.CHAN_INDEX)
-        else:
-            mono = np.mean(self.audio_data, axis=constants.CHAN_INDEX, keepdims=True)
+        mono = np.mean(self.audio_data, axis=constants.CHAN_INDEX, keepdims=keep_dims)
+
         if overwrite:
             self.audio_data = mono
         return mono
