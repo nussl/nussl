@@ -14,8 +14,8 @@ def main():
         os.mkdir(os.path.join('..', 'Output/'))
 
     # Set up NMMF MFCC
-    nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, distance_measure="euclidean",
-                              num_iterations=10, random_seed=0)
+    nmf_mfcc = nussl.NMF_MFCC(signal, num_sources=2, num_templates=6, num_iterations=10, random_seed=0,
+                              distance_measure="euclidean")
     # and run
     nmf_mfcc.run()
     sources = nmf_mfcc.make_audio_signals()
