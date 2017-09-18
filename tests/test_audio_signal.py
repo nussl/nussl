@@ -319,6 +319,24 @@ class AudioSignalUnitTests(unittest.TestCase):
         assert (sig2.num_channels == 1)
         assert (np.allclose([0.0] * len(sig2), sig2.audio_data))
 
+    def test_to_mono_channel_dimension(self):
+        """
+        Test functionality and correctness of AudioSignal.to_mono() function.
+        Returns:
+
+        """
+        # Load input file
+        input_file_name = os.path.join('..', 'input', 'piano_and_synth_arp_chord_stereo.wav')
+        signal = nussl.AudioSignal(path_to_input_file=input_file_name)
+        signal.stft_params = signal.stft_params
+        signal_stft = signal.stft()
+        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX] == 2)
+
+        signal.to_mono(overwrite=True)
+        signal.stft_params = signal.stft_params
+        signal_stft = signal.stft()
+        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX]== 1)
+
     def test_stft(self):
         """
         Test some basic functionality of the STFT interface for the AudioSignal object

@@ -116,9 +116,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         """ Extracts N sources from a given stereo audio mixture (N sources captured via 2 sensors)
 
         Returns:
-            source_estimates (np.array): an N-row matrix containing time-domain estimates of sources
-            atn_delay_est (np.array): N by 2 Numpy matrix containing estimated attenuation and delay values
-              corresponding to N sources
+            computed_masks (np.array): A list of binary mask objects that can be used to extract the sources
 
         Example:
         .. code-block:: python

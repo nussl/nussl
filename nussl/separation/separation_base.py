@@ -218,9 +218,9 @@ class SeparationBaseDecoder(json.JSONDecoder):
     def _json_separation_decoder(self, json_dict):
         """
         Helper method for :class:`SeparationBaseDecoder`. Don't you worry your pretty little head about this.
-        
+
         NEVER CALL THIS DIRECTLY!!
-        
+
         Args:
             json_dict (dict): JSON dictionary provided by `object_hook`
 

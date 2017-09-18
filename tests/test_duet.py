@@ -194,3 +194,10 @@ class DuetUnitTests(unittest.TestCase):
 
         # Check to see if AudioSignal's API changed; do we need to refreeze?
         assert all(benchmark_final_signals[i] == final_signals[i] for i in range(len(final_signals)))
+
+        assert np.all(benchmark_final_signals == final_signals)
+
+        # test_smooth_matrix
+
+        # TODO: fix this function before writing test for it
+
