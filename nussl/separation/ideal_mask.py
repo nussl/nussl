@@ -91,7 +91,7 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         if self.audio_signal.num_channels != self.sources[0].num_channels:
             raise ValueError('input_audio_signal must have the same number of channels as entries of sources_list!')
 
-        self.estimated_masks = None
+        self.result_masks = None
         self.estimated_sources = None
         self.use_librosa_stft = use_librosa_stft
 
@@ -135,7 +135,7 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
         """
         self._compute_spectrograms()
-        self.estimated_masks = []
+        self.result_masks = []
 
         for source in self.sources:
             if self.mask_type == self.BINARY_MASK:
@@ -154,9 +154,9 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
             else:
                 raise RuntimeError('Unknown mask type: {}'.format(self.mask_type))
 
-            self.estimated_masks.append(mask)
+            self.result_masks.append(mask)
 
-        return self.estimated_masks
+        return self.result_masks
 
     @property
     def residual(self):
@@ -176,7 +176,7 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
             * Exception if there was an unforeseen issue.
 
         """
-        if self.estimated_masks is None:
+        if self.result_masks is None:
             raise ValueError('Cannot calculate residual prior to running algorithm!')
 
         if self.estimated_sources is None:
@@ -220,12 +220,12 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
             ideal_drums, ideal_flute = ideal_mask.make_audio_signals()
             
         """
-        if self.estimated_masks is None or self.audio_signal.stft_data.size <= 0:
+        if self.result_masks is None or self.audio_signal.stft_data.size <= 0:
             raise ValueError('Cannot make audio signals prior to running algorithm!')
 
         self.estimated_sources = []
 
-        for cur_mask in self.estimated_masks:
+        for cur_mask in self.result_masks:
             estimated_stft = np.multiply(cur_mask.mask, self.audio_signal.stft_data)
             new_signal = self.audio_signal.make_copy_with_stft_data(estimated_stft, verbose=False)
             new_signal.istft(self.stft_params.window_length, self.stft_params.hop_length,

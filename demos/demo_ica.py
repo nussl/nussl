@@ -13,7 +13,7 @@ import nussl
 
 def main():
     """
-    This demo is adopted from the sklearn BSS using ICA demo:
+    This demo is adopted from the sklearn "BSS using FastICA" demo:
     http://scikit-learn.org/stable/auto_examples/decomposition/plot_ica_blind_source_separation.html
 
     """
@@ -31,8 +31,8 @@ def main():
     full_signal += 0.2 * np.random.normal(size=full_signal.shape)  # Add noise
     full_signal /= full_signal.std(axis=0)  # Standardize data
 
-    # plt.plot(full_signal)
-    # plt.show()
+    plt.plot(full_signal)
+    plt.show()
 
     # Mix data
     mixing_matrix = np.array([[1, 1, 1], [0.5, 2, 1.0], [1.5, 1.0, 2.0]])  # Mixing matrix
@@ -40,18 +40,12 @@ def main():
     plt.plot(generated_observations)
     plt.show()
 
-    observations = []
-    for i in range(generated_observations.shape[1]):
-        observations.append(nussl.AudioSignal(audio_data_array=generated_observations[:, i], sample_rate = 44100))
-
-    observations = nussl.ICA.transform_observations_to_audio_signal(observations)
-
-    ica = nussl.ICA(input_audio_signal=observations)
+    ica = nussl.ICA(observations_list=generated_observations)
     ica.run()
     sources = ica.make_audio_signals()
     estimated = []
-    for i,s in enumerate(sources):
-        s.write_audio_to_file('output/ICA %d.wav' % i)
+    for i, s in enumerate(sources):
+        s.write_audio_to_file('output/ica_src{}.wav'.format(i))
         estimated.append(s.get_channel(0))
 
     estimated = np.vstack(estimated).T
@@ -59,7 +53,7 @@ def main():
     plt.plot(estimated)
     plt.show()
 
-    assert np.allclose(generated_observations, np.dot(estimated, ica.mixing.T) + ica.mean)
+    assert np.allclose(generated_observations, np.dot(estimated, ica.estimated_mixing_params.T) + ica.mean)
 
 if __name__ == '__main__':
     main()

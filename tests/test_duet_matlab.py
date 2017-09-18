@@ -16,16 +16,8 @@ import os
 import warnings
 
 
-# import sys
-# sys.path.insert(1, 'C:\\Users\\danielfelixkim\\Documents\\GitHub\\InteractiveAudioLab\\nussl\\nussl')
-
+@unittest.skip("Pretty sure these tests never worked -- Keeping for posterity")
 class DuetUnitTests(unittest.TestCase):
-    # def test_setup(self):
-    #     input_file_name = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
-    #     signal = nussl.AudioSignal(path_to_input_file=input_file_name)
-
-    #     duet = nussl.Duet(signal, 3)
-    #     duet.run()
 
     def test_duet_outputs(self):
         input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
@@ -33,8 +25,8 @@ class DuetUnitTests(unittest.TestCase):
         refact_duet = nussl.Duet(signal, num_sources=3)
         refact_duet_result = refact_duet.run()
         duet = nussl.Duet(signal, 3)
-        nussel_duet_result = duet.run()
-        assert refact_duet_result == nussel_duet_result
+        nussl_duet_result = duet.run()
+        assert refact_duet_result == nussl_duet_result
 
     @staticmethod
     def _load_matlab_results():

@@ -31,7 +31,7 @@ def simple_example():
     print('{0:.3f} seconds for NUSSL'.format(time.time() - start))
 
     print('Original mixture =\n {}'.format(mixture))
-    print('NMF Reconstructed mixture =\n {}'.format(np.dot(nmf.templates, nmf.activation_matrix)))
+    print('NMF Reconstructed mixture =\n {}'.format(np.dot(nmf.template_dictionary, nmf.activation_matrix)))
 
 
 if __name__ == '__main__':

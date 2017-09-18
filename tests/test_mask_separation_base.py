@@ -41,12 +41,12 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.BINARY_MASK
 
-        mask_type = nussl.BinaryMask
+        mask_type = nussl.separation.BinaryMask
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.BINARY_MASK
 
         # with self.assertRaises(warnings.warn):
-        mask_type = nussl.BinaryMask(np.zeros(shape=(512, 1024)))
+        mask_type = nussl.separation.BinaryMask(np.zeros(shape=(512, 1024)))
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.BINARY_MASK
 
@@ -54,12 +54,12 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.SOFT_MASK
 
-        mask_type = nussl.SoftMask
+        mask_type = nussl.separation.SoftMask
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.SOFT_MASK
 
         # with self.assertRaises(warnings.warn):
-        mask_type = nussl.SoftMask(np.zeros(shape=(512, 1024)))
+        mask_type = nussl.separation.SoftMask(np.zeros(shape=(512, 1024)))
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.SOFT_MASK
 
@@ -71,7 +71,7 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
 
         """
         sig = nussl.AudioSignal()
-        mask_separator = nussl.MaskSeparationBase(sig, nussl.BinaryMask)
+        mask_separator = nussl.MaskSeparationBase(sig, nussl.separation.BinaryMask)
         with self.assertRaises(NotImplementedError):
             mask_separator.run()
 
@@ -88,7 +88,7 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
 
         """
         sig = nussl.AudioSignal()
-        mask_separator = nussl.MaskSeparationBase(sig, nussl.BinaryMask)
+        mask_separator = nussl.MaskSeparationBase(sig, nussl.separation.BinaryMask)
 
         mask_json = mask_separator.to_json()
 

@@ -5,10 +5,7 @@ from __future__ import division
 import unittest
 import nussl
 import numpy as np
-import scipy.io.wavfile as wav
-import scipy.io
 import os
-import warnings
 
 
 class DuetUnitTests(unittest.TestCase):
@@ -21,7 +18,8 @@ class DuetUnitTests(unittest.TestCase):
         # Call benchmarks
         self.benchmark_dict = self.load_benchmarks()
 
-    def load_benchmarks(self):
+    @staticmethod
+    def load_benchmarks():
         benchmark_dict = {}
         directory = 'duet_reference/duet_benchmarks'
         for filename in os.listdir(directory):
@@ -43,18 +41,17 @@ class DuetUnitTests(unittest.TestCase):
         duet.audio_signal = nussl.AudioSignal(path_to_benchmark_file)
         duet_masks = duet.run()
         for i in range(len(duet_masks)):
-            assert np.all(benchmark_mask[i].mask == duet_masks[i].mask)
+            assert np.array_equal(benchmark_mask[i].mask, duet_masks[i].mask)
 
     def test_duet_final_outputs(self):
-        #Test final outputs
+        # Test final outputs
         mask_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_masks.npy')
         benchmark_mask = np.load(mask_path)
 
         duet = nussl.Duet(self.signal, 3)
         duet_masks = duet.run()
         for i in range(len(duet_masks)):
-            assert np.all(benchmark_mask[i].mask == duet_masks[i].mask)
-
+            assert np.array_equal(benchmark_mask[i].mask, duet_masks[i].mask)
 
     def test_compute_spectrogram_1_channel(self):
         # Test with one channel, should throw value error
@@ -69,9 +66,9 @@ class DuetUnitTests(unittest.TestCase):
         # Load Duet values to benchmark against
         duet = nussl.Duet(self.signal, 3)
         duet_sft0, duet_sft1, duet_wmat = duet._compute_spectrogram(duet.sample_rate)
-        assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch0']) == duet_sft0)
-        assert np.all(np.array(self.benchmark_dict['benchmark_stft_ch1']) == duet_sft1)
-        assert np.all(np.array(self.benchmark_dict['benchmark_wmat']) == duet_wmat)
+        assert np.allclose(self.benchmark_dict['benchmark_stft_ch0'], duet_sft0)
+        assert np.allclose(self.benchmark_dict['benchmark_stft_ch1'], duet_sft1)
+        assert np.allclose(self.benchmark_dict['benchmark_wmat'], duet_wmat)
 
     def test_compute_atn_delay(self):
         # Use the same stfts for comparing the two functions' outputs
@@ -82,8 +79,8 @@ class DuetUnitTests(unittest.TestCase):
 
         symmetric_atn, delay = duet._compute_atn_delay(duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix)
 
-        assert np.all(np.array(self.benchmark_dict['benchmark_sym_atn']) == symmetric_atn)
-        assert np.all(np.array(self.benchmark_dict['benchmark_delay']) == delay)
+        assert np.allclose(self.benchmark_dict['benchmark_sym_atn'], symmetric_atn)
+        assert np.allclose(self.benchmark_dict['benchmark_delay'], delay)
 
     def test_make_histogram(self):
         # Use the same stfts for comparing this function's outputs
@@ -104,7 +101,7 @@ class DuetUnitTests(unittest.TestCase):
 
         hist, atn_bins, delay_bins = duet._make_histogram()
 
-        assert np.all(benchmark_hist == hist)
+        assert np.allclose(benchmark_hist, hist)
         assert np.all(benchmark_atn_bins == atn_bins)
         assert np.all(benchmark_delay_bins == delay_bins)
 
@@ -170,7 +167,7 @@ class DuetUnitTests(unittest.TestCase):
 
         masks = duet._compute_masks()
         for i in range(len(masks)):
-            assert np.all(benchmark_mask[i].mask == masks[i].mask)
+            assert np.array_equal(benchmark_mask[i].mask, masks[i].mask)
 
     def test_make_audio_signals(self):
         duet = nussl.Duet(self.signal, 3)
@@ -184,7 +181,7 @@ class DuetUnitTests(unittest.TestCase):
         duet.peak_indices = self.benchmark_dict['benchmark_peak_indices']
         duet.delay_peak = self.benchmark_dict['benchmark_delay_peak']
         duet.atn_peak = self.benchmark_dict['benchmark_atn_peak']
-        duet.masks = self.benchmark_dict['benchmark_masks']
+        duet.result_masks = self.benchmark_dict['benchmark_masks']
 
         final_signals_path = os.path.join('duet_reference', 'duet_benchmarks', 'benchmark_final_signals.npy')
         benchmark_final_signals = np.load(final_signals_path)
@@ -204,5 +201,3 @@ class DuetUnitTests(unittest.TestCase):
 
         # TODO: fix this function before writing test for it
 
-if __name__ == '__main__':
-    unittest.main()
