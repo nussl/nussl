@@ -34,6 +34,7 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
 
     """
 
+    # noinspection PyProtectedMember
     mixture_list = nussl.utils._verify_audio_signal_list_lax(mixture_list)
     assert issubclass(separation_object, nussl.separation.SeparationBase), 'Expected a SeparationBase derived class!'
     assert issubclass(evaluation_object, evaluation_base.EvaluationBase), 'Expected an EvaluationBase derived class!'
@@ -79,7 +80,9 @@ def run_and_eval_prf(separation_list, separation_kwargs,
     Returns:
 
     """
+    # noinspection PyProtectedMember
     mixture_list = nussl.utils._verify_audio_signal_list_lax(mixture_list)
+    # noinspection PyProtectedMember
     separation_list = nussl.utils._verify_mask_separation_list(separation_list)
 
     scores = {}

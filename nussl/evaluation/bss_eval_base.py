@@ -27,7 +27,9 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
     SDR = 'SDR'
     SIR = 'SIR'
     SAR = 'SAR'
+    ISR = 'ISR'
     PERMUTATION = 'permutation'
+    RAW_VALUES = 'raw_values'
 
     def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, algorithm_name=None,
                  do_mono=False, compute_permutation=True):
@@ -42,7 +44,7 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
             self._algorithm_name = algorithm_name
 
         self.compute_permutation = compute_permutation
-        self.mir_eval_func = None
+        self._mir_eval_func = None
 
     @property
     def algorithm_name(self):
@@ -65,6 +67,7 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
         Returns:
 
         """
+        # TODO: This might be obsolete
         if self.estimated_sources_list is None:
             raise ValueError('Must set estimated_sources first!')
         estimated_lengths = [x.signal_length for x in self.estimated_sources_list]
@@ -81,10 +84,8 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
         Returns:
 
         """
-        estimated_source_array = np.swapaxes(np.stack([np.copy(x.audio_data) for x in self.true_sources_list],
-                                                      axis=-1), 0, -1)
-        reference_source_array = np.swapaxes(np.stack([np.copy(x.audio_data) for x in self.estimated_sources_list],
-                                                      axis=-1), 0, -1)
+        estimated_source_array = np.vstack([np.copy(x.audio_data) for x in self.true_sources_list])
+        reference_source_array = np.vstack([np.copy(x.audio_data) for x in self.estimated_sources_list])
 
         return reference_source_array, estimated_source_array
 
@@ -97,26 +98,25 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
         self.validate()
         reference, estimated = self._preprocess_sources()
 
-        if self.mir_eval_func is None:
+        if self._mir_eval_func is None:
             raise NotImplementedError('Cannot call base class! Try calling BSSEvalSources or BSSEvalImages')
 
-        sdr, sir, sar, perm = self.mir_eval_func(reference, estimated, compute_permutation=self.compute_permutation)
+        bss_output = self._mir_eval_func(reference, estimated, compute_permutation=self.compute_permutation)
 
-        self._populate_scores_dict(sdr, sir, sar, perm)
+        self._populate_scores_dict(bss_output)
 
-    def _populate_scores_dict(self, sdr_list, sir_list, sar_list, perm):
-        # TODO: Standardize scores dict!
+        return self.scores
 
-        for i, label in enumerate(self.source_labels):
-            self.scores[self.algorithm_name][label]['Sources'] = {}
+    def _populate_scores_dict(self, bss_output):
+        """
+        Populates the scores dict from the
+        Args:
+            bss_output:
 
-            dict_ = self.scores[self.algorithm_name][label]['Sources']
+        Returns:
 
-            dict_[self.SDR] = sdr_list.tolist()[i]
-            dict_[self.SIR] = sir_list.tolist()[i]
-            dict_[self.SAR] = sar_list.tolist()[i]
+        """
 
-        self.scores[self.algorithm_name][self.PERMUTATION] = perm.tolist()
 
     # def bss_eval_sources_framewise(self):
     #     """
