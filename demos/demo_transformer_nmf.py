@@ -31,15 +31,15 @@ def simple_nmf():
     mixture[:n/3, n/3:] = 1
 
     # Set up NMF
-    n_iter = 10
-    nmf = nussl.TransformerNMF(mixture, num_components=num_lines*3, max_num_iterations=n_iter,
+    n_iter = 50
+    nmf = nussl.TransformerNMF(mixture, num_components=3, max_num_iterations=n_iter,
                                distance_measure=nussl.TransformerNMF.KL_DIVERGENCE, seed=0)
 
     # run  NMF
     nmf.transform()
 
     output_path = os.path.abspath(os.path.join('Output', 'simple_nmf.png'))
-    nmf.plot(output_file=output_path, matrix_to_db=False)
+    nmf.plot(output_file=output_path, matrix_to_dB=False)
 
 
 if __name__ == '__main__':

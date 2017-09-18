@@ -34,15 +34,15 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
 
     """
 
+    # noinspection PyProtectedMember
     mixture_list = nussl.utils._verify_audio_signal_list_lax(mixture_list)
     assert issubclass(separation_object, nussl.separation.SeparationBase), 'Expected a SeparationBase derived class!'
     assert issubclass(evaluation_object, evaluation_base.EvaluationBase), 'Expected an EvaluationBase derived class!'
 
-    # is_prf = issubclass(evaluation_object, nussl.PrecisionRecallFScore)
-
     scores = {}
     for i, mixture in enumerate(mixture_list):
 
+        # noinspection PyProtectedMember
         true_sources_list = nussl.utils._verify_audio_signal_list_strict(true_sources_list_of_lists[i])
 
         assert mixture.signal_length == true_sources_list[0].signal_length, \
@@ -80,13 +80,16 @@ def run_and_eval_prf(separation_list, separation_kwargs,
     Returns:
 
     """
+    # noinspection PyProtectedMember
     mixture_list = nussl.utils._verify_audio_signal_list_lax(mixture_list)
+    # noinspection PyProtectedMember
     separation_list = nussl.utils._verify_mask_separation_list(separation_list)
 
     scores = {}
     for separation_object in separation_list:
         for i, mixture in enumerate(mixture_list):
 
+            # noinspection PyProtectedMember
             true_sources_list = nussl.utils._verify_audio_signal_list_strict(true_sources_list_of_lists[i])
 
             if mixture.signal_length != true_sources_list[0].signal_length:

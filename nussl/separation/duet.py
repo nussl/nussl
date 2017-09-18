@@ -79,7 +79,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
         super(Duet, self).__init__(input_audio_signal=input_audio_signal,
                                    mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK)
 
-        if self.audio_signal.num_channels != 2:
+        if not self.audio_signal.is_stereo:
             raise ValueError('Duet requires that the input_audio_signal has exactly 2 channels!')
 
         self.num_sources = num_sources
@@ -94,7 +94,6 @@ class Duet(mask_separation_base.MaskSeparationBase):
         self.delay_min_distance = delay_min_distance
         self.p = p
         self.q = q
-        self.masks = []
         self.final_sources = []
 
         self.stft_ch0 = None
@@ -145,9 +144,9 @@ class Duet(mask_separation_base.MaskSeparationBase):
                 i += 1
 
         """
-        self.masks =[]
+        self.result_masks = []
 
-        if self.audio_signal.num_channels != 2:  # double check this
+        if not self.audio_signal.is_stereo:  # double check this
             raise ValueError('Cannot run Duet on audio signal without exactly 2 channels!')
 
         # Calculate the stft of both channels and create the frequency matrix (the matrix containing the
@@ -241,11 +240,13 @@ class Duet(mask_separation_base.MaskSeparationBase):
         delay_vector = self.delay[nonzero_premask]
         time_frequency_weights_vector = time_frequency_weights[nonzero_premask]
 
+        bins_array = np.array([self.num_attenuation_bins, self.num_delay_bins])
+        range_array = np.array([[self.attenuation_min, self.attenuation_max], [self.delay_min, self.delay_max]])
+
         # compute the histogram
         histogram, atn_bins, delay_bins = np.histogram2d(symmetric_attenuation_vector, delay_vector,
-                                                     bins=np.array([self.num_attenuation_bins, self.num_delay_bins]),
-                                                     range=np.array([[self.attenuation_min, self.attenuation_max],
-                                           [self.delay_min, self.delay_max]]), weights=time_frequency_weights_vector)
+                                                         bins=bins_array, range=range_array,
+                                                         weights=time_frequency_weights_vector)
 
         # Save non-normalized as an option for plotting later
         self.attenuation_delay_histogram = histogram
@@ -288,10 +289,6 @@ class Duet(mask_separation_base.MaskSeparationBase):
         """Receives the attenuation and delay peaks and computes a mask to be applied to the signal for source
         separation.
 
-        Parameters:
-            atn_peak (np.array): Attenuation peaks determined from histogram
-            delay_peak (np.array): Delay peaks determined from histogram
-
         """
         # compute masks for separation
         best_so_far = np.inf * np.ones_like(self.stft_ch0, dtype=float)
@@ -303,13 +300,13 @@ class Duet(mask_separation_base.MaskSeparationBase):
             mask = (score < best_so_far)
             mask_array[mask] = True
             background_mask = masks.BinaryMask(np.array(mask_array))
-            self.masks.append(background_mask)
-            self.masks[0].mask = np.logical_xor(self.masks[i].mask, self.masks[0].mask)
+            self.result_masks.append(background_mask)
+            self.result_masks[0].mask = np.logical_xor(self.result_masks[i].mask, self.result_masks[0].mask)
             best_so_far[mask] = score[mask]
 
         # Compute first mask based on what the other masks left remaining
-        self.masks[0].mask = np.logical_not(self.masks[0].mask)
-        return self.masks
+        self.result_masks[0].mask = np.logical_not(self.result_masks[0].mask)
+        return self.result_masks
 
     @staticmethod
     def _smooth_matrix(matrix, kernel):
@@ -383,7 +380,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             signals (List[AudioSignal]): List of AudioSignals extracted using DUET.
 
         """
-        if len(self.masks) == 0:
+        if len(self.result_masks) == 0:
             raise ValueError('Cannot make audio signals with no masks to apply!')
 
         signals = []
@@ -392,8 +389,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             stft_sources = ((self.stft_ch0 + self.atn_peak[i] * np.exp(1j * self.frequency_matrix * self.delay_peak[i])
                              * self.stft_ch1) / (1 + self.atn_peak[i] ** 2))
             new_sig = self.audio_signal.make_copy_with_stft_data(stft_sources, verbose=False)
-            new_sig = new_sig.apply_mask(
-                self.masks[i])  # Ask Ethan if we can have a apply_mask that doesn't return a new mask!
+            new_sig = new_sig.apply_mask( self.result_masks[i])
             new_sig.stft_params = self.stft_params
             source_estimate = new_sig.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
             cur_signal = nussl.audio_signal.AudioSignal(audio_data_array=source_estimate,
