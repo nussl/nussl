@@ -24,9 +24,9 @@ class EvaluationBase(object):
         estimated_sources_list (list): List of objects that contain source estimations from a source separation 
             algorithm. List should be populated with the same type of objects and in the same order as 
             ``true_sources_list``.
-        source_labels (list, Optional): List of strings that are labels for each source to be used as keys for 
+        source_labels (list): List of strings that are labels for each source to be used as keys for
             the scores. Default value is `None` and in that case labels are `Source 0`, `Source 1`, etc.
-        do_mono (bool, Optional): Whether to make the objects in ``true_sources_list`` and ``estimated_sources_list`` 
+        do_mono (bool): Whether to make the objects in ``true_sources_list`` and ``estimated_sources_list``
             mono prior to doing the evaluation. This may not work for all :class:`EvaluationBase`-derived objects.
         **kwargs: Additional arguments for subclasses.
     """
@@ -40,7 +40,7 @@ class EvaluationBase(object):
 
         # set the labels up correctly
         if source_labels is None:
-            self.source_labels = ['Source {}'.format(i) for i in range(len(true_sources_list))]
+            self.source_labels = ['Source {}'.format(i) for i in range(len(self.true_sources_list))]
         else:
             assert isinstance(source_labels, list), 'Expected source_labels to be a list of strings!'
             if not all([isinstance(l, str) for l in source_labels]):
@@ -61,17 +61,14 @@ class EvaluationBase(object):
         self.evaluation_object_type = type(self.true_sources_list[0])
         self.do_mono = None
         self._scores = {}
+        self.num_channels = self.true_sources_list[0].num_channels
 
         if 'do_mono' in kwargs:
             self.do_mono = kwargs['do_mono']
-
-            if self.evaluation_object_type is AudioSignal:
-                if self.do_mono:
-                    self.num_channels = 1
-                    [g.to_mono(overwrite=True) for g in true_sources_list]
-                    [e.to_mono(overwrite=True) for e in estimated_sources_list]
-                else:
-                    self.num_channels = true_sources_list[0].num_channels
+            if self.evaluation_object_type is AudioSignal and self.do_mono:
+                self.num_channels = 1
+                [t.to_mono(overwrite=True) for t in self.true_sources_list]
+                [e.to_mono(overwrite=True) for e in self.estimated_sources_list]
 
     @staticmethod
     def _verify_input_list(audio_signal_list):
