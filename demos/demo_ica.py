@@ -1,14 +1,28 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+Demo for Independent Component Analysis (ICA) in nussl
+"""
+
 import os
 import sys
+
 import matplotlib.pyplot as plt
-
-path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if not path in sys.path:
-    sys.path.insert(1, path)
-
 import numpy as np
 from scipy import signal as scipy_signal
-import nussl
+
+try:
+    # import from an already installed version
+    import nussl
+except:
+
+    # can't find an installed version, import from right next door...
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if not path in sys.path:
+        sys.path.insert(1, path)
+
+    import nussl
 
 
 def main():
@@ -54,6 +68,7 @@ def main():
     plt.show()
 
     assert np.allclose(generated_observations, np.dot(estimated, ica.estimated_mixing_params.T) + ica.mean)
+
 
 if __name__ == '__main__':
     main()

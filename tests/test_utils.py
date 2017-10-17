@@ -15,17 +15,22 @@ class TestUtils(unittest.TestCase):
     """
 
     def test_find_peak_indices(self):
-        min_idx = int(np.pi * 100)
-        triangle = np.abs(signal.sawtooth(np.arange(0, 10, 0.01)))
-
-        arr = np.arange(0, 100)
-        peak = nussl.find_peak_indices(arr, 1)
+        array = np.arange(0, 100)
+        peak = nussl.find_peak_indices(array, 1)[0]
         assert peak == 99
 
-        arr = np.arange(0, 100).reshape(10, 10)
-        peak = nussl.find_peak_indices(arr, 1)
-        assert peak == (9, 9)
+        array = np.arange(0, 100).reshape(10, 10)
+        peak = nussl.find_peak_indices(array, 3, min_dist=0)
+        assert peak == [[9, 9], [9, 8], [9, 7]]
 
+    def test_find_peak_values(self):
+        array = np.arange(0, 100)
+        peak = nussl.find_peak_values(array, 1)[0]
+        assert peak == 99
+
+        array = np.arange(0, 100).reshape(10, 10)
+        peak = nussl.find_peak_values(array, 3, min_dist=0)
+        assert peak == [99, 98, 97]
 
     def test_add_mismatched_arrays(self):
         long_array = np.ones((20,))
