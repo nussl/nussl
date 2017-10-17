@@ -23,8 +23,8 @@ in this branch before being pushed to **master**.
 - **Experimental** has many more implementations, but many have not been vetted or properly tested. Some methods in this
 branch require extra functionality that cannot be included in a pip install, such as the Vamp binary files or 
 tensorflow. This branch is the bleeding edge.
-- **Refactorization** sometimes exists when having extra students work on specific features.
 - **gh-pages** is used to auto generate our documentation using Sphinx.
+- Other feature branches do exist from time to time as well.
 
 
 
