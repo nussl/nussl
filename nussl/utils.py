@@ -97,8 +97,6 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
     if np.size(np.nonzero(input_array)) < n_peaks:
         warnings.warn('Threshold set such that there will be less peaks than n_peaks.')
 
-    input_array = np.multiply(input_array, (input_array >= threshold))
-
     peak_indices = []
     for i in range(n_peaks):
         # np.unravel_index for 2D indices e.g., index 5 in a 3x3 array should be (1, 2)
@@ -170,7 +168,13 @@ def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshol
         peak_values: (list) list of the values of the peak values
 
     """
-    return [input_array[i] for i in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
+    if input_array.ndim > 2:
+        raise ValueError('Cannot find peak indices on data greater than 2 dimensions!')
+
+    if input_array.ndim == 1:
+        return [input_array[i] for i in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
+    else:
+        return [input_array[i, j] for i, j in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
 
 
 def json_ready_numpy_array(array):

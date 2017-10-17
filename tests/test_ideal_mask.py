@@ -69,7 +69,7 @@ class IdealMaskTestCase(unittest.TestCase):
             residual = ideal_mask.residual
             assert isinstance(residual, nussl.AudioSignal)
 
-            if mask_class == nussl.SoftMask:
+            if mask_class == nussl.separation.SoftMask:
                 for i, src in enumerate(masked_sources):
                     src.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'new_src{}.wav'.format(i)))
                 residual.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'new_residual.wav'))

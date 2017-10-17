@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import nussl
+import sys
+
+try:
+    import nussl
+except:
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if not path in sys.path:
+        sys.path.insert(1, path)
+
+    import nussl
 
 def main():
     # Load input file
@@ -17,6 +26,7 @@ def main():
 
     # and run
     duet.run()
+
     # plot histogram results
     duet.plot(os.path.join('..', 'Output', 'duet_2d.png'))
     duet.plot(os.path.join('..', 'Output', 'duet_3d.png'), three_d_plot=True)
@@ -28,6 +38,7 @@ def main():
         output_file_name = output_name_stem + str(i) + '.wav'
         s.write_audio_to_file(output_file_name)
         i += 1
+
 
 if __name__ == '__main__':
     main()
