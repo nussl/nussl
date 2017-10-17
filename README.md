@@ -77,6 +77,8 @@ Installation is easy if you have pip (recommended):
 $ pip install nussl
 ```
 
+A note on cloning from github: **nussl** contains a large number of uncompressed audio benchmark files for testing which makes cloning directly from Github a slow process. **nussl** is now synced with [Git LFS](https://git-lfs.github.com), so if you want to clone from Github without downloading the large testing files, please use Git LFS.
+
 
 Development Status
 ------------------
