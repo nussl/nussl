@@ -81,8 +81,8 @@ class BinaryMask(mask_base.MaskBase):
         input_mask (:obj:`np.ndarray`): 2- or 3-D :obj:`np.array` that represents the mask.
     """
 
-    def __init__(self, input_mask):
-        super(BinaryMask, self).__init__(input_mask)
+    def __init__(self, input_mask=None, mask_shape=None):
+        super(BinaryMask, self).__init__(input_mask, mask_shape)
 
     @staticmethod
     def _validate_mask(mask_):
@@ -115,23 +115,16 @@ class BinaryMask(mask_base.MaskBase):
         else:
             return self.get_channel(channel).astype('int')
 
-    def inverse_mask(self, channel=None):
+    def invert_mask(self):
         """
         Makes a new :class:`BinaryMask` object with a logical not applied to flip the values in this :class:`BinaryMask`
         object.
-            
-        Args:
-            channel (int, Optional): Channel number, 0-based. 
 
         Returns:
             A new :class:`BinaryMask` object that has all of the boolean values flipped.
 
         """
-        if channel is None:
-            return BinaryMask(np.logical_not(self.mask))
-        else:
-            # TODO: this does not give the 2D np.array!
-            return BinaryMask(np.logical_not(self.get_channel(channel)))
+        return BinaryMask(np.logical_not(self.mask))
 
     @staticmethod
     def mask_to_binary(mask_, threshold):

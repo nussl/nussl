@@ -25,10 +25,10 @@ class PrecisionRecallFScoreUnitTest(unittest.TestCase):
 
         mixture = drums + flute
 
-        repet = nussl.Repet(mixture, mask_type=nussl.BinaryMask)
+        repet = nussl.Repet(mixture, mask_type=nussl.separation.BinaryMask)
         repet_mask_list = repet()
 
-        ideal_mask = nussl.IdealMask(mixture, [drums, flute], mask_type=nussl.BinaryMask)
+        ideal_mask = nussl.IdealMask(mixture, [drums, flute], mask_type=nussl.separation.BinaryMask)
         ideal_mask_list = ideal_mask()
 
         prf = nussl.PrecisionRecallFScore(ideal_mask_list, repet_mask_list)
@@ -38,12 +38,12 @@ class PrecisionRecallFScoreUnitTest(unittest.TestCase):
         sizes = [128, 256, 512, 1024, 2048]
         for size in sizes:
             mask1_array = np.random.randint(0, 2, size=[size, size])
-            mask1 = nussl.BinaryMask(mask1_array)
+            mask1 = nussl.separation.BinaryMask(mask1_array)
 
             mask2_array = np.random.randint(0, 2, size=[size, size])
-            mask2 = nussl.BinaryMask(mask2_array)
+            mask2 = nussl.separation.BinaryMask(mask2_array)
 
-            prf = nussl.PrecisionRecallFScore(mask1, mask2)
+            prf = nussl.PrecisionRecallFScore([mask1], [mask2])
             prf_scores = prf.evaluate()
 
             precision = sklearn.metrics.precision_score(mask1_array.ravel(), mask2_array.ravel())

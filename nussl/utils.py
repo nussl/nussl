@@ -15,6 +15,12 @@ from audio_signal import AudioSignal
 from separation import SeparationBase
 from separation import MaskSeparationBase
 
+__all__ = ['find_peak_indices', 'find_peak_values',
+           'json_ready_numpy_array', 'json_serialize_numpy_array', 'load_numpy_json', 'json_numpy_obj_hook',
+           'add_mismatched_arrays', 'add_mismatched_arrays2D', 'complex_randn',
+           '_get_axis', '_verify_audio_signal_list_lax', '_verify_audio_signal_list_strict',
+           '_verify_separation_list', '_verify_mask_separation_list']
+
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
     """
@@ -93,16 +99,20 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
 
     peak_indices = []
     for i in range(n_peaks):
-        cur_peak_idx = np.argmax(input_array)
-        peak_indices.append(cur_peak_idx)
+        # np.unravel_index for 2D indices e.g., index 5 in a 3x3 array should be (1, 2)
+        # Also, wrap in list for duck typing
+        cur_peak_idx = list(np.unravel_index(np.argmax(input_array), input_array.shape))
 
         # zero out peak and its surroundings
         if is_1d:
+            cur_peak_idx = cur_peak_idx[0]
+            peak_indices.append(cur_peak_idx)
             lower, upper = _set_array_zero_indices(cur_peak_idx, zero_dist, len(input_array))
             input_array[lower:upper] = 0
         else:
-            lower0, upper0 = _set_array_zero_indices(cur_peak_idx, zero_dist0, input_array.shape[0])
-            lower1, upper1 = _set_array_zero_indices(cur_peak_idx, zero_dist1, input_array.shape[1])
+            peak_indices.append(cur_peak_idx)
+            lower0, upper0 = _set_array_zero_indices(cur_peak_idx[0], zero_dist0, input_array.shape[0])
+            lower1, upper1 = _set_array_zero_indices(cur_peak_idx[1], zero_dist1, input_array.shape[1])
             input_array[lower0:upper0, lower1:upper1] = 0
 
         if np.sum(input_array) == 0.0:
@@ -158,7 +168,13 @@ def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshol
         peak_values: (list) list of the values of the peak values
 
     """
-    return [input_array[i] for i in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
+    if input_array.ndim > 2:
+        raise ValueError('Cannot find peak indices on data greater than 2 dimensions!')
+
+    if input_array.ndim == 1:
+        return [input_array[i] for i in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
+    else:
+        return [input_array[i, j] for i, j in find_peak_indices(input_array, n_peaks, min_dist, do_min, threshold)]
 
 
 def json_ready_numpy_array(array):

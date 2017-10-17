@@ -13,9 +13,12 @@ import warnings
 
 import constants
 
+__all__ = ['plot_stft', 'e_stft', 'e_istft', 'e_stft_plus', 'librosa_stft_wrapper', 'librosa_istft_wrapper',
+           'make_window', 'StftParams']
+
 
 def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
-              window_type=None, sample_rate=None, n_fft_bins=None,
+              window_type=None, sample_rate=constants.DEFAULT_SAMPLE_RATE, n_fft_bins=None,
               freq_max=None, show_interactive_plot=False):
     """
     Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
@@ -68,8 +71,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         nussl.plot_stft(x, 'path/to/sine_wav.png')
 
     """
-    sample_rate = constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
-    freq_max = constants.MAX_FREQUENCY if freq_max is None else freq_max
+    freq_max = freq_max if freq_max is not None else sample_rate // 2
 
     if title is None:
         title = os.path.basename(file_name)
@@ -183,7 +185,7 @@ def e_stft(signal, window_length, hop_length, window_type,
 
     orig_signal_length = len(signal)
     signal, num_blocks = _add_zero_padding(signal, window_length, hop_length)
-
+    sig_zero_pad = len(signal)
     # figure out size of output stft
     stft_bins = n_fft_bins // 2 + 1 if remove_reflection else n_fft_bins  # only want just over half of each fft
 
@@ -202,7 +204,6 @@ def e_stft(signal, window_length, hop_length, window_type,
     stft = _remove_stft_padding(stft, orig_signal_length, window_length, hop_length) if remove_padding else stft
 
     return stft
-
 
 def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, remove_reflection=True,
                          center=True, n_fft_bins=None):
@@ -336,7 +337,7 @@ def librosa_istft_wrapper(stft, window_length, hop_length, window_type,
     Returns:
 
     """
-    window = get_window_function(window_type) if window_type is not None else None
+    window = _get_window_function(window_type) if window_type is not None else None
 
     if remove_reflection:
         n_fft = stft.shape[0]
@@ -487,7 +488,7 @@ def make_window(window_type, length, symmetric=False):
         return None
 
 
-def get_window_function(window_type):
+def _get_window_function(window_type):
     """
     Gets a window function from scipy.signal
     Args:

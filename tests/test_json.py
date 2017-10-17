@@ -5,6 +5,7 @@ import nussl
 import numpy as np
 import os
 
+
 class TestJson(unittest.TestCase):
 
     def test_audio_signal(self):
@@ -50,10 +51,23 @@ class TestJson(unittest.TestCase):
         path = os.path.join('..', 'Input', 'mix1.wav')
         a = nussl.AudioSignal(path)
         r = nussl.RepetSim(a)
-        t = nussl.Repet(a)
         r()
 
         j = r.to_json()
         f = nussl.RepetSim.from_json(j)
         worked = r == f
         return worked
+
+    @unittest.skip
+    def test_nmf_mfcc(self):
+        path = os.path.join('..', 'Input', 'piano_and_synth_arp_chord_mono.wav')
+        a = nussl.AudioSignal(path)
+        n = nussl.NMF_MFCC(a, num_sources=2)
+        n()
+
+        j = n.to_json()
+        f = nussl.NMF_MFCC.from_json(j)
+        worked = n == f
+        return worked
+
+

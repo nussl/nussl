@@ -12,7 +12,6 @@ import nussl.constants
 import nussl.spectral_utils
 import separation_base
 from ft2d import FT2D
-from nussl.audio_signal import AudioSignal
 from repet import Repet
 from repet_sim import RepetSim
 

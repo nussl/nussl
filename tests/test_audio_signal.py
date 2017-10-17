@@ -3,11 +3,15 @@
 from __future__ import division
 
 import unittest
-import nussl
+
+import os
+import copy
+
 import numpy as np
 import scipy.io.wavfile as wav
-import os
-import warnings
+import librosa
+
+import nussl
 
 
 class AudioSignalUnitTests(unittest.TestCase):
@@ -16,7 +20,7 @@ class AudioSignalUnitTests(unittest.TestCase):
     length = dur * sr
 
     def setUp(self):
-        input_folder = os.path.join('..', 'Input')
+        input_folder = os.path.join('..', 'input')
         output_folder = os.path.join('..', 'Output')
         ext = '.wav'
         self.all_inputs = [os.path.join(input_folder, f) for f in os.listdir(input_folder)
@@ -24,6 +28,7 @@ class AudioSignalUnitTests(unittest.TestCase):
 
         self.input_path1 = os.path.join(input_folder, 'k0140_int.wav')
         self.input_path2 = os.path.join(input_folder, 'k0140.wav')
+        self.input_path3 = os.path.join(input_folder, 'dev1_female3_inst_mix.wav')
 
         self.out_path1 = os.path.join(output_folder, 'k0140_int_output.wav')
         self.out_path2 = os.path.join(output_folder, 'k0140_output.wav')
@@ -62,9 +67,9 @@ class AudioSignalUnitTests(unittest.TestCase):
             ref_sr, ref_data = wav.read(path)
             ref_dur = len(ref_data) / ref_sr
             n_chan = 1 if len(ref_data.shape) == 1 else ref_data.shape[1]
-            signal_info.append({'duration' : ref_dur,
-                                'sample_rate' : ref_sr,
-                                'length' : len(ref_data),
+            signal_info.append({'duration': ref_dur,
+                                'sample_rate': ref_sr,
+                                'length': len(ref_data),
                                 'n_chan': n_chan})
 
             a = nussl.AudioSignal()
@@ -111,7 +116,7 @@ class AudioSignalUnitTests(unittest.TestCase):
                     a = nussl.AudioSignal()
                     a.load_audio_from_file(path, offset=offset, duration=duration)
 
-                    assert abs(a.signal_length - ref_length) <= 1  # Sometimes ref_length is off by 1 due to rounding
+                    assert abs(a.signal_length - ref_length) <= 2  # Sometimes ref_length is off by 2 due to rounding
 
         # Test error cases
         path = self.input_path1
@@ -179,6 +184,81 @@ class AudioSignalUnitTests(unittest.TestCase):
     freq = 30
     sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
 
+    def test_resample(self):
+        # Check that sample rate property changes
+        a = nussl.AudioSignal(self.input_path1)
+        b = nussl.AudioSignal(self.input_path1)
+        b.resample(a.sample_rate / 2)
+        assert (b.sample_rate == a.sample_rate/2)
+
+    def test_resample_on_load_from_file(self):
+        # Test resample right when loading from file vs resampling after loading
+        a = nussl.AudioSignal(self.input_path1)
+        a.resample(48000)
+        b = nussl.AudioSignal()
+        b.load_audio_from_file(self.input_path1, new_sample_rate=48000)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
+
+    def test_resample_vs_librosa_load(self):
+        # Check against librosa load function
+        a = nussl.AudioSignal(self.input_path1)
+        a.resample(48000)
+        b_audio_data, b_sample_rate = librosa.load(self.input_path1, sr=48000)
+        assert (a.sample_rate == b_sample_rate)
+        assert (np.allclose(a.audio_data, b_audio_data))
+
+    def test_default_sr_on_load_from_array(self):
+        # Check that the default sample rate is set when no sample rate is provided load_audio_from_array
+        sr, data = wav.read(self.input_path1)
+        a = nussl.AudioSignal()
+        a.load_audio_from_array(data)
+        assert(a.sample_rate == nussl.constants.DEFAULT_SAMPLE_RATE)
+
+    def test_sr_on_load_from_array(self):
+        # Check that the passed in sample rate is being set in load_audio_from_array
+        a = nussl.AudioSignal(self.input_path1)
+        sr, data = wav.read(self.input_path1)
+        b = nussl.AudioSignal()
+        b.load_audio_from_array(data, sample_rate=sr)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
+
+    def test_plot_time_domain_stereo(self):
+        # Stereo signal that should plot both channels on same plot
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_specific_channel(self):
+        # Stereo signal that should only plot the specified channel
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(channel=0)
+
+    def test_plot_time_domain_mono(self):
+        # Mono signal plotting
+        a = nussl.AudioSignal(self.input_path3)
+        a.to_mono(overwrite=True)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_multi_channel(self):
+        # Plotting a signal with 5 channels
+        num_test_channels = 5
+        freq_multiple = 5
+        freqs = [i * freq_multiple for i in range(1, num_test_channels+1)]
+        test_signal = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:num_test_channels]])
+        a = nussl.AudioSignal(audio_data_array=test_signal)
+        a.plot_time_domain()
+
+    def test_plot_time_domain_sample_on_xaxis(self):
+        # Plotting a stereo signal with sample numbers on the x axis instead of time
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(x_label_time=False)
+
+    def test_plot_time_domain_save_to_path_and_rename(self):
+        # Plotting and saving the plot with a new name to a folder
+        a = nussl.AudioSignal(self.input_path3)
+        a.plot_time_domain(file_path_name='test_graph.png')
+
     def test_stft_istft_simple1(self):
         """
         Tests to make sure stft and istft don't crash with default settings.
@@ -239,6 +319,24 @@ class AudioSignalUnitTests(unittest.TestCase):
         assert (sig2.num_channels == 1)
         assert (np.allclose([0.0] * len(sig2), sig2.audio_data))
 
+    def test_to_mono_channel_dimension(self):
+        """
+        Test functionality and correctness of AudioSignal.to_mono() function.
+        Returns:
+
+        """
+        # Load input file
+        input_file_name = os.path.join('..', 'input', 'piano_and_synth_arp_chord_stereo.wav')
+        signal = nussl.AudioSignal(path_to_input_file=input_file_name)
+        signal.stft_params = signal.stft_params
+        signal_stft = signal.stft()
+        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX] == 2)
+
+        signal.to_mono(overwrite=True)
+        signal.stft_params = signal.stft_params
+        signal_stft = signal.stft()
+        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX]== 1)
+
     def test_stft(self):
         """
         Test some basic functionality of the STFT interface for the AudioSignal object
@@ -247,15 +345,19 @@ class AudioSignalUnitTests(unittest.TestCase):
         signal = nussl.AudioSignal(audio_data_array=self.sine_wave)
 
         self.assertTrue(signal.stft_data is None)
-        signal.stft(overwrite=False)
+        signal.stft(overwrite=False, use_librosa=False)
         self.assertTrue(signal.stft_data is None)
-        stft = signal.stft()
+        _ = signal.stft()
         self.assertTrue(signal.stft_data is not None)
-        signal.istft(overwrite=False)
-        self.assertTrue(not np.any(signal.audio_data - self.sine_wave)) # check if all are exactly 0
+        signal.istft(overwrite=False, use_librosa=False)
+        self.assertTrue(not np.any(signal.audio_data - self.sine_wave))  # check if all are exactly 0
         signal.istft()
-        # they should not be exactly zero at this point, because overwrite is on
-        self.assertTrue(not np.any(signal.get_channel(0)[0:len(self.sine_wave)] - self.sine_wave))
+
+        # Make sure they're the same length
+        self.assertTrue(len(signal) == len(self.sine_wave))
+
+        # They should not be exactly zero at this point, because overwrite is on
+        self.assertTrue(np.any(signal.get_channel(0)[0:len(self.sine_wave)] - self.sine_wave))
 
         # make sure these don't crash or nothing silly
         signal.stft(use_librosa=True)
@@ -271,7 +373,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         freqs = [i * freq_multiple for i in range(max_n_channels)]
 
         # Make the signals and test
-        for f in range(1, max_n_channels):
+        for f in range(1, max_n_channels):  # 1-8 channel mixtures
             sig = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:f]])
             self._get_channel_helper(sig, len(sig))
 
@@ -303,6 +405,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         assert i == a.num_channels
 
     def test_arithmetic(self):
+
+        # These signals have two different lengths
         a = nussl.AudioSignal(self.input_path1)
         b = nussl.AudioSignal(self.input_path2)
 
@@ -311,16 +415,36 @@ class AudioSignalUnitTests(unittest.TestCase):
         with self.assertRaises(Exception):
             a.subtract(b)
         with self.assertRaises(Exception):
-            c = a + b
+            _ = a + b
         with self.assertRaises(Exception):
-            c = a - b
+            _ = a - b
         with self.assertRaises(Exception):
             a += b
         with self.assertRaises(Exception):
             a -= b
+        with self.assertRaises(Exception):
+            _ = a * b
+        with self.assertRaises(Exception):
+            _ = a / b
+        with self.assertRaises(Exception):
+            _ = a / a
 
         self.assertTrue(np.allclose((a + a).audio_data, a.audio_data + a.audio_data))
         self.assertTrue(np.allclose((a - a).audio_data, a.audio_data - a.audio_data))
+
+        c = a * 2
+        self.assertTrue(np.allclose(c.audio_data, a.audio_data * 2))
+        d = copy.copy(a)
+        d *= 2
+        self.assertTrue(np.allclose(c.audio_data, d.audio_data))
+
+        c = a / 2
+        self.assertTrue(np.allclose(c.audio_data, a.audio_data / 2))
+        d = copy.copy(a)
+        d /= 2
+        self.assertTrue(np.allclose(c.audio_data, d.audio_data))
+
+
 
 
 if __name__ == '__main__':

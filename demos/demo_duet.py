@@ -1,10 +1,20 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
-import nussl
+import sys
 
+try:
+    import nussl
+except:
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if not path in sys.path:
+        sys.path.insert(1, path)
+
+    import nussl
 
 def main():
     # Load input file
-    input_file_name = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
+    input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_file_name)
 
     # make a directory to store output if needed

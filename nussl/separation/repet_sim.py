@@ -56,7 +56,7 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         self.similarity_indices = None
         self.magnitude_spectrogram = None
         self.stft = None
-        self.masks = None
+        self.result_masks = None
         self.use_librosa_stft = use_librosa_stft
         self.matlab_fidelity = matlab_fidelity
 
@@ -105,9 +105,9 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         if self.mask_type == self.BINARY_MASK:
             background_mask = background_mask.mask_to_binary(self.mask_threshold)
 
-        self.masks = [background_mask, background_mask.inverse_mask()]
+        self.result_masks = [background_mask, background_mask.inverse_mask()]
 
-        return self.masks
+        return self.result_masks
 
     def _make_background_signal(self, background_stft):
         self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
@@ -231,11 +231,11 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
             # Set up audio signal
             signal = nussl.AudioSignal('path_to_file.wav')
 
-            # Set up a Repet object
-            repet = nussl.Repet(signal)
+            # Set up a RepetSim object
+            repet_sim = nussl.RepetSim(signal)
 
             # I don't have to run repet to get a similarity matrix for signal
-            sim_mat = repet.get_similarity_matrix()
+            sim_mat = repet_sim.get_similarity_matrix()
 
         """
         if self.magnitude_spectrogram is None:
@@ -261,18 +261,18 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
             # set up AudioSignal object
             signal = nussl.AudioSignal('path_to_file.wav')
 
-            # set up and run repet
-            repet = nussl.Repet(signal)
-            repet.run()
+            # set up and run RepetSim
+            repet_sim = nussl.RepetSim(signal)
+            repet_sim.run()
 
             # get audio signals (AudioSignal objects)
-            background, foreground = repet.make_audio_signals()
+            background, foreground = repet_sim.make_audio_signals()
         """
         if self.background is None:
             return None
 
-        self.foreground = self.audio_signal - self.background
-        self.foreground.sample_rate = self.audio_signal.sample_rate
+        foreground_array = self.audio_signal.audio_data - self.background.audio_data
+        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
         return [self.background, self.foreground]
 
     def plot(self, output_file, **kwargs):

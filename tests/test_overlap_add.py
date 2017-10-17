@@ -13,8 +13,8 @@ class TestOverlapAdd(unittest.TestCase):
         Set up variables used in the tests.
         """
         self.valid_methods = [nussl.Repet, nussl.RepetSim, nussl.FT2D]
-        self.invalid_methods = [nussl.Duet, nussl.OverlapAdd, nussl.NMF, nussl.SeparationBase, nussl.RPCA,
-                           nussl.StftParams, nussl.AudioSignal, nussl.DistanceType, int, str, unittest.TestCase,
+        self.invalid_methods = [nussl.Duet, nussl.OverlapAdd, nussl.SeparationBase,
+                           nussl.StftParams, nussl.AudioSignal, int, str, unittest.TestCase,
                            None]
         self.valid_method_names = [m.__name__ for m in self.valid_methods]
         self.invalid_method_names = [m.__name__ for m in self.invalid_methods if m is not None]

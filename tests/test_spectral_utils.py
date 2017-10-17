@@ -237,7 +237,7 @@ class TestSpectralUtils(unittest.TestCase):
         # assert np.allclose(np.imag(lib_stft), np.imag(nussl_stft))
 
         # win_type is None => Hann window
-        lib_signal = nussl.librosa_istft_wrapper(lib_stft, win_length, hop_length, None)
+        lib_signal = nussl.librosa_istft_wrapper(lib_stft, win_length, hop_length, 'hann')
         nussl_signal = nussl.e_istft(nussl_stft, win_length, hop_length, win_type)
 
         assert len(lib_signal) == len(nussl_signal)
