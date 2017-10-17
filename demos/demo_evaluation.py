@@ -2,15 +2,18 @@ import os
 import sys
 import time
 
-path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if not path in sys.path:
-    sys.path.insert(1, path)
+try:
+    import nussl
+except:
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if not path in sys.path:
+        sys.path.insert(1, path)
 
-import nussl
+    import nussl
 
 
-mixture = nussl.AudioSignal('../input/mixture/mixture.wav', duration = 30, offset = 60)
-vocals = nussl.AudioSignal('../input/mixture/vocals.wav', duration = 30, offset = 60)
+mixture = nussl.AudioSignal('../input/mixture/mixture.wav', duration=30, offset=60)
+vocals = nussl.AudioSignal('../input/mixture/vocals.wav', duration=30, offset=60)
 background = mixture - vocals
 print str(mixture)
 

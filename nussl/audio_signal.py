@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+AudioSignal object
+"""
+
 from __future__ import division
 import os.path
 import numpy as np
@@ -11,12 +15,15 @@ import audioread
 import json
 import warnings
 import copy
+import matplotlib.pyplot as plt
 
-import nussl.separation.masks.mask_base
+import separation.masks.mask_base
 import spectral_utils
 import config
 import constants
 import utils
+
+__all__ = ['AudioSignal']
 
 
 class AudioSignal(object):
@@ -65,11 +72,12 @@ class AudioSignal(object):
     """
 
     def __init__(self, path_to_input_file=None, audio_data_array=None, stft=None,
-                 sample_rate=constants.DEFAULT_SAMPLE_RATE, stft_params=None, offset=0, duration=None):
+                 sample_rate=None, stft_params=None, offset=0, duration=None):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
-        self.sample_rate = sample_rate
+        self._stft_data = None
+        self._sample_rate = None
         self._active_start = None
         self._active_end = None
 
@@ -84,53 +92,21 @@ class AudioSignal(object):
             raise ValueError('Can only initialize AudioSignal object with one of [path, audio, stft]!')
 
         if path_to_input_file is not None:
-            self.load_audio_from_file(self.path_to_input_file, offset, duration)
+            self.load_audio_from_file(self.path_to_input_file, offset, duration, sample_rate)
         elif audio_data_array is not None:
             self.load_audio_from_array(audio_data_array, sample_rate)
+        else:
+            self._sample_rate = constants.DEFAULT_SAMPLE_RATE
 
         # stft data
-        self.stft_data = stft  # complex spectrogram data
+        if stft is not None:
+            self.stft_data = stft  # complex spectrogram data
+
         self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
         self.use_librosa_stft = config.USE_LIBROSA_STFT
 
     def __str__(self):
         return self.__class__.__name__
-
-    ##################################################
-    #                   Plotting
-    ##################################################
-
-    def plot_time_domain(self):
-        """
-        Not implemented yet -- will raise and exception
-        Returns:
-
-        """
-        raise NotImplementedError('Not ready yet!')
-
-    _NAME_STEM = 'audio_signal'
-
-    def plot_spectrogram(self, file_name=None, ch=None):
-        # TODO: use self.stft_data if not None
-        # TODO: flatten to mono be default
-        # TODO: make other parameters adjustable
-        if file_name is None:
-            name = self.file_name if self.file_name is not None else self._NAME_STEM
-        else:
-            name = os.path.splitext(file_name)[0]
-
-        name = name if self._check_if_valid_img_type(name) else name + '.png'
-
-        if ch is None:
-            spectral_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
-        else:
-            spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
-
-    @staticmethod
-    def _check_if_valid_img_type(name):
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        return any([name[len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
 
     ##################################################
     #                 Properties
@@ -176,6 +152,26 @@ class AudioSignal(object):
         return None
 
     @property
+    def is_mono(self):
+        """
+        PROPERTY
+        Returns:
+            (bool): Whether or not this signal is mono (i.e., has exactly `one` channel).
+
+        """
+        return self.num_channels == 1
+
+    @property
+    def is_stereo(self):
+        """
+        PROPERTY
+        Returns:
+            (bool): Whether or not this signal is stereo (i.e., has exactly `two` channels).
+
+        """
+        return self.num_channels == 2
+
+    @property
     def audio_data(self):
         """ (:obj:`np.ndarray`): Real-valued, uncompressed, time-domain representation of the audio.
             2D numpy array with shape `(n_channels, n_samples)`.
@@ -198,7 +194,16 @@ class AudioSignal(object):
 
     @audio_data.setter
     def audio_data(self, value):
-        assert isinstance(value, np.ndarray), 'Type of self.audio_data must be np.ndarray!'
+
+        if value is None:
+            self._audio_data = None
+            return
+
+        elif not isinstance(value, np.ndarray):
+            raise ValueError('Type of self.audio_data must be of type np.ndarray!')
+
+        if not np.isfinite(value).all():
+            raise ValueError('Not all values of audio_data are finite!')
 
         if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
             warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
@@ -207,12 +212,43 @@ class AudioSignal(object):
         if value.ndim > 2:
             raise ValueError('self.audio_data cannot have more than 2 dimensions!')
 
+        if value.ndim < 2:
+            value = np.expand_dims(value, axis=constants.CHAN_INDEX)
+
         self._audio_data = value
 
-        if self._audio_data.ndim < 2:
-            self._audio_data = np.expand_dims(self._audio_data, axis=constants.CHAN_INDEX)
-
         self.set_active_region_to_default()
+
+    @property
+    def stft_data(self):
+        """ (:obj:`np.ndarray`): Complex-valued, time-frequency representation of the audio.
+            2D numpy array with shape `(n_frequency_bins, n_time_bins)`.
+            ``None`` by default, this can be initialized at instantiation.
+            Usually, this is expected to be floats. Some functions will convert to floats if not already.
+        """
+
+        return self._stft_data
+
+    @stft_data.setter
+    def stft_data(self, value):
+
+        if value is None:
+            self._stft_data = None
+            return
+
+        elif not isinstance(value, np.ndarray):
+            raise ValueError('Type of self.stft_data must be of type np.ndarray!')
+
+        if value.ndim == 1:
+            raise ValueError('Cannot support arrays with less than 2 dimensions!')
+
+        if value.ndim == 2:
+            value = np.expand_dims(value, axis=constants.STFT_CHAN_INDEX)
+
+        if value.ndim > 3:
+            raise ValueError('Cannot support arrays with more than 3 dimensions!')
+
+        self._stft_data = value
 
     @property
     def file_name(self):
@@ -227,6 +263,11 @@ class AudioSignal(object):
         if self.path_to_input_file is not None:
             return os.path.split(self.path_to_input_file)[1]
         return None
+
+    @property
+    def sample_rate(self):
+        return self._sample_rate
+
 
     @property
     def time_vector(self):
@@ -347,17 +388,33 @@ class AudioSignal(object):
             Returns False if :attr:`audio_data` and :attr:`stft_data` are empty. Else, returns True.
             
         """
-        if self.audio_data is None and self.stft_data is None:
-            return False
-        if self.audio_data.size == 0 and self.stft_data.size == 0:
-            return False
-        return True
+        return self.has_audio_data or self.has_stft_data
+
+    @property
+    def has_stft_data(self):
+        """ Returns False if :attr:`stft_data` is empty. Else, returns True.
+
+        Returns:
+            Returns False if :attr:`stft_data` is empty. Else, returns True.
+
+        """
+        return self.stft_data is not None and self.stft_data.size != 0
+
+    @property
+    def has_audio_data(self):
+        """ Returns False if :attr:`audio_data` is empty. Else, returns True.
+
+        Returns:
+            Returns False if :attr:`audio_data` is empty. Else, returns True.
+
+        """
+        return self.audio_data is not None and self.audio_data.size != 0
 
     ##################################################
     #                     I/O
     ##################################################
 
-    def load_audio_from_file(self, input_file_path, offset=0, duration=None):
+    def load_audio_from_file(self, input_file_path, offset=0, duration=None, new_sample_rate=None):
         # type: (str, float, float) -> None
         """Loads an audio signal from a file
 
@@ -380,7 +437,7 @@ class AudioSignal(object):
                 warnings.warn('offset + duration are longer than the signal. Reading until end of signal...',
                               UserWarning)
 
-            audio_input, self.sample_rate = librosa.load(input_file_path,
+            audio_input, self._sample_rate = librosa.load(input_file_path,
                                                          sr=None,
                                                          offset=offset,
                                                          duration=duration,
@@ -391,6 +448,11 @@ class AudioSignal(object):
                 audio_input = audio_input.astype('float') / (np.iinfo(audio_input.dtype).max + 1.0)
 
             self.audio_data = audio_input
+
+            if new_sample_rate is not None and new_sample_rate != self._sample_rate:
+                warnings.warn("Input sample rate is different than the sample rate read from the file! Resampling...",
+                              UserWarning)
+                self.resample(new_sample_rate)
 
         except Exception as e:
             if isinstance(e, ValueError):  # This is the error we just raise, re-raise it
@@ -424,7 +486,8 @@ class AudioSignal(object):
             signal = signal.astype('float') / (np.iinfo(np.dtype('int16')).max + 1.0)
 
         self.audio_data = signal
-        self.sample_rate = sample_rate
+        self._sample_rate = sample_rate if sample_rate is not None else constants.DEFAULT_SAMPLE_RATE
+
         self.set_active_region_to_default()
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
@@ -468,8 +531,8 @@ class AudioSignal(object):
         None of the data in :attr:`audio_data` is discarded when you set the active region, it merely becomes
         inaccessible until the active region is set back to default (i.e., the full length of the signal).
 
-        This is useful for reusing a single :class:`AudioSignal` object to do multiple operations on only select parts of the
-        audio data.
+        This is useful for reusing a single :class:`AudioSignal` object to do multiple operations on only
+        select parts of the audio data.
 
         Warnings:
             Many functions will raise exceptions while the active region is not default. Be aware that adding,
@@ -490,7 +553,8 @@ class AudioSignal(object):
 
     def set_active_region_to_default(self):
         """
-        Resets the active region of this :class:`AudioSignal` object to it default value of the entire ``audio_data`` array.
+        Resets the active region of this :class:`AudioSignal` object to it default value of the entire
+        :attr:`audio_data` array.
         
         See Also:
             * :func:`set_active_region` for an explanation of active regions within the :class:`AudioSignal`.
@@ -587,7 +651,7 @@ class AudioSignal(object):
 
         return np.array(stfts).transpose((1, 2, 0))
 
-    def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True, reconstruct_reflection=False,
+    def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True,
               use_librosa=config.USE_LIBROSA_STFT, truncate_to_length=None):
         """ Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
@@ -601,7 +665,6 @@ class AudioSignal(object):
             window_length (int, optional): Amount of time (in samples) to do an FFT on
             hop_length (int, optional): Amount of time (in samples) to skip ahead for the new FFT
             window_type (str, optional): Type of scaling to apply to the window.
-            reconstruct_reflection (bool, optional): Should reconstruct the reflection above Nyquist
             overwrite (bool, optional): Overwrite :attr:`stft_data` with current calculation
             use_librosa (bool, optional): Use *librosa's* stft function
             truncate_to_length (int, optional): truncate resultant signal to specified length. Default None.
@@ -619,7 +682,7 @@ class AudioSignal(object):
         # TODO: bubble up center
         window_type = self.stft_params.window_type if window_type is None else window_type
 
-        calculated_signal = self._do_istft(window_length, hop_length, window_type, reconstruct_reflection, use_librosa)
+        calculated_signal = self._do_istft(window_length, hop_length, window_type, use_librosa)
 
         # Make sure it's shaped correctly
         calculated_signal = np.expand_dims(calculated_signal, -1) if calculated_signal.ndim == 1 else calculated_signal
@@ -637,7 +700,7 @@ class AudioSignal(object):
 
         return calculated_signal
 
-    def _do_istft(self, window_length, hop_length, window_type, reconstruct_reflection, use_librosa):
+    def _do_istft(self, window_length, hop_length, window_type, use_librosa):
         if self.stft_data.size == 0:
             raise ValueError('Cannot do inverse STFT without self.stft_data!')
 
@@ -665,15 +728,111 @@ class AudioSignal(object):
             A new :class:`AudioSignal` object with the input mask applied to the STFT
 
         """
-        if not isinstance(mask, nussl.MaskBase):
+        if not isinstance(mask, separation.masks.mask_base.MaskBase):
             raise ValueError('mask is {} but is expected to be a MaskBase-derived object!'.format(type(mask)))
 
-        if mask.shape != self.stft_data.shape :
+        if mask.shape != self.stft_data.shape:
             raise ValueError('Input mask and self.stft_data are not the same shape! '
                              'mask: {}, self.stft_data: {}'.format(mask.shape, self.stft_data.shape))
 
         masked_stft = self.stft_data * mask.mask
-        return self.make_copy_with_audio_data(masked_stft, verbose=False)
+        return self.make_copy_with_stft_data(masked_stft, verbose=False)
+
+    ##################################################
+    #                   Plotting
+    ##################################################
+    #
+
+    _NAME_STEM = 'audio_signal'
+
+    def plot_time_domain(self, channel=None, x_label_time=True, title=None, file_path_name=None):
+        """
+        Plots a graph of the time domain audio signal
+        Parameters:
+            channel (int): The index of the single channel to be plotted
+            x_label_time (True): Label the x axis with time (True) or samples (False)
+            title (str): The title of the audio signal plot
+            file_path_name (str): The output path of where the plot is saved, including the file name
+
+        """
+
+        if self.audio_data is None:
+            raise ValueError('Cannot plot with no audio data!')
+
+        if channel > self.num_channels - 1:
+            raise ValueError('Channel selected does not exist!')
+
+        # Mono or single specific channel selected for plotting
+        if self.num_channels == 1 or channel is not None:
+            plot_channels = channel if channel else self.num_channels - 1
+            if x_label_time is True:
+                plt.plot(self.time_vector, self.audio_data[plot_channels])
+                plt.xlim(self.time_vector[0], self.time_vector[-1])
+            else:
+                plt.plot(self.audio_data[plot_channels])
+                plt.xlim(0, self.signal_length)
+            channel_num_plot = 'Channel {}'.format(plot_channels)
+            plt.ylabel(channel_num_plot)
+
+        # Stereo signal plotting
+        elif self.num_channels == 2 and channel is None:
+            top_plot = abs(self.audio_data[0])
+            bottom_plot = -abs(self.audio_data[1])
+            if x_label_time is True:
+                plt.plot(self.time_vector, top_plot)
+                plt.plot(self.time_vector, bottom_plot, 'C0')
+                plt.xlim(self.time_vector[0], self.time_vector[-1])
+            else:
+                plt.plot(top_plot)
+                plt.plot(bottom_plot, 'C0')
+                plt.xlim(0, self.signal_length)
+
+        # Plotting more than 2 channels each on their own plots in a stack
+        elif self.num_channels > 2 and channel is None:
+            f, axarr = plt.subplots(self.num_channels, sharex=True)
+            for i in range(self.num_channels):
+                if x_label_time is True:
+                    axarr[i].plot(self.time_vector, self.audio_data[i])
+                    axarr[i].set_xlim(self.time_vector[0], self.time_vector[-1])
+                else:
+                    axarr[i].plot(self.audio_data[i], sharex=True)
+                    axarr[i].set_xlim(0, self.signal_length)
+                channel_num_plot = 'Ch {}'.format(i)
+                axarr[i].set_ylabel(channel_num_plot)
+
+        if title is None:
+            title = self.file_name if self.file_name is not None else self._NAME_STEM
+
+        plt.suptitle(title)
+
+        if file_path_name:
+            file_path_name = file_path_name if self._check_if_valid_img_type(file_path_name) \
+                                            else file_path_name + '.png'
+            plt.savefig(file_path_name)
+
+    def plot_spectrogram(self, file_name=None, ch=None):
+        # TODO: use self.stft_data if not None
+        # TODO: flatten to mono be default
+        # TODO: make other parameters adjustable
+        if file_name is None:
+            name = self.file_name if self.file_name is not None else self._NAME_STEM + '_spectrogram'
+        else:
+            name = os.path.splitext(file_name)[0]
+
+        name = name if self._check_if_valid_img_type(name) else name + '.png'
+
+        if ch is None:
+            spectral_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
+        else:
+            spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
+
+    @staticmethod
+    def _check_if_valid_img_type(name):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        result = any([name[-len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
+        plt.close()
+        return result
 
     ##################################################
     #                  Utilities
@@ -734,7 +893,7 @@ class AudioSignal(object):
 
         n_samples = n_seconds * self.sample_rate
         self.truncate_samples(n_samples)
-    
+
     def crop_signal(self, before, after):
         """
         Get rid of samples before and after the signal on all channels. Contracts the length
@@ -869,6 +1028,7 @@ class AudioSignal(object):
 
         Args:
             audio_data:
+            verbose (bool): If ``True`` prints warnings. If ``False``
 
         Returns:
 
@@ -882,7 +1042,7 @@ class AudioSignal(object):
 
         new_signal = copy.deepcopy(self)
         new_signal.audio_data = audio_data
-        new_signal.stft_data = np.zeros_like(self.stft_data)
+        new_signal.stft_data = None
         return new_signal
 
     def make_copy_with_stft_data(self, stft_data, verbose=True):
@@ -905,7 +1065,7 @@ class AudioSignal(object):
 
         new_signal = copy.deepcopy(self)
         new_signal.stft_data = stft_data
-        new_signal.audio_data = np.zeros_like(self.audio_data)
+        new_signal.audio_data = None
         return new_signal
 
     def to_json(self):
@@ -924,7 +1084,7 @@ class AudioSignal(object):
     def _to_json_helper(o):
         if not isinstance(o, AudioSignal):
             raise TypeError
-        import copy
+
         d = copy.copy(o.__dict__)
         for k, v in d.items():
             if isinstance(v, np.ndarray):
@@ -954,14 +1114,22 @@ class AudioSignal(object):
 
     @staticmethod
     def _from_json_helper(json_dict):
-        if '__class__' in json_dict:
+        if '__class__' in json_dict and '__module__' in json_dict:
             class_name = json_dict.pop('__class__')
             module = json_dict.pop('__module__')
             if class_name != AudioSignal.__name__ or module != AudioSignal.__module__:
-                raise TypeError
+                raise TypeError('Expected {}.{} but got {}.{} from json!'.format(AudioSignal.__module__,
+                                                                                 AudioSignal.__name__,
+                                                                                 module, class_name))
+
             a = AudioSignal()
+
+            if 'stft_params' not in json_dict:
+                raise TypeError('JSON string must contain StftParams object!')
+
             stft_params = json_dict.pop('stft_params')
             a.stft_params = spectral_utils.StftParams.from_json(stft_params)
+
             for k, v in json_dict.items():
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
                     a.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
@@ -1005,23 +1173,33 @@ class AudioSignal(object):
             raise ValueError('Cannot get frequency bin until self.stft() is run!')
         return (np.abs(self.freq_vector - freq)).argmin()
 
-    def apply_gain(self, value, overwrite=False):
+    def apply_gain(self, value):
         """
         Apply a gain to self.audio_data
         Args:
             value: (float) amount to multiply self.audio_data by
-            overwrite: (bool) should overwrite audio_data in self
-
-        Returns:
 
         """
         if not isinstance(value, numbers.Real):
             raise ValueError('Can only multiply/divide by a scalar!')
 
-        audio_data = self.audio_data * value
-        if overwrite:
-            self.audio_data = audio_data
+        self.audio_data = self.audio_data * value
         return self
+
+    def resample(self, new_sample_rate):
+        """
+        Resample an audio signal using resample
+        Args:
+            new_sample_rate: (int) The new sample rate to apply to the audio signal
+
+        """
+
+        resampled_signal = []
+        for channel in self.get_channels():
+            resampled_channel = librosa.resample(channel, self.sample_rate, new_sample_rate)
+            resampled_signal.append(resampled_channel)
+        self.audio_data = np.array(resampled_signal)
+        self._sample_rate = new_sample_rate
 
     ##################################################
     #              Channel Utilities
@@ -1029,8 +1207,8 @@ class AudioSignal(object):
 
     def _verify_get_channel(self, n):
         if n >= self.num_channels:
-            raise ValueError( 'Cannot get channel {0} when this object only has {1} channels! (0-based)'
-                              .format(n, self.num_channels))
+            raise ValueError('Cannot get channel {0} when this object only has {1} channels! (0-based)'
+                             .format(n, self.num_channels))
 
         if n < 0:
             raise ValueError('Cannot get channel {}. This will cause unexpected results'.format(n))
@@ -1157,23 +1335,44 @@ class AudioSignal(object):
         # np.array helps with duck typing
         return utils._get_axis(np.array(self.magnitude_spectrogram_data), constants.STFT_CHAN_INDEX, n)
 
-    def to_mono(self, overwrite=False):
+    def to_mono(self, overwrite=False, keep_dims=True):
         """ Converts :attr:`audio_data` to mono by averaging every sample.
 
         Warning:
             If overwrite=True (default) this will overwrite any data in :attr:`audio_data`!
 
         Args:
-            overwrite (bool, optional): If ``True`` this function will overwrite :attr:`audio_data`.
-
+            overwrite (bool): If `True` this function will overwrite :attr:`audio_data`.
+            keep_dims (bool): If `True` this function will return a 1D array,
+            else will return array with shape `(1, n_samples)`.
         Returns:
             (:obj:`np.array`): Mono-ed version of :attr:`audio_data`.
 
         """
-        mono = np.mean(self.audio_data, axis=constants.CHAN_INDEX)
+        mono = np.mean(self.audio_data, axis=constants.CHAN_INDEX, keepdims=keep_dims)
+
         if overwrite:
             self.audio_data = mono
         return mono
+
+    def stft_to_one_channel(self, overwrite=False):
+        """ Converts :attr:`stft_data` to a single channel by averaging every sample.
+        Shape: stft_data.shape will be (num_freq, num_time, 1) where the last axis is the channel number
+
+        Warning:
+            If overwrite=True (default) this will overwrite any data in :attr:`stft_data`!
+
+        Args:
+            overwrite (bool, optional): If ``True`` this function will overwrite :attr:`stft_data`.
+
+        Returns:
+            (:obj:`np.array`): Single channel version of :attr:`stft_data`.
+
+        """
+        one_channel_stft = np.mean(self.stft_data, axis=constants.CHAN_INDEX)
+        if overwrite:
+            self.stft_data = one_channel_stft
+        return one_channel_stft
 
     ##################################################
     #              Operator overloading
@@ -1208,16 +1407,28 @@ class AudioSignal(object):
         return self - other
 
     def __mul__(self, value):
-        return self.apply_gain(value, overwrite=True)
+        if not isinstance(value, numbers.Real):
+            raise ValueError('Can only multiply/divide by a scalar!')
+
+        return self.make_copy_with_audio_data(np.multiply(self.audio_data, value), verbose=False)
 
     def __div__(self, value):
-        return self.apply_gain(1.0 / float(value), overwrite=True)
+        if not isinstance(value, numbers.Real):
+            raise ValueError('Can only multiply/divide by a scalar!')
+
+        return self.make_copy_with_audio_data(np.divide(self.audio_data, float(value)), verbose=False)
+
+    def __truediv__(self, value):
+        return self.__div__(value)
+
+    def __itruediv__(self, value):
+        return self.__idiv__(value)
 
     def __imul__(self, value):
-        return self * value
+        return self.apply_gain(value)
 
     def __idiv__(self, value):
-        return self / value
+        return self.apply_gain(1 / float(value))
 
     def __len__(self):
         return self.signal_length

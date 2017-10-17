@@ -31,7 +31,7 @@ class IdealMaskTestCase(unittest.TestCase):
         Returns:
 
         """
-        mask_types = [nussl.SoftMask, nussl.BinaryMask]
+        mask_types = [nussl.separation.SoftMask, nussl.separation.BinaryMask]
 
         for mask_class in mask_types:
             ideal_mask = nussl.IdealMask(self.premade_mixture, sources_list=[self.vocals, self.drums],
@@ -52,7 +52,7 @@ class IdealMaskTestCase(unittest.TestCase):
             assert np.allclose(reconstructed, self.premade_mixture.audio_data)
 
     def test_run_new_mixture(self):
-        mask_types = [nussl.SoftMask, nussl.BinaryMask]
+        mask_types = [nussl.separation.SoftMask, nussl.separation.BinaryMask]
 
         for mask_class in mask_types:
             assert np.all(np.equal(self.new_mixture.audio_data, self.vocals.audio_data + self.drums.audio_data))
@@ -69,7 +69,7 @@ class IdealMaskTestCase(unittest.TestCase):
             residual = ideal_mask.residual
             assert isinstance(residual, nussl.AudioSignal)
 
-            if mask_class == nussl.SoftMask:
+            if mask_class == nussl.separation.SoftMask:
                 for i, src in enumerate(masked_sources):
                     src.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'new_src{}.wav'.format(i)))
                 residual.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'new_residual.wav'))
