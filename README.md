@@ -59,12 +59,15 @@ General matrix decomposition:
 Other Separation Methods
 * Ideal Mask
 * Overlap Add
+* Algorithm Picker (multicue separation)
+* Separation via 2DFT
+* Melody Tracking separation (Melodia)
 
 Also coming: Deep methods (Deep Clustering, Huang et. al. Deep Separation, etc.) (with keras backend), Separation by 
-Segmentation, Melody tracking methods (Melodia, SIMM), and many more!
+Segmentation, Melody tracking methods (Melodia, SIMM), and many more! Note: newly algorithms usually do not live in the master branch. 
 
-The nussl team is also working on implementing an evaluation framework, which will include easy interoperability
-between nussl and `mir_eval` (aka `BSSEval`) as well as implementations of other evaluation methods. 
+The nussl also has an evaluation framework, which provides interoperability
+between nussl and [mir_eval](https://githum.com/caffel/mir_eval) (a python implementation of [BSSEval](bass-db.gforge.inria.fr/bss_eval)) as well as implementations of other evaluation methods. 
 
 
 Installation
