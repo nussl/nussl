@@ -21,7 +21,7 @@ import numpy as np
 import mask_separation_base
 import masks
 from ..core import constants
-from ..core import list_verification_utils
+from ..core import utils
 
 
 class IdealMask(mask_separation_base.MaskSeparationBase):
@@ -83,7 +83,7 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
                  use_librosa_stft=constants.USE_LIBROSA_STFT):
         super(IdealMask, self).__init__(input_audio_signal=input_audio_mixture, mask_type=mask_type)
 
-        self.sources = list_verification_utils.audio_signal_list_strict(sources_list)
+        self.sources = utils.verify_audio_signal_list_strict(sources_list)
 
         # Make sure input_audio_signal has the same settings as sources_list
         if self.audio_signal.sample_rate != self.sources[0].sample_rate:

@@ -6,12 +6,12 @@ Init for ``nussl``, the Northwestern University Source Separation Library.
 
 from .core.constants import *
 from .core.audio_signal import AudioSignal
-from .core import utils, spectral_utils, list_verification_utils
+from .core import utils, stft_utils
 from .evaluation import *
 from .separation import *
 from .transformers import *
 
-__all__ = ['core', 'utils', 'transformers', 'separation', 'evaluation']
+__all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation']
 
 
 __version__ = '0.1.6a0'

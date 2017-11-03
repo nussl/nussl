@@ -9,7 +9,7 @@ of your choosing, all in one fell swoop.
 import warnings
 
 import evaluation_base
-from ..core import list_verification_utils
+from ..core import utils
 from .precision_recall_fscore import PrecisionRecallFScore
 from ..separation import SeparationBase, MaskSeparationBase, IdealMask
 
@@ -33,14 +33,14 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
 
     """
 
-    mixture_list = list_verification_utils.audio_signal_list_lax(mixture_list)
+    mixture_list = utils.verify_audio_signal_list_lax(mixture_list)
     assert issubclass(separation_object, SeparationBase), 'Expected a SeparationBase derived class!'
     assert issubclass(evaluation_object, evaluation_base.EvaluationBase), 'Expected an EvaluationBase derived class!'
 
     scores = {}
     for i, mixture in enumerate(mixture_list):
 
-        true_sources_list = list_verification_utils.audio_signal_list_strict(true_sources_list_of_lists[i])
+        true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[i])
 
         assert mixture.signal_length == true_sources_list[0].signal_length, \
             'Mixture signal_length does not match true sources at idx {}'.format(i)
@@ -77,14 +77,14 @@ def run_and_eval_prf(separation_list, separation_kwargs,
     Returns:
 
     """
-    mixture_list = list_verification_utils.audio_signal_list_lax(mixture_list)
-    separation_list = list_verification_utils.mask_separation_base_list(separation_list)
+    mixture_list = utils.verify_audio_signal_list_lax(mixture_list)
+    separation_list = utils.verify_mask_separation_base_list(separation_list)
 
     scores = {}
     for separation_object in separation_list:
         for i, mixture in enumerate(mixture_list):
 
-            true_sources_list = list_verification_utils.audio_signal_list_strict(true_sources_list_of_lists[i])
+            true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[i])
 
             if mixture.signal_length != true_sources_list[0].signal_length:
                 error = 'Mixture signal_length does not match true sources at idx {}'.format(i)

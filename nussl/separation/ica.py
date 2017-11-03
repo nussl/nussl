@@ -7,7 +7,7 @@ import sklearn
 import separation_base
 from ..core import constants
 from ..core.audio_signal import AudioSignal
-from ..core import list_verification_utils
+from ..core import utils
 
 
 class ICA(separation_base.SeparationBase):
@@ -90,7 +90,7 @@ class ICA(separation_base.SeparationBase):
         Returns:
 
         """
-        observations = list_verification_utils.audio_signal_list_strict(observations)
+        observations = utils.verify_audio_signal_list_strict(observations)
 
         if not all(observations[0].signal_length == o.signal_length for o in observations):
             raise ValueError('All observation AudioSignal objects must have the same length!')

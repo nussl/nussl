@@ -172,8 +172,8 @@ class TestSpectralUtils(unittest.TestCase):
         win_type = 'rectangular'
         ones = np.ones(self.length)
 
-        nussl.spectral_utils.e_stft_plus(ones, self.win_length_40ms,
-                                         self.win_length_40ms, win_type, self.sr)
+        nussl.stft_utils.e_stft_plus(ones, self.win_length_40ms,
+                                     self.win_length_40ms, win_type, self.sr)
 
     def test_e_stft_plus_sin(self):
         """
@@ -190,7 +190,7 @@ class TestSpectralUtils(unittest.TestCase):
         win_length = 2048
         hop_length = win_length / 2
 
-        stft, p, freq_array, _ = nussl.spectral_utils.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
+        stft, p, freq_array, _ = nussl.stft_utils.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
 
     def test_librosa_stft(self):
         """
@@ -208,9 +208,9 @@ class TestSpectralUtils(unittest.TestCase):
         hop_length = win_length / 2
         epsilon = 0.01  # TODO: why doesn't self.librosa_epsilon work?
 
-        stft = nussl.spectral_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
-        signal = nussl.spectral_utils.librosa_istft_wrapper(stft, win_length, hop_length, win_type,
-                                                            original_signal_length=len(x))
+        stft = nussl.stft_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
+        signal = nussl.stft_utils.librosa_istft_wrapper(stft, win_length, hop_length, win_type,
+                                                        original_signal_length=len(x))
 
         assert max(np.abs(x - signal)) <= epsilon
 
@@ -228,8 +228,8 @@ class TestSpectralUtils(unittest.TestCase):
         win_length = 2048
         hop_length = win_length / 2
 
-        lib_stft = nussl.spectral_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
-        nussl_stft = nussl.spectral_utils.e_stft(x, win_length, hop_length, win_type)
+        lib_stft = nussl.stft_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
+        nussl_stft = nussl.stft_utils.e_stft(x, win_length, hop_length, win_type)
 
         assert lib_stft.shape == nussl_stft.shape
 
@@ -238,8 +238,8 @@ class TestSpectralUtils(unittest.TestCase):
         # assert np.allclose(np.imag(lib_stft), np.imag(nussl_stft))
 
         # win_type is None => Hann window
-        lib_signal = nussl.spectral_utils.librosa_istft_wrapper(lib_stft, win_length, hop_length, 'hann')
-        nussl_signal = nussl.spectral_utils.e_istft(nussl_stft, win_length, hop_length, win_type)
+        lib_signal = nussl.stft_utils.librosa_istft_wrapper(lib_stft, win_length, hop_length, 'hann')
+        nussl_signal = nussl.stft_utils.e_istft(nussl_stft, win_length, hop_length, win_type)
 
         assert len(lib_signal) == len(nussl_signal)
 
@@ -295,8 +295,8 @@ class TestSpectralUtils(unittest.TestCase):
         :param signal: signal to be converted to stft and then back with istft
         :return: calculated signal
         """
-        stft = nussl.spectral_utils.e_stft(signal, win_length, hop_length, win_type)
-        calculated_signal = nussl.spectral_utils.e_istft(stft, win_length, hop_length, win_type)
+        stft = nussl.stft_utils.e_stft(signal, win_length, hop_length, win_type)
+        calculated_signal = nussl.stft_utils.e_istft(stft, win_length, hop_length, win_type)
 
         return calculated_signal
 
