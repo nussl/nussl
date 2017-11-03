@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-
+The original REpeating Pattern Extraction Technique (REPET).
 """
 
 import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
 
-import nussl.config
-import nussl.constants
 import mask_separation_base
 import masks
+from ..core import constants
 
 
 class Repet(mask_separation_base.MaskSeparationBase):
@@ -65,7 +64,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
     """
     def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=100.0,
                  do_mono=False, use_find_period_complex=False,
-                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT, matlab_fidelity=False,
+                 use_librosa_stft=constants.USE_LIBROSA_STFT, matlab_fidelity=False,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
         super(Repet, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type,
                                     mask_threshold=mask_threshold)
@@ -368,7 +367,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
         # take minimum of computed mask and original input and scale
         min_median_mask = np.minimum(median_mask, magnitude_spectrogram_channel)
-        mask = (min_median_mask + nussl.constants.EPSILON) / (magnitude_spectrogram_channel + nussl.constants.EPSILON)
+        mask = (min_median_mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
 
         return mask
 
@@ -413,7 +412,6 @@ class Repet(mask_separation_base.MaskSeparationBase):
     def plot(self, output_file, **kwargs):
         """
         Creates a plot of the beat spectrum and outputs to output_file.
-
 
         Parameters:
             output_file (string) : string representing a path to the desired output file to be created.

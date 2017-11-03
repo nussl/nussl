@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Projet for multicue separation
+Projet for spatial audio separation
 from this paper:
 
 @inproceedings{fitzgeraldPROJETa,
@@ -20,10 +20,10 @@ modified by Ethan Manilow and Prem Seetharaman for incorporation into nussl.
 
 import numpy as np
 
-import nussl.config
-import nussl.utils
 import separation_base
-import nussl.audio_signal
+from ..core import utils
+from ..core import constants
+from ..core.audio_signal import AudioSignal
 
 
 class Projet(separation_base.SeparationBase):
@@ -37,11 +37,11 @@ class Projet(separation_base.SeparationBase):
     """
     def __init__(self, input_audio_signal, num_sources,
                  num_iterations=200, num_panning_directions=41, num_projections=15,
-                 matrix_datatype='float32', panning_profiles = 30,
-                 verbose=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT, ):
+                 matrix_datatype='float32', panning_profiles=30,
+                 verbose=False, use_librosa_stft=constants.USE_LIBROSA_STFT):
         super(Projet, self).__init__(input_audio_signal=input_audio_signal)
         
-        if self.audio_signal.num_channels != 2:
+        if not self.audio_signal.is_stereo:
             raise ValueError('Can only run PROJET on a stereo audio signal!')
 
         self.num_sources = num_sources
@@ -50,14 +50,16 @@ class Projet(separation_base.SeparationBase):
         self.num_projections = num_projections
         self.panning_profiles = panning_profiles
 
-        self.matrix_datatype = matrix_datatype  #TODO: verify datatype is a float
+        if matrix_datatype not in np.typecodes['AllFloat']:
+            raise ValueError('matrix_datatype must be a float!')
+
+        self.matrix_datatype = matrix_datatype
 
         self.verbose = verbose
 
         self.stft = None
         self.sources = None
         self.use_librosa_stft = use_librosa_stft
-        
 
     def run(self):
         """
@@ -82,14 +84,15 @@ class Projet(separation_base.SeparationBase):
         panning_sources_matrix = np.abs(np.random.randn(self.num_panning_directions,
                                                         num_sources)).astype(self.matrix_datatype) + 1
 
+        chan_pan_diff = utils.complex_randn((num_channels, self.num_panning_directions - self.panning_profiles))
+        chan_per_panning_profiles = self.multichannel_grid(num_channels, self.panning_profiles)
+
         # compute panning profiles
-        panning_matrix = np.concatenate((nussl.utils.complex_randn((num_channels,
-                                                                    self.num_panning_directions - self.panning_profiles)),
-                                         self.multichannel_grid(num_channels, self.panning_profiles)), axis=1)
+        panning_matrix = np.concatenate((chan_pan_diff, chan_per_panning_profiles), axis=1)
         panning_matrix /= np.sqrt(np.sum(np.abs(panning_matrix) ** 2, axis=0))[None, ...]
 
         # compute projection matrix
-        projection_matrix = np.concatenate((nussl.utils.complex_randn((max(self.num_projections - 5, 0), num_channels)),
+        projection_matrix = np.concatenate((utils.complex_randn((max(self.num_projections - 5, 0), num_channels)),
                                             self.orthogonal_matrix(self.multichannel_grid(num_channels, min(self.num_projections, 5)))))
         projection_matrix /= np.sqrt(np.sum(np.abs(projection_matrix) ** 2, axis=1))[..., None]
 
@@ -141,7 +144,7 @@ class Projet(separation_base.SeparationBase):
             source_stft = sigma_j / sigma * C
             source_stft = np.dot(source_stft, recompose_matrix.T)
             source_stft = np.reshape(source_stft, (num_freq_bins, num_time_bins, num_channels))
-            source = nussl.audio_signal.AudioSignal(stft = source_stft, sample_rate = self.audio_signal.sample_rate)
+            source = AudioSignal(stft=source_stft, sample_rate=self.audio_signal.sample_rate)
             source.istft(self.stft_params.window_length, self.stft_params.hop_length, 
                         self.stft_params.window_type, overwrite=True, 
                         use_librosa=self.use_librosa_stft, 
@@ -190,7 +193,8 @@ class Projet(separation_base.SeparationBase):
         EXAMPLE:
              ::
         """
-        if self.sources is None:
-            return None
 
         return self.sources
+
+    def plot(self, output_name, **kwargs):
+        pass

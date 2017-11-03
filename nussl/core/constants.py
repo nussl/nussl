@@ -56,3 +56,4 @@ STFT_CHAN_INDEX = 2
 Used in :ref:`audio_signal` and in :ref:`mask_base`.
 """
 
+USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will use librosa's stft function by default
