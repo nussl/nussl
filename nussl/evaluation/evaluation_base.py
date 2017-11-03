@@ -3,8 +3,7 @@
 """
 EvaluationBase is the base class for all evaluation methods in nussl.
 """
-
-from ..core import list_verification_utils
+from ..core import utils
 from ..core.audio_signal import AudioSignal
 
 
@@ -77,7 +76,7 @@ class EvaluationBase(object):
         Base method for verifying a list of input objects for an :class:`EvaluationBase`-derived object. Override this
         method when creating new :class:`EvaluationBased`-derived class.
         
-        By default calls :func:`nussl.utils.audio_signal_list_strict`, which verifies that all objects in the
+        By default calls :func:`nussl.utils.verify_audio_signal_list_strict`, which verifies that all objects in the
         input list are :class:`audio_signal.AudioSignal` objects with the same length, sample rate and have identical 
         number of channels.
         
@@ -93,7 +92,7 @@ class EvaluationBase(object):
             A verified list of objects that are ready for running the evaluation method.
 
         """
-        return list_verification_utils.audio_signal_list_strict(audio_signal_list)
+        return utils.verify_audio_signal_list_strict(audio_signal_list)
 
     def evaluate(self):
         """

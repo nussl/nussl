@@ -20,7 +20,7 @@ import numpy as np
 import scipy.io.wavfile as wav
 
 import constants
-import spectral_utils
+import stft_utils
 import utils
 
 __all__ = ['AudioSignal']
@@ -102,7 +102,7 @@ class AudioSignal(object):
         if stft is not None:
             self.stft_data = stft  # complex spectrogram data
 
-        self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
+        self.stft_params = stft_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
         self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
@@ -648,7 +648,7 @@ class AudioSignal(object):
 
         stfts = []
 
-        stft_func = spectral_utils.librosa_stft_wrapper if use_librosa else spectral_utils.e_stft
+        stft_func = stft_utils.librosa_stft_wrapper if use_librosa else stft_utils.e_stft
 
         for chan in self.get_channels():
             stfts.append(stft_func(signal=chan, window_length=window_length,
@@ -712,7 +712,7 @@ class AudioSignal(object):
 
         signals = []
 
-        istft_func = spectral_utils.librosa_istft_wrapper if use_librosa else spectral_utils.e_istft
+        istft_func = stft_utils.librosa_istft_wrapper if use_librosa else stft_utils.e_istft
 
         for stft in self.get_stft_channels():
             calculated_signal = istft_func(stft=stft, window_length=window_length,
@@ -734,7 +734,9 @@ class AudioSignal(object):
             A new :class:`AudioSignal` object with the input mask applied to the STFT
 
         """
+        # Lazy load to prevent a circular reference upon initialization
         from ..separation.masks import mask_base
+
         if not isinstance(mask, mask_base.MaskBase):
             raise ValueError('mask is {} but is expected to be a MaskBase-derived object!'.format(type(mask)))
 
@@ -829,9 +831,9 @@ class AudioSignal(object):
         name = name if self._check_if_valid_img_type(name) else name + '.png'
 
         if ch is None:
-            spectral_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
+            stft_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
         else:
-            spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
+            stft_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
 
     @staticmethod
     def _check_if_valid_img_type(name):
@@ -1135,7 +1137,7 @@ class AudioSignal(object):
                 raise TypeError('JSON string must contain StftParams object!')
 
             stft_params = json_dict.pop('stft_params')
-            a.stft_params = spectral_utils.StftParams.from_json(stft_params)
+            a.stft_params = stft_utils.StftParams.from_json(stft_params)
 
             for k, v in json_dict.items():
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:

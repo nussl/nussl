@@ -8,7 +8,7 @@ import warnings
 import numpy as np
 
 import separation_base
-from ..core import spectral_utils
+from ..core import stft_utils
 from ..core import constants
 
 from ft2d import FT2D
@@ -225,7 +225,7 @@ class OverlapAdd(separation_base.SeparationBase):
         background_array = np.zeros_like(self.audio_signal.audio_data)
 
         # Make the window for multiple channels
-        window = spectral_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
+        window = stft_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
         window = np.vstack([window for _ in range(self.audio_signal.num_channels)])
 
         # Main overlap-add loop

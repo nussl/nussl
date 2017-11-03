@@ -19,9 +19,9 @@ class TestJson(unittest.TestCase):
         return worked
 
     def test_stft_params(self):
-        s = nussl.spectral_utils.StftParams(44100)
+        s = nussl.stft_utils.StftParams(44100)
         j = s.to_json()
-        b = nussl.spectral_utils.StftParams.from_json(j)
+        b = nussl.stft_utils.StftParams.from_json(j)
         worked = s == b
         return worked
 
@@ -69,5 +69,3 @@ class TestJson(unittest.TestCase):
         f = nussl.NMF_MFCC.from_json(j)
         worked = n == f
         return worked
-
-
