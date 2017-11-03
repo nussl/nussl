@@ -143,7 +143,7 @@ class DuetUnitTests(unittest.TestCase):
         benchmark_atn_peak = np.load(atn_peak_path)
         benchmark_atn_delay_est = np.load(atn_delay_est_path)
 
-        delay_peak, atn_delay_est, atn_peak = duet._convert_peaks()
+        delay_peak, atn_delay_est, atn_peak = duet._convert_peaks(duet.peak_indices)
 
         assert np.all(benchmark_delay_peak == delay_peak)
         assert np.all(benchmark_atn_delay_est == atn_delay_est)

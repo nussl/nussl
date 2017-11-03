@@ -5,14 +5,14 @@
 Base class for separation algorithms that make masks. Most algorithms in nussl are derived from MaskSeparationBase. 
 
 """
-import warnings
 import json
+import warnings
 
-import separation_base
 import masks
-import nussl.constants
-import nussl.utils
-import nussl.audio_signal
+import separation_base
+from ..core import utils
+from ..core import audio_signal
+from ..core import constants
 
 
 class MaskSeparationBase(separation_base.SeparationBase):
@@ -265,13 +265,13 @@ class MaskSeparationBaseDecoder(separation_base.SeparationBaseDecoder):
 
             # fill out the rest of the fields
             for k, v in json_dict.items():
-                if isinstance(v, dict) and nussl.constants.NUMPY_JSON_KEY in v:
-                    separator.__dict__[k] = nussl.utils.json_numpy_obj_hook(v[nussl.constants.NUMPY_JSON_KEY])
+                if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
+                    separator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
                     
                 # TODO: test this in python3
-                elif isinstance(v, (str, bytes, unicode)) and nussl.audio_signal.__name__ in v:
+                elif isinstance(v, (str, bytes, unicode)) and audio_signal.__name__ in v:
 
-                    separator.__dict__[k] = nussl.audio_signal.AudioSignal.from_json(v)
+                    separator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
                 elif k == 'result_masks':
                     # for mask_json in v:
 

@@ -12,6 +12,7 @@ import nussl
 
 DEBUG = False
 
+
 def main():
     """
     Freezes essential values from NMF MFCC in its current implementation for benchmarking
