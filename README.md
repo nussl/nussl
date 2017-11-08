@@ -67,7 +67,7 @@ Also coming: Deep methods (Deep Clustering, Huang et. al. Deep Separation, etc.)
 Segmentation, Melody tracking methods (Melodia, SIMM), and many more! Note: newly algorithms usually do not live in the master branch. 
 
 The nussl also has an evaluation framework, which provides interoperability
-between nussl and [mir_eval](https://githum.com/caffel/mir_eval) (a python implementation of [BSSEval](bass-db.gforge.inria.fr/bss_eval)) as well as implementations of other evaluation methods. 
+between nussl and [mir_eval](https://github.com/caffel/mir_eval) (a python implementation of [BSSEval](http://bass-db.gforge.inria.fr/bss_eval)) as well as implementations of other evaluation methods. 
 
 
 Installation
