@@ -12,7 +12,6 @@ import nussl
 class NMFMFCCUnitTests(unittest.TestCase):
 
     def setUp(self):
-
         # If our working directory is not the top level dir
         if os.path.basename(os.path.normpath(os.getcwd())) == 'tests':
             os.chdir('..')  # then go up one level
@@ -44,9 +43,6 @@ class NMFMFCCUnitTests(unittest.TestCase):
                                   mfcc_range=5)
         assert nmf_mfcc.mfcc_start == 1
         assert nmf_mfcc.mfcc_end == 5
-
-        nmf_mfcc.run()
-        nmf_mfcc.make_audio_signals()
 
         # Set up the MFCC range by using a list [min, max]
         nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src, num_templates=6, num_iterations=5,
@@ -92,7 +88,7 @@ class NMFMFCCUnitTests(unittest.TestCase):
         test_audio.load_audio_from_array(signal)
 
         # Set up NMMF MFCC
-        nmf_mfcc = nussl.NMF_MFCC(test_audio, num_sources=2, num_templates=2, num_iterations=15)
+        nmf_mfcc = nussl.NMF_MFCC(test_audio, num_sources=self.n_src, num_templates=2, num_iterations=15)
 
         # and run
         nmf_mfcc.run()
@@ -100,17 +96,18 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
     def test_piano_and_synth(self):
         # Set up NMMF MFCC
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src, num_templates=6, num_iterations=10,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src * 2, num_templates=6, num_iterations=10,
                                   random_seed=0)
 
         # and run
-        nmf_mfcc.run()
-        nmf_mfcc.make_audio_signals()
+        computed_masks = nmf_mfcc.run()
         estimated_sources = nmf_mfcc.make_audio_signals()
         assert len(estimated_sources) == self.n_src
 
         for source in estimated_sources:
             assert source.is_mono
+
+        assert self.signal_mono == estimated_sources[0] + estimated_sources[1]
 
     def test_piano_and_synth_stereo(self):
         # Set up NMMF MFCC
@@ -134,7 +131,6 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
         # and run
         nmf_mfcc.run()
-        nmf_mfcc.make_audio_signals()
         estimated_sources = nmf_mfcc.make_audio_signals()
         assert len(estimated_sources) == self.n_src
 

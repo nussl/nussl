@@ -822,7 +822,7 @@ class AudioSignal(object):
         name = name if self._check_if_valid_img_type(name) else name + '.png'
 
         if ch is None:
-            spectral_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
+            spectral_utils.plot_stft(self.to_mono(keep_dims=False), name, sample_rate=self.sample_rate)
         else:
             spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
 
