@@ -5,6 +5,7 @@ A repository containing all of the constants frequently used in
 this wacky, mixed up source separation stuff.
 """
 import scipy.signal
+from six.moves.urllib_parse import urljoin
 
 __all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
            'DEFAULT_MAX_VAL', 'EPSILON', 'MAX_FREQUENCY',
@@ -55,4 +56,15 @@ STFT_CHAN_INDEX = 2
 (int) Index of the number of channels in a time-frequency representation. 
 Used in :ref:`audio_signal` and in :ref:`mask_base`.
 """
+
+# ############# nussl-extras urls ############# #
+
+NUSSL_EXTRA_BASE_URL = 'https://ethman.github.io/nussl-extras/'
+NUSSL_EXTRA_ASSETS_BASE_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'assets/')
+NUSSL_EXTRA_AUDIO_URL = urljoin(NUSSL_EXTRA_ASSETS_BASE_URL, 'audio/')
+NUSSL_EXTRA_MODELS_URL = urljoin(NUSSL_EXTRA_ASSETS_BASE_URL, 'models/')
+NUSSL_EXTRA_BENCHMARKS_URL = urljoin(NUSSL_EXTRA_ASSETS_BASE_URL, 'benchmarks/')
+NUSSL_EXTRA_AUDIO_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'audio_metadata.json')
+NUSSL_EXTRA_BENCHMARK_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'benchmark_metadata.json')
+NUSSL_EXTRA_MODEL_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'model_metadata.json')
 

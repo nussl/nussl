@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import nussl
+import time
 import numpy as np
 
 def main():
@@ -9,7 +10,7 @@ def main():
 
     # Plot a simple sine wave at 5kHz
     dt = 1.0 / float(sample_rate)
-    dur = 10.0 # sec
+    dur = 100.0 # sec
     freq = 5000 # Hz
     x = np.arange(0.0, dur, dt)
     x = np.sin(2 * np.pi * freq * x)

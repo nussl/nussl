@@ -81,3 +81,8 @@ class TestUtils(unittest.TestCase):
 
         result = nussl.add_mismatched_arrays(short_array, short_array, truncate=True)
         assert all(np.equal(result, expected_result))
+
+    def test_download_audio_example(self):
+        example_name = 'dev1_female3_inst_mix.wav'
+        nussl.utils.print_available_audio_files()
+        # nussl.utils.download_audio_example(example_name, '')

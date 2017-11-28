@@ -16,7 +16,7 @@ import nussl
 def speed_test():
     freq = 3000
     sr = nussl.constants.DEFAULT_SAMPLE_RATE  # 44.1kHz
-    dur = np.arange(5, 121, 5)  # five second intervals from 5-120 seconds
+    dur = np.arange(60, 311, 30)  # five second intervals from 5-120 seconds
     lengths = dur * sr
     trials = 25
 
@@ -27,14 +27,20 @@ def speed_test():
 
     # Make the signals and test
     for cur_len in lengths:
+        print('{}\n{}cur_len: {}\n{}\n'.format('*' * 50, ' ' * 20, cur_len / sr, '*' * 50))
+
         librosa_stft_times[cur_len] = []
         nussl_stft_times[cur_len] = []
         librosa_istft_times[cur_len] = []
         nussl_istft_times[cur_len] = []
 
+        # sig = make_fm_signal(cur_len, sr)
+        sig = np.array(np.sin(np.linspace(0, freq * 2 * np.pi, cur_len)))
+
         for i in range(trials):
+            # print('{}{}\n{}trial: {}\n{}\n'.format(' ' * 20, '*' * 15, ' ' * 20, i, '*' * 15))
             # Make a new signal
-            sig = np.array(np.sin(np.linspace(0, freq * 2 * np.pi, cur_len)))
+
             a = nussl.AudioSignal(audio_data_array=sig)
 
             n_st = time.time()
@@ -89,6 +95,23 @@ def speed_test():
     plt.legend(loc='lower right')
     plt.title('Average time taken to do iSTFT over {} trials'.format(trials))
     plt.savefig('speed_test_istft.png')
+
+
+def make_fm_signal(dur, sample_rate):
+    dt = 1.0 / float(sample_rate)
+    freq = 5000 # Hz
+    x = np.arange(0.0, dur, dt)
+    x = np.sin(2 * np.pi * freq * x)
+
+    lfo_freq = 3
+    lfo_amp = 800
+    freq2 = 15000
+    x2 = np.arange(0.0, dur, dt)
+    modulator = lfo_amp * np.sin(2 * np.pi * lfo_freq * x2)
+    x2 = np.sin(2 * np.pi * freq2 * x2 + modulator)
+    x2 += x
+
+    return x2
 
 if __name__ == '__main__':
     speed_test()

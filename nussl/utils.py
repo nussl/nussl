@@ -5,15 +5,24 @@ Provides utilities for running nussl algorithms that do not belong to any specif
 between algorithms.
 
 """
+from __future__ import division
 import numpy as np
 import warnings
 import base64
 import json
-import constants
+import os
+import sys
+import json
+
+from six.moves.urllib_parse import urljoin
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.error import URLError
+from six.moves.urllib.request import urlopen, Request
 
 from audio_signal import AudioSignal
 from separation import SeparationBase
 from separation import MaskSeparationBase
+import constants
 
 __all__ = ['find_peak_indices', 'find_peak_values',
            'json_ready_numpy_array', 'json_serialize_numpy_array', 'load_numpy_json', 'json_numpy_obj_hook',
@@ -468,3 +477,179 @@ def _verify_mask_separation_list(mask_separation_list):
         raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
 
     return mask_separation_list
+
+
+def download_audio_example(example_name, local_folder):
+    """
+
+    Args:
+        example_name:
+        local_folder:
+
+    Returns:
+
+    """
+    file_url = urljoin(constants.NUSSL_EXTRA_AUDIO_URL, example_name)
+    _download_file(example_name, file_url, local_folder, constants.NUSSL_EXTRA_AUDIO_URL)
+
+
+def print_available_audio_files():
+    """
+
+    Returns:
+
+    """
+    try:
+        request = Request(constants.NUSSL_EXTRA_AUDIO_METADATA_URL)
+
+        # Make sure to get the newest data
+        request.add_header('Pragma', 'no-cache')
+        request.add_header('Cache-Control', 'max-age=0')
+        response = urlopen(request)
+        data = json.loads(response.read())
+        file_metadata = data['nussl Audio File metadata']
+
+        print('{:40} {:15} {:10} {:50}'.format('File Name', 'Duration (sec)', 'Size', 'Description'))
+        for f in file_metadata:
+            print('{:40} {:<15.1f} {:10} {:50}'.format(f['file_name'], f['file_length_seconds'],
+                                                       f['file_size'], f['file_description']))
+        print('\nLast updated {}'.format(data['last_updated']))
+        print('To download one of these files insert the file name '
+              'as the first parameter to nussl.download_audio_example, like so: \n'
+              ' >>> nussl.download_audio_example(\'K0140.wav\')')
+
+    except:
+        raise URLError('Cannot fetch metadata from {}!'.format(constants.NUSSL_EXTRA_AUDIO_METADATA_URL))
+
+
+def download_trained_model(model_name, local_folder):
+    """
+
+    Args:
+        model_name:
+        local_folder:
+
+    Returns:
+
+    """
+    file_url = urljoin(constants.NUSSL_EXTRA_MODELS_URL, model_name)
+    _download_file(model_name, file_url, local_folder, constants.NUSSL_EXTRA_MODELS_URL)
+
+
+def download_benchmark_file(benchmark_name, local_folder):
+    """
+
+    Args:
+        benchmark_name:
+        local_folder:
+
+    Returns:
+
+    """
+    file_url = urljoin(constants.NUSSL_EXTRA_BENCHMARKS_URL, benchmark_name)
+    _download_file(benchmark_name, file_url, local_folder, constants.NUSSL_EXTRA_BENCHMARKS_URL)
+
+
+def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, cache_dir=None):
+    """
+
+    Heavily inspired by and lovingly adapted from keras' `get_file` function:
+    https://github.com/fchollet/keras/blob/afbd5d34a3bdbb0916d558f96af197af1e92ce70/keras/utils/data_utils.py#L109
+
+    Returns:
+
+    """
+    if cache_dir is None:
+        cache_dir = os.path.expanduser(os.path.join('~', '.nussl'))
+    datadir_base = os.path.expanduser(cache_dir)
+
+    if not os.access(datadir_base, os.W_OK):
+        datadir_base = os.path.join('/tmp', '.nussl')
+
+    datadir = os.path.join(datadir_base, cache_subdir)
+    if not os.path.exists(datadir):
+        os.makedirs(datadir)
+
+    file_path = os.path.join(datadir, file_name)
+    print('Saving file at {}'.format(file_path))
+
+    download = False
+    if os.path.exists(file_path):
+        if file_hash is not None:
+            pass
+
+    else:
+        download = True
+
+    if download:
+        print('Downloading {} from {}'.format(file_name, url))
+
+        def dl_progress(count, block_size, total_size):
+            percent = int(count * block_size * 100 / total_size)
+
+            if percent < 100:
+                sys.stdout.write('\r{}...{}%'.format(file_name, percent))
+                sys.stdout.flush()
+
+        error_msg = 'URL fetch failure on {}: {} -- {}'
+
+        try:
+            try:
+                urlretrieve(url, file_path, dl_progress)
+            except URLError as e:
+                raise Exception(error_msg.format(url, e.errno, e.reason))
+            except HTTPError as e:
+                raise Exception(error_msg.format(url, e.code, e.msg))
+        except (Exception, KeyboardInterrupt) as e:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise e
+
+    # try:
+    #     with open(file_path, 'w') as f:
+    #         remote_file = urllib.urlopen(url)
+    #         f.write(remote_file.read())
+    #         remote_file.close()
+    # except Exception as e:
+    #     raise e
+
+
+# This is wholesale from keras
+if sys.version_info[0] == 2:
+    def urlretrieve(url, filename, reporthook=None, data=None):
+        """Replacement for `urlretrive` for Python 2.
+        Under Python 2, `urlretrieve` relies on `FancyURLopener` from legacy
+        `urllib` module, known to have issues with proxy management.
+        # Arguments
+            url: url to retrieve.
+            filename: where to store the retrieved data locally.
+            reporthook: a hook function that will be called once
+                on establishment of the network connection and once
+                after each block read thereafter.
+                The hook will be passed three arguments;
+                a count of blocks transferred so far,
+                a block size in bytes, and the total size of the file.
+            data: `data` argument passed to `urlopen`.
+        """
+        def chunk_read(response, chunk_size=8192, reporthook=None):
+            content_type = response.info().get('Content-Length')
+            total_size = -1
+            if content_type is not None:
+                total_size = int(content_type.strip())
+            count = 0
+            while 1:
+                chunk = response.read(chunk_size)
+                count += 1
+                if not chunk:
+                    reporthook(count, total_size, total_size)
+                    break
+                if reporthook:
+                    reporthook(count, chunk_size, total_size)
+                yield chunk
+
+        response = urlopen(url, data)
+        with open(filename, 'wb') as fd:
+            for chunk in chunk_read(response, reporthook=reporthook):
+                fd.write(chunk)
+else:
+    from six.moves.urllib.request import urlretrieve  # pylint: disable=g-import-not-at-top

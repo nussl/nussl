@@ -27,7 +27,7 @@ def main():
 
     """
     # Load input file
-    input_file_name = os.path.join('..', 'input', 'piano_and_synth_arp_chord_mono.wav')
+    input_file_name = os.path.join('input', 'piano_and_synth_arp_chord_mono.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_file_name)
 
     # make a directory to store output if needed
