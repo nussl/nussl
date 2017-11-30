@@ -4,7 +4,7 @@
 
  *** NOTE: KAM has not yet been updated to work with the current nussl framework yet. ***
 
-This module implements the Kernel Additive Modeling (KAM) algorithm and its light 
+This module implements the Kernel Additive Modeling (KAM) algorithm and its light
 version (KAML) for source separation. 
 
 References:
@@ -12,7 +12,7 @@ References:
     Signal Processing, IEEE Transactions on 62.16 (2014): 4298-4310.
 [2] Liutkus, Antoine, Derry Fitzgerald, and Zafar Rafii. "Scalable audio 
     separation with light kernel additive modelling." IEEE International 
-    Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.    
+    Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.
 
 """
 
