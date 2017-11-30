@@ -19,9 +19,9 @@ class TestJson(unittest.TestCase):
         return worked
 
     def test_stft_params(self):
-        s = nussl.StftParams(44100)
+        s = nussl.stft_utils.StftParams(44100)
         j = s.to_json()
-        b = nussl.StftParams.from_json(j)
+        b = nussl.stft_utils.StftParams.from_json(j)
         worked = s == b
         return worked
 
@@ -58,7 +58,7 @@ class TestJson(unittest.TestCase):
         worked = r == f
         return worked
 
-    @unittest.skip
+    @unittest.skip('')
     def test_nmf_mfcc(self):
         path = os.path.join('..', 'Input', 'piano_and_synth_arp_chord_mono.wav')
         a = nussl.AudioSignal(path)
@@ -69,5 +69,3 @@ class TestJson(unittest.TestCase):
         f = nussl.NMF_MFCC.from_json(j)
         worked = n == f
         return worked
-
-

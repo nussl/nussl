@@ -7,7 +7,7 @@ import numpy as np
 import sklearn.cluster
 import librosa
 
-from nussl.transformers import transformer_nmf
+from ..transformers import transformer_nmf
 import mask_separation_base
 import masks
 

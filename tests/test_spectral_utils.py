@@ -9,7 +9,7 @@ import inspect
 
 class TestSpectralUtils(unittest.TestCase):
     # set all test cases to be 3 seconds long at the default sample rate (44.1kHz), with 1 channel (ie mono)
-    sr = nussl.constants.DEFAULT_SAMPLE_RATE
+    sr = nussl.DEFAULT_SAMPLE_RATE
     dur = 3
     length = sr * dur
     n_ch = 1
@@ -26,7 +26,7 @@ class TestSpectralUtils(unittest.TestCase):
     # it is 1/25th of a second. This gives a window length that can hold 1 full cycle of a 25 hz signal
     # Of course, human hearing extends down to 20 Hz....but at least this is lower than the lowest note
     # on a piano (27.5 Hz for equal temperament A440 tuning)
-    win_length_40ms = int(2 ** (np.ceil(np.log2(nussl.constants.DEFAULT_WIN_LEN_PARAM * sr))))
+    win_length_40ms = int(2 ** (np.ceil(np.log2(nussl.DEFAULT_WIN_LEN_PARAM * sr))))
 
     # epsilon value used to verify we are using librosa's stft & istft correctly
     librosa_epsilon = 1e-6
@@ -41,7 +41,7 @@ class TestSpectralUtils(unittest.TestCase):
 
         This WILL raise an error if the calculated array is different than the original array.
         """
-        win_type = nussl.constants.WINDOW_RECTANGULAR
+        win_type = nussl.WINDOW_RECTANGULAR
 
         for i in range(10):
             np.random.seed(i)
@@ -62,7 +62,7 @@ class TestSpectralUtils(unittest.TestCase):
 
         This WILL raise an error if the calculated array is different than the original array.
         """
-        win_type = nussl.constants.WINDOW_RECTANGULAR
+        win_type = nussl.WINDOW_RECTANGULAR
 
         for win_length in self.win_lengths:
             hop_length = win_length
@@ -81,7 +81,7 @@ class TestSpectralUtils(unittest.TestCase):
 
         This WILL raise an error if the calculated array is different than the original array.
         """
-        win_type = nussl.constants.WINDOW_RECTANGULAR
+        win_type = nussl.WINDOW_RECTANGULAR
         ones = np.ones(self.length)
 
         for win_length in self.win_lengths:
@@ -100,7 +100,7 @@ class TestSpectralUtils(unittest.TestCase):
 
         This will NOT raise an error if the calculated array is different than the original array.
         """
-        win_type = nussl.constants.WINDOW_RECTANGULAR
+        win_type = nussl.WINDOW_RECTANGULAR
         ones = np.ones(self.length)
 
         for win_length in self.win_lengths:
@@ -117,7 +117,7 @@ class TestSpectralUtils(unittest.TestCase):
 
         This WILL raise an error if the calculated array is different than the original array.
         """
-        win_type = nussl.constants.WINDOW_HANN
+        win_type = nussl.WINDOW_HANN
 
         for win_length in self.win_lengths:
             hop_length = win_length / 2
@@ -132,7 +132,7 @@ class TestSpectralUtils(unittest.TestCase):
 
         This will NOT raise an error if the calculated array is different than the original array.
         """
-        win_type = nussl.constants.WINDOW_RECTANGULAR
+        win_type = nussl.WINDOW_RECTANGULAR
         ones = np.ones(self.length)
 
         for i in self.hop_length_ratios:
@@ -149,7 +149,7 @@ class TestSpectralUtils(unittest.TestCase):
 
         This WILL raise an error if the calculated array is different than the original array.
         """
-        win_type = nussl.constants.WINDOW_HANN
+        win_type = nussl.WINDOW_HANN
         freq = 300
         x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
         x = np.sin(x)
@@ -172,8 +172,8 @@ class TestSpectralUtils(unittest.TestCase):
         win_type = 'rectangular'
         ones = np.ones(self.length)
 
-        nussl.spectral_utils.e_stft_plus(ones, self.win_length_40ms,
-                                         self.win_length_40ms, win_type, self.sr)
+        nussl.stft_utils.e_stft_plus(ones, self.win_length_40ms,
+                                     self.win_length_40ms, win_type, self.sr)
 
     def test_e_stft_plus_sin(self):
         """
@@ -184,13 +184,13 @@ class TestSpectralUtils(unittest.TestCase):
         This will NOT raise an error if the calculated array is different than the original array.
         """
         freq = 300
-        win_type = nussl.constants.WINDOW_HANN
+        win_type = nussl.WINDOW_HANN
         x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
         x = np.sin(x)
         win_length = 2048
         hop_length = win_length / 2
 
-        stft, p, freq_array, _ = nussl.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
+        stft, p, freq_array, _ = nussl.stft_utils.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
 
     def test_librosa_stft(self):
         """
@@ -201,15 +201,16 @@ class TestSpectralUtils(unittest.TestCase):
         This will NOT raise an error if the calculated array is different than the original array.
         """
         freq = 600
-        win_type = nussl.constants.WINDOW_HANN
+        win_type = nussl.WINDOW_HANN
         x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
         x = np.sin(x)
         win_length = 2048
         hop_length = win_length / 2
         epsilon = 0.01  # TODO: why doesn't self.librosa_epsilon work?
 
-        stft = nussl.librosa_stft_wrapper(x, win_length, hop_length, win_type)
-        signal = nussl.librosa_istft_wrapper(stft, win_length, hop_length, win_type, original_signal_length=len(x))
+        stft = nussl.stft_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
+        signal = nussl.stft_utils.librosa_istft_wrapper(stft, win_length, hop_length, win_type,
+                                                        original_signal_length=len(x))
 
         assert max(np.abs(x - signal)) <= epsilon
 
@@ -220,15 +221,15 @@ class TestSpectralUtils(unittest.TestCase):
 
         """
         # Make a 300Hz sine wave
-        win_type = nussl.constants.WINDOW_HANN
+        win_type = nussl.WINDOW_HANN
         freq = 300
         x = np.linspace(0, freq * 2 * np.pi, self.dur * self.sr)
         x = np.sin(x)
         win_length = 2048
         hop_length = win_length / 2
 
-        lib_stft = nussl.librosa_stft_wrapper(x, win_length, hop_length, win_type)
-        nussl_stft = nussl.e_stft(x, win_length, hop_length, win_type)
+        lib_stft = nussl.stft_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
+        nussl_stft = nussl.stft_utils.e_stft(x, win_length, hop_length, win_type)
 
         assert lib_stft.shape == nussl_stft.shape
 
@@ -237,8 +238,8 @@ class TestSpectralUtils(unittest.TestCase):
         # assert np.allclose(np.imag(lib_stft), np.imag(nussl_stft))
 
         # win_type is None => Hann window
-        lib_signal = nussl.librosa_istft_wrapper(lib_stft, win_length, hop_length, 'hann')
-        nussl_signal = nussl.e_istft(nussl_stft, win_length, hop_length, win_type)
+        lib_signal = nussl.stft_utils.librosa_istft_wrapper(lib_stft, win_length, hop_length, 'hann')
+        nussl_signal = nussl.stft_utils.e_istft(nussl_stft, win_length, hop_length, win_type)
 
         assert len(lib_signal) == len(nussl_signal)
 
@@ -294,8 +295,8 @@ class TestSpectralUtils(unittest.TestCase):
         :param signal: signal to be converted to stft and then back with istft
         :return: calculated signal
         """
-        stft = nussl.e_stft(signal, win_length, hop_length, win_type)
-        calculated_signal = nussl.e_istft(stft, win_length, hop_length, win_type)
+        stft = nussl.stft_utils.e_stft(signal, win_length, hop_length, win_type)
+        calculated_signal = nussl.stft_utils.e_istft(stft, win_length, hop_length, win_type)
 
         return calculated_signal
 

@@ -5,21 +5,20 @@ Provides utilities for running nussl algorithms that do not belong to any specif
 between algorithms.
 
 """
-import numpy as np
-import warnings
 import base64
 import json
-import constants
+import warnings
 
-from audio_signal import AudioSignal
-from separation import SeparationBase
-from separation import MaskSeparationBase
+import numpy as np
+
+import constants
 
 __all__ = ['find_peak_indices', 'find_peak_values',
            'json_ready_numpy_array', 'json_serialize_numpy_array', 'load_numpy_json', 'json_numpy_obj_hook',
            'add_mismatched_arrays', 'add_mismatched_arrays2D', 'complex_randn',
-           '_get_axis', '_verify_audio_signal_list_lax', '_verify_audio_signal_list_strict',
-           '_verify_separation_list', '_verify_mask_separation_list']
+           '_get_axis',
+           'verify_audio_signal_list_lax', 'verify_audio_signal_list_strict', 'verify_separation_base_list',
+           'verify_mask_separation_base_list']
 
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
@@ -375,9 +374,9 @@ def _get_axis(array, axis_num, i):
         return None
 
 
-def _verify_audio_signal_list_lax(audio_signal_list):
+def verify_audio_signal_list_lax(audio_signal_list):
     """
-    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects. If not so, attempts 
+    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects. If not so, attempts
     to correct the list (if possible) and returns the corrected list.
     Args:
         audio_signal_list (list): List of :ref:`AudioSignal` objects
@@ -386,6 +385,9 @@ def _verify_audio_signal_list_lax(audio_signal_list):
         audio_signal_list (list): Verified list of :ref:`AudioSignal` objects.
 
     """
+    # Lazy load to prevent a circular reference upon initialization
+    from .audio_signal import AudioSignal
+
     if isinstance(audio_signal_list, AudioSignal):
         audio_signal_list = [audio_signal_list]
     elif isinstance(audio_signal_list, list):
@@ -399,21 +401,21 @@ def _verify_audio_signal_list_lax(audio_signal_list):
     return audio_signal_list
 
 
-def _verify_audio_signal_list_strict(audio_signal_list):
+def verify_audio_signal_list_strict(audio_signal_list):
     """
     Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects and that they all have the same
-    sample rate and same number of channels. If not true, attempts to correct the list (if possible) and returns 
+    sample rate and same number of channels. If not true, attempts to correct the list (if possible) and returns
     the corrected list.
-    
+
     Args:
         audio_signal_list (list): List of :ref:`AudioSignal` objects
 
-    Returns: 
-        audio_signal_list (list): Verified list of :ref:`AudioSignal` objects, that all have 
+    Returns:
+        audio_signal_list (list): Verified list of :ref:`AudioSignal` objects, that all have
         the same sample rate and number of channels.
 
     """
-    audio_signal_list = _verify_audio_signal_list_lax(audio_signal_list)
+    audio_signal_list = verify_audio_signal_list_lax(audio_signal_list)
 
     if not all(audio_signal_list[0].sample_rate == s.sample_rate for s in audio_signal_list):
         raise ValueError('All input AudioSignal objects must have the same sample rate!')
@@ -424,11 +426,11 @@ def _verify_audio_signal_list_strict(audio_signal_list):
     return audio_signal_list
 
 
-def _verify_separation_list(separation_list):
+def verify_separation_base_list(separation_list):
     """
-    Verifies that all items in `separation_list` are :ref:`SeparationBase` -derived objects. If not so, attempts 
+    Verifies that all items in `separation_list` are :ref:`SeparationBase` -derived objects. If not so, attempts
     to correct the list if possible and returns the corrected list.
-    
+
     Args:
         separation_list: (list) List of :ref:`SeparationBase` -derived objects
 
@@ -436,6 +438,9 @@ def _verify_separation_list(separation_list):
         separation_list: (list) Verified list of :ref:`SeparationBase` -derived objects
 
     """
+    # Lazy load to prevent a circular reference upon initialization
+    from ..separation import SeparationBase
+
     if isinstance(separation_list, SeparationBase):
         separation_list = [separation_list]
     elif isinstance(separation_list, list):
@@ -447,9 +452,9 @@ def _verify_separation_list(separation_list):
     return separation_list
 
 
-def _verify_mask_separation_list(mask_separation_list):
+def verify_mask_separation_base_list(mask_separation_list):
     """
-    Verifies that all items in `separation_list` are :ref:`MaskSeparationBase` -derived objects. If not so, attempts 
+    Verifies that all items in `separation_list` are :ref:`MaskSeparationBase` -derived objects. If not so, attempts
     to correct the list if possible and returns the corrected list.
 
     Args:
@@ -459,6 +464,9 @@ def _verify_mask_separation_list(mask_separation_list):
         separation_list: (list) Verified list of :ref:`MaskSeparationBase` -derived objects
 
     """
+    # Lazy load to prevent a circular reference upon initialization
+    from ..separation import MaskSeparationBase
+
     if isinstance(mask_separation_list, MaskSeparationBase):
         mask_separation_list = [mask_separation_list]
     elif isinstance(mask_separation_list, list):

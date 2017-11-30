@@ -1,4 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
+
+ *** NOTE: KAM has not yet been updated to work with the current nussl framework yet. ***
+
 This module implements the Kernel Additive Modeling (KAM) algorithm and its light 
 version (KAML) for source separation. 
 
@@ -8,16 +13,7 @@ References:
 [2] Liutkus, Antoine, Derry Fitzgerald, and Zafar Rafii. "Scalable audio 
     separation with light kernel additive modelling." IEEE International 
     Conference on Acoustics, Speech and Signal Processing (ICASSP). 2015.    
-    
-Required packages:
-1. Numpy
-2. Scipy
-3. Matplotlib
-4. Scikits Audiolab
 
-Required modules:
-1. f_stft
-2. f_istft
 """
 
 import numpy as np
@@ -26,7 +22,7 @@ import matplotlib.pyplot as plt
 plt.interactive('True')
 import scipy.ndimage.filters
 import scipy
-from nussl import AudioSignal
+from ..core.audio_signal import AudioSignal
 
 
 def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=False):

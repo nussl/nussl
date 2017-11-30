@@ -14,7 +14,7 @@ except:
 
 def main():
     # Load input file
-    input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
+    input_file_name = os.path.join('input', 'dev1_female3_inst_mix.wav')
     signal = nussl.AudioSignal(path_to_input_file=input_file_name)
 
     # make a directory to store output if needed
@@ -29,7 +29,7 @@ def main():
 
     # plot histogram results
     duet.plot(os.path.join('..', 'Output', 'duet_2d.png'))
-    duet.plot(os.path.join('..', 'Output', 'duet_3d.png'), three_d_plot=True)
+    # duet.plot(os.path.join('..', 'Output', 'duet_3d.png'), three_d_plot=True)
 
     # Create output file for each source found
     output_name_stem = os.path.join('..', 'Output', 'duet_source')

@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
-import numpy as np
+
+import json
+import os.path
+import warnings
+
+import librosa
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy.fftpack as scifft
 import scipy.signal
-import os.path
-import librosa
-import json
-import warnings
 
 import constants
 

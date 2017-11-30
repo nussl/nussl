@@ -6,21 +6,21 @@ AudioSignal object
 """
 
 from __future__ import division
+
+import copy
+import json
+import numbers
 import os.path
+import warnings
+
+import audioread
+import librosa
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io.wavfile as wav
-import librosa
-import numbers
-import audioread
-import json
-import warnings
-import copy
-import matplotlib.pyplot as plt
 
-import separation.masks.mask_base
-import spectral_utils
-import config
 import constants
+import stft_utils
 import utils
 
 __all__ = ['AudioSignal']
@@ -102,8 +102,8 @@ class AudioSignal(object):
         if stft is not None:
             self.stft_data = stft  # complex spectrogram data
 
-        self.stft_params = spectral_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
-        self.use_librosa_stft = config.USE_LIBROSA_STFT
+        self.stft_params = stft_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
+        self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
         return self.__class__.__name__
@@ -266,8 +266,13 @@ class AudioSignal(object):
 
     @property
     def sample_rate(self):
-        return self._sample_rate
+        """
+        Sample rate for this audio signal.
+        Returns:
 
+
+        """
+        return self._sample_rate
 
     @property
     def time_vector(self):
@@ -424,6 +429,7 @@ class AudioSignal(object):
                 Defaults to 0 seconds.
             duration (float, optional): Length of signal to load in second.
                 signal_length of 0 means read the whole file. Defaults to the full length of the signal.
+            new_sample_rate (int):
 
         """
         try:
@@ -438,10 +444,10 @@ class AudioSignal(object):
                               UserWarning)
 
             audio_input, self._sample_rate = librosa.load(input_file_path,
-                                                         sr=None,
-                                                         offset=offset,
-                                                         duration=duration,
-                                                         mono=False)
+                                                          sr=None,
+                                                          offset=offset,
+                                                          duration=duration,
+                                                          mono=False)
 
             # Change from fixed point to floating point
             if not np.issubdtype(audio_input.dtype, float):
@@ -598,7 +604,7 @@ class AudioSignal(object):
     ##################################################
 
     def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None, remove_reflection=True,
-             overwrite=True, use_librosa=config.USE_LIBROSA_STFT):
+             overwrite=True, use_librosa=constants.USE_LIBROSA_STFT):
         """ Computes the Short Time Fourier Transform (STFT) of :attr:`audio_data`.
             The results of the STFT calculation can be accessed from :attr:`stft_data`
             if :attr:`stft_data` is ``None`` prior to running this function or ``overwrite == True``
@@ -642,7 +648,7 @@ class AudioSignal(object):
 
         stfts = []
 
-        stft_func = spectral_utils.librosa_stft_wrapper if use_librosa else spectral_utils.e_stft
+        stft_func = stft_utils.librosa_stft_wrapper if use_librosa else stft_utils.e_stft
 
         for chan in self.get_channels():
             stfts.append(stft_func(signal=chan, window_length=window_length,
@@ -652,7 +658,7 @@ class AudioSignal(object):
         return np.array(stfts).transpose((1, 2, 0))
 
     def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True,
-              use_librosa=config.USE_LIBROSA_STFT, truncate_to_length=None):
+              use_librosa=constants.USE_LIBROSA_STFT, truncate_to_length=None):
         """ Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
         The results of the iSTFT calculation can be accessed from :attr:`audio_data`
@@ -706,7 +712,7 @@ class AudioSignal(object):
 
         signals = []
 
-        istft_func = spectral_utils.librosa_istft_wrapper if use_librosa else spectral_utils.e_istft
+        istft_func = stft_utils.librosa_istft_wrapper if use_librosa else stft_utils.e_istft
 
         for stft in self.get_stft_channels():
             calculated_signal = istft_func(stft=stft, window_length=window_length,
@@ -728,7 +734,10 @@ class AudioSignal(object):
             A new :class:`AudioSignal` object with the input mask applied to the STFT
 
         """
-        if not isinstance(mask, separation.masks.mask_base.MaskBase):
+        # Lazy load to prevent a circular reference upon initialization
+        from ..separation.masks import mask_base
+
+        if not isinstance(mask, mask_base.MaskBase):
             raise ValueError('mask is {} but is expected to be a MaskBase-derived object!'.format(type(mask)))
 
         if mask.shape != self.stft_data.shape:
@@ -822,9 +831,9 @@ class AudioSignal(object):
         name = name if self._check_if_valid_img_type(name) else name + '.png'
 
         if ch is None:
-            spectral_utils.plot_stft(self.to_mono(keep_dims=False), name, sample_rate=self.sample_rate)
+            stft_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
         else:
-            spectral_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
+            stft_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
 
     @staticmethod
     def _check_if_valid_img_type(name):
@@ -1128,7 +1137,7 @@ class AudioSignal(object):
                 raise TypeError('JSON string must contain StftParams object!')
 
             stft_params = json_dict.pop('stft_params')
-            a.stft_params = spectral_utils.StftParams.from_json(stft_params)
+            a.stft_params = stft_utils.StftParams.from_json(stft_params)
 
             for k, v in json_dict.items():
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
@@ -1194,10 +1203,16 @@ class AudioSignal(object):
 
         """
 
+        if new_sample_rate == self.sample_rate:
+            warnings.warn('Cannot resample to the same sample rate.')
+            return
+
         resampled_signal = []
+
         for channel in self.get_channels():
             resampled_channel = librosa.resample(channel, self.sample_rate, new_sample_rate)
             resampled_signal.append(resampled_channel)
+
         self.audio_data = np.array(resampled_signal)
         self._sample_rate = new_sample_rate
 

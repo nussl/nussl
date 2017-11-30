@@ -14,9 +14,9 @@ import warnings
 # Freezes essential values from DUET in its current implementation for benchmarking
 # See test_benchmark_duet() in test_duet.py for usage
 def freeze_duet_values():
-    signal = nussl.AudioSignal(os.path.join('..', 'input', 'dev1_female3_inst_mix.wav'))
+    signal = nussl.AudioSignal(os.path.join('input', 'dev1_female3_inst_mix.wav'))
     duet = nussl.Duet(signal, 3)
-    output_folder = os.path.abspath('duet_reference/duet_benchmarks')
+    output_folder = os.path.abspath('tests/duet_reference/duet_benchmarks')
 
     duet.stft_ch0, duet.stft_ch1, duet.frequency_matrix = duet._compute_spectrogram(duet.sample_rate)
     np.save(os.path.join(output_folder, "benchmark_stft_ch0"), duet.stft_ch0)
@@ -38,7 +38,7 @@ def freeze_duet_values():
                                                                 duet.delay_min_distance])
     np.save(os.path.join(output_folder,"benchmark_peak_indices"), duet.peak_indices)
 
-    duet.delay_peak, duet.atn_delay_est, duet.atn_peak = duet._convert_peaks()
+    duet.delay_peak, duet.atn_delay_est, duet.atn_peak = duet._convert_peaks(duet.peak_indices)
     np.save(os.path.join(output_folder, "benchmark_delay_peak"), duet.delay_peak)
     np.save(os.path.join(output_folder, "benchmark_atn_delay_est"), duet.atn_delay_est)
     np.save(os.path.join(output_folder, "benchmark_atn_peak"), duet.atn_peak)

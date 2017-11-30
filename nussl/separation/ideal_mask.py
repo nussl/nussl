@@ -14,14 +14,14 @@ This class is derived from :class:`separation.mask_separation_base.MaskSeparatio
     
 """
 
-import numpy as np
 import warnings
 
-import nussl.config
-import nussl.utils
-import nussl.spectral_utils
+import numpy as np
+
 import mask_separation_base
 import masks
+from ..core import constants
+from ..core import utils
 
 
 class IdealMask(mask_separation_base.MaskSeparationBase):
@@ -80,10 +80,10 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
     def __init__(self, input_audio_mixture, sources_list,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
-                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
+                 use_librosa_stft=constants.USE_LIBROSA_STFT):
         super(IdealMask, self).__init__(input_audio_signal=input_audio_mixture, mask_type=mask_type)
 
-        self.sources = nussl.utils._verify_audio_signal_list_strict(sources_list)
+        self.sources = utils.verify_audio_signal_list_strict(sources_list)
 
         # Make sure input_audio_signal has the same settings as sources_list
         if self.audio_signal.sample_rate != self.sources[0].sample_rate:

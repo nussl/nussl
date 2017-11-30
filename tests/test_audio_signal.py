@@ -15,7 +15,7 @@ import nussl
 
 
 class AudioSignalUnitTests(unittest.TestCase):
-    sr = nussl.constants.DEFAULT_SAMPLE_RATE
+    sr = nussl.DEFAULT_SAMPLE_RATE
     dur = 3  # seconds
     length = dur * sr
 
@@ -213,7 +213,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         sr, data = wav.read(self.input_path1)
         a = nussl.AudioSignal()
         a.load_audio_from_array(data)
-        assert(a.sample_rate == nussl.constants.DEFAULT_SAMPLE_RATE)
+        assert(a.sample_rate == nussl.DEFAULT_SAMPLE_RATE)
 
     def test_sr_on_load_from_array(self):
         # Check that the passed in sample rate is being set in load_audio_from_array
@@ -330,12 +330,12 @@ class AudioSignalUnitTests(unittest.TestCase):
         signal = nussl.AudioSignal(path_to_input_file=input_file_name)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
-        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX] == 2)
+        assert (signal_stft.shape[nussl.STFT_CHAN_INDEX] == 2)
 
         signal.to_mono(overwrite=True)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
-        assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX]== 1)
+        assert (signal_stft.shape[nussl.STFT_CHAN_INDEX]== 1)
 
     def test_stft(self):
         """

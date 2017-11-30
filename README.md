@@ -2,7 +2,7 @@
 nussl
 =====
 
-**nussl** (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented python 
+**The Northwestern University Source Separation Library (nussl)** (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented python 
 audio source separation library created by the [Interactive Audio Lab](http://music.cs.northwestern.edu/) 
 at Northwestern University. At its core, nussl provides implementations of common source separation
 algorithms as well as an easy-to-use framework for prototyping and adding new algorithms. The aim of nussl is
@@ -23,8 +23,8 @@ in this branch before being pushed to **master**.
 - **Experimental** has many more implementations, but many have not been vetted or properly tested. Some methods in this
 branch require extra functionality that cannot be included in a pip install, such as the Vamp binary files or 
 tensorflow. This branch is the bleeding edge.
-- **Refactorization** sometimes exists when having extra students work on specific features.
 - **gh-pages** is used to auto generate our documentation using Sphinx.
+- Other feature branches do exist from time to time as well.
 
 
 
@@ -76,6 +76,8 @@ Installation is easy if you have pip (recommended):
 ```
 $ pip install nussl
 ```
+
+A note on cloning from github: **nussl** contains a large number of uncompressed audio benchmark files for testing which makes cloning directly from Github a slow process. **nussl** is now synced with [Git LFS](https://git-lfs.github.com), so if you want to clone from Github without downloading the large testing files, please use Git LFS.
 
 
 Development Status

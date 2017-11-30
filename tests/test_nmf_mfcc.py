@@ -78,7 +78,7 @@ class NMFMFCCUnitTests(unittest.TestCase):
         assert nmf_mfcc.clusterer.random_state == nmf_mfcc.random_seed == 0
 
     def test_2_sin_waves(self):
-        sr = nussl.constants.DEFAULT_SAMPLE_RATE
+        sr = nussl.DEFAULT_SAMPLE_RATE
         dur = 3  # seconds
         length = dur * sr
         sine_wave_1 = np.sin(np.linspace(0, 440 * 2 * np.pi, length))

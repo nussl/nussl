@@ -14,8 +14,8 @@ class TestOverlapAdd(unittest.TestCase):
         """
         self.valid_methods = [nussl.Repet, nussl.RepetSim, nussl.FT2D]
         self.invalid_methods = [nussl.Duet, nussl.OverlapAdd, nussl.SeparationBase,
-                           nussl.StftParams, nussl.AudioSignal, int, str, unittest.TestCase,
-                           None]
+                                nussl.stft_utils.StftParams, nussl.AudioSignal, int, str, unittest.TestCase,
+                                None]
         self.valid_method_names = [m.__name__ for m in self.valid_methods]
         self.invalid_method_names = [m.__name__ for m in self.invalid_methods if m is not None]
         self.invalid_method_names.append('None')
@@ -61,7 +61,7 @@ class TestOverlapAdd(unittest.TestCase):
                 ola = nussl.OverlapAdd(self.signal, method)
 
         # Test that variables are stored correctly
-        params = nussl.StftParams(nussl.DEFAULT_SAMPLE_RATE)
+        params = nussl.stft_utils.StftParams(nussl.DEFAULT_SAMPLE_RATE)
         params.window_length = 4096
         params.hop_length = params.window_length // 4
         self.signal.stft_params = params
