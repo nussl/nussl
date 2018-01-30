@@ -722,16 +722,18 @@ class AudioSignal(object):
 
         return np.array(signals)
 
-    def apply_mask(self, mask):
+    def apply_mask(self, mask, overwrite=False):
         """
         Applies the input mask to the time-frequency representation in this AudioSignal object and returns a new
         AudioSignal object with the mask applied.
         
         Args:
             mask (:obj:`MaskBase`-derived object): A :ref:`mask_base`-derived object containing a mask
+            overwrite (bool): If ``True``, this will alter :ref:`stft_data` in self. If ``False``, this function
+                will create a new :ref:`AudioSignal` object with the mask applied.
 
         Returns:
-            A new :class:`AudioSignal` object with the input mask applied to the STFT
+            A new :class:`AudioSignal` object with the input mask applied to the STFT, iff :param:`overwrite` is False.
 
         """
         # Lazy load to prevent a circular reference upon initialization
@@ -745,7 +747,11 @@ class AudioSignal(object):
                              'mask: {}, self.stft_data: {}'.format(mask.shape, self.stft_data.shape))
 
         masked_stft = self.stft_data * mask.mask
-        return self.make_copy_with_stft_data(masked_stft, verbose=False)
+
+        if overwrite:
+            return self.make_copy_with_stft_data(masked_stft, verbose=False)
+        else:
+            self.stft_data = masked_stft
 
     ##################################################
     #                   Plotting
