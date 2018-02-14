@@ -4,12 +4,6 @@
 # nussl/audio_signal.py: 10
 audioread == 2.1.4
 
-# nussl/audio_signal.py: 17
-# dynd == 0.7.3.dev1
-
-# tests/projet_reference/projet_python_files/delaysPROJET.py: 49
-# joblib == 0.11
-
 # demos/demo_overlap_add.py: 1
 # demos/test_stft.py: 3
 # nussl/audio_signal.py: 8

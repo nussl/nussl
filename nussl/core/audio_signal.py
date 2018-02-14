@@ -450,7 +450,7 @@ class AudioSignal(object):
                                                           mono=False)
 
             # Change from fixed point to floating point
-            if not np.issubdtype(audio_input.dtype, float):
+            if not np.issubdtype(audio_input.dtype, np.floating):
                 audio_input = audio_input.astype('float') / (np.iinfo(audio_input.dtype).max + 1.0)
 
             self.audio_data = audio_input
@@ -485,7 +485,7 @@ class AudioSignal(object):
         self.path_to_input_file = None
 
         # Change from fixed point to floating point
-        if not np.issubdtype(signal.dtype, float):
+        if not np.issubdtype(signal.dtype, np.floating):
             if np.max(signal) > np.iinfo(np.dtype('int16')).max:
                 raise ValueError('Please convert your array to 16-bit audio.')
 
@@ -517,7 +517,7 @@ class AudioSignal(object):
 
             # TODO: better fix
             # convert to fixed point again
-            if not np.issubdtype(audio_output.dtype, int):
+            if not np.issubdtype(audio_output.dtype, np.int):
                 audio_output = np.multiply(audio_output, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
 
             wav.write(output_file_path, sample_rate, audio_output.T)
@@ -1356,7 +1356,7 @@ class AudioSignal(object):
         # np.array helps with duck typing
         return utils._get_axis(np.array(self.magnitude_spectrogram_data), constants.STFT_CHAN_INDEX, n)
 
-    def to_mono(self, overwrite=False, keep_dims=True):
+    def to_mono(self, overwrite=False, keep_dims=False):
         """ Converts :attr:`audio_data` to mono by averaging every sample.
 
         Warning:
@@ -1364,7 +1364,7 @@ class AudioSignal(object):
 
         Args:
             overwrite (bool): If `True` this function will overwrite :attr:`audio_data`.
-            keep_dims (bool): If `True` this function will return a 1D array,
+            keep_dims (bool): If `False` this function will return a 1D array,
             else will return array with shape `(1, n_samples)`.
         Returns:
             (:obj:`np.array`): Mono-ed version of :attr:`audio_data`.
