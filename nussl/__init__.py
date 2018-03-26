@@ -6,7 +6,7 @@ Init for ``nussl``, the Northwestern University Source Separation Library.
 
 from .core.constants import *
 from .core.audio_signal import AudioSignal
-from .core import utils, stft_utils
+from .core import utils, stft_utils, data_sets
 from .evaluation import *
 from .separation import *
 from .transformers import *

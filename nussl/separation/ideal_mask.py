@@ -17,6 +17,7 @@ This class is derived from :class:`separation.mask_separation_base.MaskSeparatio
 import warnings
 
 import numpy as np
+import librosa
 
 import mask_separation_base
 import masks
@@ -138,18 +139,13 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         self.result_masks = []
 
         for source in self.sources:
+            mag = source.magnitude_spectrogram_data  # Alias this variable, for easy reading
             if self.mask_type == self.BINARY_MASK:
-                mag = source.magnitude_spectrogram_data  # Alias this variable, for easy reading
                 cur_mask = (mag >= (self._mixture_mag_spec - mag))
                 mask = masks.BinaryMask(cur_mask)
 
             elif self.mask_type == self.SOFT_MASK:
-                # TODO: This is a kludge. What is the actual right way to do this?
-                sm = np.divide(self.audio_signal.magnitude_spectrogram_data, source.magnitude_spectrogram_data)
-                # log_sm1 = np.log(sm - np.min(sm) + 1)
-                log_sm = np.log(sm)
-                log_sm += np.abs(np.min(log_sm))
-                log_sm /= np.max(log_sm)
+                sm = librosa.util.softmask(mag, self.audio_signal.magnitude_spectrogram_data)
                 mask = masks.SoftMask(sm)
             else:
                 raise RuntimeError('Unknown mask type: {}'.format(self.mask_type))

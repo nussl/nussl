@@ -749,9 +749,9 @@ class AudioSignal(object):
         masked_stft = self.stft_data * mask.mask
 
         if overwrite:
-            return self.make_copy_with_stft_data(masked_stft, verbose=False)
-        else:
             self.stft_data = masked_stft
+        else:
+            return self.make_copy_with_stft_data(masked_stft, verbose=False)
 
     ##################################################
     #                   Plotting

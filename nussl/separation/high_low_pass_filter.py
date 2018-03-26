@@ -18,7 +18,7 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
     A simple high/low pass filter that creates a mask in the time frequency representation
     """
 
-    def __init__(self, input_audio_signal, high_pass_cutoff_hz, do_fir_filter=True,
+    def __init__(self, input_audio_signal, high_pass_cutoff_hz, do_fir_filter=False,
                  force_recompute_stft=False,
                  mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK):
         super(HighLowPassFilter, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
