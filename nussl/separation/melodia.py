@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import warnings
 
 import numpy as np
-import vamp
 from scipy.ndimage.filters import convolve
+
+try:
+    import vamp
+    vamp_okay = True
+except ImportError:
+    warnings.warn('Cannot import vamp!')
+    vamp_okay = False
 
 from ..core import constants
 import separation_base
@@ -30,6 +37,10 @@ class Melodia(separation_base.SeparationBase):
     def __init__(self, input_audio_signal, high_pass_cutoff=None, minimum_frequency=None,
                  maximum_frequency=None, voicing_tolerance=None, minimum_peak_salience=None, do_mono=False,
                  use_librosa_stft=constants.USE_LIBROSA_STFT):
+
+        if not vamp_okay or vamp:
+            raise ImportError('Cannot import Vamp! Melodia depends on Vamp!')
+
         super(Melodia, self).__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None
