@@ -8,12 +8,12 @@ import hashlib
 import warnings
 
 import numpy as np
+import yaml
 
 import utils
 from audio_signal import AudioSignal
-import constants
 
-__all__ = ['iKala', 'mir1k']
+__all__ = ['iKala', 'mir1k', 'timit', 'medleyDB', 'musdb18', 'dsd100']
 
 
 def _hash_directory(directory, ext=None):
@@ -81,6 +81,9 @@ def _subset_and_shuffle(file_list, subset, shuffle, seed):
 
     elif isinstance(subset, list):
         result = [file_list[i] for i in subset]
+
+    elif issubclass(subset, (str, bytes)):
+        result = [f for f in file_list if subset in os.path.dirname(f)]
 
     elif subset is None:
         result = file_list
@@ -161,6 +164,77 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
         accompaniment = mixture.make_audio_signal_from_channel(0)
 
         yield mixture, singing, accompaniment
+
+
+def timit(directory, check_hash=True, subset=None, shuffle=False, seed=None):
+    """
+
+    Args:
+        directory:
+        check_hash:
+        subset:
+        shuffle:
+        seed:
+
+    Returns:
+
+    """
+    dir_name = 'TIMIT'
+    hash = ''
+    audio_extension = '.wav'
+    all_wav_files = _data_set_setup(directory, dir_name, dir_name,
+                                    hash, check_hash, audio_extension)
+
+    all_wav_files = _subset_and_shuffle(all_wav_files, subset, shuffle, seed)
+
+
+def medleyDB(directory, raw=False, check_hash=True, subset=None, shuffle=False, seed=None):
+    """
+
+    Args:
+        directory:
+        check_hash:
+        subset:
+        shuffle:
+        seed:
+
+    Returns:
+
+    """
+    top_dir_name = 'medleyDB'
+    audio_dir_name = 'Audio'
+    hash = ''
+    audio_extension = '.wav'
+
+
+def dsd100(directory, check_hash=True, subset=None, shuffle=False, seed=None):
+    """
+
+    Args:
+        directory:
+        check_hash:
+        subset:
+        shuffle:
+        seed:
+
+    Returns:
+
+    """
+
+
+def musdb18(directory, check_hash=True, subset=None, shuffle=False, seed=None):
+    """
+
+    Args:
+        directory:
+        check_hash:
+        subset:
+        shuffle:
+        seed:
+
+    Returns:
+
+    """
 
 
 class DataSetException(Exception):
