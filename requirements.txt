@@ -5,9 +5,9 @@ librosa == 0.6.0
 matplotlib == 2.0.0
 mir_eval == 0.4
 numpy == 1.13.0
-pyyaml
+pyyaml == 3.12
 scipy == 0.19.0
-six
+six == 1.10.0
 setuptools == 36.0.1
-sklearn == 0.19
-vamp
+sklearn == 0.19.1
+vamp == 1.1.0
