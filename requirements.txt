@@ -9,5 +9,5 @@ pyyaml == 3.12
 scipy == 0.19.0
 six == 1.10.0
 setuptools == 36.0.1
-sklearn == 0.19.1
+scikit-learn == 0.19.1
 vamp == 1.1.0
