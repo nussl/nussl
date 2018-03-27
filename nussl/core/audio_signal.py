@@ -1320,7 +1320,6 @@ class AudioSignal(object):
         """
         new_signal = copy.copy(self)
         new_signal.audio_data = self.get_channel(n)
-        new_signal.stft_data = self.get_stft_channel(n)
         return new_signal
 
     def get_power_spectrogram_channel(self, n):

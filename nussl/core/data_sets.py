@@ -35,7 +35,7 @@ def _hash_directory(directory, ext=None):
     return hasher.hexdigest()
 
 
-def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, check_hash, hash_ext):
+def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, check_hash, ext):
 
     # Verify the top-level directory is correct
     if not os.path.isdir(directory):
@@ -52,7 +52,7 @@ def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, chec
 
     # Check to see if the contents are what we expect
     # by hashing all of the files and checking against a precomputed expected_hash
-    if _hash_directory(audio_dir, hash_ext) != expected_hash:
+    if _hash_directory(audio_dir, ext) != expected_hash:
         msg = 'Hash of {} does not match known directory hash!'.format(audio_dir)
         if check_hash:
             raise DataSetException(msg)
@@ -61,7 +61,8 @@ def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, chec
 
     # return a list of the full paths of every audio file
     return [os.path.join(audio_dir, f) for f in os.listdir(audio_dir)
-            if os.path.isfile(os.path.join(audio_dir, f))]
+            if os.path.isfile(os.path.join(audio_dir, f))
+            if os.path.splitext(f)[1] == ext]
 
 
 def _subset_and_shuffle(file_list, subset, shuffle, seed):
@@ -115,11 +116,8 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
 
     for f in all_wav_files:
         mixture = AudioSignal(f)
-        singing = AudioSignal(audio_data_array=mixture.get_channel(0),
-                              sample_rate=mixture.sample_rate)
-        accompaniment = AudioSignal(audio_data_array=mixture.get_channel(1),
-                                    sample_rate=mixture.sample_rate)
-        singing.path_to_input_file = accompaniment.path_to_input_file = mixture.path_to_input_file
+        singing = mixture.make_audio_signal_from_channel(1)
+        accompaniment = mixture.make_audio_signal_from_channel(0)
 
         yield mixture, singing, accompaniment
 
@@ -133,14 +131,24 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
         subset:
         shuffle:
         seed:
+        undivided:
 
     Returns:
 
     """
 
     top_dir_name = 'MIR-1K'
-    audio_dir_name = 'Wavfile' if not undivided else 'UndividedWavfile'
-    mir1k_hash = '33c085c1a7028199cd20317868849b413e0971022ebc4aefcf1bbc5516646c29'
+
+    wavfile_hash = '33c085c1a7028199cd20317868849b413e0971022ebc4aefcf1bbc5516646c29'
+    undivided_hash = '3f39af9be17515e042a7005b4c47110c6738623a7fada6233ba104535b7dde1b'
+
+    if undivided:
+        audio_dir_name = 'UndividedWavfile'
+        mir1k_hash = undivided_hash
+    else:
+        audio_dir_name = 'Wavfile'
+        mir1k_hash = wavfile_hash
+
     audio_extension = '.wav'
     all_wav_files = _data_set_setup(directory, top_dir_name, audio_dir_name,
                                     mir1k_hash, check_hash, audio_extension)
@@ -149,11 +157,8 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
 
     for f in all_wav_files:
         mixture = AudioSignal(f)
-        singing = AudioSignal(audio_data_array=mixture.get_channel(0),
-                              sample_rate=mixture.sample_rate)
-        accompaniment = AudioSignal(audio_data_array=mixture.get_channel(1),
-                                    sample_rate=mixture.sample_rate)
-        singing.path_to_input_file = accompaniment.path_to_input_file = mixture.path_to_input_file
+        singing = mixture.make_audio_signal_from_channel(1)
+        accompaniment = mixture.make_audio_signal_from_channel(0)
 
         yield mixture, singing, accompaniment
 
