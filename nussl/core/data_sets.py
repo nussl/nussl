@@ -140,7 +140,7 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None):
 
     top_dir_name = 'MIR-1K'
     audio_dir_name = 'Wavfile'
-    mir1k_hash = 'ffb49b0bfa85dad2e08867020128fa2519f809f3b4cca98d8aaf7d0d8b9df4dc'
+    mir1k_hash = '33c085c1a7028199cd20317868849b413e0971022ebc4aefcf1bbc5516646c29'
     audio_extension = '.wav'
     all_wav_files = _data_set_setup(directory, top_dir_name, audio_dir_name,
                                     mir1k_hash, check_hash, audio_extension)

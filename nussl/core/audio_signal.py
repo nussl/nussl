@@ -95,14 +95,17 @@ class AudioSignal(object):
             self.load_audio_from_file(self.path_to_input_file, offset, duration, sample_rate)
         elif audio_data_array is not None:
             self.load_audio_from_array(audio_data_array, sample_rate)
-        else:
-            self._sample_rate = constants.DEFAULT_SAMPLE_RATE
+
+        if self._sample_rate is None:
+            self._sample_rate = constants.DEFAULT_SAMPLE_RATE \
+                if sample_rate is None else sample_rate
 
         # stft data
         if stft is not None:
             self.stft_data = stft  # complex spectrogram data
 
-        self.stft_params = stft_utils.StftParams(self.sample_rate) if stft_params is None else stft_params
+        self.stft_params = stft_utils.StftParams(self.sample_rate) \
+            if stft_params is None else stft_params
         self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
@@ -432,39 +435,34 @@ class AudioSignal(object):
             new_sample_rate (int):
 
         """
-        try:
-            with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
-                file_length = input_file.duration
+        with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
+            file_length = input_file.duration
 
-            if offset > file_length:
-                raise ValueError('offset is longer than signal!')
+        if offset > file_length:
+            raise ValueError('offset is longer than signal!')
 
-            if duration is not None and offset + duration >= file_length:
-                warnings.warn('offset + duration are longer than the signal. Reading until end of signal...',
-                              UserWarning)
+        if duration is not None and offset + duration >= file_length:
+            warnings.warn('offset + duration are longer than the signal.'
+                          ' Reading until end of signal...',
+                          UserWarning)
 
-            audio_input, self._sample_rate = librosa.load(input_file_path,
-                                                          sr=None,
-                                                          offset=offset,
-                                                          duration=duration,
-                                                          mono=False)
+        audio_input, self._sample_rate = librosa.load(input_file_path,
+                                                      sr=None,
+                                                      offset=offset,
+                                                      duration=duration,
+                                                      mono=False)
 
-            # Change from fixed point to floating point
-            if not np.issubdtype(audio_input.dtype, np.floating):
-                audio_input = audio_input.astype('float') / (np.iinfo(audio_input.dtype).max + 1.0)
+        # Change from fixed point to floating point
+        if not np.issubdtype(audio_input.dtype, np.floating):
+            audio_input = audio_input.astype('float') / (np.iinfo(audio_input.dtype).max + 1.0)
 
-            self.audio_data = audio_input
+        self.audio_data = audio_input
 
-            if new_sample_rate is not None and new_sample_rate != self._sample_rate:
-                warnings.warn("Input sample rate is different than the sample rate read from the file! Resampling...",
-                              UserWarning)
-                self.resample(new_sample_rate)
-
-        except Exception as e:
-            if isinstance(e, ValueError):  # This is the error we just raise, re-raise it
-                raise e
-            else:
-                raise IOError("Cannot read from file, {file}".format(file=input_file_path))
+        if new_sample_rate is not None and new_sample_rate != self._sample_rate:
+            warnings.warn("Input sample rate is different than the sample rate"
+                          " read from the file! Resampling...",
+                          UserWarning)
+            self.resample(new_sample_rate)
 
         self.path_to_input_file = input_file_path
         self.set_active_region_to_default()
@@ -476,8 +474,10 @@ class AudioSignal(object):
             Only accepts float arrays and int arrays of depth 16-bits.
 
         Parameters:
-            signal (:obj:`np.ndarray`): Array containing the audio file signal sampled at sampleRate
-            sample_rate (int, optional): the sample rate of signal. Default is Constants.DEFAULT_SAMPLE_RATE (44.1kHz)
+            signal (:obj:`np.ndarray`): Array containing the audio file signal sampled at
+                :param:`sample_rate`
+            sample_rate (int): the sample rate of signal.
+                Default is :ref:`constants.DEFAULT_SAMPLE_RATE` (44.1kHz)
 
         """
         assert (type(signal) == np.ndarray)
@@ -492,7 +492,8 @@ class AudioSignal(object):
             signal = signal.astype('float') / (np.iinfo(np.dtype('int16')).max + 1.0)
 
         self.audio_data = signal
-        self._sample_rate = sample_rate if sample_rate is not None else constants.DEFAULT_SAMPLE_RATE
+        self._sample_rate = sample_rate if sample_rate is not None \
+            else constants.DEFAULT_SAMPLE_RATE
 
         self.set_active_region_to_default()
 

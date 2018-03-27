@@ -86,7 +86,7 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             self.high_pass_mask = self.low_pass_mask.invert_mask()
 
-        self.result_masks = [self.high_pass_mask, self.low_pass_mask]
+        self.result_masks = [self.low_pass_mask, self.high_pass_mask]
 
         return self.result_masks
 
@@ -112,9 +112,11 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
         if not self.should_do_fir_filter:
             self.high_pass_signal = self.audio_signal.apply_mask(self.high_pass_mask)
-            self.high_pass_signal.istft(overwrite=True)
+            self.high_pass_signal.istft(overwrite=True,
+                                        truncate_to_length=self.audio_signal.signal_length)
 
             self.low_pass_signal = self.audio_signal.apply_mask(self.low_pass_mask)
-            self.low_pass_signal.istft(overwrite=True)
+            self.low_pass_signal.istft(overwrite=True,
+                                       truncate_to_length=self.audio_signal.signal_length)
 
-        return self.high_pass_signal, self.low_pass_signal
+        return self.low_pass_signal, self.high_pass_signal
