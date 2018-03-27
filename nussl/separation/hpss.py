@@ -40,6 +40,7 @@ class HPSS(mask_separation_base.MaskSeparationBase):
         self.use_librosa_stft = use_librosa_stft
         self.kernel_size = kernel_size
         self.stft = None
+        self.masks = None
 
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)

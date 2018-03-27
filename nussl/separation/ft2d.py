@@ -31,6 +31,7 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         self.foreground = None
         self.use_librosa_stft = use_librosa_stft
         self.neighborhood_size = neighborhood_size
+        self.result_masks = None
 
         self.stft = None
         self.ft2d = None

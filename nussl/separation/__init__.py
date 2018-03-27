@@ -21,7 +21,9 @@ from .overlap_add import OverlapAdd
 from .ica import ICA
 from .high_low_pass_filter import HighLowPassFilter
 from .hpss import HPSS
+from .rpca import RPCA
+from .melodia import Melodia
 
 __all__ = ['SeparationBase', 'MaskSeparationBase',
            'Repet', 'RepetSim', 'FT2D', 'Duet', 'Projet', 'IdealMask', 'OverlapAdd',
-           'ICA', 'HighLowPassFilter', 'NMF_MFCC', 'HPSS']
+           'ICA', 'HighLowPassFilter', 'NMF_MFCC', 'HPSS', 'RPCA', 'Melodia']
