@@ -33,9 +33,10 @@ class Melodia(mask_separation_base.MaskSeparationBase):
     def __init__(self, input_audio_signal, high_pass_cutoff=None, minimum_frequency=55.0,
                  maximum_frequency=1760.0, voicing_tolerance=0.5, minimum_peak_salience=0.0,
                  do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
-                 mask_type=constants.SOFT_MASK):
+                 mask_type=constants.SOFT_MASK, mask_threshold=0.5):
 
-        super(Melodia, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
+        super(Melodia, self).__init__(input_audio_signal=input_audio_signal, 
+                                      mask_type=mask_type, mask_threshold=mask_threshold)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None
         self.foreground = None
@@ -180,10 +181,9 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         foreground_mask = self.create_harmonic_mask(self.melody_signal)
         foreground_mask[0:self.high_pass_cutoff, :] = 0
 
+        foreground_mask = masks.SoftMask(foreground_mask)
         if self.mask_type == self.BINARY_MASK:
-            foreground_mask = masks.BinaryMask(foreground_mask)
-        else:
-            foreground_mask = masks.SoftMask(foreground_mask)
+            foreground_mask = foreground_mask.mask_to_binary(self.mask_threshold)
 
         self.foreground_mask = foreground_mask
         self.background_mask = foreground_mask.invert_mask()
@@ -216,6 +216,6 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         if self.foreground is None:
             return None
 
-        self.background = self.audio_signal - self.foreground
-        self.background.sample_rate = self.audio_signal.sample_rate
+        background_array = self.audio_signal.audio_data - self.foreground.audio_data
+        self.background = self.audio_signal.make_copy_with_audio_data(background_array)
         return [self.background, self.foreground]
