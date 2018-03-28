@@ -10,10 +10,6 @@ import numpy as np
 
 import evaluation_base
 
-# TODO: json
-# TODO: framewise
-# TODO: Docs
-
 
 class BSSEvalBase(evaluation_base.EvaluationBase):
     """Lets you load ground truth AudioSignals and estimated AudioSignals and compute separation
@@ -31,8 +27,8 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
     PERMUTATION = 'permutation'
     RAW_VALUES = 'raw_values'
 
-    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, algorithm_name=None,
-                 do_mono=False, compute_permutation=True):
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
+                 algorithm_name=None, do_mono=False, compute_permutation=True):
         super(BSSEvalBase, self).__init__(true_sources_list=true_sources_list,
                                           estimated_sources_list=estimated_sources_list,
                                           source_labels=source_labels, do_mono=do_mono)
@@ -154,3 +150,10 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
     #     sdr, isr, sir, sar, perm = separation.bss_eval_images_framewise(reference, estimated,
     #                                                         window=self.segment_size, hop=self.hop_size,
     #                                                         compute_permutation=self.compute_permutation)
+
+
+class BssEvalException(Exception):
+    """
+    Exception class for BSS-Eval
+    """
+    pass

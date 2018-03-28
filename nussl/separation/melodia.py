@@ -13,10 +13,12 @@ except ImportError:
     vamp_okay = False
 
 from ..core import constants
-import separation_base
+import mask_separation_base
+import masks
 from .. import AudioSignal
 
-class Melodia(separation_base.SeparationBase):
+
+class Melodia(mask_separation_base.MaskSeparationBase):
     """Implements melody extraction using Melodia.
 
     J. Salamon and E. Gómez, "Melody Extraction from Polyphonic Music Signals using Pitch Contour Characteristics",
@@ -34,26 +36,29 @@ class Melodia(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal, high_pass_cutoff=None, minimum_frequency=None,
-                 maximum_frequency=None, voicing_tolerance=None, minimum_peak_salience=None, do_mono=False,
-                 use_librosa_stft=constants.USE_LIBROSA_STFT):
+    def __init__(self, input_audio_signal, high_pass_cutoff=None, minimum_frequency=55.0,
+                 maximum_frequency=1760.0, voicing_tolerance=0.5, minimum_peak_salience=0.0,
+                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
+                 mask_type=constants.SOFT_MASK):
 
         if not vamp_okay or vamp:
             raise ImportError('Cannot import Vamp! Melodia depends on Vamp!')
 
-        super(Melodia, self).__init__(input_audio_signal=input_audio_signal)
+        super(Melodia, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None
         self.foreground = None
         self.use_librosa_stft = use_librosa_stft
-        self.minimum_frequency = 55.0 if minimum_frequency is None else float(minimum_frequency)
-        self.maximum_frequency = 1760.0 if maximum_frequency is None else float(maximum_frequency)
-        self.voicing_tolerance = 0.5 if voicing_tolerance is None else float(voicing_tolerance)
-        self.minimum_peak_salience = 0.0 if minimum_peak_salience is None else float(minimum_peak_salience)
+        self.minimum_frequency = float(minimum_frequency)
+        self.maximum_frequency = float(maximum_frequency)
+        self.voicing_tolerance = float(voicing_tolerance)
+        self.minimum_peak_salience = float(minimum_peak_salience)
         self.stft = None
         self.melody = None
         self.melody_signal = None
         self.timestamps = None
+        self.foreground_mask = None
+        self.background_mask = None
 
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)
@@ -69,10 +74,10 @@ class Melodia(separation_base.SeparationBase):
             data = vamp.collect(self.audio_signal.audio_data, self.sample_rate,
                                 "mtg-melodia:melodia", parameters=params)
         except Exception as e:
-            print('~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~\n'
-                  '           Are Vamp and Melodia installed correctly?\n'
-                  '  Check https://bit.ly/2DXbrAk for installation instructions!\n'
-                  '~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~')
+            print('**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**\n'
+                  '*          Are Vamp and Melodia installed correctly?          *\n'
+                  '* Check https://bit.ly/2DXbrAk for installation instructions! *\n'
+                  '**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**')
             raise e
 
         _, melody = data['vector']
@@ -184,17 +189,25 @@ class Melodia(separation_base.SeparationBase):
         foreground_mask = self.create_harmonic_mask(self.melody_signal)
         foreground_mask[0:self.high_pass_cutoff, :] = 0
 
-        foreground_stft = np.multiply(foreground_mask, self.stft)
+        if self.mask_type == self.BINARY_MASK:
+            foreground_mask = masks.BinaryMask(foreground_mask)
+        else:
+            foreground_mask = masks.SoftMask(foreground_mask)
 
-        self.foreground = AudioSignal(stft=foreground_stft, sample_rate=self.audio_signal.sample_rate)
-        self.foreground.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
+        self.foreground_mask = foreground_mask
+        self.background_mask = foreground_mask.invert_mask()
+
+        self.foreground = self.audio_signal.apply_mask(foreground_mask)
+        self.foreground.istft(self.stft_params.window_length, self.stft_params.hop_length,
+                              self.stft_params.window_type,
                               overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)
 
-        return self.foreground
+        return [self.background_mask, self.foreground_mask]
 
     def _compute_spectrum(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
+        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
+                                           use_librosa=self.use_librosa_stft)
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run FT2D.run() prior

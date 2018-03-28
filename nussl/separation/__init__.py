@@ -25,7 +25,8 @@ from .overlap_add import OverlapAdd
 from .ica import ICA
 from .high_low_pass_filter import HighLowPassFilter
 from .deep_clustering import DeepClustering
+from .rpca import RPCA
 
 __all__ = ['SeparationBase', 'MaskSeparationBase',
            'Repet', 'RepetSim', 'FT2D', 'Duet', 'Projet', 'Melodia','IdealMask', 'OverlapAdd',
-           'ICA', 'HighLowPassFilter', 'NMF_MFCC', 'DeepClustering', 'HPSS']
+           'ICA', 'HighLowPassFilter', 'NMF_MFCC', 'DeepClustering', 'HPSS', 'RPCA']

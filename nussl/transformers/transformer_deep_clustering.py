@@ -5,13 +5,10 @@ Deep Clustering modeller class
 """
 import warnings
 
-try:
-    import torch
-    import torch.nn as nn
-    torch_okay = True
-except ImportError:
-    warnings.warn('Cannot import pytorch!')
-    torch_okay = False
+
+import torch
+import torch.nn as nn
+torch_okay = True
 
 import numpy as np
 

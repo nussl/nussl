@@ -82,7 +82,7 @@ def _subset_and_shuffle(file_list, subset, shuffle, seed):
     elif isinstance(subset, list):
         result = [file_list[i] for i in subset]
 
-    elif issubclass(subset, (str, bytes)):
+    elif isinstance(subset, (str, bytes)):
         result = [f for f in file_list if subset in os.path.dirname(f)]
 
     elif subset is None:

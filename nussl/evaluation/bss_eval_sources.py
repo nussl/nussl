@@ -4,8 +4,7 @@
 
 """
 
-import numpy as np
-import mir_eval
+import museval
 
 import bss_eval_base
 
@@ -15,14 +14,19 @@ class BSSEvalSources(bss_eval_base.BSSEvalBase):
 
     """
 
-    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, algorithm_name=None,
-                 do_mono=False, compute_permutation=True):
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
+                 algorithm_name=None, do_mono=False, compute_permutation=True,
+                 framewise=False, window=1323000, hop=661500):
         super(BSSEvalSources, self).__init__(true_sources_list=true_sources_list,
                                              estimated_sources_list=estimated_sources_list,
                                              source_labels=source_labels, do_mono=do_mono,
                                              compute_permutation=compute_permutation)
 
-        self._mir_eval_func = mir_eval.separation.bss_eval_sources
+        if framewise:
+            self._mir_eval_func = museval.metrics.bss_eval_sources_framewise
+        else:
+            self._mir_eval_func = museval.metrics.bss_eval_sources
+
 
 
     def _preprocess_sources(self):
@@ -33,7 +37,7 @@ class BSSEvalSources(bss_eval_base.BSSEvalBase):
         #     reference = np.sum(reference, axis=-1)
         #     estimated = np.sum(estimated, axis=-1)
 
-        mir_eval.separation.validate(reference, estimated)
+        museval.metrics.validate(reference, estimated)
 
         return reference, estimated
 
@@ -58,4 +62,3 @@ class BSSEvalSources(bss_eval_base.BSSEvalBase):
                 idx += 1
 
         self.scores[self.PERMUTATION] = perm
-
