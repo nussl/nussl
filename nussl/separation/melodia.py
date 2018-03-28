@@ -4,13 +4,7 @@ import warnings
 
 import numpy as np
 from scipy.ndimage.filters import convolve
-
-try:
-    import vamp
-    vamp_okay = True
-except ImportError:
-    warnings.warn('Cannot import vamp!')
-    vamp_okay = False
+import vamp
 
 from ..core import constants
 import mask_separation_base
@@ -40,9 +34,6 @@ class Melodia(mask_separation_base.MaskSeparationBase):
                  maximum_frequency=1760.0, voicing_tolerance=0.5, minimum_peak_salience=0.0,
                  do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
                  mask_type=constants.SOFT_MASK):
-
-        if not vamp_okay or vamp:
-            raise ImportError('Cannot import Vamp! Melodia depends on Vamp!')
 
         super(Melodia, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
