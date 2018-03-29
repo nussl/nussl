@@ -8,6 +8,7 @@ import unittest
 import nussl
 import numpy as np
 from scipy import signal
+import librosa
 
 class TestUtils(unittest.TestCase):
     """
@@ -81,3 +82,17 @@ class TestUtils(unittest.TestCase):
 
         result = nussl.utils.add_mismatched_arrays(short_array, short_array, truncate=True)
         assert all(np.equal(result, expected_result))
+
+    def test_musdb_track(self):
+        signal = nussl.AudioSignal(librosa.util.example_audio_file())
+
+        repet = nussl.Repet(signal)
+        repet.run()
+
+        bg, fg = repet.make_audio_signals()
+
+        src_dict = {'vocals': fg, 'accompaniment': bg}
+        target = nussl.core.constants.STEM_TARGET_DICT
+        track = nussl.utils.audio_signals_to_mudb_track(signal, src_dict, target)
+
+        i = 0

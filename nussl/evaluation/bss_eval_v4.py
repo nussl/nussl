@@ -3,67 +3,66 @@
 """
 TODO
 """
-import numpy as np
 import museval
+import json
 
 import bss_eval_base
+from ..core import constants, utils
 
 
 class BSSEvalV4(bss_eval_base.BSSEvalBase):
     """
 
     """
-    SDR_FRAMES = 'SDR_Frames'
-    SAR_FRAMES = 'SAR_Frames'
-    SIR_FRAMES = 'SIR_Frames'
-    ISR_FRAMES = 'ISR_Frames'
+    SDR_MEANS = 'sdr_means'
 
-    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
-                 algorithm_name=None, do_mono=False, compute_permutation=True):
+    def __init__(self, mixture, true_sources_list, estimated_sources_list, source_labels=None,
+                 do_mono=False, target_dict=constants.VOX_ACC_DICT, vox_acc=True,
+                 mode='v4', output_dir=None, win=1.0, hop=1.0):
         super(BSSEvalV4, self).__init__(true_sources_list=true_sources_list,
                                         estimated_sources_list=estimated_sources_list,
-                                        source_labels=source_labels, do_mono=do_mono,
-                                        compute_permutation=compute_permutation)
+                                        source_labels=source_labels, do_mono=do_mono)
+        if vox_acc and target_dict == constants.VOX_ACC_DICT:
+            self.source_labels = ['accompaniment', 'vocals']
 
-        self._mir_eval_func = museval.metrics.bss_eval_images_framewise
+        self.source_dict = {l: self.true_sources_list[i] for i, l in enumerate(self.source_labels)}
+        self.estimates_dict = {l: self.estimated_sources_list[i].audio_data.T
+                               for i, l in enumerate(self.source_labels)}
+        self.target_dict = target_dict
+        self.mixture = mixture
+        self.mode = mode
+        self.output_dir = output_dir
+        self.win = win
+        self.hop = hop
 
-    def _preprocess_sources(self):
-        # reference, estimated = super(BSSEvalV4, self)._preprocess_sources()
-        reference = np.dstack((self.true_sources_list[i].audio_data.T
-                               for i in range(len(self.true_sources_list)))).transpose((2, 0, 1))
-        estimated = np.dstack((self.estimated_sources_list[i].audio_data.T
-                               for i in range(len(self.estimated_sources_list))))
-        estimated = estimated.transpose((2, 0, 1))
+    def _get_scores(self, scores):
+        s = scores.split()
+        v, a = s[0], s[6]
+        i1, i2 = [2, 3, 4, 5], [8, 9, 10, 11]
+        return {v: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i1},
+                a: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i2}}
 
-        # if self.num_channels == 1:
-        #     raise Exception("Can't run bss_eval_images on mono audio signals!")
+    @staticmethod
+    def _parse(str_):
+        bss_type, val = str_.split(':')
+        val = float(val[:-3])
+        return bss_type, val
 
-        museval.metrics.validate(reference, estimated)
+    def _get_mean_scores(self, scores):
+        return self._get_scores(repr(scores))
 
-        return reference, estimated
+    def evaluate(self):
+        track = utils.audio_signals_to_mudb_track(self.mixture, self.source_dict, self.target_dict)
+
+        bss_output = museval.eval_mus_track(track, self.estimates_dict,
+                                            output_dir=self.output_dir, mode=self.mode,
+                                            win=self.win, hop=self.hop)
+
+        self._populate_scores_dict(bss_output)
+
+        return self.scores
 
     def _populate_scores_dict(self, bss_output):
 
-        # Store them as list for ease of json
-        sdr_list, isr_list, sir_list, sar_list, perm = map(lambda l: l.tolist(), bss_output)
-        self.scores[self.RAW_VALUES] = {self.SDR: sdr_list, self.ISR: isr_list, self.SIR: sir_list,
-                                        self.SAR: sar_list,
-                                        self.PERMUTATION: perm}
-
-        sdr_list, isr_list, sir_list, sar_list, perm = bss_output
-        n_frames = sdr_list.shape[1]
-
-        for i, label in enumerate(self.source_labels):
-            self.scores[label] = {}
-            self.scores[label][self.SDR_FRAMES] = []
-            self.scores[label][self.ISR_FRAMES] = []
-            self.scores[label][self.SIR_FRAMES] = []
-            self.scores[label][self.SAR_FRAMES] = []
-            for f in range(n_frames):
-
-                self.scores[label][self.SDR_FRAMES].append(sdr_list[i, f])
-                self.scores[label][self.ISR_FRAMES].append(isr_list[i, f])
-                self.scores[label][self.SIR_FRAMES].append(sir_list[i, f])
-                self.scores[label][self.SAR_FRAMES].append(sar_list[i, f])
-
-        self.scores[self.PERMUTATION] = perm.tolist()
+        self.scores[self.RAW_VALUES] = json.loads(bss_output.json)  # Hack to format dict correctly
+        self.scores[self.SDR_MEANS] = self._get_mean_scores(repr(bss_output))

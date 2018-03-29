@@ -78,3 +78,13 @@ NUSSL_EXTRA_BENCHMARK_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'benchmark_me
 NUSSL_EXTRA_MODEL_METADATA_URL = urljoin(NUSSL_EXTRA_BASE_URL, 'model_metadata.json')
 
 USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will use librosa's stft function by default
+
+
+# ############# MUSDB interface ############### #
+STEM_TARGET_DICT = {'vocals': {'vocals': 1},
+                    'drums': {'drums': 1},
+                    'bass': {'bass': 1},
+                    'other': {'other': 1},
+                    'accompaniment': {'bass': 1, 'drums': 1, 'other': 1}}
+
+VOX_ACC_DICT = {'vocals': {'vocals': 1}, 'accompaniment': {'accompaniment': 1}}

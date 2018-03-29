@@ -70,7 +70,21 @@ class BSSEvalUnitTests(unittest.TestCase):
         est_list = [(copy.copy(self.signal) * m) for m in mult[::-1]]
 
         # mixture is in reverse order to the estimated sources
-        bss = nussl.evaluation.BSSEvalV4(signal_list, est_list)
-        bss.evaluate()
+        # bss = nussl.evaluation.BSSEvalV4( signal_list, est_list)
+        # bss.evaluate()
+        #
+        # scores = bss.scores
 
-        scores = bss.scores
+    def test_bss_eval_v4(self):
+        mir1k_dir = '/Users/ethanmanilow/Documents/School/Research/Predicting SDR values/prediction/Repet/mir_1k/MIR-1K'
+        mix, sig1, sig2 = next(nussl.data_sets.mir1k(mir1k_dir))
+        mix.to_mono(overwrite=True)
+
+        r = nussl.RepetSim(mix)
+        r()
+        est1, est2 = r.make_audio_signals()
+
+        bss = nussl.evaluation.BSSEvalV4(mix, [sig1, sig2], [est1, est2])
+        scores = bss.evaluate()
+
+        i = 0

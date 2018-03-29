@@ -6,33 +6,26 @@ any specific algorithm or that are shared between algorithms.
 """
 
 from __future__ import division
-import numpy as np
 import warnings
 import base64
 import json
 import os
 import sys
-import json
 import hashlib
-
+import re
+import collections
 
 from six.moves.urllib_parse import urljoin
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import urlopen, Request
+import numpy as np
+import musdb
 
 # commented these out because they were causing circular import errors
 # from audio_signal import AudioSignal
 # from separation import SeparationBase
 # from separation import MaskSeparationBase
-
-import base64
-import json
-import warnings
-import re
-
-import numpy as np
-
 import constants
 
 __all__ = ['find_peak_indices', 'find_peak_values',
@@ -414,6 +407,41 @@ def _format(string):
     return str(filter(str.isalnum, string)).lower()
 
 
+def audio_signals_to_mudb_track(mixture, sources_dict, targets_dict):
+    verify_audio_signal_list_strict(sources_dict.values() + [mixture])
+
+    track = musdb.Track(mixture.file_name, is_wav=True, stem_id=0)
+    track.audio = mixture.audio_data.T
+    track.rate = mixture.sample_rate
+
+    sources = {}
+    i = 1
+    for key, sig in list(sources_dict.items()):
+        sources[key] = musdb.Source(name=key, stem_id=i, is_wav=True)
+        sources[key].audio = sig.audio_data.T
+        sources[key].rate = sig.sample_rate
+        i += 1
+
+    track.sources = sources
+
+    targets = collections.OrderedDict()
+    for name, target_srcs in list(targets_dict.items()):
+        # add a list of target sources
+        target_sources = []
+        for source, gain in list(target_srcs.items()):
+            if source in list(track.sources.keys()):
+                # add gain to source tracks
+                track.sources[source].gain = float(gain)
+                # add tracks to components
+                target_sources.append(sources[source])
+        # add sources to target
+        if target_sources:
+            targets[name] = musdb.Target(sources=target_sources)
+
+    track.targets = targets
+    return track
+
+
 def verify_audio_signal_list_lax(audio_signal_list):
     """
     Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects.
@@ -463,6 +491,9 @@ def verify_audio_signal_list_strict(audio_signal_list):
 
     if not all(audio_signal_list[0].num_channels == s.num_channels for s in audio_signal_list):
         raise ValueError('All input AudioSignal objects must have the same number of channels!')
+
+    if not all(audio_signal_list[0].signal_length == s.signal_length for s in audio_signal_list):
+        raise ValueError('All input AudioSignal objects must have the same signal length!')
 
     return audio_signal_list
 

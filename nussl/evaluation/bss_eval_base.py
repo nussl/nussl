@@ -118,40 +118,6 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
         """
 
 
-    # def bss_eval_sources_framewise(self):
-    #     """
-    #     TODO - figure out compute_permutation=True branch will work here
-    #     Returns:
-    #
-    #     """
-    #     raise NotImplementedError("Still working on this!")
-    #     self.validate()
-    #     reference, estimated = self._preprocess_sources()
-    #     if self.num_channels != 1:
-    #         reference = np.sum(reference, axis=-1)
-    #         estimated = np.sum(estimated, axis=-1)
-    #     separation.validate(reference, estimated)
-    #     sdr, sir, sar, perm = separation.bss_eval_sources_framewise(reference, estimated,
-    #                                                     window = self.segment_size, hop = self.hop_size,
-    #                                                     compute_permutation=self.compute_permutation)
-    #
-    # def bss_eval_images_framewise(self):
-    #     """
-    #     TODO - figure out compute_permutation=True branch will work here
-    #     Returns:
-    #
-    #     """
-    #     raise NotImplementedError("Still working on this!")
-    #     self.validate()
-    #     if self.num_channels == 1:
-    #         raise Exception("Can't run bss_eval_Image frames_framewise on mono audio signals!")
-    #     reference, estimated = self._preprocess_sources()
-    #     separation.validate(reference, estimated)
-    #     sdr, isr, sir, sar, perm = separation.bss_eval_images_framewise(reference, estimated,
-    #                                                         window=self.segment_size, hop=self.hop_size,
-    #                                                         compute_permutation=self.compute_permutation)
-
-
 class BssEvalException(Exception):
     """
     Exception class for BSS-Eval

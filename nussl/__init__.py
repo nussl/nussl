@@ -10,6 +10,7 @@ from .core import utils, stft_utils, data_sets
 from .evaluation import *
 from .separation import *
 from .transformers import *
+import core.constants
 
 __all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation']
 
