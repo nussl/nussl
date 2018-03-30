@@ -4,7 +4,7 @@ jsonpickle == 0.9.5
 librosa == 0.6.0
 matplotlib == 2.0.0
 mir_eval == 0.4
-mus_eval == 0.2.0
+museval == 0.2.0
 musdb == 0.2.3
 numpy == 1.13.0
 pyyaml == 3.12

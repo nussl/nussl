@@ -37,7 +37,7 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
 
     def _get_scores(self, scores):
         s = scores.split()
-        v, a = s[0], s[6]
+        v, a = s[0], s[6].replace('\\n', '')
         i1, i2 = [2, 3, 4, 5], [8, 9, 10, 11]
         return {v: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i1},
                 a: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i2}}

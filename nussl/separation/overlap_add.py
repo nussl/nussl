@@ -274,7 +274,10 @@ class OverlapAdd(separation_base.SeparationBase):
 
     def _set_active_region_and_run(self, start, end):
         self._separation_instance.audio_signal.set_active_region(start, end)
-        return self._separation_instance.run()
+        self._separation_instance.run()
+        bkgnd, _ = self._separation_instance.make_audio_signals()
+        return bkgnd
+
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run :func:`run()` prior
@@ -292,6 +295,6 @@ class OverlapAdd(separation_base.SeparationBase):
         if self.background is None:
             raise ValueError('Cannot make audio signals prior to running algorithm!')
 
-        self.foreground = self.audio_signal - self.background
-        self.foreground.sample_rate = self.audio_signal.sample_rate
+        foreground_array = self.audio_signal.audio_data - self.background.audio_data
+        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
         return [self.background, self.foreground]
