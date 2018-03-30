@@ -214,12 +214,14 @@ class OverlapAdd(separation_base.SeparationBase):
         if self._separation_instance is None:
             self._setup_instance()
 
-        # if our window is larger than the total number of samples in the file, just run the algorithm like normal
+        # if our window is larger than the total number of samples in the file,
+        # just run the algorithm like normal
         if self.audio_signal.signal_length < self.window_samples + self.hop_samples:
             warnings.warn('input_audio_signal length is less than one window. '
                           'Running {} normally...'.format(self.separation_method_name))
 
-            self.background = self._separation_instance.run()
+            self._separation_instance.run()
+            self.background, _ = self._separation_instance.make_audio_signals()
             return self.background
 
         background_array = np.zeros_like(self.audio_signal.audio_data)
