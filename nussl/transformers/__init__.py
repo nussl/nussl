@@ -31,11 +31,11 @@ from .transformer_nmf import TransformerNMF
 
 from .. import torch_imported, ImportErrorClass
 if torch_imported:
-    from .transformer_deep_clustering import TransformerDeepClustering, show_model, affinity_cost
+    from .transformer_deep_clustering import TransformerDeepClustering
 else:
     class TransformerDeepClustering(ImportErrorClass):
         def __init__(self):
             super(TransformerDeepClustering, self).__init__('pytorch')
 
 
-__all__ = ['TransformerNMF', 'TransformerDeepClustering', 'show_model', 'affinity_cost']
+__all__ = ['TransformerNMF', 'TransformerDeepClustering']

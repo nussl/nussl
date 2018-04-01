@@ -3,31 +3,13 @@
 """
 Deep Clustering modeller class
 """
-import warnings
 
-
-import torch
-import torch.nn as nn
-torch_okay = True
+from .. import torch_imported
+if torch_imported:
+    import torch
+    import torch.nn as nn
 
 import numpy as np
-
-
-def show_model(model):
-    """
-    Prints a message to the console with model info
-    Args:
-        model:
-
-    Returns:
-
-    """
-    print(model)
-    num_parameters = 0
-    for p in model.parameters():
-        if p.requires_grad:
-            num_parameters += np.cumprod(p.size())[-1]
-    print('Number of parameters: {}'.format(num_parameters))
 
 
 class TransformerDeepClustering(nn.Module):
@@ -36,7 +18,7 @@ class TransformerDeepClustering(nn.Module):
     """
     def __init__(self, hidden_size=300, input_size=150, num_layers=2, embedding_size=20):
 
-        if not torch_okay:
+        if not torch_imported:
             raise ImportError('Cannot import pytorch! Install pytorch to continue.')
 
         super(TransformerDeepClustering, self).__init__()
@@ -69,34 +51,51 @@ class TransformerDeepClustering(nn.Module):
         embedding = nn.functional.normalize(embedding, p=2, dim=-1)
         return embedding
 
+    @staticmethod
+    def affinity_cost(embedding, assignments):
+        """
+        Function defining the affinity cost for deep clustering
+        Args:
+            embedding:
+            assignments:
 
-def affinity_cost(embedding, assignments):
-    """
-    Function defining the affinity cost for deep clustering
-    Args:
-        embedding:
-        assignments:
+        Returns:
 
-    Returns:
+        """
+        embedding = embedding.view(-1, embedding.size()[-1])
+        assignments = assignments.view(-1, assignments.size()[-1])
+        silence_mask = torch.sum(assignments, dim=-1, keepdim=True)
+        embedding = silence_mask * embedding
+        embedding_transpose = embedding.transpose(1, 0)
+        assignments_transpose = assignments.transpose(1, 0)
 
-    """
-    embedding = embedding.view(-1, embedding.size()[-1])
-    assignments = assignments.view(-1, assignments.size()[-1])
-    silence_mask = torch.sum(assignments, dim=-1, keepdim=True)
-    embedding = silence_mask * embedding
-    embedding_transpose = embedding.transpose(1, 0)
-    assignments_transpose = assignments.transpose(1, 0)
+        class_weights = nn.functional.normalize(torch.sum(assignments, dim=-2),
+                                                p=1, dim=-1).unsqueeze(0)
+        class_weights = 1.0 / (torch.sqrt(class_weights) + 1e-7)
+        weights = torch.mm(assignments, class_weights.transpose(1, 0))
+        assignments = assignments * weights.repeat(1, assignments.size()[-1])
+        embedding = embedding * weights.repeat(1, embedding.size()[-1])
 
-    class_weights = nn.functional.normalize(torch.sum(assignments, dim=-2),
-                                            p=1, dim=-1).unsqueeze(0)
-    class_weights = 1.0 / (torch.sqrt(class_weights) + 1e-7)
-    weights = torch.mm(assignments, class_weights.transpose(1, 0))
-    assignments = assignments * weights.repeat(1, assignments.size()[-1])
-    embedding = embedding * weights.repeat(1, embedding.size()[-1])
+        loss_est = torch.norm(torch.mm(embedding_transpose, embedding), p=2)
+        loss_est_true = 2*torch.norm(torch.mm(embedding_transpose, assignments), p=2)
+        loss_true = torch.norm(torch.mm(assignments_transpose, assignments), p=2)
+        loss = loss_est - loss_est_true + loss_true
+        loss = loss / (loss_est + loss_true)
+        return loss
 
-    loss_est = torch.norm(torch.mm(embedding_transpose, embedding), p=2)
-    loss_est_true = 2*torch.norm(torch.mm(embedding_transpose, assignments), p=2)
-    loss_true = torch.norm(torch.mm(assignments_transpose, assignments), p=2)
-    loss = loss_est - loss_est_true + loss_true
-    loss = loss / (loss_est + loss_true)
-    return loss
+    @staticmethod
+    def show_model(model):
+        """
+        Prints a message to the console with model info
+        Args:
+            model:
+
+        Returns:
+
+        """
+        print(model)
+        num_parameters = 0
+        for p in model.parameters():
+            if p.requires_grad:
+                num_parameters += np.cumprod(p.size())[-1]
+        print('Number of parameters: {}'.format(num_parameters))

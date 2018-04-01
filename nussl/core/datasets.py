@@ -249,10 +249,10 @@ def musdb18(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     audio_dir_names = ['test', 'train'] if subset is None else [subset]
     hash = 'cf4cfcef4eadc212c34df6e8fb1184a3f63b7fedfab23e79d17e735fff0bfaf9'
     audio_extension = '.mp4'
-    stem_labels = ['mixture', 'drums', 'bass', 'accompaniment', 'vocals']
+    stem_labels = ['mixture', 'drums', 'bass', 'other accompaniment', 'vocals']
 
     # Check the hash has of the full directory
-    _check_hash(dir_name, check_hash, hash, audio_extension)
+    _check_hash(directory, check_hash, hash, audio_extension)
 
     files = []
     for audio_dir_name in audio_dir_names:
