@@ -35,6 +35,17 @@ def _hash_directory(directory, ext=None):
     return hasher.hexdigest()
 
 
+def _check_hash(audio_dir, check_hash, expected_hash, ext):
+    # Check to see if the contents are what we expect
+    # by hashing all of the files and checking against a precomputed expected_hash
+    if check_hash and _hash_directory(audio_dir, ext) != expected_hash:
+        msg = 'Hash of {} does not match known directory hash!'.format(audio_dir)
+        if check_hash == 'warn':
+            warnings.warn(msg)
+        else:
+            raise DataSetException(msg)
+
+
 def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, check_hash, ext):
 
     # Verify the top-level directory is correct
@@ -50,14 +61,7 @@ def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, chec
     if not os.path.isdir(audio_dir):
         raise DataSetException('Expected {} to be a directory but it is not!'.format(audio_dir))
 
-    # Check to see if the contents are what we expect
-    # by hashing all of the files and checking against a precomputed expected_hash
-    if _hash_directory(audio_dir, ext) != expected_hash:
-        msg = 'Hash of {} does not match known directory hash!'.format(audio_dir)
-        if check_hash:
-            raise DataSetException(msg)
-        else:
-            warnings.warn(msg)
+    _check_hash(audio_dir, check_hash, expected_hash, ext)
 
     # return a list of the full paths of every audio file
     return [os.path.join(audio_dir, f) for f in os.listdir(audio_dir)
@@ -236,6 +240,38 @@ def musdb18(directory, check_hash=True, subset=None, shuffle=False, seed=None):
 
     """
 
+    try:
+        import stempeg
+    except Exception:
+        raise ImportError('Cannot read MUSDB18 without stempeg package installed!')
+
+    dir_name = 'musdb18'
+    audio_dir_names = ['test', 'train'] if subset is None else [subset]
+    hash = 'cf4cfcef4eadc212c34df6e8fb1184a3f63b7fedfab23e79d17e735fff0bfaf9'
+    audio_extension = '.mp4'
+    stem_labels = ['mixture', 'drums', 'bass', 'accompaniment', 'vocals']
+
+    # Check the hash has of the full directory
+    _check_hash(dir_name, check_hash, hash, audio_extension)
+
+    files = []
+    for audio_dir_name in audio_dir_names:
+        files.extend(_data_set_setup(directory, dir_name, audio_dir_name,
+                                     '', False, audio_extension))
+
+    files = _subset_and_shuffle(files, subset, shuffle, seed)
+
+    for f in files:
+        stem, sr = stempeg.read_stems(f)
+        yield tuple(_make_audio_signal_from_stem(f, stem, i, sr, l)
+                    for i, l in enumerate(stem_labels))
+
+
+def _make_audio_signal_from_stem(filename, stem, i, sr, label):
+    signal = AudioSignal(audio_data_array=stem[i,...], sample_rate=sr)
+    signal.path_to_input_file = filename
+    signal.label = label
+    return signal
 
 class DataSetException(Exception):
     pass

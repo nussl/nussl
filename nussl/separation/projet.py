@@ -80,7 +80,8 @@ class Projet(separation_base.SeparationBase):
         # initialize PSD and panning to random
         P = np.abs(np.random.randn(num_freq_bins * num_time_bins, num_sources)).astype(self.matrix_datatype) + 1
 
-        # panning_sources_matrix is number of panning directions to look for by number of sources (Q in original paper)
+        # panning_sources_matrix is number of panning directions
+        # to look for by number of sources (Q in original paper)
         panning_sources_matrix = np.abs(np.random.randn(self.num_panning_directions,
                                                         num_sources)).astype(self.matrix_datatype) + 1
 

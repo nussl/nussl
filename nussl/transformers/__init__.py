@@ -28,6 +28,14 @@ Imports for transformers classes. More than meets the eye.
 """
 
 from .transformer_nmf import TransformerNMF
-from .transformer_deep_clustering import TransformerDeepClustering, show_model, affinity_cost
+
+from .. import torch_imported, ImportErrorClass
+if torch_imported:
+    from .transformer_deep_clustering import TransformerDeepClustering, show_model, affinity_cost
+else:
+    class TransformerDeepClustering(ImportErrorClass):
+        def __init__(self):
+            super(TransformerDeepClustering, self).__init__('pytorch')
+
 
 __all__ = ['TransformerNMF', 'TransformerDeepClustering', 'show_model', 'affinity_cost']

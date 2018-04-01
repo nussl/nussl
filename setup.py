@@ -26,6 +26,19 @@ REQUIREMENTS = [
     'mir_eval >= 0.4.0',
     'sklearn'
 ]
+
+EXTRAS = {
+    'melodia': [
+        'vamp'
+    ],
+    'deep': [
+        'torch'
+    ],
+    'musdb': [
+        'stempeg'
+    ]
+}
+
 CLASSIFIERS = [
     'Development Status :: 3 - Alpha',
     'Environment :: Console',
@@ -86,5 +99,6 @@ if __name__ == '__main__':
         license=find_meta('license'),
         packages=find_packages(),
         keywords=KEYWORDS,
-        install_requires=REQUIREMENTS
+        install_requires=REQUIREMENTS,
+        extras_require=EXTRAS
     )

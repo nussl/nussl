@@ -4,9 +4,25 @@
 Init for ``nussl``, the Northwestern University Source Separation Library.
 """
 
+try:
+    import torch
+    torch_imported = True
+except Exception:
+    torch_imported = False
+
+try:
+    import vamp
+    vamp_imported = True
+except Exception:
+    vamp_imported = False
+
+class ImportErrorClass(object):
+    def __init__(self, lib):
+        raise ImportError('Cannot import {} because {} is not installed'.format(self.__name__, lib))
+
 from .core.constants import *
 from .core.audio_signal import AudioSignal
-from .core import utils, stft_utils, data_sets
+from .core import utils, stft_utils, datasets
 from .evaluation import *
 from .separation import *
 from .transformers import *

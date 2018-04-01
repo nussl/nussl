@@ -77,7 +77,7 @@ class BSSEvalUnitTests(unittest.TestCase):
 
     def test_bss_eval_v4(self):
         mir1k_dir = '/Users/ethanmanilow/Documents/School/Research/Predicting SDR values/prediction/Repet/mir_1k/MIR-1K'
-        mix, sig1, sig2 = next(nussl.data_sets.mir1k(mir1k_dir))
+        mix, sig1, sig2 = next(nussl.datasets.mir1k(mir1k_dir))
         mix.to_mono(overwrite=True)
 
         r = nussl.RepetSim(mix)

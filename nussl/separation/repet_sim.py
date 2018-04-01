@@ -214,8 +214,15 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
 
         for i in range(self.audio_signal.stft_length):
             cur_similarities = self.similarity_indices[i]
-            similar_times = np.array([magnitude_spectrogram_channel[:, j] for j in cur_similarities])
-            mask[:, i] = np.median(similar_times, axis=0)
+
+            if not cur_similarities:
+                # If there are no similarities, then just add ones to the mask here.
+                mask[:, i] = np.ones(mask.shape[constants.STFT_VERT_INDEX])
+            else:
+                similar_times = np.array([magnitude_spectrogram_channel[:, j]
+                                          for j in cur_similarities])
+
+                mask[:, i] = np.median(similar_times, axis=0)
 
         mask = np.minimum(mask, magnitude_spectrogram_channel)
         mask = (mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)

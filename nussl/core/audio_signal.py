@@ -80,6 +80,7 @@ class AudioSignal(object):
         self._sample_rate = None
         self._active_start = None
         self._active_end = None
+        self.label = None
 
         # Assert that this object was only initialized in one way
         got_path = path_to_input_file is not None
