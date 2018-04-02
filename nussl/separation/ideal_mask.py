@@ -146,12 +146,14 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         for source in self.sources:
             mag = source.magnitude_spectrogram_data # Alias this variable, for easy reading
             if self.mask_type == self.BINARY_MASK:
-                cur_mask = (20 * np.log10(np.divide(mag, self._mixture_mag_spec))) > self.binary_db_threshold
+                div = np.divide(mag + constants.EPSILON, self._mixture_mag_spec + constants.EPSILON)
+                cur_mask = (20 * np.log10(div)) > self.binary_db_threshold
                 mask = masks.BinaryMask(cur_mask)
 
             elif self.mask_type == self.SOFT_MASK:
                 soft_mask = librosa.util.softmask(self.audio_signal.magnitude_spectrogram_data,
-                                                  mag, power=self.power, split_zeros=self.split_zeros)
+                                                  mag, power=self.power,
+                                                  split_zeros=self.split_zeros)
 
                 mask = masks.SoftMask(soft_mask)
             else:
