@@ -16,10 +16,12 @@ try:
 except Exception:
     vamp_imported = False
 
+
 class ImportErrorClass(object):
     def __init__(self, lib):
         msg = 'Cannot import {} because {} is not installed'.format(type(self).__name__, lib)
         raise ImportError(msg)
+
 
 from .core.constants import *
 from .core.audio_signal import AudioSignal
