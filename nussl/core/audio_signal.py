@@ -134,6 +134,17 @@ class AudioSignal(object):
         return self.audio_data.shape[constants.LEN_INDEX]
 
     @property
+    def entire_signal_length(self):
+        """
+        (int): Number of samples in all of :ref:`audio_data` regardless of active regions
+        Returns:
+
+        """
+        if self.audio_data is None:
+            return None
+        return self._audio_data.shape[constants.LEN_INDEX]
+
+    @property
     def signal_duration(self):
         """ (float): Duration of audio in seconds.
             The length of the audio signal represented by this object in seconds
@@ -141,6 +152,17 @@ class AudioSignal(object):
         if self.signal_length is None:
             return None
         return self.signal_length / self.sample_rate
+
+    @property
+    def entire_signal_duration(self):
+        """
+        (float): Duration of audio in seconds regardless of active regions
+        Returns:
+
+        """
+        if self.audio_data is None:
+            return None
+        return self.entire_signal_length / self.sample_rate
 
     @property
     def num_channels(self):

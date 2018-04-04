@@ -50,7 +50,10 @@ class Projet(separation_base.SeparationBase):
         self.num_projections = num_projections
         self.panning_profiles = panning_profiles
 
-        if matrix_datatype not in np.typecodes['AllFloat']:
+        if isinstance(matrix_datatype, str):
+            matrix_datatype = np.dtype(matrix_datatype)
+
+        if not np.issubdtype(matrix_datatype, np.float):
             raise ValueError('matrix_datatype must be a float!')
 
         self.matrix_datatype = matrix_datatype
@@ -77,6 +80,7 @@ class Projet(separation_base.SeparationBase):
         num_sources = self.num_sources
         eps = 1e-20
 
+        if self.verbose: print('Initializing panning matrix...')
         # initialize PSD and panning to random
         P = np.abs(np.random.randn(num_freq_bins * num_time_bins, num_sources)).astype(self.matrix_datatype) + 1
 
@@ -88,18 +92,24 @@ class Projet(separation_base.SeparationBase):
         chan_pan_diff = utils.complex_randn((num_channels, self.num_panning_directions - self.panning_profiles))
         chan_per_panning_profiles = self.multichannel_grid(num_channels, self.panning_profiles)
 
+        if self.verbose: print('Computing initial panning profiles...')
+
         # compute panning profiles
         panning_matrix = np.concatenate((chan_pan_diff, chan_per_panning_profiles), axis=1)
         panning_matrix /= np.sqrt(np.sum(np.abs(panning_matrix) ** 2, axis=0))[None, ...]
+
+        if self.verbose: print('Computing initial projection matrices...')
 
         # compute projection matrix
         projection_matrix = np.concatenate((utils.complex_randn((max(self.num_projections - 5, 0), num_channels)),
                                             self.orthogonal_matrix(self.multichannel_grid(num_channels, min(self.num_projections, 5)))))
         projection_matrix /= np.sqrt(np.sum(np.abs(projection_matrix) ** 2, axis=1))[..., None]
 
+        if self.verbose: print('Computing K matrix.')
         # compute K matrix
         K = np.abs(np.dot(projection_matrix, panning_matrix)).astype(np.float32)
 
+        if self.verbose: print('Computing projections and storing spectrograms and squared spectrograms.')
         # compute the projections and store their spectrograms and squared spectrograms
         C = np.tensordot(self.stft, projection_matrix, axes=(2, 1))
         C = np.reshape(C, (num_freq_bins * num_time_bins, self.num_projections))
@@ -111,6 +121,7 @@ class Projet(separation_base.SeparationBase):
         # noinspection PyUnusedLocal
         C = []  # release memory
 
+        if self.verbose: print('Starting iterations')
         # main iterations
         for iteration in range(self.num_iterations):
 
@@ -119,19 +130,23 @@ class Projet(separation_base.SeparationBase):
 
             sigma = np.dot(P, np.dot(panning_sources_matrix.T, K.T))
 
+            if self.verbose: print('\tUpdating P...')
             # updating P
             P *= np.dot(1.0 / (sigma + eps), np.dot(K, panning_sources_matrix)) / \
                  (np.dot(3 * sigma / (sigma ** 2 + V2 + eps), np.dot(K, panning_sources_matrix)))
 
+            if self.verbose: print('\tUpdating sigma')
             # the following line is an optional trick that enforces orthogonality of the spectrograms.
             # P*=(100+P)/(100+np.sum(P,axis=1)[...,None])
             # update sigma using updated P. transpose to fit into Q. (15, F*T)
             sigma = np.dot(P, np.dot(panning_sources_matrix.T, K.T)).T
 
+            if self.verbose: print('\tUpdating panning sources matrix')
             # updating Q
             panning_sources_matrix *= np.dot(K.T, np.dot(np.divide(1.0, sigma + eps), P)) / \
                  np.dot(K.T, np.dot(np.divide(3 * sigma,  (sigma ** 2 + V2.T + eps)), P))
 
+        if self.verbose: print('Completing final separation')
         # final separation
         recompose_matrix = np.linalg.pinv(projection_matrix)  # IxM
 
@@ -140,6 +155,7 @@ class Projet(separation_base.SeparationBase):
 
         self.sources = []
 
+        if self.verbose: print('Making AudioSignal objects')
         for j in range(num_sources):
             sigma_j = np.outer(P[:, j], np.dot(panning_sources_matrix[:, j].T, K.T))
             source_stft = sigma_j / sigma * C
@@ -151,7 +167,8 @@ class Projet(separation_base.SeparationBase):
                         use_librosa=self.use_librosa_stft, 
                         truncate_to_length=self.audio_signal.signal_length)
             self.sources.append(source)
-        
+
+        if self.verbose: print('Projet finished running.')
         return self.sources
     
     def _compute_spectrograms(self):
