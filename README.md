@@ -142,7 +142,7 @@ Fatemah Pishdadian ([website](http://fatemehpishdadian.com/))
 
 Former:
 
-Corey Grief ([website](http://music.cs.northwestern.edu/emeritus.php)),
+Corey Grief ([website](http://music.cs.northwestern.edu/emeritus.php)), Daniel Felix Kim, Ben Kalish
 
 
 Contact
