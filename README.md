@@ -92,21 +92,31 @@ Camera ready (in master and pip builds):
 * IdealMask
 * OverlapAdd
 * DUET 
-
-
-In Development Branch:
 * NMF
 * RPCA
 * PROJET
-* 2DFT modulation separation
+* 2DFT separation
+* Deep clustering
+* HPSS
 
 Planned:
 * KAM
-* HPSS
 * SIMM
 * Separation via segmentation
-* Deep clustering
 * Your algorithm? (contact us for details)
+
+
+Citing
+------
+
+If you are using nussl for your research project, we please ask that you cite it using the following bibtex citation:
+
+    @Misc{NUSSL,
+        author =       {Ethan Manilow and Prem Seetharaman and Fatemah Pishdadian and Bryan Pardo},
+        title =        {{NUSSL}: the Northwestern University Source Separation Library},
+        howpublished = {\url{https://github.com/interactiveaudiolab/nussl}},
+        year =        {2018}
+    }
 
 
 License
