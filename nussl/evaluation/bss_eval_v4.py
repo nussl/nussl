@@ -16,18 +16,29 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
     """
     SDR_MEANS = 'sdr_means'
 
-    def __init__(self, mixture, true_sources_list, estimated_sources_list, source_labels=None,
-                 do_mono=False, target_dict=constants.VOX_ACC_DICT, vox_acc=True,
+    def __init__(self, mixture, true_sources_dict, estimated_sources_dict,
+                 target_dict=constants.VOX_ACC_DICT,
                  mode='v4', output_dir=None, win=1.0, hop=1.0):
-        super(BSSEvalV4, self).__init__(true_sources_list=true_sources_list,
-                                        estimated_sources_list=estimated_sources_list,
-                                        source_labels=source_labels, do_mono=do_mono)
-        if vox_acc and target_dict == constants.VOX_ACC_DICT:
-            self.source_labels = ['accompaniment', 'vocals']
+        # try:
+        #     super(BSSEvalV4, self).__init__(true_sources_list=true_sources_list,
+        #                                     estimated_sources_list=estimated_sources_list,
+        #                                     source_labels=source_labels, do_mono=do_mono)
+        # except evaluation_base.AudioSignalListMismatchError:
+        #     pass
 
-        self.source_dict = {l: self.true_sources_list[i] for i, l in enumerate(self.source_labels)}
-        self.estimates_dict = {l: self.estimated_sources_list[i].audio_data.T
-                               for i, l in enumerate(self.source_labels)}
+        # if vox_acc and target_dict == constants.VOX_ACC_DICT:
+        #     self.source_labels = ['accompaniment', 'vocals']
+        #
+        # if target_dict == constants.STEM_TARGET_DICT:
+        #     self.source_labels = ['drums', 'bass', 'other', 'vocals']
+        #
+        # self.source_dict = {l: self.true_sources_list[i] for i, l in enumerate(self.source_labels)}
+        # self.estimates_dict = {l: self.estimated_sources_list[i].audio_data.T
+        #                        for i, l in enumerate(self.source_labels)}
+
+        self._scores = {}
+        self.source_dict = true_sources_dict
+        self.estimates_dict = estimated_sources_dict
         self.target_dict = target_dict
         self.mixture = mixture
         self.mode = mode

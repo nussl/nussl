@@ -36,7 +36,7 @@ class EvaluationBase(object):
         self.estimated_sources_list = self._verify_input_list(estimated_sources_list)
 
         if len(self.true_sources_list) != len(self.estimated_sources_list):
-            raise ValueError('Must have the same number of objects in true_sources_list and estimated_sources_list!')
+            raise AudioSignalListMismatchError('Must have the same number of objects in true_sources_list and estimated_sources_list!')
 
         # set the labels up correctly
         if source_labels is None:
@@ -111,3 +111,7 @@ class EvaluationBase(object):
 
         """
         return self._scores
+
+
+class AudioSignalListMismatchError(Exception):
+    pass

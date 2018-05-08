@@ -33,6 +33,7 @@ __all__ = ['find_peak_indices', 'find_peak_values',
            'json_numpy_obj_hook',
            'add_mismatched_arrays', 'add_mismatched_arrays2D', 'complex_randn',
            '_get_axis',
+           'print_all_separation_algorithms',
            'verify_audio_signal_list_lax', 'verify_audio_signal_list_strict',
            'verify_separation_base_list', 'verify_mask_separation_base_list',
            '_verify_audio_data', '_verify_transformation_data']
@@ -610,6 +611,16 @@ def _verify_transformation_data(transformation_data):
     return transformation_data
 
 
+def print_all_separation_algorithms():
+    """
+
+    Returns:
+
+    """
+    from ..separation import all_separation_algorithms
+    print('\n'.join([a.__name__ for a in all_separation_algorithms]))
+
+
 def print_available_audio_files():
     """gets a list of available audio files for download from the server and displays them
     to the user.
@@ -905,7 +916,8 @@ def _download_file(file_name, url, local_folder, cache_subdir, file_hash=None, c
         if file_hash is not None:
             # compare the provided hash with the hash of the file currently at file_path
             current_hash = _hash_file(file_path)
-            # if the hashes are equal, we alreay have the file we need, so don't download
+
+            # if the hashes are equal, we already have the file we need, so don't download
             if file_hash != current_hash:
                 print("checked hashes, they're not equal")
                 download = True

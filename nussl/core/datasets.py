@@ -123,10 +123,15 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
 
     for f in all_wav_files:
         mixture = AudioSignal(f)
-        singing = mixture.make_audio_signal_from_channel(1)
-        accompaniment = mixture.make_audio_signal_from_channel(0)
+        mixture.label = 'mixture'
 
-        yield mixture, singing, accompaniment
+        vocals = mixture.make_audio_signal_from_channel(1)
+        vocals.label = 'vocals'
+
+        accompaniment = mixture.make_audio_signal_from_channel(0)
+        accompaniment.label = 'accompaniment'
+
+        yield mixture, vocals, accompaniment
 
 
 def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, undivided=False):
@@ -164,10 +169,15 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
 
     for f in all_wav_files:
         mixture = AudioSignal(f)
-        singing = mixture.make_audio_signal_from_channel(1)
-        accompaniment = mixture.make_audio_signal_from_channel(0)
+        mixture.label = 'mixture'
 
-        yield mixture, singing, accompaniment
+        vocals = mixture.make_audio_signal_from_channel(1)
+        vocals.label = 'vocals'
+
+        accompaniment = mixture.make_audio_signal_from_channel(0)
+        accompaniment.label = 'accompaniment'
+
+        yield mixture, vocals, accompaniment
 
 
 def timit(directory, check_hash=True, subset=None, shuffle=False, seed=None):
@@ -226,7 +236,7 @@ def dsd100(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     """
 
 
-def musdb18(directory, check_hash=True, subset=None, shuffle=False, seed=None):
+def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False, seed=None):
     """
 
     Args:
@@ -246,10 +256,10 @@ def musdb18(directory, check_hash=True, subset=None, shuffle=False, seed=None):
         raise ImportError('Cannot read MUSDB18 without stempeg package installed!')
 
     dir_name = 'musdb18'
-    audio_dir_names = ['test', 'train'] if subset is None else [subset]
+    audio_dir_names = ['test', 'train'] if folder not in ('test', 'train') else [folder]
     hash = 'cf4cfcef4eadc212c34df6e8fb1184a3f63b7fedfab23e79d17e735fff0bfaf9'
     audio_extension = '.mp4'
-    stem_labels = ['mixture', 'drums', 'bass', 'other accompaniment', 'vocals']
+    stem_labels = ['mixture', 'drums', 'bass', 'other', 'vocals']
 
     # Check the hash has of the full directory
     _check_hash(directory, check_hash, hash, audio_extension)

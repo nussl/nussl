@@ -96,3 +96,7 @@ class TestUtils(unittest.TestCase):
         track = nussl.utils.audio_signals_to_mudb_track(signal, src_dict, target)
 
         i = 0
+
+    def test_all_algorithms(self):
+        l = len(nussl.separation.all_separation_algorithms)
+        i = 0

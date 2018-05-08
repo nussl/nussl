@@ -71,7 +71,7 @@ class AudioSignal(object):
   
     """
 
-    def __init__(self, path_to_input_file=None, audio_data_array=None, stft=None,
+    def __init__(self, path_to_input_file=None, audio_data_array=None, stft=None, label=None,
                  sample_rate=None, stft_params=None, offset=0, duration=None):
 
         self.path_to_input_file = path_to_input_file
@@ -80,7 +80,7 @@ class AudioSignal(object):
         self._sample_rate = None
         self._active_start = None
         self._active_end = None
-        self.label = None
+        self.label = label
 
         # Assert that this object was only initialized in one way
         got_path = path_to_input_file is not None
