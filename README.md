@@ -138,7 +138,7 @@ Contributors
 ------------
 Ethan Manilow ([website](http://www.ethanmanilow.com)),
 Prem Seetharaman ([website](http://prem.seeth.org/)),
-Fatemah Pishdadian ([website](http://fatemehpishdadian.com/))
+Fatemeh Pishdadian ([website](http://fatemehpishdadian.com/))
 
 Former:
 
