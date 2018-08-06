@@ -112,7 +112,7 @@ Citing
 If you are using nussl for your research project, we please ask that you cite it using the following bibtex citation:
 
     @Misc{NUSSL,
-        author =       {Ethan Manilow and Prem Seetharaman and Fatemah Pishdadian and Bryan Pardo},
+        author =       {Ethan Manilow and Prem Seetharaman and Fatemeh Pishdadian and Bryan Pardo},
         title =        {{NUSSL}: the Northwestern University Source Separation Library},
         howpublished = {\url{https://github.com/interactiveaudiolab/nussl}},
         year =        {2018}
