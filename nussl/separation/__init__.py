@@ -21,7 +21,7 @@ if vamp_imported:
     from .melodia import Melodia
 else:
     class Melodia(ImportErrorClass):
-        def __init__(self):
+        def __init__(self, **kwargs):
             super(Melodia, self).__init__('vamp')
 
 melody_algorithms = [Melodia]
@@ -55,7 +55,7 @@ if torch_imported:
     from .deep_clustering import DeepClustering
 else:
     class DeepClustering(ImportErrorClass):
-        def __init__(self):
+        def __init__(self, **kwargs):
             super(DeepClustering, self).__init__('pytorch')
 
 deep_learning_algorithms = [DeepClustering]

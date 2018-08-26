@@ -18,14 +18,14 @@ except Exception:
 
 
 class ImportErrorClass(object):
-    def __init__(self, lib):
+    def __init__(self, lib, **kwargs):
         msg = 'Cannot import {} because {} is not installed'.format(type(self).__name__, lib)
         raise ImportError(msg)
 
 
 from .core.constants import *
 from .core.audio_signal import AudioSignal
-from .core import utils, stft_utils, datasets
+from .core import utils, efz_utils, stft_utils, datasets
 from .evaluation import *
 from .separation import *
 from .transformers import *

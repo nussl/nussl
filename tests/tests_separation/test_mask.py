@@ -7,6 +7,7 @@ Tests for Mask class
 from __future__ import division
 import unittest
 import numpy as np
+import librosa
 
 import nussl
 
@@ -120,4 +121,45 @@ class MaskUnitTests(unittest.TestCase):
 
         inverse_binary_mask = binary_mask.invert_mask()
         assert np.all(inverse_binary_mask.mask == np.zeros(shape))
+
+    def _make_test_signal(self):
+
+        fundamental_freq = 100  # Hz
+        num_harmonics = 5
+        duration = 10
+        sample_rate = nussl.DEFAULT_SAMPLE_RATE
+        num_samples = sample_rate * duration
+        time = np.linspace(0, duration, num_samples)
+        signal_array = np.zeros_like(time)
+
+        for i in np.arange(1, num_harmonics+1):
+            signal_array += np.sin(fundamental_freq * i * time)
+
+        return nussl.AudioSignal(audio_data_array=signal_array)
+
+    def test_apply_mask(self):
+        signal = self._make_test_signal()
+        signal.stft()
+        hplp = nussl.separation.HighLowPassFilter(signal, 150, mask_type='binary')
+
+        lp_mask, hp_mask = hplp.run()
+
+        lp_signal = signal.apply_mask(lp_mask, overwrite=False)
+        lp_signal.istft()
+
+        librosa_mask = librosa.util.softmask(lp_mask.get_channel(0),
+                                             signal.get_magnitude_spectrogram_channel(0),
+                                             power=np.inf)
+        librosa_mask = nussl.separation.BinaryMask(librosa_mask)
+
+        lib_signal = signal.apply_mask(librosa_mask, overwrite=False)
+        lib_signal.istft()
+
+        i = 0
+
+
+
+
+
+
 

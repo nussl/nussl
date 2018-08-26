@@ -7,7 +7,7 @@ Tests for nussl/utils.py
 import unittest
 import nussl
 import numpy as np
-from scipy import signal
+import os
 import librosa
 
 class TestUtils(unittest.TestCase):

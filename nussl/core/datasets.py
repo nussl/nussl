@@ -11,6 +11,7 @@ import numpy as np
 import yaml
 
 import utils
+import efz_utils
 from audio_signal import AudioSignal
 
 __all__ = ['iKala', 'mir1k', 'timit', 'medleyDB', 'musdb18', 'dsd100']
@@ -21,10 +22,10 @@ def _hash_directory(directory, ext=None):
     hash_list = []
     for path, sub_dirs, files in os.walk(directory):
         if ext is None:
-            hash_list.extend([utils._hash_file(os.path.join(path, f)) for f in files
+            hash_list.extend([efz_utils._hash_file(os.path.join(path, f)) for f in files
                               if os.path.isfile(os.path.join(path, f))])
         else:
-            hash_list.extend([utils._hash_file(os.path.join(path, f)) for f in files
+            hash_list.extend([efz_utils._hash_file(os.path.join(path, f)) for f in files
                               if os.path.isfile(os.path.join(path, f))
                               if os.path.splitext(f)[1] == ext])
 
