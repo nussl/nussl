@@ -63,7 +63,7 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
         return self._get_scores(repr(scores))
 
     def evaluate(self):
-        track = utils.audio_signals_to_mudb_track(self.mixture, self.source_dict, self.target_dict)
+        track = utils.audio_signals_to_musdb_track(self.mixture, self.source_dict, self.target_dict)
 
         bss_output = museval.eval_mus_track(track, self.estimates_dict,
                                             output_dir=self.output_dir, mode=self.mode,

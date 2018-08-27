@@ -93,7 +93,7 @@ class TestUtils(unittest.TestCase):
 
         src_dict = {'vocals': fg, 'accompaniment': bg}
         target = nussl.core.constants.STEM_TARGET_DICT
-        track = nussl.utils.audio_signals_to_mudb_track(signal, src_dict, target)
+        track = nussl.utils.audio_signals_to_musdb_track(signal, src_dict, target)
 
         i = 0
 

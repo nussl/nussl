@@ -36,13 +36,13 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
     This function will find the indices of the peaks of an input n-dimensional numpy array.
     This can be configured to find max or min peak indices, distance between the peaks, and
     a lower bound, at which the algorithm will stop searching for peaks (or upper bound if
-    searching for max). Use exactly the same as find_peak_values().
+    searching for max). Used exactly the same as :func:`find_peak_values`.
 
     This function currently only accepts 1-D and 2-D numpy arrays.
 
     Notes:
         * This function only returns the indices of peaks. If you want to find peak values,
-        use find_peak_values().
+        use :func:`find_peak_values`.
 
         * min_dist can be an int or a tuple of length 2.
             If input_array is 1-D, min_dist must be an integer.
@@ -54,7 +54,7 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
 
 
     See Also:
-        :: find_peak_values() ::
+        :: :func:`find_peak_values` ::
 
     Args:
         input_array: a 1- or 2- dimensional numpy array that will be inspected.
@@ -400,7 +400,7 @@ def _format(string):
     return str(filter(str.isalnum, string)).lower()
 
 
-def audio_signals_to_mudb_track(mixture, sources_dict, targets_dict):
+def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
     verify_audio_signal_list_strict(sources_dict.values() + [mixture])
 
     track = musdb.Track(mixture.file_name, is_wav=True, stem_id=0)

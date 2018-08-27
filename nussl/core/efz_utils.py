@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Here are the utilities for the nussl External File Zoo (EFZ)
+Here are the utilities for using the nussl External File Zoo (EFZ).
 """
 
 import warnings
@@ -18,50 +18,30 @@ from six.moves.urllib.request import urlopen, Request
 import constants
 
 
-__all__ = []
-
-
-"""
-Error classes
-"""
-
-
-class FailedDownloadError(Exception):
-    """
-    Exception class for failed file downloads.
-    """
-    pass
-
-
-class MismatchedHashError(Exception):
-    """
-    Exception class for when a computed hash function does match a pre-computed hash.
-    """
-    pass
-
-
-class MetadataError(Exception):
-    """
-    Exception class for errors with metadata.
-    """
-    pass
+__all__ = ['get_available_audio_files', 'print_available_audio_files',
+           'get_available_benchmark_files', 'print_available_benchmark_files',
+           'get_available_trained_models', 'print_available_trained_models',
+           'download_audio_file', 'download_benchmark_file', 'download_trained_model',
+           'FailedDownloadError', 'MismatchedHashError', 'MetadataError']
 
 
 def get_available_audio_files():
     """
-
+    Returns a dict containing metadata of the available files on the nussl External File Zoo
+    (EFZ) server (http://nussl.ci.northwestern.edu/).
     Returns:
+        (dict): containing metadata of the available files on the nussl External File Zoo
+            (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     """
     # _download_metadata_file() will throw its own errors, so no try block around it
     return _download_metadata_file(constants.NUSSL_EFZ_AUDIO_METADATA_URL)
 
+
 def print_available_audio_files():
-    """Prints a list of available audio files for download from the server.
-
-    Args:
-
-    Returns:
+    """
+    Prints a message to the console that shows all of the available audio files that are on the
+    nussl External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     Example:
         >>> import nussl
@@ -453,3 +433,29 @@ if sys.version_info[0] == 2:
                 fd.write(chunk)
 else:
     from six.moves.urllib.request import urlretrieve  # pylint: disable=g-import-not-at-top
+
+
+########################################
+#             Error Classes
+########################################
+
+
+class FailedDownloadError(Exception):
+    """
+    Exception class for failed file downloads.
+    """
+    pass
+
+
+class MismatchedHashError(Exception):
+    """
+    Exception class for when a computed hash function does match a pre-computed hash.
+    """
+    pass
+
+
+class MetadataError(Exception):
+    """
+    Exception class for errors with metadata.
+    """
+    pass
