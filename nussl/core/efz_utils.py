@@ -27,21 +27,46 @@ __all__ = ['get_available_audio_files', 'print_available_audio_files',
 
 def get_available_audio_files():
     """
-    Returns a dict containing metadata of the available files on the nussl External File Zoo
-    (EFZ) server (http://nussl.ci.northwestern.edu/).
+    Returns a list of dicts containing metadata of the available audio files on the nussl External
+    File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
+
+    Each entry in the list is in the following format:
+
+    .. code-block:: python
+        {
+            u'file_length_seconds': 5.00390022675737,
+            u'visible': True,
+            u'file_name': u'K0140.wav',
+            u'date_modified': u'2018-06-01',
+            u'file_hash': u'f0d8d3c8d199d3790b0e42d1e5df50a6801f928d10f533149ed0babe61b5d7b5',
+            u'file_size_bytes': 441388,
+            u'file_description': u'Acoustic piano playing middle C.',
+            u'audio_attributes': u'piano, middle C',
+            u'file_size': u'431.0KiB',
+            u'date_added': u'2018-06-01'
+        }
+
+    See Also:
+        * :func:`print_available_audio_files`, prints a list of the audio files to the console.
+        * :func:`download_audio_file` to download an audio file from the EFZ.
+
     Returns:
-        (dict): containing metadata of the available files on the nussl External File Zoo
-            (EFZ) server (http://nussl.ci.northwestern.edu/).
+        (list): A list of dicts containing metadata of the available audio files on the nussl
+            External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     """
-    # _download_metadata_file() will throw its own errors, so no try block around it
-    return _download_metadata_file(constants.NUSSL_EFZ_AUDIO_METADATA_URL)
+    # _download_all_metadata() will throw its own errors, so no try block around it
+    return _download_all_metadata(constants.NUSSL_EFZ_AUDIO_METADATA_URL)
 
 
 def print_available_audio_files():
     """
     Prints a message to the console that shows all of the available audio files that are on the
     nussl External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
+
+    See Also:
+        * :func:`get_available_audio_files` to get this same data from the EFZ server as a list.
+        * :func:`download_audio_file` to download an audio file from the EFZ.
 
     Example:
         >>> import nussl
@@ -53,7 +78,8 @@ def print_available_audio_files():
         K0140.wav                                5.0             431.0KiB   Acoustic piano playing middle C.
         K0149.wav                                5.0             430.0KiB   Acoustic piano playing the A above middle C. (A440)
 
-        Last updated 2018-03-06
+        To download one of these files insert the file name as the first parameter to download_audio_file(), like so:
+            >>> nussl.efz_utils.download_audio_file('K0140.wav')
 
     """
     file_metadata = get_available_audio_files()
@@ -64,26 +90,70 @@ def print_available_audio_files():
         print('{:40} {:<15.1f} {:10} {:50}'.format(f['file_name'], f['file_length_seconds'],
                                                    f['file_size'], f['file_description']))
     print('To download one of these files insert the file name '
-          'as the first parameter to nussl.download_audio_file, like so: \n'
-          ' >>> nussl.download_audio_file(\'K0140.wav\')')
+          'as the first parameter to nussl.download_audio_file(), like so: \n'
+          ' >>> nussl.efz_utils.download_audio_file(\'K0140.wav\')')
 
 
 def get_available_trained_models():
     """
+    Returns a list of dicts containing metadata of the available trained models on the nussl
+    External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
+
+    Each entry in the list is in the following format:
+
+    .. code-block:: python
+        {
+            u'for_class': u'DeepClustering',
+            u'visible': True,
+            u'file_name': u'deep_clustering_vocals_44k_long.model',
+            u'date_modified': u'2018-06-01',
+            u'file_hash': u'e09034c2cb43a293ece0b121f113b8e4e1c5a247331c71f40cb9ca38227ccc2c',
+            u'file_size_bytes': 94543355,
+            u'file_description': u'Deep clustering for vocal separation trained on augmented DSD100.',
+            u'file_size': u'90.2MiB',
+            u'date_added': u'2018-06-01'
+        }
+
+    Notes:
+        Most of the entries in the dictionary are self-explanatory, but note the `for_class` entry.
+        The `for_class` entry specifies which `nussl` separation class the given model will work
+        with. Usually, `nussl` separation classes that require a model will default so retrieving a
+        model on the EFZ server (if not already found on the user's machine), but sometimes it is
+        desirable to use a model other than the default one provided. In this case, the `for_class`
+        entry lets the user know which class it is valid for use with. Additionally, trying to load
+        a model into a class that it is not explicitly labeled for that class will raise an
+        exception. Just don't do it, ok?
+
+    See Also:
+        * :func:`print_available_trained_models`, prints a list of the trained models to
+            the console.
+        * :func:`download_trained_model` to download a trained model from the EFZ.
 
     Returns:
-
+        (list): A list of dicts containing metadata of the available trained models on the nussl
+            External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
     """
-    return _download_metadata_file(constants.NUSSL_EFZ_MODEL_METADATA_URL)
+    return _download_all_metadata(constants.NUSSL_EFZ_MODEL_METADATA_URL)
 
 
 def print_available_trained_models():
-    """gets a list of available audio files for download from the server and displays them
-    to the user.
+    """
+    Prints a message to the console that shows all of the available trained models that are on the
+    nussl External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
-    Args:
+    Notes:
+        Most of the entries in the printed list are self-explanatory, but note the `for_class`
+        entry. The `for_class` entry specifies which `nussl` separation class the given model will
+        work with. Usually, `nussl` separation classes that require a model will default so
+        retrieving a model on the EFZ server (if not already found on the user's machine), but
+        sometimes it is desirable to use a model other than the default one provided. In this case,
+        the `for_class` entry lets the user know which class it is valid for use with. Additionally,
+        trying to load a model into a class that it is not explicitly labeled for that class will
+        raise an exception. Just don't do it, ok?
 
-    Returns:
+    See Also:
+        * :func:`get_available_trained_models` to get this same data from the EFZ server as a list.
+        * :func:`download_trained_model` to download a trained model from the EFZ.
 
     Example:
         >>> import nussl
@@ -92,7 +162,8 @@ def print_available_trained_models():
         deep_clustering_model.model              DeepClustering       48.1MiB    example Deep Clustering model
         deep_clustering_vocal_44k_long.model     DeepClustering       90.2MiB    trained DC model for vocal extraction
 
-        Last updated 2018-03-06
+        To download one of these files insert the file name as the first parameter to download_trained_model(), like so:
+            >>> nussl.efz_utils.download_trained_model('deep_clustering_model.h5')
 
     """
     file_metadata = get_available_trained_models()
@@ -103,34 +174,72 @@ def print_available_trained_models():
                                                f['file_size'], f['file_description']))
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_trained_model, like so: \n'
-          ' >>> nussl.download_trained_model(\'deep_clustering_model.h5\')')
+          ' >>> nussl.efz_utils.download_trained_model(\'deep_clustering_model.h5\')')
 
 
 def get_available_benchmark_files():
     """
+    Returns a list of dicts containing metadata of the available benchmark files for tests on the
+    nussl External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
+
+    Each entry in the list is in the following format:
+
+    .. code-block:: python
+        {
+            u'for_class': u'DuetUnitTests',
+            u'visible': True, u'file_name':
+            u'benchmark_atn_bins.npy',
+            u'date_modified': u'2018-06-19',
+            u'file_hash': u'cf7fef6f4ea9af3dbde8b9880602eeaf72507b6c78f04097c5e79d34404a8a1f',
+            u'file_size_bytes': 488,
+            u'file_description': u'Attenuation bins numpy array for DUET benchmark test.',
+            u'file_size': u'488.0B',
+            u'date_added': u'2018-06-19'
+        }
+
+    Notes:
+        Most of the entries in the dictionary are self-explanatory, but note the `for_class`
+        entry. The `for_class` entry specifies which `nussl` benchmark class will load the
+        corresponding benchmark file. Make sure these match exactly when writing tests!
+
+    See Also:
+        * :func:`print_available_benchmark_files`, prints a list of the benchmark files to the
+            console.
+        * :func:`download_benchmark_file` to download an benchmark file from the EFZ.
 
     Returns:
+        (list): A list of dicts containing metadata of the available audio files on the nussl
+            External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     """
-    return _download_metadata_file(constants.NUSSL_EFZ_BENCHMARK_METADATA_URL)
+    return _download_all_metadata(constants.NUSSL_EFZ_BENCHMARK_METADATA_URL)
 
 
 def print_available_benchmark_files():
-    """gets a list of available audio files for download from the server and displays them
-    to the user.
-
-    Args:
-
-    Returns:
+    """
+    Prints a message to the console that shows all of the available benchmark files that are on the
+    nussl External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     Example:
-        nussl.utils.print_available_benchmark_files()
-
+        >>> import nussl
+        >>> nussl.efz_utils.print_available_benchmark_files()
         File Name                                For Class            Size       Description
-        benchmark.npy                            example              11.0B      example benchmark file
-        example.npy                              test                 13.0B      test example
+        mix3_matlab_repet_foreground.mat         TestRepet            6.4MiB     Foreground matrix for Repet class benchmark test.
+        benchmark_atn_bins.npy                   DuetUnitTests        488.0B     Attenuation bins numpy array for DUET benchmark test.
+        benchmark_sym_atn.npy                    DuetUnitTests        3.4MiB     Symmetric attenuation histogram for the DUET benchmark test.
+        benchmark_wmat.npy                       DuetUnitTests        3.4MiB     Frequency matrix for the DUET benchmark test.
+        To download one of these files insert the file name as the first parameter to nussl.download_benchmark_file, like so:
+            >>> nussl.efz_utils.download_benchmark_file('example.npy')
 
-        Last updated 2018-03-06
+    Notes:
+        Most of the entries in the printed list are self-explanatory, but note the `for_class`
+        entry. The `for_class` entry specifies which `nussl` benchmark class will load the
+        corresponding benchmark file. Make sure these match exactly when writing tests!
+
+    See Also:
+        * :func:`get_available_benchmark_files`, prints a list of the benchmark files to the
+            console.
+        * :func:`download_benchmark_file` to download an benchmark file from the EFZ.
 
     """
     file_metadata = get_available_benchmark_files()
@@ -141,10 +250,25 @@ def print_available_benchmark_files():
                                                f['file_size'], f['file_description']))
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_benchmark_file, like so: \n'
-          ' >>> nussl.download_benchmark_file(\'example.npy\')')
+          ' >>> nussl.efz_utils.download_benchmark_file(\'example.npy\')')
 
 
-def _download_metadata_file(url):
+def _download_all_metadata(url):
+    """
+    Downloads the json file that contains all of the metadata for a specific file type (read:
+    audio files, benchmark files, or trained models) that is on the EFZ server. This is retrieved
+    from one of following three URLs (which are stored in nussl.constants):
+    NUSSL_EFZ_AUDIO_METADATA_URL, NUSSL_EFZ_BENCHMARK_METADATA_URL, or NUSSL_EFZ_MODEL_METADATA_URL.
+
+    Args:
+        url (str):  URL for the EFZ server that has metadata. One of these three:
+            NUSSL_EFZ_AUDIO_METADATA_URL, NUSSL_EFZ_BENCHMARK_METADATA_URL, or
+            NUSSL_EFZ_MODEL_METADATA_URL.
+
+    Returns:
+        (list): List of dicts with metadata for the desired file type.
+
+    """
     request = Request(url)
 
     # Make sure to get the newest data
@@ -154,18 +278,16 @@ def _download_metadata_file(url):
     return json.loads(response.read())
 
 
-def _download_metadata(file_name, file_type):
-    """Downloads the metadata file for the specified file type and finds the entry for
-    the specified file.
+def _download_metadata_for_file(file_name, file_type):
+    """
+    Downloads the metadata entry for a specific file (:param:`file_name`) on the EFZ server.
 
     Args:
-        file_name: (String) name of the file's metadata to locate
-        file_type: (String) type of file, determines the JSON file to download.
-        One of [audio, model, benchmark].
+        file_name (str): File name as specified on the EFZ server.
+        file_type (str): 'Type' of file, either 'audio', 'model', or 'benchmark'.
 
     Returns:
-        (dict) metadata for the specified file, or None if it could not be located.
-
+        (dict) Metadata entry for the specified file, or ``None`` if it could not be located.
 
     """
 
@@ -181,7 +303,7 @@ def _download_metadata(file_name, file_type):
         # wrong file type, return
         raise MetadataError('Cannot find metadata of type {}.'.format(file_type))
 
-    metadata = _download_metadata_file(metadata_url)
+    metadata = _download_all_metadata(metadata_url)
 
     for file_metadata in metadata:
         if file_metadata['file_name'] == file_name:
@@ -191,51 +313,69 @@ def _download_metadata(file_name, file_type):
                         .format(file_name, constants.NUSSL_EFZ_AUDIO_METADATA_URL))
 
 
-def download_audio_file(example_name, local_folder=None, verbose=True):
-    """Downloads the an audio file from the `nussl` server.
+def download_audio_file(audio_file_name, local_folder=None, verbose=True):
+    """
+    Downloads the specified audio file from the `nussl` External File Zoo (EFZ) server. The
+    downloaded file is stored in :param:`local_folder` if a folder is provided. If a folder is
+    not provided, `nussl` attempts to save the downloaded file in `~/.nussl/` (expanded) or in
+    `tmp/.nussl`. If the requested file is already in :param:`local_folder` (or one of the two
+    aforementioned directories) and the calculated hash matches the precomputed hash from the EFZ
+    server metadata, then the file will not be downloaded.
 
     Args:
-        example_name: (String) name of the audio file to download
-        local_folder: (String) path to local folder in which to download the file,
-            defaults to regular `nussl` directory
-        verbose: (bool)
+        audio_file_name: (str) Name of the audio file to attempt to download.
+        local_folder: (str) Path to local folder in which to download the file.
+            If no folder is provided, `nussl` will store the file in `~/.nussl/` (expanded) or in
+            `tmp/.nussl`.
+        verbose (bool): If ``True`` prints the status of the download to the console.
 
     Returns:
-        (String) path to the downloaded file
+        (String) Full path to the requested file (whether downloaded or not).
 
     Example:
-        input_file = nussl.utils.download_audio_file('K0140.wav')
-        music = AudioSignal(input_file, offset=45, duration=20)
+        >>> import nussl
+        >>> piano_path = nussl.efz_utils.download_audio_file('K0140.wav')
+        >>> piano_signal = nussl.AudioSignal(piano_path)
 
     """
-    file_metadata = _download_metadata(example_name, 'audio')
+    file_metadata = _download_metadata_for_file(audio_file_name, 'audio')
 
     file_hash = file_metadata['file_hash']
 
-    file_url = urljoin(constants.NUSSL_EFZ_AUDIO_URL, example_name)
-    result = _download_file(example_name, file_url, local_folder, 'audio',
+    file_url = urljoin(constants.NUSSL_EFZ_AUDIO_URL, audio_file_name)
+    result = _download_file(audio_file_name, file_url, local_folder, 'audio',
                             file_hash=file_hash, verbose=verbose)
 
     return result
 
 
 def download_trained_model(model_name, local_folder=None, verbose=True):
-    """Downloads the a pre-trained model file from the `nussl` server.
+    """
+    Downloads the specified trained model from the `nussl` External File Zoo (EFZ) server. The
+    downloaded file is stored in :param:`local_folder` if a folder is provided. If a folder is
+    not provided, `nussl` attempts to save the downloaded file in `~/.nussl/` (expanded) or in
+    `tmp/.nussl`. If the requested file is already in :param:`local_folder` (or one of the two
+    aforementioned directories) and the calculated hash matches the precomputed hash from the EFZ
+    server metadata, then the file will not be downloaded.
 
     Args:
-        model_name (str): name of the trained model to download
-        local_folder (str):  a local folder in which to download the file,
-        defaults to regular nussl directory
-        verbose (bool):
+        audio_file_name: (str) Name of the trained model to attempt to download.
+        local_folder: (str) Path to local folder in which to download the file.
+            If no folder is provided, `nussl` will store the file in `~/.nussl/` (expanded) or in
+            `tmp/.nussl`.
+        verbose (bool): If ``True`` prints the status of the download to the console.
 
     Returns:
-        (String) path to the downloaded file
+        (String) Full path to the requested file (whether downloaded or not).
 
     Example:
-        model_path = nussl.utils.download_trained_model('deep_clustering_vocal_44k_long.model')
+        >>> import nussl
+        >>> model_path = nussl.efz_utils.download_trained_model('deep_clustering_model.h5')
+        >>> signal = nussl.AudioSignal()
+        >>> piano_signal = nussl.DeepClustering(signal, model_path=model_path)
 
     """
-    file_metadata = _download_metadata(model_name, 'model')
+    file_metadata = _download_metadata_for_file(model_name, 'model')
 
     file_hash = file_metadata['file_hash']
 
@@ -247,19 +387,32 @@ def download_trained_model(model_name, local_folder=None, verbose=True):
 
 
 def download_benchmark_file(benchmark_name, local_folder=None, verbose=True):
-    """Downloads the specified Benchmark file from the `nussl` server.
+    """
+    Downloads the specified benchmark file from the `nussl` External File Zoo (EFZ) server. The
+    downloaded file is stored in :param:`local_folder` if a folder is provided. If a folder is
+    not provided, `nussl` attempts to save the downloaded file in `~/.nussl/` (expanded) or in
+    `tmp/.nussl`. If the requested file is already in :param:`local_folder` (or one of the two
+    aforementioned directories) and the calculated hash matches the precomputed hash from the EFZ
+    server metadata, then the file will not be downloaded.
 
     Args:
-        benchmark_name (string): Name of the benchmark file to download.
-        local_folder (string):  The local folder where the file will be downloaded.
-        defaults to regular nussl directory
-        verbose (bool): If True, will print updates as the file downloads
+        audio_file_name: (str) Name of the trained model to attempt to download.
+        local_folder: (str) Path to local folder in which to download the file.
+            If no folder is provided, `nussl` will store the file in `~/.nussl/` (expanded) or in
+            `tmp/.nussl`.
+        verbose (bool): If ``True`` prints the status of the download to the console.
 
     Returns:
-        (string) Path to the downloaded file.
+        (String) Full path to the requested file (whether downloaded or not).
+
+    Example:
+        >>> import nussl
+        >>> import numpy as np
+        >>> stm_atn_path = nussl.efz_utils.download_benchmark_file('benchmark_sym_atn.npy')
+        >>> sym_atm = np.load(stm_atn_path)
 
     """
-    file_metadata = _download_metadata(benchmark_name, 'benchmark')
+    file_metadata = _download_metadata_for_file(benchmark_name, 'benchmark')
 
     file_hash = file_metadata['file_hash']
 
@@ -273,6 +426,7 @@ def download_benchmark_file(benchmark_name, local_folder=None, verbose=True):
 def _download_file(file_name, url, local_folder, cache_subdir,
                    file_hash=None, cache_dir=None, verbose=True):
     """
+    Downloads the specified file from the
 
     Heavily inspired by and lovingly adapted from keras' `get_file` function:
     https://github.com/fchollet/keras/blob/afbd5d34a3bdbb0916d558f96af197af1e92ce70/keras/utils/data_utils.py#L109
