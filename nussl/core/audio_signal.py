@@ -27,15 +27,17 @@ __all__ = ['AudioSignal']
 
 
 class AudioSignal(object):
-    """AudioSignal is the main entry and exit point for all source separation algorithms in *nussl*.
+    """
+    :class:`AudioSignal` is the main entry and exit point for all source separation algorithms
+    in *nussl*.
 
-    The AudioSignal class is a container for all things related to audio data. It contains utilities
-    for I/O, time-series, and frequency domain manipulation, plotting, and much more. The
-    AudioSignal class is used in all source separation objects in *nussl*.
+    The :class:`AudioSignal` class is a container for all things related to audio data. It contains
+    utilities for input/output, time-series and frequency domain manipulation, plotting, and much
+    more. The :class:`AudioSignal` class is used in all source separation objects in *nussl*.
 
-    `AudioSignal` object stores time-series audio data as a 2D `numpy` array in :attr:`audio_data`
-    (see :attr:`audio_data` for details) and stores Short-Time Fourier Transform data as 3D `numpy`
-    array in :ref:`stft_data` (see :attr:`stft_data` for details).
+    :class:`AudioSignal` object stores time-series audio data as a 2D `numpy` array in
+    :attr:`audio_data` (see :attr:`audio_data` for details) and stores Short-Time Fourier Transform
+    data as 3D `numpy` array in :ref:`stft_data` (see :attr:`stft_data` for details).
 
     There are a few options for initializing an `AudioSignal` object. The first is to initialize an
     empty `AudioSignal` object, with no parameters:
@@ -50,40 +52,39 @@ class AudioSignal(object):
         2) A `numpy` array of 1D or 2D real-valued time-series audio data.
         3) A `numpy` array of 2D or 3D complex-valued time-frequency STFT data.
 
-    `AudioSignal` will throw an error if it is initialized with more than one of the previous at
-    once.
+    :class:`AudioSignal` will throw an error if it is initialized with more than one of the
+    previous at once.
 
     Here are examples of all three of these cases:
 
-
         .. code-block:: python
             :linenos:
-            >>> import numpy as np
-            >>> import nussl
+            import numpy as np
+            import nussl
 
             # Initializing an empty AudioSignal object:
-            >>> sig_empty = nussl.AudioSignal()
+            sig_empty = nussl.AudioSignal()
 
             # Initializing from a path:
-            >>> file_path = 'my/awesome/mixture.wav'
-            >>> sig_path = nussl.AudioSignal(file_path)
+            file_path = 'my/awesome/mixture.wav'
+            sig_path = nussl.AudioSignal(file_path)
 
             # Initializing with a 1D or 2D numpy array containing audio data:
-            >>> aud_1d = np.sin(np.linspace(0.0, 1.0, 48000))
-            >>> sig_1d = nussl.AudioSignal(audio_data_array=aud_1d, sample_rate=48000)
+            aud_1d = np.sin(np.linspace(0.0, 1.0, 48000))
+            sig_1d = nussl.AudioSignal(audio_data_array=aud_1d, sample_rate=48000)
             # FYI: The shape doesn't matter, nussl will correct for it
-            >>> aud_2d = np.array([aud_1d, -2 * aud_1d])
-            >>> sig_2d = nussl.AudioSignal(audio_data_array=aud_2d)
+            aud_2d = np.array([aud_1d, -2 * aud_1d])
+            sig_2d = nussl.AudioSignal(audio_data_array=aud_2d)
 
             # Initializing with a 2D or 3D numpy array containing STFT data:
-            >>> stft_2d = np.random.rand((1024, 3000)) + 1j * np.random.rand((1024, 3000))
-            >>> sig_stft_2d = nussl.AudioSignal(stft=stft_2d)
+            stft_2d = np.random.rand((1024, 3000)) + 1j * np.random.rand((1024, 3000))
+            sig_stft_2d = nussl.AudioSignal(stft=stft_2d)
             # Two channels of STFT data:
-            >>> stft_3d = np.random.rand((1024, 3000, 2)) + 1j * np.random.rand((1024, 3000, 2))
-            >>> sig_stft_3d = nussl.AudioSignal(stft=stft_3d)
+            stft_3d = np.random.rand((1024, 3000, 2)) + 1j * np.random.rand((1024, 3000, 2))
+            sig_stft_3d = nussl.AudioSignal(stft=stft_3d)
 
             # Initializing with more than one of the above methods raises an exception:
-            >>> sig_exception = nussl.AudioSignal(audio_data_array=aud_2d, stft=stft_2d)
+            sig_exception = nussl.AudioSignal(audio_data_array=aud_2d, stft=stft_2d)
             Traceback (most recent call last):
                 sig_exception = nussl.AudioSignal(audio_data_array=aud_2d, stft=stft_2d)
             AudioSignalException: Can only initialize AudioSignal object with one and only one of {path, audio, stft}!
@@ -106,13 +107,16 @@ class AudioSignal(object):
 
     Notes:
         There is no guarantee that data in :attr:`audio_data` corresponds to data in
-        :attr:`stft_data`. E.g., when an `AudioSignal` object is initialized with :attr:`audio_data`
-        of an audio mixture, its :attr:`stft_data` is `None` until :func:`stft` is called. Once
-        :func:`stft` is called and a mask is applied to :attr:`stft_data` (via some algorithm), the
-        :attr:`audio_data` in this `AudioSignal` object still contains data from the original
-        mixture that it was initialized with even though :attr:`stft_data` contains altered data.
-        (To hear the results, simply call :func:`istft` on the `AudioSignal` object.) It is up to
-        the user to keep track of the contents of :attr:`audio_data` and :attr:`stft_data`.
+        :attr:`stft_data`. E.g., when an :class:`AudioSignal` object is initialized with
+        :attr:`audio_data` of an audio mixture, its :attr:`stft_data` is `None` until :func:`stft`
+        is called. Once :func:`stft` is called and a mask is applied to :attr:`stft_data` (via some
+        algorithm), the :attr:`audio_data` in this :class:`AudioSignal` object still contains data
+        from the original mixture that it was initialized with even though :attr:`stft_data`
+        contains altered data. (To hear the results, simply call :func:`istft` on the
+        :class:`AudioSignal` object.) It is up to the user to keep track of the contents of
+        :attr:`audio_data` and :attr:`stft_data`.
+
+
 
     Parameters:
         path_to_input_file (str): Path to an input file to load upon initialization. Audio
@@ -121,12 +125,12 @@ class AudioSignal(object):
             time-series representation of the audio.
         stft (:obj:`np.ndarray`): 2D or 3D numpy array containing pre-computed complex-valued STFT
             data.
-        label (str): A label for this `AudioSignal` object.
+        label (str): A label for this :class:`AudioSignal` object.
         offset (float): Starting point of the section to be extracted (in seconds) if initializing
             from  a file.
         duration (float): Length of the signal to read from the file (in seconds). Defaults to full
             length of the signal.
-        sample_rate (int): Sampling rate of this `AudioSignal` object.
+        sample_rate (int): Sampling rate of this :class:`AudioSignal` object.
 
 
     Examples:
@@ -156,6 +160,7 @@ class AudioSignal(object):
             ``None`` by default.
         stft_params (:obj:`StftParams`): Container for all settings for doing a STFT. Has same
             lifespan as AudioSignal object.
+        label (str): A label for this :class:`AudioSignal` object.
   
     """
 
@@ -267,6 +272,11 @@ class AudioSignal(object):
     def num_channels(self):
         """
         PROPERTY
+
+        See Also:
+            * :func:`is_mono`
+            * :func:`is_stereo`
+
         (int): Number of channels this AudioSignal has.
             Defaults to returning number of channels in :attr:`audio_data`. If that is ``None``,
             returns number of channels in :attr:`stft_data`. If both are ``None`` then returns
@@ -283,8 +293,14 @@ class AudioSignal(object):
     def is_mono(self):
         """
         PROPERTY
+
+        See Also:
+            * :func:`num_channels`
+            * :func:`is_stereo`
+
         Returns:
-            (bool): Whether or not this signal is mono (i.e., has exactly `one` channel).
+            (bool): Whether or not this signal is mono (i.e., has exactly `one` channel). First
+                looks at :attr:`audio_data`, then (if that's `None`) looks at :attr:`stft_data`.
 
         """
         return self.num_channels == 1
@@ -293,8 +309,14 @@ class AudioSignal(object):
     def is_stereo(self):
         """
         PROPERTY
+
+        See Also:
+            * :func:`num_channels`
+            * :func:`is_mono`
+
         Returns:
-            (bool): Whether or not this signal is stereo (i.e., has exactly `two` channels).
+            (bool): Whether or not this signal is stereo (i.e., has exactly `two` channels). First
+                looks at :attr:`audio_data`, then (if that's `None`) looks at :attr:`stft_data`.
 
         """
         return self.num_channels == 2
@@ -302,10 +324,52 @@ class AudioSignal(object):
     @property
     def audio_data(self):
         """
-        (:obj:`np.ndarray`): Real-valued, uncompressed, time-domain representation of the audio.
-            2D numpy array with shape `(n_channels, n_samples)`.
-            ``None`` by default, this can be initialized at instantiation.
-            This is stored as an array of floats.
+        Stored as a :obj:`np.ndarray`, :attr:`audio_data` houses the raw PCM waveform data in the
+        :class:`AudioSignal`. ``None`` by default, can be initialized at instantiation or set at
+        any time by accessing this attribute or calling :func:`load_audio_from_array`. It is
+        recommended to set :attr:`audio_data` by using :func:`load_audio_from_array` if this
+        :class:`AudioSignal` has been initialized without any audio or STFT data.
+
+        The audio data is stored with shape `(n_channels, n_samples)` as an array of floats.
+
+        See Also:
+            * :func:`load_audio_from_file` to load audio into :attr:`audio_data` after
+            initialization.
+            * :func:`load_audio_from_array` to safely load autio into :attr:`audio_data` after
+            initialization.
+            * :func:`set_active_region_to_default` for more information about the active region.
+            * :attr:`signal_duration` and :attr:`signal_length` for length of audio data in seconds
+            and samples, respectively.
+            * :func:`stft` to calculate an STFT from this data, and :func:`istft` to calculate the
+            inverse STFT and put it in :attr:`audio_data`.
+            * :attr:`has_audio_data` to check if this attribute is empty or not.
+            * :func:`plot_time_domain` to create a plot of audio data stored in this attribute.
+            * :func:`peak_normalize` to apply gain such that to the absolute max value is exactly
+            ``1.0``.
+            * :func:`rms` to calculate the root-mean-square of :attr:`audio_data`
+            * :func:`apply_gain` to apply a gain.
+            * :func:`get_channel` to safely retrieve a single channel in :attr:`audio_data`.
+
+        Notes:
+            * This attribute only returns values within the active region. For more information
+            see :func:`set_active_region_to_default`. When setting this attribute, the active
+            region are reset to default.
+            * :attr:`audio_data` and :attr:`stft_data` are not automatically synchronized, meaning
+            that if one of them is changed, those changes are not instantly reflected in the other.
+            To propagate changes, either call :func:`stft` or :func:`istft`.
+            * If :attr:`audio_data` is set with an improperly transposed array, it will
+            automatically transpose it so that it is set the expected way. A warning will be
+            displayed on the console.
+
+        Raises:
+            :class:`AudioSignalException` if set with anything other than a finite-valued, two
+            dimensional :obj:`np.ndarray`.
+
+        Returns:
+            (:obj:`np.ndarray`): Real-valued, uncompressed, time-domain representation of the audio.
+                2D ``numpy`` array with shape `(n_channels, n_samples)`.
+                ``None`` by default, this can be initialized at instantiation.
+                By default audio data is stored as an array of floats.
         """
         if self._audio_data is None:
             return None
@@ -351,6 +415,33 @@ class AudioSignal(object):
     @property
     def stft_data(self):
         """
+        Stored as a :obj:`np.ndarray`, :attr:`stft_data` houses complex-valued data computed from
+        a Short-time Fourier Transform (STFT) of audio data in the :class:`AudioSignal`. ``None``
+        by default, this :class:`AudioSignal` object can be initialized with STFT data upon
+        initialization or it can be set at any time.
+
+        The STFT data is stored with shape `(n_frequency_bins, n_hops, n_channels)` as an array of
+        complex floats.
+
+        See Also:
+            * :func:`stft` to calculate an STFT from :attr:`audio_data`, and :func:`istft` to
+            calculate the inverse STFT from this attribute and put it in :attr:`audio_data`.
+            * :attr:`magnitude_spectrogram` to calculate and get the magnitude spectrogram from
+            :attr:`stft_data`. :attr:`power_spectrogram` to calculate and get the power spectrogram
+            from :attr:`stft_data`.
+            * :func:`get_stft_channel` to safely get a specific channel in :attr:`stft_data`.
+
+        Notes:
+            * :attr:`audio_data` and :attr:`stft_data` are not automatically synchronized, meaning
+            that if one of them is changed, those changes are not instantly reflected in the other.
+            To propagate changes, either call :func:`stft` or :func:`istft`.
+            * :attr:`stft_data` will expand a two dimensional array so that it has the expected
+            shape (`(n_frequency_bins, n_hops, n_channels)`).
+
+        Raises:
+            :class:`AudioSignalException` if set with an :obj:`np.ndarray` with one dimension or
+            more than three dimensions.
+
         (:obj:`np.ndarray`): Complex-valued, time-frequency representation of the audio.
             3D `numpy` array with shape `(n_frequency_bins, n_hops, n_channels)`.
             ``None`` by default.
@@ -385,14 +476,17 @@ class AudioSignal(object):
 
     @property
     def file_name(self):
-        """ (str): The name of the file wth extension, NOT the full path.
+        """
+        PROPERTY
+
+        (str): The name of the file wth extension (NOT the full path).
         
         Notes:
             This will return ``None`` if this :class:`AudioSignal` object was not
             loaded from a file.
         
         See Also:
-            :attr:`path_to_input_file`
+            :attr:`path_to_input_file` for the full path.
         """
         if self.path_to_input_file is not None:
             return os.path.split(self.path_to_input_file)[1]
@@ -401,8 +495,25 @@ class AudioSignal(object):
     @property
     def sample_rate(self):
         """
-        Sample rate for this `AudioSignal` object. Cannot be changed directly. Can only be set
-        upon initialization or by using :func:`resample`.
+        PROPERTY
+
+        Sample rate associated with the :attr:`audio_data` for this :class:`AudioSignal` object. If
+        audio was read from a file, the sample rate will be set to the sample rate associated with
+        the file. If this :class:`AudioSignal` object was initialized from an array (either through
+        the constructor or through :func:`load_audio_from_array`) then the sample rate is set upon
+        init.
+
+        See Also:
+            * :func:`resample` to change the sample rate and resample data in :attr:`sample_rate`.
+            * :func:`load_audio_from_array` to read audio from an array and set the sample rate.
+            * :var:`DEFAULT_SAMPLE_RATE` the default sample rate for *nussl* if not specified
+
+        Notes:
+            This property is read-only and cannot be set directly.
+
+        Returns:
+            (int) Sample rate for this `AudioSignal` object. Cannot be changed directly. Can only be
+            set upon initialization or by using :func:`resample`.
         """
         return self._sample_rate
 
@@ -410,8 +521,10 @@ class AudioSignal(object):
     def time_vector(self):
         """
         PROPERTY
-        (:obj:`np.ndarray`): A 1D :obj:`np.ndarray` with timestamps (in seconds) for each sample
-        in :attr:`audio_data`.
+
+        Returns:
+            (:obj:`np.ndarray`): A 1D :obj:`np.ndarray` with timestamps (in seconds) for each sample
+            in :attr:`audio_data`.
         """
         if self.signal_duration is None:
             return None
@@ -421,14 +534,15 @@ class AudioSignal(object):
     def freq_vector(self):
         """
         PROPERTY
-        (:obj:`np.ndarray`): A 1D numpy array with frequency values that correspond
-        to each frequency bin (vertical axis) for :attr:`stft_data`. Assumes linearly spaced
-        frequency bins.
-            
+
         Raises:
             AudioSignalException: If :attr:`stft_data` is ``None``. Run :func:`stft` before
             accessing this.
-            
+
+        Returns:
+            (:obj:`np.ndarray`): A 1D numpy array with frequency values that correspond
+            to each frequency bin (vertical axis) for :attr:`stft_data`. Assumes linearly spaced
+            frequency bins.
         """
         if self.stft_data is None:
             raise AudioSignalException('Cannot calculate freq_vector until self.stft() is run')
@@ -439,12 +553,14 @@ class AudioSignal(object):
     def time_bins_vector(self):
         """
         PROPERTY
-        (:obj:`np.ndarray`): A 1D numpy array with time values that correspond
-        to each time bin (horizontal/time axis) for :attr:`stft_data`.
-            
+
         Raises:
             AudioSignalException: If :attr:`stft_data` is ``None``. Run :func:`stft`
             before accessing this.
+
+        Returns:
+            (:obj:`np.ndarray`): A 1D numpy array with time values that correspond
+            to each time bin (horizontal/time axis) for :attr:`stft_data`.
         """
         if self.stft_data is None:
             raise AudioSignalException('Cannot calculate time_bins_vector until self.stft() is run')
@@ -455,11 +571,13 @@ class AudioSignal(object):
     def stft_length(self):
         """
         PROPERTY
-        (int): The length of :attr:`stft_data` along the time axis.
 
         Raises:
             AudioSignalException: If ``self.stft_dat``a is ``None``. Run :func:`stft`
             before accessing this.
+
+        Returns:
+            (int): The length of :attr:`stft_data` along the time axis. In units of hops.
         """
         if self.stft_data is None:
             raise AudioSignalException('Cannot calculate stft_length until self.stft() is run')
@@ -469,11 +587,14 @@ class AudioSignal(object):
     def num_fft_bins(self):
         """
         PROPERTY
-        (int): Number of FFT bins in :attr:`stft_data`
 
         Raises:
             AttributeError: If :attr:`stft_data` is ``None``. Run :func:`stft`
             before accessing this.
+
+        Returns:
+            (int): Number of FFT bins in :attr:`stft_data`
+
         """
         if self.stft_data is None:
             raise AudioSignalException('Cannot calculate num_fft_bins until self.stft() is run')
@@ -483,19 +604,21 @@ class AudioSignal(object):
     def active_region_is_default(self):
         """
         PROPERTY
-        (bool): True if active region is the full length of :attr:`audio_data`.
-        
+
         See Also:
             * :func:`set_active_region` for a full description of active regions in
                 :class:`AudioSignal`
             * :func:`set_active_region_to_default`
 
+        Returns:
+            (bool): True if active region is the full length of :attr:`audio_data`.
         """
         return self._active_start == 0 and self._active_end == self._signal_length
 
     @property
     def _signal_length(self):
-        """ (int): This is the length of the full signal, not just the active region.
+        """
+        (int): This is the length of the full signal, not just the active region.
         """
         if self._audio_data is None:
             return None
@@ -503,7 +626,10 @@ class AudioSignal(object):
 
     @property
     def power_spectrogram_data(self):
-        """ (:obj:`np.ndarray`): Returns a real valued :obj:`np.ndarray` with power
+        """
+        PROPERTY
+
+        (:obj:`np.ndarray`): Returns a real valued :obj:`np.ndarray` with power
         spectrogram data. The power spectrogram is defined as (STFT)^2, where ^2 is
         element-wise squaring of entries of the STFT. Same shape as :attr:`stft_data`.
         
@@ -512,9 +638,10 @@ class AudioSignal(object):
             before accessing this.
             
         See Also:
+            * :func:`stft` to calculate the STFT before accessing this attribute.
             * :attr:`stft_data` complex-valued Short-time Fourier Transform data.
-            * :attr:`power_magnitude_data`
-            * :func:`get_power_spectrogram_channel`
+            * :attr:`power_magnitude_data`.
+            * :func:`get_power_spectrogram_channel`.
             
         """
         if self.stft_data is None:
@@ -524,7 +651,10 @@ class AudioSignal(object):
 
     @property
     def magnitude_spectrogram_data(self):
-        """ (:obj:`np.ndarray`): Returns a real valued ``np.array`` with magnitude spectrogram data.
+        """
+        PROPERTY
+
+        (:obj:`np.ndarray`): Returns a real valued ``np.array`` with magnitude spectrogram data.
         
         The power spectrogram is defined as Abs(STFT), the element-wise absolute value of every
         item in the STFT. Same shape as :attr:`stft_data`.
@@ -534,6 +664,7 @@ class AudioSignal(object):
             accessing this.
             
         See Also:
+            * :func:`stft` to calculate the STFT before accessing this attribute.
             * :attr:`stft_data` complex-valued Short-time Fourier Transform data.
             * :attr:`power_spectrogram_data`
             * :func:`get_magnitude_spectrogram_channel`
@@ -548,6 +679,7 @@ class AudioSignal(object):
     def has_data(self):
         """
         PROPERTY
+
         Returns `False` if :attr:`audio_data` and :attr:`stft_data` are empty. Else, returns `True`.
         
         Returns:
@@ -561,6 +693,7 @@ class AudioSignal(object):
     def has_stft_data(self):
         """
         PROPERTY
+
         Returns `False` if :attr:`stft_data` is empty. Else, returns `True`.
 
         Returns:
@@ -573,6 +706,7 @@ class AudioSignal(object):
     def has_audio_data(self):
         """
         PROPERTY
+
         Returns `False` if :attr:`audio_data` is empty. Else, returns `True`.
 
         Returns:
@@ -586,19 +720,39 @@ class AudioSignal(object):
     ##################################################
 
     def load_audio_from_file(self, input_file_path, offset=0, duration=None, new_sample_rate=None):
-        # type: (str, float, float) -> None
-        """Loads an audio signal from a file
+        # type: (str, float, float, int) -> None
+        """
+        Loads an audio signal into memory from a file on disc. The audio is stored in
+        :attr:`audio_signal` as a :obj:`np.ndarray` of ``float``s. The sample rate is read from
+        the file, and this :class:`AudioSignal` object's sample rate is set from it. If
+        :param:`new_sample_rate` is not ``None`` nor the same as the sample rate of the file,
+        the audio will be resampled to the sample rate provided in the :param:`new_sample_rate`
+        parameter. After reading the audio data into memory, the active region is set to default.
+
+        :param:`offset` and :param:`duration` allow the user to determine how much of the audio is
+        read from the file. If those are non-default, then only the values provided will be stored
+        in :attr:`audio_data` (unlike with the active region, which has the entire audio data stored
+        in memory but only allows access to a subset of the audio).
+
+        See Also:
+            * :func:`load_audio_from_array` to read audio data from a :obj:`np.ndarray`.
 
         Parameters:
             input_file_path (str): Path to input file.
             offset (float, optional): The starting point of the section to be extracted (seconds).
-                Defaults to 0 seconds.
-            duration (float, optional): Length of signal to load in second.
+                Defaults to 0 seconds (i.e., the very beginning of the file).
+            duration (float): Length of signal to load in second.
                 signal_length of 0 means read the whole file. Defaults to the full
                 length of the signal.
-            new_sample_rate (int):
+            new_sample_rate (int): If this parameter is not ``None`` or the same sample rate as
+                provided by the input file, then the audio data will be resampled to the new
+                sample rate dictated by this parameter.
 
         """
+        assert offset >= 0, 'Parameter `offset` must be >= 0!'
+        if duration is not None:
+            assert duration >= 0, 'Parameter `duration` must be >= 0!'
+
         with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
             file_length = input_file.duration
 
@@ -632,15 +786,20 @@ class AudioSignal(object):
         self.set_active_region_to_default()
 
     def load_audio_from_array(self, signal, sample_rate=constants.DEFAULT_SAMPLE_RATE):
-        """Loads an audio signal from a numpy array.
+        """
+        Loads an audio signal from a :obj:`np.ndarray`. :param:`sample_rate` is the sample
+        of the signal.
+
+        See Also:
+            * :func:`load_audio_from_file` to read in an audio file from disc.
 
         Notes:
             Only accepts float arrays and int arrays of depth 16-bits.
 
         Parameters:
-            signal (:obj:`np.ndarray`): Array containing the audio file signal sampled at
+            signal (:obj:`np.ndarray`): Array containing the audio signal sampled at
                 :param:`sample_rate`.
-            sample_rate (int): the sample rate of signal.
+            sample_rate (int): The sample rate of signal.
                 Default is :ref:`constants.DEFAULT_SAMPLE_RATE` (44.1kHz)
 
         """
@@ -662,7 +821,9 @@ class AudioSignal(object):
         self.set_active_region_to_default()
 
     def write_audio_to_file(self, output_file_path, sample_rate=None, verbose=False):
-        """Outputs the audio signal to a file
+        """
+        Outputs the audio signal data in :attr:`audio_data` to a file at :param:`output_file_path`
+        with sample rate of :param:`sample_rate`.
 
         Parameters:
             output_file_path (str): Filename where output file will be saved.
@@ -716,6 +877,18 @@ class AudioSignal(object):
         See Also:
             * :func:`set_active_region_to_default`
             * :attr:`active_region_is_default`
+
+        Examples:
+            >>> import nussl
+            >>> import numpy as np
+            >>> n = nussl.DEFAULT_SAMPLE_RATE  # 1 second of audio at 44.1kHz
+            >>> np_sin = np.sin(np.linspace(0, 100 * 2 * np.pi, n))  # sine wave @ 100 Hz
+            >>> sig = nussl.AudioSignal(audio_data_array=np_sin)
+            >>> sig.signal_duration
+            1.0
+            >>> sig.set_active_region(0, n // 2)
+            >>> sig.signal_duration
+            0.5
 
         Args:
             start (int): Beginning of active region (in samples). Cannot be less than 0.
@@ -947,7 +1120,7 @@ class AudioSignal(object):
 
         Parameters:
             channel (int): The index of the single channel to be plotted
-            x_label_time (True): Label the x axis with time (True) or samples (False)
+            x_label_time (bool): Label the x axis with time (True) or samples (False)
             title (str): The title of the audio signal plot
             file_path_name (str): The output path of where the plot is saved,
                 including the file name
@@ -1010,10 +1183,11 @@ class AudioSignal(object):
 
     def plot_spectrogram(self, file_name=None, ch=None):
         """
+        Plots the power spectrogram calculated from :attr:`audio_data`.
 
         Args:
-            file_name:
-            ch:
+            file_name (str): Path to the output file that will be written.
+            ch (int): If provided, this function will only make a plot of the given channel.
 
         Returns:
 

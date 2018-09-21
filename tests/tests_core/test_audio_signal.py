@@ -20,18 +20,12 @@ class AudioSignalUnitTests(unittest.TestCase):
     length = dur * sr
 
     def setUp(self):
-        input_folder = os.path.join('..', 'input')
-        output_folder = os.path.join('..', 'Output')
-        ext = '.wav'
-        self.all_inputs = [os.path.join(input_folder, f) for f in os.listdir(input_folder)
-                           if os.path.splitext(f)[1] == ext]
+        self.input_path1 = nussl.efz_utils.download_audio_file('K0140.wav')
+        self.input_path2 = nussl.efz_utils.download_audio_file('K0149.wav')
+        self.input_path3 = nussl.efz_utils.download_audio_file('dev1_female3_inst_mix.wav')
+        self.all_inputs = [self.input_path1, self.input_path2, self.input_path3]
 
-        self.input_path1 = os.path.join(input_folder, 'k0140_int.wav')
-        self.input_path2 = os.path.join(input_folder, 'k0140.wav')
-        self.input_path3 = os.path.join(input_folder, 'dev1_female3_inst_mix.wav')
-
-        self.out_path1 = os.path.join(output_folder, 'k0140_int_output.wav')
-        self.out_path2 = os.path.join(output_folder, 'k0140_output.wav')
+        self.out_path1 = 'k0140_int_output.wav'
 
     def test_load(self):
         # Load from file
@@ -46,9 +40,9 @@ class AudioSignalUnitTests(unittest.TestCase):
         ref_sr, ref_data = wav.read(self.input_path1)
         c = nussl.AudioSignal(audio_data_array=ref_data, sample_rate=ref_sr)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             nussl.AudioSignal(self.input_path1, ref_data)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             nussl.AudioSignal(path_to_input_file=self.input_path1, audio_data_array=ref_data)
 
         d = nussl.AudioSignal()
@@ -86,12 +80,14 @@ class AudioSignalUnitTests(unittest.TestCase):
         for i, path in enumerate(self.all_inputs):
             for start in percentages:
                 offset = start * signal_info[i]['duration']
-                ref_length = int(round(signal_info[i]['length'] - offset * signal_info[i]['sample_rate']))
+                ref_length = int(round(signal_info[i]['length'] - offset *
+                                       signal_info[i]['sample_rate']))
 
                 a = nussl.AudioSignal()
                 a.load_audio_from_file(path, offset=offset)
 
-                assert abs(a.signal_length - ref_length) <= 1  # Sometimes ref_length is off by 1 due to rounding
+                # Sometimes ref_length is off by 1 due to rounding
+                assert abs(a.signal_length - ref_length) <= 1
 
         # Test different durations
         for i, path in enumerate(self.all_inputs):
@@ -102,7 +98,8 @@ class AudioSignalUnitTests(unittest.TestCase):
                 a = nussl.AudioSignal()
                 a.load_audio_from_file(path, duration=duration)
 
-                assert abs(a.signal_length - ref_length) <= 1  # Sometimes ref_length is off by 1 due to rounding
+                # Sometimes ref_length is off by 1 due to rounding
+                assert abs(a.signal_length - ref_length) <= 1
 
         # Test offsets and durations
         percentages = np.arange(0.0, 0.51, 0.05)
@@ -116,7 +113,8 @@ class AudioSignalUnitTests(unittest.TestCase):
                     a = nussl.AudioSignal()
                     a.load_audio_from_file(path, offset=offset, duration=duration)
 
-                    assert abs(a.signal_length - ref_length) <= 2  # Sometimes ref_length is off by 2 due to rounding
+                    # Sometimes ref_length is off by 2 due to rounding
+                    assert abs(a.signal_length - ref_length) <= 2
 
         # Test error cases
         path = self.input_path1
@@ -326,8 +324,7 @@ class AudioSignalUnitTests(unittest.TestCase):
 
         """
         # Load input file
-        input_file_name = os.path.join('..', 'input', 'piano_and_synth_arp_chord_stereo.wav')
-        signal = nussl.AudioSignal(path_to_input_file=input_file_name)
+        signal = nussl.AudioSignal(path_to_input_file=self.input_path3)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
         assert (signal_stft.shape[nussl.STFT_CHAN_INDEX] == 2)
@@ -350,7 +347,9 @@ class AudioSignalUnitTests(unittest.TestCase):
         _ = signal.stft()
         self.assertTrue(signal.stft_data is not None)
         signal.istft(overwrite=False, use_librosa=False)
-        self.assertTrue(not np.any(signal.audio_data - self.sine_wave))  # check if all are exactly 0
+
+        # check if all are exactly 0
+        self.assertTrue(not np.any(signal.audio_data - self.sine_wave))
         signal.istft()
 
         # Make sure they're the same length

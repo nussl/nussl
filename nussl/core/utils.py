@@ -9,9 +9,6 @@ from __future__ import division
 import warnings
 import base64
 import json
-import os
-import sys
-import hashlib
 import re
 import collections
 
@@ -142,8 +139,8 @@ def _set_array_zero_indices(index, zero_distance, max_len):
 
 def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
     """
-    Finds the values of the peaks in a 1-D or 2-D numpy array. Use exactly the same as
-    find_peak_indices(). This function will find the values of the peaks of an input
+    Finds the values of the peaks in a 1-D or 2-D numpy array. Used exactly the same as
+    :func:`find_peak_indices`. This function will find the values of the peaks of an input
     n-dimensional numpy array.
 
     This can be configured to find max or min peak values, distance between the peaks, and
@@ -154,7 +151,7 @@ def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshol
 
     Notes:
         * This function only returns the indices of peaks. If you want to find peak values,
-        use find_peak_values().
+        use :func:`find_peak_indices`.
 
         * min_dist can be an int or a tuple of length 2.
             If input_array is 1-D, min_dist must be an integer.
@@ -166,7 +163,7 @@ def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshol
 
 
     See Also:
-        :: find_peak_indices() ::
+        :: :func:`find_peak_indices` ::
 
     Args:
         input_array: a 1- or 2- dimensional numpy array that will be inspected.
@@ -268,17 +265,17 @@ def json_numpy_obj_hook(dct):
 
 def add_mismatched_arrays(array1, array2, truncate=False):
     """
-    Will add two 1D numpy arrays of different length. If truncate is false, it will expand
-    the resultant array to the larger of the two, if True it will truncate the resultant
+    Will add two 1D numpy arrays of different length. If :param:`truncate` is ``False``, it will
+    expand the resultant array to the larger of the two, if ``True`` it will truncate the resultant
     array to the smaller of the two.
 
     Args:
-        array1: (np.array) 1D numeric array
-        array2: (np.array) 1D numeric array
-        truncate: (Bool) If True, will truncate the resultant array to the smaller of the two
+        array1: (:obj:`np.ndarray`) 1D numeric numpy array
+        array2: (:obj:`np.ndarray`) 1D numeric numpy array
+        truncate: (bool) If ``Tru``e, will truncate the resultant array to the smaller of the two
 
     Returns:
-        One 1D array added from the two input arrays
+        (:obj:`np.ndarray`): A 1D numpy array that is the element-wise sum of the two input arrays.
 
     """
     # Cast these arrays to the largest common type
@@ -308,17 +305,17 @@ def add_mismatched_arrays(array1, array2, truncate=False):
 # noinspection PyPep8Naming
 def add_mismatched_arrays2D(array1, array2, truncate=False):
     """
-    Will add two 2D numpy arrays of different length. If truncate is false, it will expand
-    the resultant array to the larger of the two, if True it will truncate the resultant
+    Will add two 2D numpy arrays of different length. If :param:`truncate` is ``False``, it will
+    expand the resultant array to the larger of the two, if ``True`` it will truncate the resultant
     array to the smaller of the two.
 
     Args:
-        array1: (np.array) 2D numeric array
-        array2: (np.array) 2D numeric array
-        truncate: (Bool) If True, will truncate the resultant array to the smaller of the two
+        array1: (:obj:`np.array`) 2D numeric numpy array.
+        array2: (:obj:`np.array`) 2D numeric numpy array.
+        truncate: (bool) If ``True``, will truncate the resultant array to the smaller of the two.
 
     Returns:
-        One 2D array added from the two input arrays
+        (:obj:`np.ndarray`): A 2D numpy array that is the element-wise sum of the two input arrays.
 
     """
     # Cast these arrays to the largest common type
@@ -347,11 +344,13 @@ def add_mismatched_arrays2D(array1, array2, truncate=False):
 
 def complex_randn(shape):
     """
-    Returns a complex-valued numpy array of random values with shape `shape`
-    Args:
-        shape: (tuple) tuple of ints that will be the shape of the resultant complex numpy array
+    Returns a complex-valued numpy array of random values with shape :param:`shape`.
 
-    Returns: (:obj:`np.ndarray`): a complex-valued numpy array of random values with shape `shape`
+    Args:
+        shape (tuple): Tuple of ints that will be the shape of the resultant complex numpy array.
+
+    Returns:
+        (:obj:`np.ndarray`): a complex-valued numpy array of random values with shape `shape`
     """
     return np.random.randn(*shape) + 1j * np.random.randn(*shape)
 
@@ -360,13 +359,14 @@ def _get_axis(array, axis_num, i):
     """
     Will get index 'i' along axis 'axis_num' of a 2- or 3-dimensional numpy array.
     If array has 4+ dimensions or 'axis_num' is larger than number of axes, will return None.
+
     Args:
-        array: 
-        axis_num: 
-        i: 
+        array (:obj:`np.ndarray`): Array to fetch axis of.
+        axis_num (int): Axes to retrieve.
+        i (int): Index to retrieve.
 
     Returns:
-
+        The value at index :param:`i` along axis :param:`axis_num`
     """
     if array.ndim == 2:
         if axis_num == 0:
@@ -389,6 +389,15 @@ def _get_axis(array, axis_num, i):
 
 
 def CamelCase_to_snake_case(text):
+    """
+    Convert a string from camel case (``StringsThatLookLikeThis``) to snake case
+    (``strings_that_look_like_this``). This is useful for matching names of
+    Args:
+        text:
+
+    Returns:
+
+    """
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', text)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
@@ -401,6 +410,43 @@ def _format(string):
 
 
 def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
+    """
+    Converts :class:`AudioSignal` objects to ``musdb`` :class:`Track` objects that
+    contain the mixture, the ground truth sources, and the targets for use with the ``mus_eval``
+    implementation of BSS-Eval and ``musdb``.
+
+    See Also:
+        * More information on ``musdb``:  `Github<https://github.com/sigsep/sigsep-mus-db>`
+            and `documentation<http://musdb.readthedocs.io/>`
+        * More information on ``mus_eval``: `Github<https://github.com/sigsep/sigsep-mus-eval>`
+            and `documentation<https://sigsep.github.io/sigsep-mus-eval/>`
+        * :class:`BSSEvalV4` for ``nussl``'s interface to BSS-Eval v4.
+
+    Examples:
+        .. code-block:: python
+            :linenos:
+            import nussl
+            signal = nussl.AudioSignal(nussl.efz_utils.download_audio_file('HistoryRepeating.wav'))
+
+            repet = nussl.Repet(signal)
+            repet.run()
+
+            bg, fg = repet.make_audio_signals()
+
+            src_dict = {'vocals': fg, 'accompaniment': bg}
+            target = nussl.core.constants.STEM_TARGET_DICT
+            track = nussl.utils.audio_signals_to_musdb_track(signal, src_dict, target)
+
+    Args:
+        mixture (:class:`AudioSignal`): The :class:`AudioSignal` object that contains the mixture.
+        sources_dict (dict): Dictionary where the keys are the labels for the sources and values
+            are the associated :class:`AudioSignal` objects.
+        targets_dict (dict): Dictionary where the keys are the labels for the sources (as above)
+            and the values are weights.
+
+    Returns:
+        (:obj:`musdb.Track`) populated as specified by inputs.
+    """
     verify_audio_signal_list_strict(sources_dict.values() + [mixture])
 
     track = musdb.Track(mixture.file_name, is_wav=True, stem_id=0)
@@ -437,7 +483,7 @@ def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
 
 def verify_audio_signal_list_lax(audio_signal_list):
     """
-    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects.
+    Verifies that an input (:param:`audio_signal_list`) is a list of :ref:`AudioSignal` objects.
     If not so, attempts to correct the list (if possible) and returns the corrected list.
 
     Args:
@@ -465,7 +511,7 @@ def verify_audio_signal_list_lax(audio_signal_list):
 
 def verify_audio_signal_list_strict(audio_signal_list):
     """
-    Verifies that an input (audio_signal_list) is a list of :ref:`AudioSignal` objects and
+    Verifies that an input (:param:`audio_signal_list`) is a list of :ref:`AudioSignal` objects and
     that they all have the same sample rate and same number of channels. If not true,
     attempts to correct the list (if possible) and returns the corrected list.
 
@@ -493,14 +539,14 @@ def verify_audio_signal_list_strict(audio_signal_list):
 
 def verify_separation_base_list(separation_list):
     """
-    Verifies that all items in `separation_list` are :ref:`SeparationBase` -derived objects.
+    Verifies that all items in :param:`separation_list` are :ref:`SeparationBase` -derived objects.
     If not so, attempts to correct the list if possible and returns the corrected list.
 
     Args:
-        separation_list: (list) List of :ref:`SeparationBase` -derived objects
+        separation_list (list): List of :ref:`SeparationBase` -derived objects
 
     Returns:
-        separation_list: (list) Verified list of :ref:`SeparationBase` -derived objects
+        separation_list (list): Verified list of :ref:`SeparationBase` -derived objects
 
     """
     # Lazy load to prevent a circular reference upon initialization
@@ -519,14 +565,14 @@ def verify_separation_base_list(separation_list):
 
 def verify_mask_separation_base_list(mask_separation_list):
     """
-    Verifies that all items in `separation_list` are :ref:`MaskSeparationBase` -derived objects.
-    If not so, attempts to correct the list if possible and returns the corrected list.
+    Verifies that all items in :param:`separation_list` are :ref:`MaskSeparationBase` -derived
+    objects. If not so, attempts to correct the list if possible and returns the corrected list.
 
     Args:
-        mask_separation_list: (list) List of :ref:`MaskSeparationBase` -derived objects
+        mask_separation_list (list): List of :ref:`MaskSeparationBase` -derived objects
 
     Returns:
-        separation_list: (list) Verified list of :ref:`MaskSeparationBase` -derived objects
+        separation_list (list): Verified list of :ref:`MaskSeparationBase` -derived objects
 
     """
     # Lazy load to prevent a circular reference upon initialization
@@ -547,12 +593,12 @@ def verify_mask_separation_base_list(mask_separation_list):
 def _verify_audio_data(audio_data):
     """
     A helper method to make sure that input audio data is formatted correctly. This checks if
-    `audio_data` is a numpy array, then if it's all finite
+    :param:`audio_data` is a numpy array, then if it's all finite
     Args:
         audio_data (:obj:`np.ndarray`): A numpy array with audio-data. Can be  1 or 2 dimensional
 
     Returns:
-        Correctly formatted `audio_data` array or `None` if `audio_data` is `None`
+        Correctly formatted :param:`audio_data` array or `None` if :param:`audio_data` is `None`
 
     """
     if audio_data is None:
@@ -605,9 +651,7 @@ def _verify_transformation_data(transformation_data):
 
 def print_all_separation_algorithms():
     """
-
-    Returns:
-
+    Displays the list of all separation algorithms in nussl to the console.
     """
     from ..separation import all_separation_algorithms
     print('\n'.join([a.__name__ for a in all_separation_algorithms]))

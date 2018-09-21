@@ -76,15 +76,20 @@ class BSSEvalUnitTests(unittest.TestCase):
         # scores = bss.scores
 
     def test_bss_eval_v4(self):
-        mir1k_dir = '/Users/ethanmanilow/Documents/School/Research/Predicting SDR values/prediction/Repet/mir_1k/MIR-1K'
-        mix, sig1, sig2 = next(nussl.datasets.mir1k(mir1k_dir))
+        mir1k_dir = '/Users/ethanmanilow/Documents/Github/SourceSeparationPyCharm/demo_files/MIR-1K'
+        mix, vox, acc = next(nussl.datasets.mir1k(mir1k_dir))
         mix.to_mono(overwrite=True)
 
         r = nussl.RepetSim(mix)
         r()
-        est1, est2 = r.make_audio_signals()
+        bg, fg = r.make_audio_signals()
 
-        bss = nussl.evaluation.BSSEvalV4(mix, [sig1, sig2], [est1, est2])
-        scores = bss.evaluate()
+        est_dict = {'vocals': fg, 'accompaniment': bg}
+        gt_dict = {'vocals': vox, 'accompaniment': acc}
+        bss = nussl.evaluation.BSSEvalV4(mix, gt_dict, est_dict)
+        scores1 = bss.evaluate()
 
-        i = 0
+        bss = nussl.evaluation.BSSEvalV4(mix, [vox, acc], [fg, bg])
+        scores2 = bss.evaluate()
+
+        assert scores1 == scores2

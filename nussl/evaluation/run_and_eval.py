@@ -23,10 +23,10 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
     """
     
     Args:
-        evaluation_object: (EvaluationBase-derived object)
-        evaluation_kwargs: (dict)
-        separation_object: (SeparationBase-derived object)
-        separation_kwargs: (dict)
+        evaluation_object (:class:`EvaluationBase`):
+        evaluation_kwargs (dict):
+        separation_object (:class:`SeparationBase`):
+        separation_kwargs (dict):
         mixture_list: 
         true_sources_list_of_lists: 
 
@@ -50,7 +50,7 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
         assert mixture.num_channels == true_sources_list[0].num_channels, \
             'Mixture num_channels does not match true sources at idx {}'.format(i)
 
-        sep = separation_object(input_audio_signal=mixture, *separation_kwargs)
+        sep = separation_object(input_audio_signal=mixture, **separation_kwargs)
         sep.run()
         est_sources = sep.make_audio_signals()
 

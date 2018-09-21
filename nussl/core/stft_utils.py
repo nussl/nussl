@@ -462,14 +462,15 @@ def _remove_stft_padding(stft, original_signal_length, window_length, hop_length
 
 
 def make_window(window_type, length, symmetric=False):
-    """Returns an `np.array` populated with samples of a normalized window of type `window_type`
+    """Returns an :obj:`np.array` populated with samples of a normalized window of type
+    :param:`window_type`.
 
     Args:
-        window_type (basestring): Type of window to create, string can be
+        window_type (str): Type of window to create, string can be
         length (int): length of window
-        symmetric (bool): False (default) generates a periodic window (for use in spectral analysis).
-            True generates a symmetric window (for use in filter design).
-            Does nothing for rectangular window
+        symmetric (bool): If ``False``,  generates a periodic window (for use in spectral analysis).
+            If ``True``, generates a symmetric window (for use in filter design).
+            Does nothing for rectangular window.
 
     Returns:
         window (np.array): np array with a window of type window_type
@@ -492,7 +493,7 @@ def make_window(window_type, length, symmetric=False):
 
 def _get_window_function(window_type):
     """
-    Gets a window function from scipy.signal
+    Gets a window function from ``scipy.signal``
     Args:
         window_type: (string) name of the window function from scipy.signal
 
