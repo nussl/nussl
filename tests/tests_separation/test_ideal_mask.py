@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 import nussl
 
+
 class IdealMaskTestCase(unittest.TestCase):
 
     def setUp(self):

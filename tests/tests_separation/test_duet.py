@@ -7,10 +7,10 @@ import nussl
 import numpy as np
 import os
 
-from .. import benchmark_test
+from test_base.benchmark_test_base import BenchmarkTestBase
 
 
-class DuetUnitTests(benchmark_test.BenchmarkTets):
+class DuetUnitTests(BenchmarkTestBase):
 
     @classmethod
     def setUpClass(cls):

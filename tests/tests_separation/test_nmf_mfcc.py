@@ -39,19 +39,22 @@ class NMFMFCCUnitTests(unittest.TestCase):
         # Test initializing the MFCC range
 
         # Set up the max of the MFCC range by only using an int
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src, num_templates=6, num_iterations=5,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src,
+                                  num_templates=6, num_iterations=5,
                                   mfcc_range=5)
         assert nmf_mfcc.mfcc_start == 1
         assert nmf_mfcc.mfcc_end == 5
 
         # Set up the MFCC range by using a list [min, max]
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src, num_templates=6, num_iterations=5,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src,
+                                  num_templates=6, num_iterations=5,
                                   mfcc_range=[3, 15])
         assert nmf_mfcc.mfcc_start == 3
         assert nmf_mfcc.mfcc_end == 15
 
         # Set up the MFCC range by using a tuple (min, max)
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src, num_templates=6, num_iterations=5,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src,
+                                  num_templates=6, num_iterations=5,
                                   mfcc_range=(2, 14))
         assert nmf_mfcc.mfcc_start == 2
         assert nmf_mfcc.mfcc_end == 14
@@ -60,14 +63,16 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
         # Different random_seed and random_state, check if set separately
         kmean_kwargs = {'random_state': 0}
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src, num_templates=6, num_iterations=5,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src,
+                                  num_templates=6, num_iterations=5,
                                   random_seed=1, kmeans_kwargs=kmean_kwargs)
         assert nmf_mfcc.clusterer.random_state == 0
         assert nmf_mfcc.random_seed == 1
 
         # No random_seed, but random_state initialized
         kmean_kwargs = {'random_state': 0}
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=2, num_templates=6, num_iterations=5,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=2,
+                                  num_templates=6, num_iterations=5,
                                   kmeans_kwargs=kmean_kwargs)
         assert nmf_mfcc.clusterer.random_state == 0
         assert nmf_mfcc.random_seed is None
@@ -88,7 +93,8 @@ class NMFMFCCUnitTests(unittest.TestCase):
         test_audio.load_audio_from_array(signal)
 
         # Set up NMMF MFCC
-        nmf_mfcc = nussl.NMF_MFCC(test_audio, num_sources=self.n_src, num_templates=2, num_iterations=15)
+        nmf_mfcc = nussl.NMF_MFCC(test_audio, num_sources=self.n_src,
+                                  num_templates=2, num_iterations=15)
 
         # and run
         nmf_mfcc.run()
@@ -96,7 +102,8 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
     def test_piano_and_synth(self):
         # Set up NMMF MFCC
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src * 2, num_templates=6, num_iterations=10,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_mono, num_sources=self.n_src * 2,
+                                  num_templates=6, num_iterations=10,
                                   random_seed=0)
 
         # and run
@@ -111,7 +118,8 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
     def test_piano_and_synth_stereo(self):
         # Set up NMMF MFCC
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_stereo, num_sources=self.n_src, num_templates=6, num_iterations=15,
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_stereo, num_sources=self.n_src,
+                                  num_templates=6, num_iterations=15,
                                   random_seed=0)
 
         # and run
@@ -124,8 +132,10 @@ class NMFMFCCUnitTests(unittest.TestCase):
 
     def test_piano_and_synth_stereo_to_mono(self):
         # Set up NMMF MFCC and convert input audio signal to mono
-        nmf_mfcc = nussl.NMF_MFCC(self.signal_stereo, num_sources=self.n_src, num_templates=6, num_iterations=15,
-                                  random_seed=0, distance_measure='euclidean', to_mono=True)
+        nmf_mfcc = nussl.NMF_MFCC(self.signal_stereo, num_sources=self.n_src,
+                                  num_templates=6, num_iterations=15,
+                                  random_seed=0, distance_measure='euclidean',
+                                  to_mono=True)
 
         assert nmf_mfcc.audio_signal.is_mono
 
@@ -142,9 +152,10 @@ class NMFMFCCUnitTests(unittest.TestCase):
         metadata_file = os.path.join('tests', 'nmf_mfcc_reference', 'nmf_mfcc_benchmark_files',
                                      'nmf_mfcc_benchmark_metadata.json')
         metadata = json.load(open(metadata_file, 'r'))
-        print('Reading benchmark files from {}, version {}, made by {}'.format(metadata['save_time'],
-                                                                               metadata['nussl_version'],
-                                                                               metadata['made_by']))
+        print('Reading benchmark files from {}, '
+              'version {}, made by {}'.format(metadata['save_time'],
+                                              metadata['nussl_version'],
+                                              metadata['made_by']))
 
         # Load the audio
         signal = nussl.AudioSignal(metadata['input_file'])
@@ -156,9 +167,11 @@ class NMFMFCCUnitTests(unittest.TestCase):
         # run
         nmf_mfcc.run()
 
-        benchmark_labeled_templates = np.load(os.path.join('tests', 'nmf_mfcc_reference', 'nmf_mfcc_benchmark_files',
+        benchmark_labeled_templates = np.load(os.path.join('tests', 'nmf_mfcc_reference',
+                                                           'nmf_mfcc_benchmark_files',
                                                            'benchmark_labeled_templates.npy'))
-        benchmark_masks = np.load(os.path.join('tests', 'nmf_mfcc_reference', 'nmf_mfcc_benchmark_files',
+        benchmark_masks = np.load(os.path.join('tests', 'nmf_mfcc_reference',
+                                               'nmf_mfcc_benchmark_files',
                                                'benchmark_masks.npy'))
 
         nmf_mfcc.make_audio_signals()
@@ -166,7 +179,8 @@ class NMFMFCCUnitTests(unittest.TestCase):
         # Set the paths to empty so we can compare
         for source in nmf_mfcc.sources:
             source.path_to_input_file = ''
-        benchmark_sources = np.load(os.path.join('tests', 'nmf_mfcc_reference', 'nmf_mfcc_benchmark_files',
+        benchmark_sources = np.load(os.path.join('tests', 'nmf_mfcc_reference',
+                                                 'nmf_mfcc_benchmark_files',
                                                  'benchmark_sources.npy'))
 
         assert np.all(benchmark_sources == nmf_mfcc.sources)

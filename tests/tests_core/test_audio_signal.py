@@ -20,30 +20,37 @@ class AudioSignalUnitTests(unittest.TestCase):
     length = dur * sr
 
     def setUp(self):
-        self.input_path1 = nussl.efz_utils.download_audio_file('K0140.wav')
-        self.input_path2 = nussl.efz_utils.download_audio_file('K0149.wav')
-        self.input_path3 = nussl.efz_utils.download_audio_file('dev1_female3_inst_mix.wav')
-        self.all_inputs = [self.input_path1, self.input_path2, self.input_path3]
+        self.audio_input1 = nussl.efz_utils.download_audio_file('K0140.wav')
+        self.audio_input2 = nussl.efz_utils.download_audio_file('K0149.wav')
+        self.audio_input3 = nussl.efz_utils.download_audio_file('dev1_female3_inst_mix.wav')
+        self.all_inputs = [self.audio_input1, self.audio_input2, self.audio_input3]
 
-        self.out_path1 = 'k0140_int_output.wav'
+        self.audio_output = 'k0140_int_output.wav'
+        self.png_output = 'test_graph.png'
+        self.all_outputs = [self.audio_output, self.png_output]
+
+    def tearDown(self):
+        for f in self.all_outputs:
+            if os.path.isfile(f):
+                os.remove(f)
 
     def test_load(self):
         # Load from file
-        a = nussl.AudioSignal(self.input_path1)
+        a = nussl.AudioSignal(self.audio_input1)
         b = nussl.AudioSignal()
-        b.load_audio_from_file(self.input_path1)
+        b.load_audio_from_file(self.audio_input1)
 
         assert (np.array_equal(a.audio_data, b.audio_data))
         assert (a.sample_rate == b.sample_rate)
 
         # Load from array
-        ref_sr, ref_data = wav.read(self.input_path1)
+        ref_sr, ref_data = wav.read(self.audio_input1)
         c = nussl.AudioSignal(audio_data_array=ref_data, sample_rate=ref_sr)
 
         with self.assertRaises(Exception):
-            nussl.AudioSignal(self.input_path1, ref_data)
+            nussl.AudioSignal(self.audio_input1, ref_data)
         with self.assertRaises(Exception):
-            nussl.AudioSignal(path_to_input_file=self.input_path1, audio_data_array=ref_data)
+            nussl.AudioSignal(path_to_input_file=self.audio_input1, audio_data_array=ref_data)
 
         d = nussl.AudioSignal()
         d.load_audio_from_array(ref_data, ref_sr)
@@ -117,7 +124,7 @@ class AudioSignalUnitTests(unittest.TestCase):
                     assert abs(a.signal_length - ref_length) <= 2
 
         # Test error cases
-        path = self.input_path1
+        path = self.audio_input1
         sr, data = wav.read(path)
         dur = len(data) / sr
         with self.assertRaises(ValueError):
@@ -136,46 +143,46 @@ class AudioSignalUnitTests(unittest.TestCase):
         a.load_audio_from_file(path, offset=offset, duration=duration)
 
     def test_write_to_file_path1(self):
-        a = nussl.AudioSignal(self.input_path1)
-        a.write_audio_to_file(self.out_path1)
-        b = nussl.AudioSignal(self.out_path1)
+        a = nussl.AudioSignal(self.audio_input1)
+        a.write_audio_to_file(self.audio_output)
+        b = nussl.AudioSignal(self.audio_output)
 
         assert (a.sample_rate == b.sample_rate)
         assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_to_file_path2(self):
         a = nussl.AudioSignal()
-        a.load_audio_from_file(self.input_path1)
-        a.write_audio_to_file(self.out_path1)
-        b = nussl.AudioSignal(self.out_path1)
+        a.load_audio_from_file(self.audio_input1)
+        a.write_audio_to_file(self.audio_output)
+        b = nussl.AudioSignal(self.audio_output)
 
         assert (a.sample_rate == b.sample_rate)
         assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_to_file_array1(self):
-        sr, data = wav.read(self.input_path1)
+        sr, data = wav.read(self.audio_input1)
         a = nussl.AudioSignal(audio_data_array=data, sample_rate=sr)
-        a.write_audio_to_file(self.out_path1)
-        b = nussl.AudioSignal(self.out_path1)
+        a.write_audio_to_file(self.audio_output)
+        b = nussl.AudioSignal(self.audio_output)
 
         assert (a.sample_rate == b.sample_rate)
         assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_to_file_array2(self):
-        sr, data = wav.read(self.input_path1)
+        sr, data = wav.read(self.audio_input1)
         a = nussl.AudioSignal()
         a.load_audio_from_array(data, sr)
-        a.write_audio_to_file(self.out_path1)
-        b = nussl.AudioSignal(self.out_path1)
+        a.write_audio_to_file(self.audio_output)
+        b = nussl.AudioSignal(self.audio_output)
 
         assert (a.sample_rate == b.sample_rate)
         assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_sample_rate(self):
-        a = nussl.AudioSignal(self.input_path1)
+        a = nussl.AudioSignal(self.audio_input1)
         sample_rate = a.sample_rate // 2
-        a.write_audio_to_file(self.out_path1, sample_rate=sample_rate)
-        b = nussl.AudioSignal(self.out_path1)
+        a.write_audio_to_file(self.audio_output, sample_rate=sample_rate)
+        b = nussl.AudioSignal(self.audio_output)
 
         assert (b.sample_rate == sample_rate)
 
@@ -184,39 +191,39 @@ class AudioSignalUnitTests(unittest.TestCase):
 
     def test_resample(self):
         # Check that sample rate property changes
-        a = nussl.AudioSignal(self.input_path1)
-        b = nussl.AudioSignal(self.input_path1)
+        a = nussl.AudioSignal(self.audio_input1)
+        b = nussl.AudioSignal(self.audio_input1)
         b.resample(a.sample_rate / 2)
         assert (b.sample_rate == a.sample_rate/2)
 
     def test_resample_on_load_from_file(self):
         # Test resample right when loading from file vs resampling after loading
-        a = nussl.AudioSignal(self.input_path1)
+        a = nussl.AudioSignal(self.audio_input1)
         a.resample(48000)
         b = nussl.AudioSignal()
-        b.load_audio_from_file(self.input_path1, new_sample_rate=48000)
+        b.load_audio_from_file(self.audio_input1, new_sample_rate=48000)
         assert (a.sample_rate == b.sample_rate)
         assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_resample_vs_librosa_load(self):
         # Check against librosa load function
-        a = nussl.AudioSignal(self.input_path1)
+        a = nussl.AudioSignal(self.audio_input1)
         a.resample(48000)
-        b_audio_data, b_sample_rate = librosa.load(self.input_path1, sr=48000)
+        b_audio_data, b_sample_rate = librosa.load(self.audio_input1, sr=48000)
         assert (a.sample_rate == b_sample_rate)
         assert (np.allclose(a.audio_data, b_audio_data))
 
     def test_default_sr_on_load_from_array(self):
         # Check that the default sample rate is set when no sample rate is provided load_audio_from_array
-        sr, data = wav.read(self.input_path1)
+        sr, data = wav.read(self.audio_input1)
         a = nussl.AudioSignal()
         a.load_audio_from_array(data)
         assert(a.sample_rate == nussl.DEFAULT_SAMPLE_RATE)
 
     def test_sr_on_load_from_array(self):
         # Check that the passed in sample rate is being set in load_audio_from_array
-        a = nussl.AudioSignal(self.input_path1)
-        sr, data = wav.read(self.input_path1)
+        a = nussl.AudioSignal(self.audio_input1)
+        sr, data = wav.read(self.audio_input1)
         b = nussl.AudioSignal()
         b.load_audio_from_array(data, sample_rate=sr)
         assert (a.sample_rate == b.sample_rate)
@@ -224,17 +231,17 @@ class AudioSignalUnitTests(unittest.TestCase):
 
     def test_plot_time_domain_stereo(self):
         # Stereo signal that should plot both channels on same plot
-        a = nussl.AudioSignal(self.input_path3)
+        a = nussl.AudioSignal(self.audio_input3)
         a.plot_time_domain()
 
     def test_plot_time_domain_specific_channel(self):
         # Stereo signal that should only plot the specified channel
-        a = nussl.AudioSignal(self.input_path3)
+        a = nussl.AudioSignal(self.audio_input3)
         a.plot_time_domain(channel=0)
 
     def test_plot_time_domain_mono(self):
         # Mono signal plotting
-        a = nussl.AudioSignal(self.input_path3)
+        a = nussl.AudioSignal(self.audio_input3)
         a.to_mono(overwrite=True)
         a.plot_time_domain()
 
@@ -249,13 +256,13 @@ class AudioSignalUnitTests(unittest.TestCase):
 
     def test_plot_time_domain_sample_on_xaxis(self):
         # Plotting a stereo signal with sample numbers on the x axis instead of time
-        a = nussl.AudioSignal(self.input_path3)
+        a = nussl.AudioSignal(self.audio_input3)
         a.plot_time_domain(x_label_time=False)
 
     def test_plot_time_domain_save_to_path_and_rename(self):
         # Plotting and saving the plot with a new name to a folder
-        a = nussl.AudioSignal(self.input_path3)
-        a.plot_time_domain(file_path_name='test_graph.png')
+        a = nussl.AudioSignal(self.audio_input3)
+        a.plot_time_domain(file_path_name=self.png_output)
 
     def test_stft_istft_simple1(self):
         """
@@ -324,7 +331,7 @@ class AudioSignalUnitTests(unittest.TestCase):
 
         """
         # Load input file
-        signal = nussl.AudioSignal(path_to_input_file=self.input_path3)
+        signal = nussl.AudioSignal(path_to_input_file=self.audio_input3)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
         assert (signal_stft.shape[nussl.STFT_CHAN_INDEX] == 2)
@@ -406,8 +413,8 @@ class AudioSignalUnitTests(unittest.TestCase):
     def test_arithmetic(self):
 
         # These signals have two different lengths
-        a = nussl.AudioSignal(self.input_path1)
-        b = nussl.AudioSignal(self.input_path2)
+        a = nussl.AudioSignal(self.audio_input1)
+        b = nussl.AudioSignal(self.audio_input2)
 
         with self.assertRaises(Exception):
             a.add(b)
