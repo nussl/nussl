@@ -11,17 +11,39 @@ import masks
 
 
 class FT2D(mask_separation_base.MaskSeparationBase):
-    """Implements foreground/background separation using the 2D Fourier Transform
+    """ Implements foreground/background separation using the 2D Fourier Transform based on this paper:
+
+    Seetharaman, Prem, Fatemeh Pishdadian, and Bryan Pardo.
+    "Music/voice separation using the 2D Fourier Transform."
+    IEEE Workshop on Applications of Signal Processing to Audio and Acoustics, WASPAA'17.
+
+    The core idea behind this algorithm is to borrow a technique from image processing for periodic background
+    removal. When periodic structure exists in an image, it manifests as local peaks in the 2D Fourier Transform
+    of the that image. By masking the peaks in the 2DFT, the periodic structure can be removed from the image.
+    This approach also works for accompaniment removal in certain scenarios (the accompaniment is repeating and the
+    vocals are not). The steps are as follows:
+
+    1. Take STFT of audio
+    2. Take 2DFT of magnitude STFT
+    3. Process 2DFT, deleting local peaks (to isolate vocals).
+    4. Invert 2DFT back to magnitude STFT
+    5. Mask STFT and invert back to audio.
 
     Parameters:
         input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that REPET will be run on.
+                            audio data that FT2D will be run on.
         high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
+        neighborhood_size: (2-tuple of int) The shape of the neighborhood used for filtering
+            the 2DFT. The shape is (height, width). The shape and size of the neighborhood affects
+            the behavior of the algorithm greatly. See paper for discussion on setting this parameter.
+            Defaults to (1, 25).
         do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm
             (does not effect the input AudioSignal object)
         use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
 
+
     """
+
     def __init__(self, input_audio_signal, high_pass_cutoff=None, neighborhood_size=(1, 25),
                  do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK):
@@ -86,25 +108,51 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         self.result_masks = [background_mask, background_mask.inverse_mask()]
 
         return self.result_masks
-    
+
     def _compute_spectrograms(self):
+        """
+        Computes representations used for this algorithm (STFT in self.stft, and 2DFT in self.ft2d).
+
+        Returns:
+            None
+        Effects:
+            Computes STFT and 2DFT in self.stft and self.ft2d both of shape (num_time, num_frequencies, num_channels)
+        """
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
                                            use_librosa=self.use_librosa_stft)
         self.ft2d = np.stack([np.fft.fft2(np.abs(self.stft[:, :, i]))
-                              for i in range(self.audio_signal.num_channels)], axis = -1)
+                              for i in range(self.audio_signal.num_channels)], axis=-1)
 
-    def compute_ft2d_mask(self, ft2d):
-        bg_ft2d, fg_ft2d = self.filter_local_maxima(ft2d)
+    def compute_ft2d_mask(self, data):
+        """
+        Filters a given 2DFT for peaks and builds a binary mask in STFT domain.
+
+        Params:
+            data: (complex numpy array) 2DFT data to be filtered. Is complex.
+        Returns:
+            bg_mask: (numpy array) Mask to extract the background accompaniment (periodic). 1 - bg_mask contains the
+            vocals.
+
+        """
+        bg_ft2d, fg_ft2d = self.filter_local_maxima(data)
         bg_stft = np.fft.ifft2(bg_ft2d)
         fg_stft = np.fft.ifft2(fg_ft2d)
         bg_mask = bg_stft > fg_stft
         return bg_mask
 
     def filter_local_maxima(self, ft2d):
+        """
+        Filters out local maxima on the 2DFT using a given rectangular neighborhood (self.neighborhood_size).
+        
+        :param ft2d: (complex numpy array) 2DFT data to be filtered. Is complex.
+        :return: 
+            background_ft2d: (complex numpy array) 2DFT data with only peaks, used to separate out accompaniment.
+            foreground_ft2d: (complex numpy array) 2DFT data without peaks, used to separate out vocals.
+        """
         data = np.abs(np.fft.fftshift(ft2d))
         data /= np.max(data)
         threshold = np.std(data)
-        
+
         data_max = maximum_filter(data, self.neighborhood_size)
         maxima = (data == data_max)
         data_min = minimum_filter(data, self.neighborhood_size)
@@ -112,7 +160,7 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         maxima[diff == 0] = 0
         maxima = np.maximum(maxima, np.fliplr(maxima), np.flipud(maxima))
         maxima = np.fft.ifftshift(maxima)
-        
+
         background_ft2d = np.multiply(maxima, ft2d)
         foreground_ft2d = np.multiply(1 - maxima, ft2d)
         return background_ft2d, foreground_ft2d
