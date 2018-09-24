@@ -12,8 +12,8 @@ import bss_eval_base
 class BSSEvalImages(bss_eval_base.BSSEvalBase):
     """
     Wrapper class for ``mir_eval`` implementation of the BSS-Eval Iamges metrics (SDR, SIR, SAR).
-    Contains logic for loading ground truth :class:`AudioSignal`s and estimated
-    :class:`AudioSignal`s to compute BSS-Eval Images metrics. The ``mir_eval`` module contains
+    Contains logic for loading ground truth AudioSignals and estimated
+    AudioSignals to compute BSS-Eval Images metrics. The ``mir_eval`` module contains
     an implementation of BSS-Eval version 3.
 
     The BSS-Eval metrics attempt to measure perceptual quality by comparing sources
@@ -25,9 +25,11 @@ class BSSEvalImages(bss_eval_base.BSSEvalBase):
 
     See Also:
         * For more information on ``mir_eval`` (python implementation of BSS-Eval v3) see
-        `its Github page<https://github.com/craffel/mir_eval>`.
+        `its Github page <https://github.com/craffel/mir_eval>`_.
+
         * For more information on the BSS-Eval metrics, see the webpage for
-        `the original MATLAB implementation<http://bass-db.gforge.inria.fr/bss_eval/>`.
+        `the original MATLAB implementation <http://bass-db.gforge.inria.fr/bss_eval/>`_.
+
         * Implementations of this base class: :class:`BSSEvalSources` and :class:`BSSEvalImages`.
         * :class:`BSSEvalV4` for the ``museval`` version 4 BSS-Eval implementation.
 

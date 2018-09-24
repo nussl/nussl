@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Wrapper class for ``museval`` implementation of the BSS-Eval metrics (SDR, SIR, SAR).
-Contains logic for loading ground truth :class:`AudioSignal`s and estimated
-:class:`AudioSignal`s to compute BSS-Eval metrics. The ``mir_eval`` module contains an
+Contains logic for loading ground truth AudioSignals and estimated
+AudioSignals to compute BSS-Eval metrics. The ``mir_eval`` module contains an
 implementation of BSS-Eval version 4.
 """
 import museval
@@ -16,8 +16,8 @@ from ..core import constants, utils
 class BSSEvalV4(bss_eval_base.BSSEvalBase):
     """
     Wrapper class for ``museval`` implementation of the BSS-Eval metrics (SDR, SIR, SAR).
-    Contains logic for loading ground truth :class:`AudioSignal`s and estimated
-    :class:`AudioSignal`s to compute BSS-Eval metrics. The ``mir_eval`` module contains an
+    Contains logic for loading ground truth AudioSignals and estimated
+    AudioSignals to compute BSS-Eval metrics. The ``mir_eval`` module contains an
     implementation of BSS-Eval version 4.
 
     The BSS-Eval metrics attempt to measure perceptual quality by comparing sources
@@ -30,8 +30,10 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
     Examples:
         :class:`BSSEvalV4` can be initialized in two ways, either with a list or a dict.
         See the example below for a demonstration:
+
         .. code-block:: python
             :linenos:
+
             mir1k_dir = 'path/to/MIR-1K'
             mix, vox, acc = next(nussl.datasets.mir1k(mir1k_dir))
             mix.to_mono(overwrite=True)
@@ -54,18 +56,21 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
 
     See Also:
         * For more information on ``museval`` (python implementation of BSS-Eval v4) see
-            `its Github page<https://github.com/sigsep/sigsep-mus-eval>` or
-            'its documentation<https://sigsep.github.io/sigsep-mus-eval/>`.
+        `its Github page <https://github.com/sigsep/sigsep-mus-eval>`_ or
+        'its documentation <https://sigsep.github.io/sigsep-mus-eval/>`_.
+
         * For more information on the BSS-Eval metrics, see the webpage for
-            `the original MATLAB implementation<http://bass-db.gforge.inria.fr/bss_eval/>`.
+        `the original MATLAB implementation <http://bass-db.gforge.inria.fr/bss_eval/>`_.
+
         * :class:`BSSEvalSources` and :class:`BSSEvalImages` for the ``mir_eval`` version 3
-            BSS-Eval implementations.
+        BSS-Eval implementations.
 
     References:
         * Emmanuel Vincent, Rémi Gribonval, Cédric Févotte. Performance measurement in blind
         audio source separation. IEEE Transactions on Audio, Speech and Language Processing,
         Institute of Electrical and Electronics Engineers, 2006, 14 (4), pp.1462–1469.
         <inria-00544230>
+
         * Fabian-Robert Stöter, Antoine Liutkus, and Nobutaka Ito. The 2018 Signal Separation
         Evaluation Campaign. In International Conference on Latent Variable Analysis and Signal
         Separation, pages 293–305. Springer, 2018.

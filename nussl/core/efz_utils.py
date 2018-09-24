@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Here are the utilities for using the nussl External File Zoo (EFZ).
+The *nussl* External File Zoo (EFZ) is a server that houses all files that are too large to
+bundle with *nussl* when distributing it through ``pip`` or Github. These types of files include
+audio examples, benchmark files for tests, and trained neural network models.
+
+*nussl* has built-in utilities for accessing the EFZ through its API. Here, it is possible to
+see what files are available on the EFZ and download desired files. The EFZ utilities allow
+for such functionality.
 """
 
 import warnings
@@ -33,6 +39,7 @@ def get_available_audio_files():
     Each entry in the list is in the following format:
 
     .. code-block:: python
+
         {
             u'file_length_seconds': 5.00390022675737,
             u'visible': True,
@@ -52,7 +59,7 @@ def get_available_audio_files():
 
     Returns:
         (list): A list of dicts containing metadata of the available audio files on the nussl
-            External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
+        External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     """
     # _download_all_metadata() will throw its own errors, so no try block around it
@@ -71,15 +78,16 @@ def print_available_audio_files():
     Example:
         >>> import nussl
         >>> nussl.efz_utils.print_available_audio_files()
-
         File Name                                Duration (sec)  Size       Description
         dev1_female3_inst_mix.wav                10.0            1.7MiB     Instantaneous mixture of three female speakers talking in a stereo field.
         dev1_female3_synthconv_130ms_5cm_mix.wav 10.0            1.7MiB     Three female speakers talking in a stereo field, with 130ms of inter-channel delay.
         K0140.wav                                5.0             431.0KiB   Acoustic piano playing middle C.
         K0149.wav                                5.0             430.0KiB   Acoustic piano playing the A above middle C. (A440)
 
-        To download one of these files insert the file name as the first parameter to download_audio_file(), like so:
-            >>> nussl.efz_utils.download_audio_file('K0140.wav')
+    To download one of these files insert the file name as the first parameter to
+    :func:`download_audio_file`, like so:
+
+    >>> nussl.efz_utils.download_audio_file('K0140.wav')
 
     """
     file_metadata = get_available_audio_files()
@@ -102,6 +110,7 @@ def get_available_trained_models():
     Each entry in the list is in the following format:
 
     .. code-block:: python
+
         {
             u'for_class': u'DeepClustering',
             u'visible': True,
@@ -115,14 +124,14 @@ def get_available_trained_models():
         }
 
     Notes:
-        Most of the entries in the dictionary are self-explanatory, but note the `for_class` entry.
-        The `for_class` entry specifies which `nussl` separation class the given model will work
-        with. Usually, `nussl` separation classes that require a model will default so retrieving a
-        model on the EFZ server (if not already found on the user's machine), but sometimes it is
-        desirable to use a model other than the default one provided. In this case, the `for_class`
-        entry lets the user know which class it is valid for use with. Additionally, trying to load
-        a model into a class that it is not explicitly labeled for that class will raise an
-        exception. Just don't do it, ok?
+        Most of the entries in the dictionary are self-explanatory, but note the ``for_class``
+        entry. The ``for_class`` entry specifies which `nussl` separation class the given model will
+        work with. Usually, `nussl` separation classes that require a model will default so
+        retrieving a model on the EFZ server (if not already found on the user's machine), but
+        sometimes it is desirable to use a model other than the default one provided. In this case,
+        the ``for_class`` entry lets the user know which class it is valid for use with.
+        Additionally, trying to load a model into a class that it is not explicitly labeled for that
+        class will raise an exception. Just don't do it, ok?
 
     See Also:
         * :func:`print_available_trained_models`, prints a list of the trained models to
@@ -131,7 +140,7 @@ def get_available_trained_models():
 
     Returns:
         (list): A list of dicts containing metadata of the available trained models on the nussl
-            External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
+        External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
     """
     return _download_all_metadata(constants.NUSSL_EFZ_MODEL_METADATA_URL)
 
@@ -142,14 +151,14 @@ def print_available_trained_models():
     nussl External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     Notes:
-        Most of the entries in the printed list are self-explanatory, but note the `for_class`
-        entry. The `for_class` entry specifies which `nussl` separation class the given model will
+        Most of the entries in the dictionary are self-explanatory, but note the ``for_class``
+        entry. The ``for_class`` entry specifies which `nussl` separation class the given model will
         work with. Usually, `nussl` separation classes that require a model will default so
         retrieving a model on the EFZ server (if not already found on the user's machine), but
         sometimes it is desirable to use a model other than the default one provided. In this case,
-        the `for_class` entry lets the user know which class it is valid for use with. Additionally,
-        trying to load a model into a class that it is not explicitly labeled for that class will
-        raise an exception. Just don't do it, ok?
+        the ``for_class`` entry lets the user know which class it is valid for use with.
+        Additionally, trying to load a model into a class that it is not explicitly labeled for that
+        class will raise an exception. Just don't do it, ok?
 
     See Also:
         * :func:`get_available_trained_models` to get this same data from the EFZ server as a list.
@@ -162,8 +171,9 @@ def print_available_trained_models():
         deep_clustering_model.model              DeepClustering       48.1MiB    example Deep Clustering model
         deep_clustering_vocal_44k_long.model     DeepClustering       90.2MiB    trained DC model for vocal extraction
 
-        To download one of these files insert the file name as the first parameter to download_trained_model(), like so:
-            >>> nussl.efz_utils.download_trained_model('deep_clustering_model.h5')
+    To download one of these files insert the file name as the first parameter to download_trained_model(), like so:
+
+    >>> nussl.efz_utils.download_trained_model('deep_clustering_model.h5')
 
     """
     file_metadata = get_available_trained_models()
@@ -185,6 +195,7 @@ def get_available_benchmark_files():
     Each entry in the list is in the following format:
 
     .. code-block:: python
+
         {
             u'for_class': u'DuetUnitTests',
             u'visible': True, u'file_name':
@@ -209,7 +220,7 @@ def get_available_benchmark_files():
 
     Returns:
         (list): A list of dicts containing metadata of the available audio files on the nussl
-            External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
+        External File Zoo (EFZ) server (http://nussl.ci.northwestern.edu/).
 
     """
     return _download_all_metadata(constants.NUSSL_EFZ_BENCHMARK_METADATA_URL)
@@ -228,12 +239,14 @@ def print_available_benchmark_files():
         benchmark_atn_bins.npy                   DuetUnitTests        488.0B     Attenuation bins numpy array for DUET benchmark test.
         benchmark_sym_atn.npy                    DuetUnitTests        3.4MiB     Symmetric attenuation histogram for the DUET benchmark test.
         benchmark_wmat.npy                       DuetUnitTests        3.4MiB     Frequency matrix for the DUET benchmark test.
-        To download one of these files insert the file name as the first parameter to nussl.download_benchmark_file, like so:
-            >>> nussl.efz_utils.download_benchmark_file('example.npy')
+
+    To download one of these files insert the file name as the first parameter to nussl.download_benchmark_file, like so:
+
+    >>> nussl.efz_utils.download_benchmark_file('example.npy')
 
     Notes:
-        Most of the entries in the printed list are self-explanatory, but note the `for_class`
-        entry. The `for_class` entry specifies which `nussl` benchmark class will load the
+        Most of the entries in the printed list are self-explanatory, but note the ``for_class``
+        entry. The ``for_class`` entry specifies which `nussl` benchmark class will load the
         corresponding benchmark file. Make sure these match exactly when writing tests!
 
     See Also:

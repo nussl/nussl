@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Utils for interfacing nussl with common data sets.
+While *nussl* does not come with any data sets, it does have the capability to interface with
+many common source separation data sets used within the MIR and speech separation communities.
+These data set "hooks" are implemented as generator functions, and allow the user to loop through
+each file in the data set and get separation :class:`AudioSignal` objects for the mixture and
+individual sources.
 """
 import os
 import hashlib
@@ -135,17 +139,17 @@ def _subset_and_shuffle(file_list, subset, shuffle, seed):
     Args:
         file_list (list): List of full paths of audio files.
         subset (float, list, str, None): This parameter determines how to make a subset of the
-            audio files in the data set. There are four ways to use it, depending on what type
-            this parameter takes:
-            1) If :param:`subset` is a ``float``, then :param:`subset` will return the first
-            ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
-            :param:`subset` is expected to be in the range [0.0, 1.0].
-            2) If :param:`subset` is a ``list``, it is expected to be a list of indices (as
-            ``int``s). This function will then produce the audio files in the list that correspond
-            to those indices.
-            3) If :param:`subset` is a ``str``, it will only include audio files with that string
-            somewhere in the directory name.
-            4) If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
+        audio files in the data set. There are four ways to use it, depending on what type
+        this parameter takes:
+        1) If :param:`subset` is a ``float``, then :param:`subset` will return the first
+           ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
+           :param:`subset` is expected to be in the range [0.0, 1.0].
+        2) If :param:`subset` is a ``list``, it is expected to be a list of indices (as
+           ``int``s). This function will then produce the audio files in the list that correspond
+           to those indices.
+        3) If :param:`subset` is a ``str``, it will only include audio files with that string
+          somewhere in the directory name.
+        4) If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
 
         shuffle (bool): Whether the data set should be shuffled.
         seed (int, 1-d array_like): Seed for ``numpy``'s random number generator used for
@@ -200,8 +204,10 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     Examples:
         Using this generator function to loop through the iKala data set. In this example, we use
         the generator directly in the ``for`` loop.
+
         .. code-block:: python
             :linenos:
+
             iKala_path = '/path/to/iKala'  # the iKala directory in disc
             for mix, vox, acc in nussl.datasets.iKala(iKala_path):
                 mix.to_mono(overwrite=True)  # sum to mono to make a 'mixture'
@@ -222,8 +228,10 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
         It's also possible to use ``tqdm`` to print the progress to the console. This is useful
         because running through an entire data set can take a while. Here's a more advanced example
         using some other options as well:
+
         .. code-block:: python
             :linenos:
+
             import nussl
             import tdqm
 
@@ -245,28 +253,28 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     Args:
         directory (str): Top-level directory for the iKala data set.
         check_hash (bool, str): In the case that there is a mismatch between the expected and
-            calculated hash, if this parameter is ``True`` (a bool) an exception is raised and
-            if this parameter is ``'warn'`` (a string) a warning is printed to the console. If
-            this parameter is ``False``, the hash will not be calculated for this directory, i.e.,
-            this function does nothing.
+        calculated hash, if this parameter is ``True`` (a bool) an exception is raised and
+        if this parameter is ``'warn'`` (a string) a warning is printed to the console. If
+        this parameter is ``False``, the hash will not be calculated for this directory, i.e.,
+        this function does nothing.
         subset (float, list, str, None): This parameter determines how to make a subset of the
-            audio files in the data set. There are four ways to use it, depending on what type
-            this parameter takes:
-            1) If :param:`subset` is a ``float``, then :param:`subset` will return the first
-            ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
-            :param:`subset` is expected to be in the range [0.0, 1.0].
-            2) If :param:`subset` is a ``list``, it is expected to be a list of indices (as
-            ``int``s). This function will then produce the audio files in the list that correspond
-            to those indices.
-            3) If :param:`subset` is a ``str``, it will only include audio files with that string
-            somewhere in the directory name.
-            4) If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
+        audio files in the data set. There are four ways to use it, depending on what type
+        this parameter takes:
+        1) If :param:`subset` is a ``float``, then :param:`subset` will return the first
+           ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
+           :param:`subset` is expected to be in the range [0.0, 1.0].
+        2) If :param:`subset` is a ``list``, it is expected to be a list of indices (as
+           ``int``s). This function will then produce the audio files in the list that correspond
+           to those indices.
+        3) If :param:`subset` is a ``str``, it will only include audio files with that string
+         somewhere in the directory name.
+        4) If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
         shuffle (bool): Whether the data set should be shuffled.
         seed (int, 1-d array_like): Seed for ``numpy``'s random number generator used for
-            shuffling.
+        shuffling.
 
     Yields:
-        (tuple(:class:`AudioSignal`, :class:`AudioSignal`, :class:`AudioSignal`)):
+        (``tuple(AudioSignal, AudioSignal, AudioSignal)``):
             A tuple of three :class:`AudioSignal` objects, with audio loaded for each source. In
             the tuple, they are returned in the following order:
             ``(mixture, vocals, accompaniment)``. In iKala, the audio files are such that the
@@ -322,8 +330,10 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
     Examples:
         Using this generator function to loop through the MIR-1K data set. In this example, we use
         the generator directly in the ``for`` loop.
+
         .. code-block:: python
             :linenos:
+
             mir1k_path = '/path/to/MIR-1K'  # the MIR-1K directory in disc
             for mix, vox, acc in nussl.datasets.mir1k(mir1k_path):
                 mix.to_mono(overwrite=True)  # sum to mono to make a 'mixture'
@@ -344,8 +354,10 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
         It's also possible to use ``tqdm`` to print the progress to the console. This is useful
         because running through an entire data set can take a while. Here's a more advanced example
         using some other options as well:
+
         .. code-block:: python
             :linenos:
+
             import nussl
             import tdqm
 
@@ -368,30 +380,30 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
     Args:
         directory (str): Top-level directory for the MIR-1K data set.
         check_hash (bool, str): In the case that there is a mismatch between the expected and
-            calculated hash, if this parameter is ``True`` (a bool) an exception is raised and
-            if this parameter is ``'warn'`` (a string) a warning is printed to the console. If
-            this parameter is ``False``, the hash will not be calculated for this directory, i.e.,
-            this function does nothing.
+        calculated hash, if this parameter is ``True`` (a bool) an exception is raised and
+        if this parameter is ``'warn'`` (a string) a warning is printed to the console. If
+        this parameter is ``False``, the hash will not be calculated for this directory, i.e.,
+        this function does nothing.
         subset (float, list, str, None): This parameter determines how to make a subset of the
-            audio files in the data set. There are four ways to use it, depending on what type
-            this parameter takes:
-            1) If :param:`subset` is a ``float``, then :param:`subset` will return the first
-            ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
-            :param:`subset` is expected to be in the range [0.0, 1.0].
-            2) If :param:`subset` is a ``list``, it is expected to be a list of indices (as
-            ``int``s). This function will then produce the audio files in the list that correspond
-            to those indices.
-            3) If :param:`subset` is a ``str``, it will only include audio files with that string
-            somewhere in the directory name.
-            4) If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
+        audio files in the data set. There are four ways to use it, depending on what type
+        this parameter takes:
+        1) If :param:`subset` is a ``float``, then :param:`subset` will return the first
+        ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
+        :param:`subset` is expected to be in the range [0.0, 1.0].
+        2) If :param:`subset` is a ``list``, it is expected to be a list of indices (as
+        ``int``s). This function will then produce the audio files in the list that correspond
+        to those indices.
+        3) If :param:`subset` is a ``str``, it will only include audio files with that string
+        somewhere in the directory name.
+        4) If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
         shuffle (bool): Whether the data set should be shuffled.
         seed (int, 1-d array_like): Seed for ``numpy``'s random number generator used for
-            shuffling.
+        shuffling.
         undivided (bool): Whether to use the divided (in the ``Wavefile`` directory) or undivided
-            (in the ``UndividedWavefile`` directory).
+        (in the ``UndividedWavefile`` directory).
 
     Yields:
-        (tuple(:class:`AudioSignal`, :class:`AudioSignal`, :class:`AudioSignal`)):
+        (``tuple(AudioSignal, AudioSignal, AudioSignal)``):
             A tuple of three :class:`AudioSignal` objects, with audio loaded for each source. In
             the tuple, they are returned in the following order:
             ``(mixture, vocals, accompaniment)``. In MIR-1K, the audio files are such that the
@@ -437,6 +449,7 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
 def timit(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     """
     Not implemented yet.
+
     Args:
         directory:
         check_hash:
@@ -459,6 +472,7 @@ def timit(directory, check_hash=True, subset=None, shuffle=False, seed=None):
 def medleyDB(directory, raw=False, check_hash=True, subset=None, shuffle=False, seed=None):
     """
     Not implemented yet.
+
     Args:
         directory:
         check_hash:
@@ -478,6 +492,7 @@ def medleyDB(directory, raw=False, check_hash=True, subset=None, shuffle=False, 
 def dsd100(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     """
     Not implemented yet.
+
     Args:
         directory:
         check_hash:
@@ -500,7 +515,7 @@ def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False,
     `nussl` calculates the hash of the MUSDB18 directory and compares it against a precomputed hash
     for MUSDB18 that ships with `nussl`. This hash is used to verify that `nussl` understands the
     directory structure when reading the files. Calculating the hash can be turned off if the
-    user needs a speed up, but this might cause oblique errors if the MIR-1K directory is not set up
+    user needs a speed up, but this might cause oblique errors if the MUSDB directory is not set up
     in the same way as a fresh download of MUSDB18.
 
     The audio in MUSDB18 is stored in the 'stempeg' format from Native Instruments. `nussl` uses
@@ -508,10 +523,12 @@ def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False,
     individual :obj:`AudioSignal` objects.
 
     Examples:
-        Using this generator function to loop through the MIR-1K data set. In this example, we use
+        Using this generator function to loop through the MUSDB18 data set. In this example, we use
         the generator directly in the ``for`` loop.
+
         .. code-block:: python
             :linenos:
+
             musdb_path = '/path/to/MUSDB18'  # the MUSDB18 directory in disc
             for mix, drums, bass, other, vox in nussl.datasets.musdb(musdb_path):
 
@@ -531,8 +548,10 @@ def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False,
         It's also possible to use ``tqdm`` to print the progress to the console. This is useful
         because running through an entire data set can take a while. Here's a more advanced example
         using some other options as well:
+
         .. code-block:: python
             :linenos:
+
             import nussl
             import tdqm
 
@@ -559,20 +578,20 @@ def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False,
             this parameter is ``False``, the hash will not be calculated for this directory, i.e.,
             this function does nothing.
         subset (float, list, str, None): This parameter determines how to make a subset of the
-            audio files in the data set. There are four ways to use it, depending on what type
-            this parameter takes:
-            1) If :param:`subset` is a ``float``, then :param:`subset` will return the first
-            ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
-            :param:`subset` is expected to be in the range [0.0, 1.0].
-            2) If :param:`subset` is a ``list``, it is expected to be a list of indices (as
-            ``int``s). This function will then produce the audio files in the list that correspond
-            to those indices.
-            3) If :param:`subset` is a ``str``, it will only include audio files with that string
-            somewhere in the directory name.
-            4) If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
+        audio files in the data set. There are four ways to use it, depending on what type
+        this parameter takes:
+        * If :param:`subset` is a ``float``, then :param:`subset` will return the first
+        ``X.Y%`` of audio files, where ``X.Y%`` is some arbitrary percentage. In this case,
+        :param:`subset` is expected to be in the range [0.0, 1.0].
+        ( If :param:`subset` is a ``list``, it is expected to be a list of indices (as
+        ``int``s). This function will then produce the audio files in the list that correspond
+        to those indices.
+        ( If :param:`subset` is a ``str``, it will only include audio files with that string
+        somewhere in the directory name.
+        * If :param:`subset` is ``None``, then the whole data set is traversed unobstructed.
         shuffle (bool): Whether the data set should be shuffled.
         seed (int, 1-d array_like): Seed for ``numpy``'s random number generator used for
-            shuffling.
+        shuffling.
 
     Yields:
         (tuple):
