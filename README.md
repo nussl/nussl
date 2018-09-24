@@ -2,12 +2,14 @@
 nussl
 =====
 
-**The Northwestern University Source Separation Library (nussl)** (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented python 
-audio source separation library created by the [Interactive Audio Lab](http://music.cs.northwestern.edu/) 
+**The Northwestern University Source Separation Library (nussl)**
+(pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
+python audio source separation library created by the 
+[Interactive Audio Lab](http://music.cs.northwestern.edu/) 
 at Northwestern University. At its core, nussl provides implementations of common source separation
-algorithms as well as an easy-to-use framework for prototyping and adding new algorithms. The aim of nussl is
-to create a low barrier to entry for using popular source separation algorithms, while also allowing the
-user fine tuned control of low-level parameters.
+algorithms as well as an easy-to-use framework for prototyping and adding new algorithms. The aim of
+nussl is to create a low barrier to entry for using popular source separation algorithms, while also
+allowing the user fine tuned control of low-level parameters.
 
 
 **NOTICE: nussl is currently in alpha. Please be mindful.**
@@ -17,12 +19,13 @@ Please see the issues page before contacting the authors.
 Branch Layout
 -------------
 
-- **Master** contains the most recent stable version, the version that you get when you pip install *nussl*.
-- **Development** contains the most recent work, but is not as stable as master. Most all of development work happens
-in this branch before being pushed to **master**.
-- **Experimental** has many more implementations, but many have not been vetted or properly tested. Some methods in this
-branch require extra functionality that cannot be included in a pip install, such as the Vamp binary files or 
-tensorflow. This branch is the bleeding edge.
+- **Master** contains the most recent stable version, the version that you get when you pip install 
+*nussl*.
+- **Development** contains the most recent work, but is not as stable as master. Most all of 
+development work happens in this branch before being propagated to **master**.
+- **Experimental** has many more implementations, but many have not been vetted or properly tested. 
+Some methods in this branch require extra functionality that cannot be included in a pip install, 
+such as the Vamp binary files or pytorch.
 - **gh-pages** is used to auto generate our documentation using Sphinx.
 - Other feature branches do exist from time to time as well.
 
@@ -33,7 +36,7 @@ Documentation
 
 Full documentation is [available here.](https://interactiveaudiolab.github.io/nussl/)
 
-Note: This package has been tested with python 2.7, but not python 3.x yet. Use python 3 at your own peril!
+Note: This package has been tested with python 2.7, but not python 3.x yet. python3 coming soon!
 
 
 Features
@@ -45,29 +48,37 @@ Spatialization algorithms:
 * Degenerate Unmixing Estimation Technique (DUET)
 * PROJET 
 
-Median filtering algorithms:
+Repetition algorithms:
 * REpeating Pattern Extraction Technique (REPET)
 * REPET using the cosine similarity matrix (REPET-SIM)
-* Harmonic/Percussive Source Separation (HPSS)
-* Kernel Adaptive Modeling (KAM) 
+* Separation via 2DFT
 
-General matrix decomposition:
-* Non-negative Matrix Factorization (NMF)
+General matrix decomposition/Component Analysis:
+* Non-negative Matrix Factorization with MFCC clustering (NMF)
 * Robust Principal Component Analysis (RPCA) 
 * Independent Component Analysis (ICA)
 
-Other Separation Methods
+Benchmarking
 * Ideal Mask
+* High/Low Pass Filtering
+
+Composite Methods
 * Overlap Add
 * Algorithm Picker (multicue separation)
-* Separation via 2DFT
+
+Other Foreground/Background Decompositions
+* Harmonic/Percussive Source Separation (HPSS)
 * Melody Tracking separation (Melodia)
 
-Also coming: Deep methods (Deep Clustering, Huang et. al. Deep Separation, etc.) (with keras backend), Separation by 
-Segmentation, Melody tracking methods (Melodia, SIMM), and many more! Note: newly algorithms usually do not live in the master branch. 
+Deep Learning
+* Deep Clustering
+
+*Your Algorithm Here*
 
 The nussl also has an evaluation framework, which provides interoperability
-between nussl and [mir_eval](https://github.com/craffel/mir_eval) (a python implementation of [BSSEval](http://bass-db.gforge.inria.fr/bss_eval)) as well as implementations of other evaluation methods. 
+between nussl and [mir_eval](https://github.com/craffel/mir_eval) (a python implementation of
+ [BSSEval](http://bass-db.gforge.inria.fr/bss_eval)) as well as implementations of other 
+ evaluation methods. 
 
 
 Installation
@@ -80,59 +91,34 @@ Installation is easy if you have pip (recommended):
 $ pip install nussl
 ```
 
-A note on cloning from github: **nussl** contains a large number of uncompressed audio benchmark files for testing which makes cloning directly from Github a slow process. **nussl** is now synced with [Git LFS](https://git-lfs.github.com), so if you want to clone from Github without downloading the large testing files, please use Git LFS.
-
-
-Development Status
-------------------
-
-Camera ready (in master and pip builds):
-* Repet
-* RepetSim
-* IdealMask
-* OverlapAdd
-* DUET 
-* NMF
-* RPCA
-* PROJET
-* 2DFT separation
-* Deep clustering
-* HPSS
-
-Planned:
-* KAM
-* SIMM
-* Separation via segmentation
-* Your algorithm? (contact us for details)
-
-
 Citing
 ------
 
-If you are using nussl for your research project, we please ask that you cite it using the following bibtex citation:
+If you are using nussl for your research project, we please ask that you cite it using one of the 
+following bibtex citations:
 
-    @Misc{NUSSL,
+    @inproceedings {nussl
+        author = {Ethan Manilow and Prem Seetharaman and Bryan Pardo},
+        title = "The Northwestern University Source Separation Library",
+        publisher = "Proceedings of the 19th International Society of Music Information Retrieval 
+            Conference ({ISMIR} 2018), Paris, France, September 23-27",
+        year = 2018
+    }
+
+    @Misc{nussl,
         author =       {Ethan Manilow and Prem Seetharaman and Fatemeh Pishdadian and Bryan Pardo},
         title =        {{NUSSL}: the Northwestern University Source Separation Library},
         howpublished = {\url{https://github.com/interactiveaudiolab/nussl}},
         year =        {2018}
     }
 
+Contributions
+-------------
 
-License
--------
-nussl 0.1.5* is under an [MIT License](https://opensource.org/licenses/MIT)
-
-The MIT License (MIT)
-
-Copyright (c) 2017 Interactive Audio Lab
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+See the [contribution guide](https://interactiveaudiolab.github.io/nussl/contributing.html) for
+detailed information. But the basics are: bug fixes/enhancements/etc have the standard github
+process; but, when adding new algorithms, contributors must provide benchmark files, paper 
+references, and trained models (if applicable).
 
 Contributors
 ------------
@@ -142,10 +128,35 @@ Fatemeh Pishdadian ([website](http://fatemehpishdadian.com/))
 
 Former:
 
-Corey Grief ([website](http://music.cs.northwestern.edu/emeritus.php)), Daniel Felix Kim, Ben Kalish
+Corey Grief ([website](http://music.cs.northwestern.edu/emeritus.php)), 
+Daniel Felix Kim, Ben Kalish
 
 
 Contact
 -------
-Contact Ethan Manilow (ethanmanilow [at] u.northwestern.edu) with any questions or issues. Please look at the
-"issues" page before reporting problems.
+Contact Ethan Manilow (ethanmanilow [at] u [dot] northwestern [dot] edu) with any questions or 
+issues. Please look at the "issues" page before reporting problems.
+
+
+License
+-------
+nussl 0.1.6* is under an [MIT License](https://opensource.org/licenses/MIT)
+
+The MIT License (MIT)
+
+Copyright (c) 2018 Interactive Audio Lab
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+associated documentation files (the "Software"), to deal in the Software without restriction, 
+including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or 
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

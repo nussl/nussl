@@ -34,7 +34,7 @@ import core.constants
 __all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation']
 
 
-__version__ = '0.1.6a0'
+__version__ = '0.1.6'
 
 version = __version__  # aliasing version
 short_version = '.'.join(version.split('.')[:-1])
@@ -47,4 +47,4 @@ __author__ = 'E. Manilow, P. Seetharaman, F. Pishdadian'
 __email__ = 'ethanmanilow@u.northwestern.edu'
 
 __license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2017 Interactive Audio Lab'
+__copyright__ = 'Copyright (c) 2018 Interactive Audio Lab'

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import find_packages
-from imp import load_source
 import os
 import codecs
 import re
