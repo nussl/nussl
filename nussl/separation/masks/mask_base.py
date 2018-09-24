@@ -11,15 +11,14 @@ Right now only spectrogram-like masks are supported (note the shape of the :ref:
 releases nussl will support masks for representations with different dimensionality requirements.
 """
 
-import numbers
-import json
 import copy
+import json
+import numbers
 
 import numpy as np
 
-import nussl
-import nussl.utils
-import nussl.constants
+from ...core import utils
+from ...core import constants
 
 
 class MaskBase(object):
@@ -74,7 +73,7 @@ class MaskBase(object):
             raise ValueError('Cannot support arrays with less than 2 dimensions!')
 
         if value.ndim == 2:
-            value = np.expand_dims(value, axis=nussl.constants.STFT_CHAN_INDEX)
+            value = np.expand_dims(value, axis=constants.STFT_CHAN_INDEX)
 
         if value.ndim > 3:
             raise ValueError('Cannot support arrays with more than 3 dimensions!')
@@ -106,7 +105,7 @@ class MaskBase(object):
         if n < 0:
             raise ValueError('Cannot get channel {}. This will cause unexpected results!'.format(n))
 
-        return nussl.utils._get_axis(self.mask, nussl.constants.STFT_CHAN_INDEX, n)
+        return utils._get_axis(self.mask, constants.STFT_CHAN_INDEX, n)
 
     @property
     def length(self):
@@ -116,7 +115,7 @@ class MaskBase(object):
         """
         if self.mask is None:
             raise AttributeError('Cannot get length of BinaryMask when there is no mask data!')
-        return self.mask.shape[nussl.constants.STFT_LEN_INDEX]
+        return self.mask.shape[constants.STFT_LEN_INDEX]
 
     @property
     def height(self):
@@ -126,7 +125,7 @@ class MaskBase(object):
         """
         if self.mask is None:
             raise AttributeError('Cannot get height of BinaryMask when there is no mask data!')
-        return self.mask.shape[nussl.constants.STFT_VERT_INDEX]
+        return self.mask.shape[constants.STFT_VERT_INDEX]
 
     @property
     def num_channels(self):
@@ -136,7 +135,7 @@ class MaskBase(object):
         """
         if self.mask is None:
             raise AttributeError('Cannot get num_channels of BinaryMask when there is no mask data!')
-        return self.mask.shape[nussl.constants.STFT_CHAN_INDEX]
+        return self.mask.shape[constants.STFT_CHAN_INDEX]
 
     @property
     def shape(self):
@@ -244,7 +243,7 @@ class MaskBase(object):
         d = copy.copy(o.__dict__)
         for k, v in d.items():
             if isinstance(v, np.ndarray):
-                d[k] = nussl.utils.json_ready_numpy_array(v)
+                d[k] = utils.json_ready_numpy_array(v)
 
         d['__class__'] = o.__class__.__name__
         d['__module__'] = o.__module__
@@ -347,7 +346,7 @@ class MaskBaseDecoder(json.JSONDecoder):
                 raise TypeError('JSON string from {} does not have mask!'.format(class_name))
 
             mask_json = json_dict.pop('_mask')  # this is the mask numpy array
-            mask_numpy = nussl.utils.json_numpy_obj_hook(mask_json[nussl.constants.NUMPY_JSON_KEY])
+            mask_numpy = utils.json_numpy_obj_hook(mask_json[constants.NUMPY_JSON_KEY])
 
             return class_(input_mask=mask_numpy)
         else:

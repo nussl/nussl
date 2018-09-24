@@ -1,0 +1,1 @@
+{"save_time": "Fri Nov  3 14:21:05 2017", "made_by": "Ethans-MacBook-Pro.local", "nussl_version": "0.1.6a0", "params": {"num_sources": 2, "num_iterations": 10, "random_seed": 0, "distance_measure": "euclidean", "num_templates": 6}, "input_file": "input/piano_and_synth_arp_chord_mono.wav"}

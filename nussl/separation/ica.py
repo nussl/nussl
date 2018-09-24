@@ -4,10 +4,10 @@
 import numpy as np
 import sklearn
 
-import nussl.utils
-import nussl.constants
-import nussl.audio_signal
 import separation_base
+from ..core import constants
+from ..core.audio_signal import AudioSignal
+from ..core import utils
 
 
 class ICA(separation_base.SeparationBase):
@@ -25,7 +25,7 @@ class ICA(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, observations_list=None, sample_rate=nussl.constants.DEFAULT_SAMPLE_RATE,
+    def __init__(self, observations_list=None, sample_rate=constants.DEFAULT_SAMPLE_RATE,
                  max_iterations=None, random_seed=None, fast_ica_kwargs=None):
         observations_signal = self._validate_observations_list(observations_list, sample_rate)
         super(ICA, self).__init__(input_audio_signal=observations_signal)
@@ -63,7 +63,7 @@ class ICA(separation_base.SeparationBase):
                              ' but got {}!'.format(type(observations_list)))
 
     @staticmethod
-    def numpy_observations_to_audio_signal(observations, sample_rate=nussl.constants.DEFAULT_SAMPLE_RATE):
+    def numpy_observations_to_audio_signal(observations, sample_rate=constants.DEFAULT_SAMPLE_RATE):
         """
 
         Args:
@@ -75,10 +75,10 @@ class ICA(separation_base.SeparationBase):
         """
         assert isinstance(observations, np.ndarray), 'Observations must be a numpy array!'
         if observations.ndim > 1\
-                and observations.shape[nussl.constants.CHAN_INDEX] > observations.shape[nussl.constants.LEN_INDEX]:
+                and observations.shape[constants.CHAN_INDEX] > observations.shape[constants.LEN_INDEX]:
             observations = observations.T
 
-        return nussl.AudioSignal(audio_data_array=observations, sample_rate=sample_rate)
+        return AudioSignal(audio_data_array=observations, sample_rate=sample_rate)
 
     @staticmethod
     def audio_signal_observations_to_audio_signal(observations):
@@ -90,8 +90,7 @@ class ICA(separation_base.SeparationBase):
         Returns:
 
         """
-        # noinspection PyProtectedMember
-        observations = nussl.utils._verify_audio_signal_list_strict(observations)
+        observations = utils.verify_audio_signal_list_strict(observations)
 
         if not all(observations[0].signal_length == o.signal_length for o in observations):
             raise ValueError('All observation AudioSignal objects must have the same length!')
@@ -100,14 +99,13 @@ class ICA(separation_base.SeparationBase):
             raise ValueError('All AudioSignals in observations_list must be mono!')
 
         observation_data = np.vstack([o.audio_data for o in observations])
-        return nussl.audio_signal.AudioSignal(audio_data_array=observation_data,
-                                              sample_rate=observations[0].sample_rate)
+        return AudioSignal(audio_data_array=observation_data, sample_rate=observations[0].sample_rate)
 
     @staticmethod
-    def _get_default_or_key(val, key, dict_):
-        if val is not None:
-            return val
-        elif dict_.has_key(key):
+    def _get_default_or_key(default_value, key, dict_):
+        if default_value is not None:
+            return default_value
+        elif key in dict_:
             return dict_[key]
         else:
             return None
@@ -140,8 +138,8 @@ class ICA(separation_base.SeparationBase):
         # store the resultant computations
         self.estimated_mixing_params = ica.mixing_
         self.mean = ica.mean_
-        self.estimated_sources = [nussl.AudioSignal(audio_data_array=ica_output[i, :],
-                                                    sample_rate=self.audio_signal.sample_rate)
+        self.estimated_sources = [AudioSignal(audio_data_array=ica_output[i, :],
+                                              sample_rate=self.audio_signal.sample_rate)
                                   for i in range(ica_output.shape[0])]
 
         return self.estimated_sources

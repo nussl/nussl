@@ -1,5 +1,21 @@
-*.wav filter=lfs diff=lfs merge=lfs -text
-*.npy filter=lfs diff=lfs merge=lfs -text
-*.mat filter=lfs diff=lfs merge=lfs -text
-*.flac filter=lfs diff=lfs merge=lfs -text
-*.png filter=lfs diff=lfs merge=lfs -text
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.py text
+*.js text
+*.css text
+*.txt text
+*.html text
+*.ini text
+*.md text
+*.conf text
+
+# Denote all files that are truly binary and should not be modified.
+*.mp3 binary
+*.wav binary
+*.npy binary
+*.svg binary
+*.woff binary
+*.sqlite3 binary

@@ -1,22 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Init for ``nussl``, the Northwestern University Source Separation Library.
+"""
 
-from .config import *
-from .constants import *
-from .utils import *
-from .spectral_utils import *
+try:
+    import torch
+    torch_imported = True
+except Exception:
+    torch_imported = False
 
-from .audio_signal import AudioSignal
+try:
+    import vamp
+    vamp_imported = True
+except Exception:
+    vamp_imported = False
 
-from .transformers import *
-from .separation import *
+
+class ImportErrorClass(object):
+    def __init__(self, lib, **kwargs):
+        msg = 'Cannot import {} because {} is not installed'.format(type(self).__name__, lib)
+        raise ImportError(msg)
+
+
+from .core.constants import *
+from .core.audio_signal import AudioSignal
+from .core import utils, efz_utils, stft_utils, datasets
 from .evaluation import *
+from .separation import *
+from .transformers import *
+import core.constants
 
-__all__ = ['config', 'constants', 'utils', 'spectral_utils',
-           'audio_signal', 'transformers', 'separation', 'evaluation']
+__all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation']
 
 
-__version__ = '0.1.5a11'
+__version__ = '0.1.6a0'
 
 version = __version__  # aliasing version
 short_version = '.'.join(version.split('.')[:-1])

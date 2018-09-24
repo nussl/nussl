@@ -4,32 +4,34 @@
 import numpy as np
 from scipy.ndimage.filters import maximum_filter, minimum_filter
 
-import nussl.config
-import nussl.spectral_utils
-import separation_base
-import nussl.audio_signal
+from ..core.audio_signal import AudioSignal
+from ..core import constants
+import mask_separation_base
+import masks
 
 
-class FT2D(separation_base.SeparationBase):
+class FT2D(mask_separation_base.MaskSeparationBase):
     """Implements foreground/background separation using the 2D Fourier Transform
 
     Parameters:
         input_audio_signal: (AudioSignal object) The AudioSignal object that has the
                             audio data that REPET will be run on.
         high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
-        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
-                        input AudioSignal object)
+        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm
+            (does not effect the input AudioSignal object)
         use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
 
     """
     def __init__(self, input_audio_signal, high_pass_cutoff=None, neighborhood_size=(1, 25),
-                 do_mono=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
-        super(FT2D, self).__init__(input_audio_signal=input_audio_signal)
+                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
+                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK):
+        super(FT2D, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
         self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
         self.background = None
         self.foreground = None
         self.use_librosa_stft = use_librosa_stft
         self.neighborhood_size = neighborhood_size
+        self.result_masks = None
 
         self.stft = None
         self.ft2d = None
@@ -41,7 +43,8 @@ class FT2D(separation_base.SeparationBase):
         """
 
         Returns:
-            background (AudioSignal): An AudioSignal object with repeating background in background.audio_data
+            background (AudioSignal): An AudioSignal object with repeating background in
+            background.audio_data
             (to get the corresponding non-repeating foreground run self.make_audio_signals())
 
         Example:
@@ -57,30 +60,36 @@ class FT2D(separation_base.SeparationBase):
 
         # separate the mixture background by masking
         background_stft = []
+        background_mask = []
         for i in range(self.audio_signal.num_channels):
-            background_mask = self.compute_ft2d_mask(self.ft2d[:, :, i])
-            background_mask[0:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            repeating_mask = self.compute_ft2d_mask(self.ft2d[:, :, i])
+            repeating_mask[0:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            background_mask.append(repeating_mask)
 
             # apply mask
-            stft_with_mask = background_mask * self.stft[:, :, i]
+            stft_with_mask = repeating_mask * self.stft[:, :, i]
             background_stft.append(stft_with_mask)
 
         background_stft = np.array(background_stft).transpose((1, 2, 0))
-        self.background = nussl.audio_signal.AudioSignal(stft=background_stft,
-                                                         sample_rate=self.audio_signal.sample_rate)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
+        self.background = AudioSignal(stft=background_stft,
+                                      sample_rate=self.audio_signal.sample_rate)
+        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length,
+                              self.stft_params.window_type,
                               overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)
 
-        # Ethan: Not sure that this is necessary anymore...
-        # if self.background.signal_length > self.audio_signal.signal_length:
-        #     self.background.set_active_region_to_default()
-        #     self.background.crop_signal(0, self.background.signal_length - self.audio_signal.signal_length)
+        background_mask = np.array(background_mask).transpose((1, 2, 0)).astype('float')
+        background_mask = masks.SoftMask(background_mask)
+        if self.mask_type == self.BINARY_MASK:
+            background_mask = background_mask.mask_to_binary(self.mask_threshold)
 
-        return self.background
+        self.result_masks = [background_mask, background_mask.inverse_mask()]
+
+        return self.result_masks
     
     def _compute_spectrograms(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
+        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
+                                           use_librosa=self.use_librosa_stft)
         self.ft2d = np.stack([np.fft.fft2(np.abs(self.stft[:, :, i]))
                               for i in range(self.audio_signal.num_channels)], axis = -1)
 
@@ -122,8 +131,8 @@ class FT2D(separation_base.SeparationBase):
              ::
         """
         if self.background is None:
-            return None
+            raise ValueError('Cannot make audio signals prior to running algorithm!')
 
-        self.foreground = self.audio_signal - self.background
-        self.foreground.sample_rate = self.audio_signal.sample_rate
+        foreground_array = self.audio_signal.audio_data - self.background.audio_data
+        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
         return [self.background, self.foreground]

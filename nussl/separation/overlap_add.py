@@ -7,10 +7,10 @@ import warnings
 
 import numpy as np
 
-import nussl.config
-import nussl.constants
-import nussl.spectral_utils
 import separation_base
+from ..core import stft_utils
+from ..core import constants
+
 from ft2d import FT2D
 from repet import Repet
 from repet_sim import RepetSim
@@ -50,8 +50,8 @@ class OverlapAdd(separation_base.SeparationBase):
          
     """
     def __init__(self, input_audio_signal, separation_method,
-                 overlap_window_size=24, overlap_hop_size=12, overlap_window_type=nussl.constants.WINDOW_TRIANGULAR,
-                 do_mono=False, use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
+                 overlap_window_size=24, overlap_hop_size=12, overlap_window_type=constants.WINDOW_TRIANGULAR,
+                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT):
         super(OverlapAdd, self).__init__(input_audio_signal=input_audio_signal)
         self.background = None
         self.foreground = None
@@ -214,18 +214,20 @@ class OverlapAdd(separation_base.SeparationBase):
         if self._separation_instance is None:
             self._setup_instance()
 
-        # if our window is larger than the total number of samples in the file, just run the algorithm like normal
+        # if our window is larger than the total number of samples in the file,
+        # just run the algorithm like normal
         if self.audio_signal.signal_length < self.window_samples + self.hop_samples:
             warnings.warn('input_audio_signal length is less than one window. '
                           'Running {} normally...'.format(self.separation_method_name))
 
-            self.background = self._separation_instance.run()
+            self._separation_instance.run()
+            self.background, _ = self._separation_instance.make_audio_signals()
             return self.background
 
         background_array = np.zeros_like(self.audio_signal.audio_data)
 
         # Make the window for multiple channels
-        window = nussl.spectral_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
+        window = stft_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
         window = np.vstack([window for _ in range(self.audio_signal.num_channels)])
 
         # Main overlap-add loop
@@ -274,7 +276,10 @@ class OverlapAdd(separation_base.SeparationBase):
 
     def _set_active_region_and_run(self, start, end):
         self._separation_instance.audio_signal.set_active_region(start, end)
-        return self._separation_instance.run()
+        self._separation_instance.run()
+        bkgnd, _ = self._separation_instance.make_audio_signals()
+        return bkgnd
+
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run :func:`run()` prior
@@ -292,6 +297,6 @@ class OverlapAdd(separation_base.SeparationBase):
         if self.background is None:
             raise ValueError('Cannot make audio signals prior to running algorithm!')
 
-        self.foreground = self.audio_signal - self.background
-        self.foreground.sample_rate = self.audio_signal.sample_rate
+        foreground_array = self.audio_signal.audio_data - self.background.audio_data
+        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
         return [self.background, self.foreground]

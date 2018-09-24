@@ -10,8 +10,8 @@ import nussl
 class RunAndEvalUnitTest(unittest.TestCase):
 
     def test_simple(self):
-        drums_path = os.path.join('..', 'Input', 'src1.wav')
-        flute_path = os.path.join('..', 'Input', 'src2.wav')
+        drums_path = os.path.join('Input', 'src1.wav')
+        flute_path = os.path.join('Input', 'src2.wav')
 
         drums = nussl.AudioSignal(drums_path)
         flute = nussl.AudioSignal(flute_path)

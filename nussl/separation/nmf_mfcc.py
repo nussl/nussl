@@ -7,7 +7,7 @@ import numpy as np
 import sklearn.cluster
 import librosa
 
-from nussl.transformers import transformer_nmf
+from ..transformers import transformer_nmf
 import mask_separation_base
 import masks
 
@@ -42,13 +42,14 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             random_seed (int): The seed to use in the numpy random generator in NMF and KMeans. See code examples below
              for how this is used. Default uses no seed.
             distance_measure (str): The type of distance measure to use in NMF - euclidean or divergence.
-             Defaults to euclidean.
+             Defaults to ``euclidean``.
             kmeans_kwargs (dict): The kwargs for KMeans parameters. Can be initialized with a dictionary of keys
-             corresponding to parameters in KMeans. See below for an example. Default is none.
-            convert_to_mono (bool): Given a stereo signal, convert to mono. Default set to False.
+             corresponding to parameters in KMeans. See below for an example. Default is ``None``.
+            to_mono (bool): Converts signal to mono before running algorithm. Defaults to ``False``.
             mask_type (str): A soft or binary mask object used for the source separation.
-             Defaults to Binary.
-            mfcc_range (int,list,tuple): The range of mfcc for clustering. See code examples below. Defaults to 1:14.
+             Defaults to :class:`BinaryMask`.
+            mfcc_range (int,list,tuple): The range of MFCCs used for clustering. See examples below.
+             Defaults to ``1:14``.
             n_mfcc (int): The max number of mfccs to use. Defaults to 20.
 
         Attributes:
@@ -195,7 +196,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             uncollated_masks += self._extract_masks(channel_templates_matrix, channel_activation_matrix, ch)
 
         # Reorder mask arrays so that the channels are collated correctly (this allows for multichannel signals)
-        collated_masks = [np.dstack([uncollated_masks[ch + s * n_chan] for ch in range(n_chan)])
+        collated_masks = [np.dstack([uncollated_masks[s + ch * self.num_sources] for ch in range(n_chan)])
                           for s in range(self.num_sources)]
 
         # Put each numpy array mask into a MaskBase object
@@ -222,7 +223,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
                                           the current channel
 
         Returns:
-            channel_mask_list (list): A list of Binary Mask objects corresponding to each source
+            channel_mask_list (list): A list of :obj:`MaskBase`-derived objects corresponding to each source
         """
 
         if self.audio_signal.stft_data is None:
@@ -231,13 +232,15 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         channel_mask_list = []
         for source_index in range(self.num_sources):
             source_indices = np.where(self.labeled_templates == source_index)[0]
-            templates_mask = np.copy(templates_matrix)
-            activation_mask = np.copy(activation_matrix)
 
-            # Zero out everything but the source determined from the clusterer
-            for i in range(templates_mask.shape[1]):
-                templates_mask[:, i] = 0 if i in source_indices else templates_matrix[:, i]
-                activation_mask[i, :] = 0 if i in source_indices else activation_matrix[i, :]
+            # Make empty copies of the templates and actications
+            templates_mask = np.zeros_like(templates_matrix)
+            activation_mask = np.zeros_like(activation_matrix)
+
+            # Keep values for each source as determined by the clusterer
+            for idx in source_indices:
+                templates_mask[:, idx] = templates_matrix[:, idx]
+                activation_mask[idx, :] = activation_matrix[idx, :]
 
             mask_matrix = templates_mask.dot(activation_mask)
             music_stft_max = np.maximum(mask_matrix, np.abs(self.audio_signal.get_stft_channel(ch)))

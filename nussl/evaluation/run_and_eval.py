@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 """
-Class the will run your source separation algorithm on a number of files then evaluate using a  
-
+Class the will run your source separation algorithm on a number of files then evaluate using the
+evaluation method of your choosing, all in one fell swoop.
 """
 
 import warnings
 
-import nussl.utils
-import nussl.separation
 import evaluation_base
-from precision_recall_fscore import PrecisionRecallFScore
-from nussl.separation.ideal_mask import IdealMask
+from ..core import utils
+from ..core import constants
+from .precision_recall_fscore import PrecisionRecallFScore
+from ..separation import SeparationBase, IdealMask
 
 __all__ = ['run_and_evaluate', 'run_and_eval_prf']
 
@@ -23,10 +23,10 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
     """
     
     Args:
-        evaluation_object: (EvaluationBase-derived object)
-        evaluation_kwargs: (dict)
-        separation_object: (SeparationBase-derived object)
-        separation_kwargs: (dict)
+        evaluation_object (:class:`EvaluationBase`):
+        evaluation_kwargs (dict):
+        separation_object (:class:`SeparationBase`):
+        separation_kwargs (dict):
         mixture_list: 
         true_sources_list_of_lists: 
 
@@ -34,16 +34,15 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
 
     """
 
-    # noinspection PyProtectedMember
-    mixture_list = nussl.utils._verify_audio_signal_list_lax(mixture_list)
-    assert issubclass(separation_object, nussl.separation.SeparationBase), 'Expected a SeparationBase derived class!'
-    assert issubclass(evaluation_object, evaluation_base.EvaluationBase), 'Expected an EvaluationBase derived class!'
+    mixture_list = utils.verify_audio_signal_list_lax(mixture_list)
+    assert issubclass(separation_object, SeparationBase), 'Expected a SeparationBase derived class!'
+    assert issubclass(evaluation_object, evaluation_base.EvaluationBase), \
+        'Expected an EvaluationBase derived class!'
 
     scores = {}
     for i, mixture in enumerate(mixture_list):
 
-        # noinspection PyProtectedMember
-        true_sources_list = nussl.utils._verify_audio_signal_list_strict(true_sources_list_of_lists[i])
+        true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[i])
 
         assert mixture.signal_length == true_sources_list[0].signal_length, \
             'Mixture signal_length does not match true sources at idx {}'.format(i)
@@ -51,11 +50,12 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
         assert mixture.num_channels == true_sources_list[0].num_channels, \
             'Mixture num_channels does not match true sources at idx {}'.format(i)
 
-        sep = separation_object(input_audio_signal=mixture, *separation_kwargs)
+        sep = separation_object(input_audio_signal=mixture, **separation_kwargs)
         sep.run()
         est_sources = sep.make_audio_signals()
 
-        eval_ = evaluation_object(true_sources_list=true_sources_list, estimated_sources_list=est_sources)
+        eval_ = evaluation_object(true_sources_list=true_sources_list,
+                                  estimated_sources_list=est_sources)
         cur_score = eval_.evaluate()
         scores[mixture.file_name] = cur_score
 
@@ -64,36 +64,36 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
 
 def run_and_eval_prf(separation_list, separation_kwargs,
                      mixture_list, true_sources_list_of_lists,
-                     skip_errors=False, name_list=None):
+                     skip_errors=False, name_list=None, verbose=False):
     """
-    This is a helper method to run a :ref:`MaskSeparationBase`-derived source separation algorithm on a list of 
-    mixtures (provided in `mixture_list`)
+    This is a helper method to run a :ref:`MaskSeparationBase`-derived source separation algorithm
+    on a list of mixtures (provided in `mixture_list`)
     Run and evaluate :ref:`PrecisionRecallFScore` for each 
     Args:
         separation_list: 
         separation_kwargs: 
         mixture_list: (list) List of :ref:`AudioSignal` objects that contain mixtures.
-        true_sources_list_of_lists: (list) List of lists of AudioSignal objects that contain true sources
+        true_sources_list_of_lists: (list) List of lists of AudioSignal objects that contain
+            true sources
         skip_errors: (bool) 
         name_list: (list) 
 
     Returns:
 
     """
-    # noinspection PyProtectedMember
-    mixture_list = nussl.utils._verify_audio_signal_list_lax(mixture_list)
-    # noinspection PyProtectedMember
-    separation_list = nussl.utils._verify_mask_separation_list(separation_list)
+    mixture_list = utils.verify_audio_signal_list_lax(mixture_list)
+    separation_list = utils.verify_mask_separation_base_list(separation_list)
 
     scores = {}
-    for separation_object in separation_list:
-        for i, mixture in enumerate(mixture_list):
+    for i, separation_object in enumerate(separation_list):
+        for j, mixture in enumerate(mixture_list):
+            if verbose:
+                print('Starting {} and {}'.format(str(separation_object), mixture.file_name))
 
-            # noinspection PyProtectedMember
-            true_sources_list = nussl.utils._verify_audio_signal_list_strict(true_sources_list_of_lists[i])
+            true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[j])
 
             if mixture.signal_length != true_sources_list[0].signal_length:
-                error = 'Mixture signal_length does not match true sources at idx {}'.format(i)
+                error = 'Mixture signal_length does not match true sources at idx {}'.format(j)
                 if skip_errors:
                     warnings.warn(error)
                     continue
@@ -101,7 +101,7 @@ def run_and_eval_prf(separation_list, separation_kwargs,
                     raise RuntimeError(error)
 
             if mixture.num_channels != true_sources_list[0].num_channels:
-                error = 'Mixture num_channels does not match true sources at idx {}'.format(i)
+                error = 'Mixture num_channels does not match true sources at idx {}'.format(j)
                 if skip_errors:
                     warnings.warn(error)
                     continue
@@ -109,14 +109,15 @@ def run_and_eval_prf(separation_list, separation_kwargs,
                     raise RuntimeError(error)
 
             # Setup and run the user provided algorithm
-            sep = separation_object(input_audio_signal=mixture, mask_type=nussl.MaskSeparationBase.BINARY_MASK,
-                                    *separation_kwargs)
+            sep = separation_object(input_audio_signal=mixture,
+                                    mask_type=constants.BINARY_MASK,
+                                    **separation_kwargs[i])
 
             est_mask_list = sep.run()
 
             # Setup and run the ideal mask
             ideal_mask_sep = IdealMask(input_audio_mixture=mixture, sources_list=true_sources_list,
-                                       mask_type=nussl.MaskSeparationBase.BINARY_MASK)
+                                       mask_type=constants.BINARY_MASK)
 
             ideal_mask_list = ideal_mask_sep.run()
 

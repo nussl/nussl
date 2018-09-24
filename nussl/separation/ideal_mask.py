@@ -14,14 +14,15 @@ This class is derived from :class:`separation.mask_separation_base.MaskSeparatio
     
 """
 
-import numpy as np
 import warnings
 
-import nussl.config
-import nussl.utils
-import nussl.spectral_utils
+import numpy as np
+import librosa
+
 import mask_separation_base
 import masks
+from ..core import constants
+from ..core import utils
 
 
 class IdealMask(mask_separation_base.MaskSeparationBase):
@@ -78,12 +79,12 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         
     """
 
-    def __init__(self, input_audio_mixture, sources_list,
+    def __init__(self, input_audio_mixture, sources_list, power=1, split_zeros=False, binary_db_threshold=20,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
-                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT):
+                 use_librosa_stft=constants.USE_LIBROSA_STFT):
         super(IdealMask, self).__init__(input_audio_signal=input_audio_mixture, mask_type=mask_type)
 
-        self.sources = nussl.utils._verify_audio_signal_list_strict(sources_list)
+        self.sources = utils.verify_audio_signal_list_strict(sources_list)
 
         # Make sure input_audio_signal has the same settings as sources_list
         if self.audio_signal.sample_rate != self.sources[0].sample_rate:
@@ -93,7 +94,12 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
         self.result_masks = None
         self.estimated_sources = None
+        self._mixture_mag_spec = None
         self.use_librosa_stft = use_librosa_stft
+
+        self.power = power
+        self.split_zeros = split_zeros
+        self.binary_db_threshold = binary_db_threshold
 
     def run(self):
         """
@@ -108,9 +114,9 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         Binary masks are created based on the magnitude spectrogram using the following formula:
         
                 ``mask = (provided_source.mag_spec >= (mixture_mag_spec - provided_source.mag_spec)``
-                
-        Where '``-``' is a element-wise subtraction (as if the values were binary ints, 0 or 1) and '``>=``'
-        is element-wise logical greater-than-or-equal (again, as if the values were binary ints, 0 or 1).
+                ``mask = (20 * np.log10(source.mag_spec / mixture.mag_spec)) > binary_db_threshold``
+
+        Where '``/``' is a element-wise division and '``>``' is element-wise logical greater-than.
         
         
         Soft masks are also created based on the magnitude spectrogram but use the following formula:
@@ -138,19 +144,18 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         self.result_masks = []
 
         for source in self.sources:
+            mag = source.magnitude_spectrogram_data # Alias this variable, for easy reading
             if self.mask_type == self.BINARY_MASK:
-                mag = source.magnitude_spectrogram_data  # Alias this variable, for easy reading
-                cur_mask = (mag >= (self._mixture_mag_spec - mag))
+                div = np.divide(mag + constants.EPSILON, self._mixture_mag_spec + constants.EPSILON)
+                cur_mask = (20 * np.log10(div)) > self.binary_db_threshold
                 mask = masks.BinaryMask(cur_mask)
 
             elif self.mask_type == self.SOFT_MASK:
-                # TODO: This is a kludge. What is the actual right way to do this?
-                sm = np.divide(self.audio_signal.magnitude_spectrogram_data, source.magnitude_spectrogram_data)
-                # log_sm1 = np.log(sm - np.min(sm) + 1)
-                log_sm = np.log(sm)
-                log_sm += np.abs(np.min(log_sm))
-                log_sm /= np.max(log_sm)
-                mask = masks.SoftMask(sm)
+                soft_mask = librosa.util.softmask(self.audio_signal.magnitude_spectrogram_data,
+                                                  mag, power=self.power,
+                                                  split_zeros=self.split_zeros)
+
+                mask = masks.SoftMask(soft_mask)
             else:
                 raise RuntimeError('Unknown mask type: {}'.format(self.mask_type))
 

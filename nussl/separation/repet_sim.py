@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+The REpeating Pattern Extraction Technique using the Similarity Matrix (REPET-SIM)
+"""
+
 import warnings
 
 import numpy as np
 
-import nussl.config
-import nussl.constants
-import nussl.spectral_utils
-import nussl.utils
 import mask_separation_base
 import masks
+from ..core import utils
+from ..core import constants
 
 
 class RepetSim(mask_separation_base.MaskSeparationBase):
@@ -37,7 +39,7 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
 
     def __init__(self, input_audio_signal, similarity_threshold=None, min_distance_between_frames=None,
                  max_repeating_frames=None, high_pass_cutoff=None, do_mono=False,
-                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT, matlab_fidelity=False,
+                 use_librosa_stft=constants.USE_LIBROSA_STFT, matlab_fidelity=False,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
         super(RepetSim, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type,
                                        mask_threshold=mask_threshold)
@@ -175,10 +177,9 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
 
         similarity_indices = []
         for i in range(self.audio_signal.stft_length):
-            cur_indices = nussl.utils.find_peak_indices(self.similarity_matrix[i, :],
-                                                        self.max_repeating_frames,
-                                                        min_dist=self.min_distance_between_frames,
-                                                        threshold=self.similarity_threshold)
+            cur_indices = utils.find_peak_indices(self.similarity_matrix[i, :], self.max_repeating_frames,
+                                                  min_dist=self.min_distance_between_frames,
+                                                  threshold=self.similarity_threshold)
 
             # the first peak is always itself so we throw it out
             # we also want only self.max_repeating_frames peaks
@@ -213,11 +214,18 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
 
         for i in range(self.audio_signal.stft_length):
             cur_similarities = self.similarity_indices[i]
-            similar_times = np.array([magnitude_spectrogram_channel[:, j] for j in cur_similarities])
-            mask[:, i] = np.median(similar_times, axis=0)
+
+            if not cur_similarities:
+                # If there are no similarities, then just add ones to the mask here.
+                mask[:, i] = np.ones(mask.shape[constants.STFT_VERT_INDEX])
+            else:
+                similar_times = np.array([magnitude_spectrogram_channel[:, j]
+                                          for j in cur_similarities])
+
+                mask[:, i] = np.median(similar_times, axis=0)
 
         mask = np.minimum(mask, magnitude_spectrogram_channel)
-        mask = (mask + nussl.constants.EPSILON) / (magnitude_spectrogram_channel + nussl.constants.EPSILON)
+        mask = (mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
         return mask
 
     def get_similarity_matrix(self):

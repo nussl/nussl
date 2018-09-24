@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Implements a simple high pass filter for audio source separation
+Implements a simple high/low pass filter for audio source separation
 """
 
 from __future__ import division
@@ -18,10 +18,11 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
     A simple high/low pass filter that creates a mask in the time frequency representation
     """
 
-    def __init__(self, input_audio_signal, high_pass_cutoff_hz, do_fir_filter=True,
+    def __init__(self, input_audio_signal, high_pass_cutoff_hz, do_fir_filter=False,
                  force_recompute_stft=False,
                  mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK):
-        super(HighLowPassFilter, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
+        super(HighLowPassFilter, self).__init__(input_audio_signal=input_audio_signal,
+                                                mask_type=mask_type)
         self.high_pass_cutoff_hz = high_pass_cutoff_hz
 
         self.should_do_fir_filter = do_fir_filter
@@ -65,7 +66,8 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             # Make a new AudioSignal object with filtered signal
             low_pass_array = np.array(low_pass_array)
-            self.low_pass_signal = self.audio_signal.make_copy_with_audio_data(low_pass_array, verbose=False)
+            self.low_pass_signal = self.audio_signal.make_copy_with_audio_data(low_pass_array,
+                                                                               verbose=False)
             self.high_pass_signal = self.audio_signal - self.low_pass_signal
 
             # Make masks
@@ -86,7 +88,7 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             self.high_pass_mask = self.low_pass_mask.invert_mask()
 
-        self.result_masks = [self.high_pass_mask, self.low_pass_mask]
+        self.result_masks = [self.low_pass_mask, self.high_pass_mask]
 
         return self.result_masks
 
@@ -112,9 +114,11 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
         if not self.should_do_fir_filter:
             self.high_pass_signal = self.audio_signal.apply_mask(self.high_pass_mask)
-            self.high_pass_signal.istft(overwrite=True)
+            self.high_pass_signal.istft(overwrite=True,
+                                        truncate_to_length=self.audio_signal.signal_length)
 
             self.low_pass_signal = self.audio_signal.apply_mask(self.low_pass_mask)
-            self.low_pass_signal.istft(overwrite=True)
+            self.low_pass_signal.istft(overwrite=True,
+                                       truncate_to_length=self.audio_signal.signal_length)
 
-        return self.high_pass_signal, self.low_pass_signal
+        return self.low_pass_signal, self.high_pass_signal
