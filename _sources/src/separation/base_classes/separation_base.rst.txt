@@ -1,8 +1,8 @@
 .. _separation_base:
 
-SeparationBase Class
-====================
+SeparationBase
+==============
 
-.. automodule:: separation.separation_base
+.. automodule:: nussl.separation.SeparationBase
     :members:
     :undoc-members:

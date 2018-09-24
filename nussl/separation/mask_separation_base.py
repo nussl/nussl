@@ -5,10 +5,14 @@
 Base class for separation algorithms that make masks. Most algorithms in nussl are derived from MaskSeparationBase. 
 
 """
+import json
 import warnings
 
-import separation_base
 import masks
+import separation_base
+from ..core import utils
+from ..core import audio_signal
+from ..core import constants
 
 
 class MaskSeparationBase(separation_base.SeparationBase):
@@ -49,6 +53,7 @@ class MaskSeparationBase(separation_base.SeparationBase):
         self.mask_type = mask_type
         self._mask_threshold = None
         self.mask_threshold = mask_threshold
+        self.result_masks = []
 
     @property
     def mask_type(self):
@@ -166,10 +171,39 @@ class MaskSeparationBase(separation_base.SeparationBase):
 
     @mask_threshold.setter
     def mask_threshold(self, value):
-        if not isinstance(value, float) or not (0.0 < value and value < 1.0):
+        if not isinstance(value, float) or not (0.0 < value < 1.0):
             raise ValueError('Mask threshold must be a float between [0.0, 1.0]!')
 
         self._mask_threshold = value
+
+    def zeros_mask(self, shape):
+        """
+        Creates a new zeros mask with this object's type
+
+        Args:
+            shape:
+
+        Returns:
+
+        """
+        if self.mask_type == self.BINARY_MASK:
+            return masks.BinaryMask.zeros(shape)
+        else:
+            return masks.SoftMask.zeros(shape)
+
+    def ones_mask(self, shape):
+        """
+
+        Args:
+            shape:
+
+        Returns:
+
+        """
+        if self.mask_type == self.BINARY_MASK:
+            return masks.BinaryMask.ones(shape)
+        else:
+            return masks.SoftMask.ones(shape)
 
     def plot(self, output_name, **kwargs):
         """Plots relevant data for mask-based separation algorithm. Base class: Do not call directly!
@@ -195,3 +229,56 @@ class MaskSeparationBase(separation_base.SeparationBase):
             NotImplementedError: Cannot call base class!
         """
         raise NotImplementedError('Cannot call base class!')
+
+    @classmethod
+    def from_json(cls, json_string):
+        """
+        Creates a new :class:`SeparationBase` object from the parameters stored in this JSON string.
+
+        Args:
+            json_string (str): A JSON string containing all the data to create a new :class:`SeparationBase`
+                object.
+
+        Returns:
+            (:class:`SeparationBase`) A new :class:`SeparationBase` object from the JSON string.
+
+        See Also:
+            :func:`to_json` to make a JSON string to freeze this object.
+
+        """
+        mask_sep_decoder = MaskSeparationBaseDecoder(cls)
+        return mask_sep_decoder.decode(json_string)
+
+
+class MaskSeparationBaseDecoder(separation_base.SeparationBaseDecoder):
+    """ Object to decode a :class:`MaskSeparationBase`-derived object from JSON serialization.
+    You should never have to instantiate this object by hand.
+    """
+
+    def __init__(self, separation_class):
+        self.separation_class = separation_class
+        json.JSONDecoder.__init__(self, object_hook=self._json_separation_decoder)
+
+    def _json_separation_decoder(self, json_dict):
+        if '__class__' in json_dict and '__module__' in json_dict:
+            json_dict, separator = self._inspect_json_and_create_new_instance(json_dict)
+
+            # fill out the rest of the fields
+            for k, v in json_dict.items():
+                if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
+                    separator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
+                    
+                # TODO: test this in python3
+                elif isinstance(v, (str, bytes, unicode)) and audio_signal.__name__ in v:
+
+                    separator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
+                elif k == 'result_masks':
+                    # for mask_json in v:
+
+                    separator.result_masks = [masks.MaskBase.from_json(itm) for itm in v]
+                else:
+                    separator.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
+
+            return separator
+        else:
+            return json_dict

@@ -1,9 +1,9 @@
 .. _soft_mask:
 
-SoftMask Class
-==============
+SoftMask
+========
 
-.. automodule:: separation.masks.soft_mask
+.. automodule:: nussl.separation.masks.soft_mask
     :members:
     :show-inheritance:
     :undoc-members:

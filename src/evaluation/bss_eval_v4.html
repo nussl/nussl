@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>BSSEvalV4Class &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="nussl Transformer Classes" href="../transformers/transformer_classes.html" />
+    <link rel="prev" title="BSSEvalImages Class" href="bss_eval_images.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../core/core.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="evaluation_base.html">EvaluationBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="precision_recall_fscore.html">PrecisionRecallFScore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_base.html">BSSEvalBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_sources.html">BSSEvalSources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_images.html">BSSEvalImages</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">BSSEvalV4</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="evaluation_classes.html">nussl Evaluation Classes</a> &raquo;</li>
+        
+      <li>BSSEvalV4Class</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/evaluation/bss_eval_v4.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.evaluation.bss_eval_v4">
+<span id="bssevalv4class"></span><span id="bss-eval-v4"></span><h1>BSSEvalV4Class<a class="headerlink" href="#module-nussl.evaluation.bss_eval_v4" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">museval</span></code> implementation of the BSS-Eval metrics (SDR, SIR, SAR).
+Contains logic for loading ground truth AudioSignals and estimated
+AudioSignals to compute BSS-Eval metrics. The <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code> module contains an
+implementation of BSS-Eval version 4.</p>
+<dl class="class">
+<dt id="nussl.evaluation.bss_eval_v4.BSSEvalV4">
+<em class="property">class </em><code class="descclassname">nussl.evaluation.bss_eval_v4.</code><code class="descname">BSSEvalV4</code><span class="sig-paren">(</span><em>mixture</em>, <em>true_sources</em>, <em>estimated_sources</em>, <em>target_dict={'accompaniment': {'accompaniment': 1}</em>, <em>'vocals': {'vocals': 1}}</em>, <em>mode='v4'</em>, <em>output_dir=None</em>, <em>win=1.0</em>, <em>hop=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper class for <code class="docutils literal notranslate"><span class="pre">museval</span></code> implementation of the BSS-Eval metrics (SDR, SIR, SAR).
+Contains logic for loading ground truth AudioSignals and estimated
+AudioSignals to compute BSS-Eval metrics. The <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code> module contains an
+implementation of BSS-Eval version 4.</p>
+<p>The BSS-Eval metrics attempt to measure perceptual quality by comparing sources
+estimated from a source separation algorithm to the ground truth, known sources.
+These metrics evaluate the distortion (SDR) and artifacts (SAR) present in the
+estimated signals as well as the interference (SIR) from other sources in a given
+estimated source. Results are returned in units of dB, with higher values indicating
+better quality.</p>
+<p class="rubric">Examples</p>
+<p><a class="reference internal" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4" title="nussl.evaluation.bss_eval_v4.BSSEvalV4"><code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEvalV4</span></code></a> can be initialized in two ways, either with a list or a dict.
+See the example below for a demonstration:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">mir1k_dir</span> <span class="o">=</span> <span class="s1">&#39;path/to/MIR-1K&#39;</span>
+<span class="n">mix</span><span class="p">,</span> <span class="n">vox</span><span class="p">,</span> <span class="n">acc</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">nussl</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">mir1k</span><span class="p">(</span><span class="n">mir1k_dir</span><span class="p">))</span>
+<span class="n">mix</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">RepetSim</span><span class="p">(</span><span class="n">mix</span><span class="p">)</span>
+<span class="n">r</span><span class="p">()</span>
+<span class="n">bg</span><span class="p">,</span> <span class="n">fg</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+
+<span class="c1"># Method 1: Dictionary where sources are explicit</span>
+<span class="c1"># Note that this dictionary exactly matches nussl.constants.VOX_ACC_DICT</span>
+<span class="n">est_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vocals&#39;</span><span class="p">:</span> <span class="n">fg</span><span class="p">,</span> <span class="s1">&#39;accompaniment&#39;</span><span class="p">:</span> <span class="n">bg</span><span class="p">}</span>
+<span class="n">gt_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vocals&#39;</span><span class="p">:</span> <span class="n">vox</span><span class="p">,</span> <span class="s1">&#39;accompaniment&#39;</span><span class="p">:</span> <span class="n">acc</span><span class="p">}</span>
+<span class="n">bss</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">BSSEvalV4</span><span class="p">(</span><span class="n">mix</span><span class="p">,</span> <span class="n">gt_dict</span><span class="p">,</span> <span class="n">est_dict</span><span class="p">)</span>
+<span class="n">scores1</span> <span class="o">=</span> <span class="n">bss</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+
+<span class="c1"># Method 2: List</span>
+<span class="c1"># Note that vocals are always expected to be first, then accompaniment.</span>
+<span class="n">bss</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">BSSEvalV4</span><span class="p">(</span><span class="n">mix</span><span class="p">,</span> <span class="p">[</span><span class="n">vox</span><span class="p">,</span> <span class="n">acc</span><span class="p">],</span> <span class="p">[</span><span class="n">fg</span><span class="p">,</span> <span class="n">bg</span><span class="p">])</span>
+<span class="n">scores2</span> <span class="o">=</span> <span class="n">bss</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="simple">
+<li>For more information on <code class="docutils literal notranslate"><span class="pre">museval</span></code> (python implementation of BSS-Eval v4) see</li>
+</ul>
+<p><a class="reference external" href="https://github.com/sigsep/sigsep-mus-eval">its Github page</a> or
+‘its documentation &lt;<a class="reference external" href="https://sigsep.github.io/sigsep-mus-eval/">https://sigsep.github.io/sigsep-mus-eval/</a>&gt;`_.</p>
+<ul class="simple">
+<li>For more information on the BSS-Eval metrics, see the webpage for</li>
+</ul>
+<p><a class="reference external" href="http://bass-db.gforge.inria.fr/bss_eval/">the original MATLAB implementation</a>.</p>
+<ul class="simple">
+<li><code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEvalSources</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEvalImages</span></code> for the <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code> version 3</li>
+</ul>
+<p class="last">BSS-Eval implementations.</p>
+</div>
+<p class="rubric">References</p>
+<ul class="simple">
+<li>Emmanuel Vincent, Rémi Gribonval, Cédric Févotte. Performance measurement in blind</li>
+</ul>
+<p>audio source separation. IEEE Transactions on Audio, Speech and Language Processing,
+Institute of Electrical and Electronics Engineers, 2006, 14 (4), pp.1462–1469.
+&lt;inria-00544230&gt;</p>
+<ul class="simple">
+<li>Fabian-Robert Stöter, Antoine Liutkus, and Nobutaka Ito. The 2018 Signal Separation</li>
+</ul>
+<p>Evaluation Campaign. In International Conference on Latent Variable Analysis and Signal
+Separation, pages 293–305. Springer, 2018.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>true_sources_list</strong> (<em>list</em>) – List of <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects that contain the ground
+truth sources for the mixture.</li>
+<li><strong>estimated_sources_list</strong> (<em>list</em>) – List of <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects that contain estimate
+sources, output from source separation algorithms.</li>
+<li><strong>source_labels</strong> (<em>list</em>) – List of strings that are labels for each source to be used as keys for
+the scores. Default value is <code class="docutils literal notranslate"><span class="pre">None</span></code> and in that case labels are <code class="docutils literal notranslate"><span class="pre">Source</span> <span class="pre">0</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Source</span> <span class="pre">1</span></code>, etc.</li>
+<li><strong>algorithm_name</strong> (<em>str</em>) – Name of the algorithm if using this object to compute many
+BSS-Eval metrics. Can be changed later.</li>
+<li><strong>do_mono</strong> (<em>bool</em>) – Should flatten the audio to mono before calculating metrics.</li>
+<li><strong>compute_permutation</strong> (<em>bool</em>) – Should try to find the best permutation for the estimated
+sources.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_v4.BSSEvalV4.SDR_MEANS">
+<code class="descname">SDR_MEANS</code><em class="property"> = 'sdr_means'</em><a class="headerlink" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4.SDR_MEANS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_v4.BSSEvalV4._get_scores">
+<code class="descname">_get_scores</code><span class="sig-paren">(</span><em>scores</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4._get_scores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="nussl.evaluation.bss_eval_v4.BSSEvalV4._parse">
+<em class="property">static </em><code class="descname">_parse</code><span class="sig-paren">(</span><em>str_</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4._parse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_v4.BSSEvalV4._get_mean_scores">
+<code class="descname">_get_mean_scores</code><span class="sig-paren">(</span><em>scores</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4._get_mean_scores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_v4.BSSEvalV4.evaluate">
+<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actually runs the evaluation algorithm. Will be <code class="docutils literal notranslate"><span class="pre">museval.metrics.bss_eval_images</span></code> or
+<code class="docutils literal notranslate"><span class="pre">museval.metrics.bss_eval_sources</span></code> depending on which subclass is instantiated.
+:returns: <em>(dict)</em> – Dictionary containing the scores.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_v4.BSSEvalV4._populate_scores_dict">
+<code class="descname">_populate_scores_dict</code><span class="sig-paren">(</span><em>bss_output</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4._populate_scores_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats and populates the <code class="xref py py-attr docutils literal notranslate"><span class="pre">scores</span></code> dict from <a class="reference internal" href="#nussl.evaluation.bss_eval_v4.BSSEvalV4.evaluate" title="nussl.evaluation.bss_eval_v4.BSSEvalV4.evaluate"><code class="xref py py-func docutils literal notranslate"><span class="pre">evaluate()</span></code></a>.
+:param bss_output: Direct output from the <code class="docutils literal notranslate"><span class="pre">museval</span></code> function.
+:type bss_output: tuple</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(dict) Reformatted dictionary from <code class="docutils literal notranslate"><span class="pre">museval</span></code> output.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../transformers/transformer_classes.html" class="btn btn-neutral float-right" title="nussl Transformer Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="bss_eval_images.html" class="btn btn-neutral" title="BSSEvalImages Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

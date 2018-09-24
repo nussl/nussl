@@ -1,225 +1,372 @@
+
+
 <!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Transformer NMF Class &mdash; nussl 0.1.6a0 documentation</title>
+  
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+  
+  
+  
+
+  
+
+  
+  
     
-    <title>Nmf Class &#8212; nussl 0.1.5a10 documentation</title>
-    
-    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.1.5a10',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="search" title="Search" href="../../search.html" /> 
 
-  </head>
-  <body>
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
 
-  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../../index.html">
-          nussl</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
-      </div>
+</head>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../../index.html">Site <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul>
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../audio_signal.html">AudioSignal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="transformer_classes.html">Transformer Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/core.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transformer_classes.html">Transformers</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
 </ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Nmf Class</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
 </ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="../../_sources/src/transformers/Nmf.rst.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="../../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-  <div class="section" id="module-Nmf">
-<span id="nmf-class"></span><span id="nmf"></span><h1>Nmf Class<a class="headerlink" href="#module-Nmf" title="Permalink to this headline">¶</a></h1>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Transformer NMF Class</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/transformers/Nmf.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.transformers.transformer_nmf">
+<span id="transformer-nmf-class"></span><span id="nmf"></span><h1>Transformer NMF Class<a class="headerlink" href="#module-nussl.transformers.transformer_nmf" title="Permalink to this headline">¶</a></h1>
+<p>Non-negative Matrix Factorization</p>
 <dl class="class">
-<dt id="Nmf.DistanceType">
-<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">DistanceType</code><a class="headerlink" href="#Nmf.DistanceType" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="Nmf.DistanceType.DEFAULT">
-<code class="descname">DEFAULT</code><em class="property"> = ‘euclidean’</em><a class="headerlink" href="#Nmf.DistanceType.DEFAULT" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="Nmf.DistanceType.DIVERGENCE">
-<code class="descname">DIVERGENCE</code><em class="property"> = ‘divergence’</em><a class="headerlink" href="#Nmf.DistanceType.DIVERGENCE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="Nmf.DistanceType.EUCLIDEAN">
-<code class="descname">EUCLIDEAN</code><em class="property"> = ‘euclidean’</em><a class="headerlink" href="#Nmf.DistanceType.EUCLIDEAN" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="Nmf.NMF">
-<em class="property">class </em><code class="descclassname">Nmf.</code><code class="descname">NMF</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>num_templates</em>, <em>activation_matrix=None</em>, <em>templates=None</em>, <em>distance_measure=None</em>, <em>should_update_template=None</em>, <em>should_update_activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">nussl.separation.separation_base.SeparationBase</span></code></p>
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF">
+<em class="property">class </em><code class="descclassname">nussl.transformers.transformer_nmf.</code><code class="descname">TransformerNMF</code><span class="sig-paren">(</span><em>input_matrix</em>, <em>num_components=50</em>, <em>activation_matrix=None</em>, <em>template_dictionary=None</em>, <em>distance_measure=None</em>, <em>should_update_activation=None</em>, <em>should_update_template=None</em>, <em>seed=None</em>, <em>max_num_iterations=50</em>, <em>should_do_epsilon=False</em>, <em>stopping_epsilon=10000000000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This is an implementation of the Non-negative Matrix Factorization algorithm for
-source separation. This implementation receives an audio_signal object
-and a number, num_templates, which defines the number of bases vectors.</p>
-<p>This class provides two implementations of distance measures, EUCLIDEAN and DIVERGENCE,
-and also allows the user to define distance measure function.</p>
+general matrix transformations. This implementation receives an input matrix and
+num_components, which defines the number of basis vectors (also called the “dictionary”).
+This implementation uses the multiplicative update rules for euclidean distance
+and KL divergence as defined by Lee and Seung in [1].</p>
 <p>References:
 [1] Lee, Daniel D., and H. Sebastian Seung. “Algorithms for non-negative matrix factorization.”</p>
 <blockquote>
 <div>Advances in neural information processing systems. 2001.</div></blockquote>
-<dl class="method">
-<dt id="Nmf.NMF.make_audio_signals">
-<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_matrix</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.array</span></code>) – The matrix to factor into template and activation matrices (<cite>V</cite>)</li>
+<li><strong>num_components</strong> (<em>int</em>) – The rank of the resultant factorization matrix</li>
+<li><strong>activation_matrix</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.array</span></code>) – Initial state for the activation matrix</li>
+<li><strong>template_dictionary</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.array</span></code>) – Initial state for the template dictionary (<cite>W</cite>)</li>
+<li><strong>called 'components' and 'bases'</strong><strong>)</strong> (<em>(</em><em>also</em>) – </li>
+<li><strong>distance_measure</strong> (<em>str</em>) – Specifies whether to use euclidean or divergence distance metrics (<cite>H</cite>)</li>
+<li><strong>should_update_activation</strong> (<em>bool</em>) – Whether the activation matrix should be updated for another iteration</li>
+<li><strong>should_update_template</strong> (<em>bool</em>) – Whether the template matrix should be updated at every iteration</li>
+<li><strong>seed</strong> (<em>int</em>) – A seed value for the random numbers. If None, no seed is used.</li>
+<li><strong>will be input to np.random.seed</strong><strong>(</strong><strong>)</strong> (<em>This</em>) – </li>
+<li><strong>max_num_iterations</strong> (<em>int</em>) – Maximum number of times that the update rules will be computed</li>
+<li><strong>should_do_epsilon</strong> (<em>bool</em>) – </li>
+<li><strong>stopping_epsilon</strong> (<em>float</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Attributes:</p>
+<p class="rubric">Examples</p>
+<p>:ref:’The Transformer NMF Demo Example &lt;transformer_nmf_demo&gt;’</p>
+<dl class="attribute">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.EUCLIDEAN">
+<code class="descname">EUCLIDEAN</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.EUCLIDEAN" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="Nmf.NMF.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>outputFile</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.plot" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.KL_DIVERGENCE">
+<code class="descname">KL_DIVERGENCE</code><em class="property"> = 'kl_divergence'</em><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.KL_DIVERGENCE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="Nmf.NMF.randomize_input_matrices">
-<code class="descname">randomize_input_matrices</code><span class="sig-paren">(</span><em>shouldNormalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.randomize_input_matrices" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.DEFAULT_DISTANCE_TYPE">
+<code class="descname">DEFAULT_DISTANCE_TYPE</code><em class="property"> = 'euclidean'</em><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.DEFAULT_DISTANCE_TYPE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="Nmf.NMF.recombine_calculated_matrices">
-<code class="descname">recombine_calculated_matrices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.recombine_calculated_matrices" title="Permalink to this definition">¶</a></dt>
+<dl class="attribute">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.ALL_DISTANCE_TYPES">
+<code class="descname">ALL_DISTANCE_TYPES</code><em class="property"> = ['euclidean', 'kl_divergence']</em><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.ALL_DISTANCE_TYPES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="Nmf.NMF.run">
-<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>This runs the NMF separation algorithm. This function assumes that all
-parameters have been set prior to running.</p>
-<p>No inputs. do_STFT and N must be set prior to calling this function.</p>
-<p>Returns an activation matrix (in a 2d numpy array)
-and a set of template vectors (also 2d numpy array).</p>
+<dl class="attribute">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.distance">
+<code class="descname">distance</code><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the distance between the original matrix (<span class="xref std std-ref">input_matrix</span>) and the dot
+product of the current template (<span class="xref std std-ref">templates</span>) and activation (<span class="xref std std-ref">activation_matrix</span>) matrices using
+the distance type specified by ref:<cite>distance_measure</cite>.
+Returns:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.reconstructed_matrix">
+<code class="descname">reconstructed_matrix</code><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.reconstructed_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>PROPERTY
+A reconstruction of the original input_matrix, calculated by doing the dot product of the current values in
+<span class="xref std std-ref">templates</span> and <span class="xref std std-ref">activation_matrix</span>.
+:returns: (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) of the same shape as <span class="xref std std-ref">input_matrix</span> but containing the dot product of the</p>
+<blockquote>
+<div>current values in <span class="xref std std-ref">templates</span> and <span class="xref std std-ref">activation_matrix</span>.</div></blockquote>
 </dd></dl>
 
 <dl class="method">
-<dt id="Nmf.NMF.update">
-<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Nmf.NMF.update" title="Permalink to this definition">¶</a></dt>
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>This runs Non-negative matrix factorization with update rules as outlined in [1].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>activation_matrix</strong> (<em>np.array</em>) - a 2D numpy matrix containing the estimated activation matrix</li>
+<li><strong>templates</strong> (<em>np.array</em>) - a 2D numpy matrix containing the estimated templates</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<p>::
+input_matrix = np.random.rand(10, 10)
+nussl_nmf = nussl.TransformerNMF(input_matrix, num_templates=2,</p>
+<blockquote>
+<div>activation_matrix=None, templates=None, distance_measure=”euclidean”,
+should_update_template=None, should_update_activation=None)</div></blockquote>
+<p>nussl_nmf.transform()
+signals = nussl_nmf.recombine_calculated_matrices()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a single update using the update function specified.
 :return: nothing</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.MAX_TEMPLATES_FOR_LINES">
+<code class="descname">MAX_TEMPLATES_FOR_LINES</code><em class="property"> = 30</em><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.MAX_TEMPLATES_FOR_LINES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nussl.transformers.transformer_nmf.TransformerNMF.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_file</em>, <em>matrix_to_dB=True</em>, <em>title=None</em>, <em>max_y=None</em>, <em>max_x=None</em>, <em>show_divider_lines=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.transformers.transformer_nmf.TransformerNMF.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a fancy plot of NMF that shows the original <span class="xref std std-ref">input_matrix</span>, <span class="xref std std-ref">activation_matrix</span>,
+<span class="xref std std-ref">template_dictionary</span>, and <span class="xref std std-ref">reconstructed_matrix</span>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_file</strong> (<em>string</em>) – Path to the output file that will be created.</li>
+<li><strong>matrix_to_dB</strong> (<em>bool</em>) – Convert the values in all four matrices to dB-spaced values.</li>
+<li><strong>title</strong> (<em>string</em>) – Title for input matrix</li>
+<li><strong>max_y</strong> (<em>int</em>) – Max index to show along y-axis (Defaults to whole matrix)</li>
+<li><strong>max_x</strong> (<em>int</em>) – Max index to show along x-axis (Defaults to whole matrix)</li>
+<li><strong>show_divider_lines</strong> (<em>bool</em>) – Adds divider lines between activations/templates.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:param (Defaults to True if less than <span class="xref std std-ref">MAX_TEMPLATES_FOR_LINES</span> lines.):</p>
+<p>Returns:</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
 
 
-    </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Sep 15, 2017.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

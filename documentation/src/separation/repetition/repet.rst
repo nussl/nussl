@@ -1,9 +1,9 @@
 .. _repet:
 
-Repet Class
-===========
+Repet
+=====
 
-.. automodule:: separation.repet
+.. automodule:: nussl.separation.repet
     :members:
     :show-inheritance:
     :undoc-members:

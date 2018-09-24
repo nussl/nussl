@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>datasets.py &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="utils.py" href="utils.html" />
+    <link rel="prev" title="AudioSignal Class" href="audio_signal.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="core.html">Core</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Data Set Integrations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">General Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="efz_utils.html">External File Zoo (EFZ) Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stft_utils.html">STFT Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constants.html">Constants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="core.html">Core nussl Utilities</a> &raquo;</li>
+        
+      <li>datasets.py</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/core/datasets.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.datasets">
+<span id="datasets-py"></span><h1>datasets.py<a class="headerlink" href="#module-nussl.datasets" title="Permalink to this headline">¶</a></h1>
+<p>While <em>nussl</em> does not come with any data sets, it does have the capability to interface with
+many common source separation data sets used within the MIR and speech separation communities.
+These data set “hooks” are implemented as generator functions, and allow the user to loop through
+each file in the data set and get separation <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects for the mixture and
+individual sources.</p>
+<dl class="function">
+<dt id="nussl.datasets.iKala">
+<code class="descclassname">nussl.datasets.</code><code class="descname">iKala</code><span class="sig-paren">(</span><em>directory</em>, <em>check_hash=True</em>, <em>subset=None</em>, <em>shuffle=False</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.datasets.iKala" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator function for the iKala data set. This allows you to loop through the entire data set
+with only a few <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects stored in memory at a time. There are options for
+only looping through a subset of the data set and shuffling the data set (with a seed). See
+details about those options below.</p>
+<p><cite>nussl</cite> calculates the hash of the iKala directory and compares it against a precomputed hash
+for iKala that ships with <cite>nussl</cite>. This hash is used to verify that <cite>nussl</cite> understands the
+directory structure when reading the files. Calculating the hash can be turned off if the
+user needs a speed up, but this might cause oblique errors if the iKala directory is not set up
+in the same way as a fresh download of iKala.</p>
+<p class="rubric">Examples</p>
+<p>Using this generator function to loop through the iKala data set. In this example, we use
+the generator directly in the <code class="docutils literal notranslate"><span class="pre">for</span></code> loop.</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">iKala_path</span> <span class="o">=</span> <span class="s1">&#39;/path/to/iKala&#39;</span>  <span class="c1"># the iKala directory in disc</span>
+<span class="k">for</span> <span class="n">mix</span><span class="p">,</span> <span class="n">vox</span><span class="p">,</span> <span class="n">acc</span> <span class="ow">in</span> <span class="n">nussl</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">iKala</span><span class="p">(</span><span class="n">iKala_path</span><span class="p">):</span>
+    <span class="n">mix</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># sum to mono to make a &#39;mixture&#39;</span>
+
+    <span class="c1"># Get some basic metadata on the files.</span>
+    <span class="c1"># (They&#39;ll all have the same file name, but different labels)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Mixture       - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">mix</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Vocals        - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vox</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">vox</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Accompaniment - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">acc</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">acc</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+
+    <span class="c1"># Run an algorithm on the iKala files and save to disc</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mix</span><span class="p">)</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="p">,</span> <span class="n">fg_est</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_bg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">fg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_fg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table></div>
+<p>It’s also possible to use <code class="docutils literal notranslate"><span class="pre">tqdm</span></code> to print the progress to the console. This is useful
+because running through an entire data set can take a while. Here’s a more advanced example
+using some other options as well:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="kn">import</span> <span class="nn">tdqm</span>
+
+<span class="n">iKala_path</span> <span class="o">=</span> <span class="s1">&#39;path/to/iKala&#39;</span> <span class="c1"># the iKala directory on disc</span>
+<span class="n">idxs</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">29</span><span class="p">,</span> <span class="mi">150</span><span class="p">)[::</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># Only get every other song between [29, 150)</span>
+<span class="n">iKala_gen</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">iKala</span><span class="p">(</span><span class="n">iKala_path</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">idxs</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># Tell tqdm the number of files we&#39;re running on so it can estimate a completion time</span>
+<span class="k">for</span> <span class="n">mixture</span><span class="p">,</span> <span class="n">vocals</span><span class="p">,</span> <span class="n">accompaniment</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">iKala_gen</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">idxs</span><span class="p">)):</span>
+    <span class="n">mix</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># sum to mono to make a &#39;mixture&#39;</span>
+
+    <span class="c1"># Run an algorithm on the iKala files and save to disc</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mix</span><span class="p">)</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="p">,</span> <span class="n">fg_est</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_bg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">fg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_fg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table></div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> (<em>str</em>) – Top-level directory for the iKala data set.</li>
+<li><strong>check_hash</strong> (<em>bool</em><em>, </em><em>str</em>) – In the case that there is a mismatch between the expected and</li>
+<li><strong>hash</strong><strong>, </strong><strong>if this parameter is True</strong> (<em>calculated</em>) – </li>
+<li><strong>this parameter is 'warn'</strong> (<em>if</em>) – </li>
+<li><strong>parameter is False</strong><strong>, </strong><strong>the hash will not be calculated for this directory</strong><strong>, </strong><strong>i.e.</strong><strong>,</strong> (<em>this</em>) – </li>
+<li><strong>function does nothing.</strong> (<em>this</em>) – </li>
+<li><strong>subset</strong> (<em>float</em><em>, </em><em>list</em><em>, </em><em>str</em><em>, </em><em>None</em>) – This parameter determines how to make a subset of the</li>
+<li><strong>files in the data set. There are four ways to use it</strong><strong>, </strong><strong>depending on what type</strong> (<em>audio</em>) – </li>
+<li><strong>parameter takes</strong> (<em>this</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>:param 1) If <a href="#id1"><span class="problematic" id="id2">:param:`subset`</span></a> is a <code class="docutils literal notranslate"><span class="pre">float</span></code>, then <a href="#id3"><span class="problematic" id="id4">:param:`subset`</span></a> will return the first: <code class="docutils literal notranslate"><span class="pre">X.Y%</span></code> of audio files, where <code class="docutils literal notranslate"><span class="pre">X.Y%</span></code> is some arbitrary percentage. In this case,</dt>
+<dd><a href="#id5"><span class="problematic" id="id6">:param:`subset`</span></a> is expected to be in the range [0.0, 1.0].</dd>
+<dt>:param 2) If <a href="#id7"><span class="problematic" id="id8">:param:`subset`</span></a> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>, it is expected to be a list of indices (as: <a href="#id9"><span class="problematic" id="id10">``</span></a>int``s). This function will then produce the audio files in the list that correspond</dt>
+<dd>to those indices.</dd>
+</dl>
+<p>:param 3) If <a href="#id11"><span class="problematic" id="id12">:param:`subset`</span></a> is a <code class="docutils literal notranslate"><span class="pre">str</span></code>, it will only include audio files with that string: somewhere in the directory name.
+:param 4) If <a href="#id13"><span class="problematic" id="id14">:param:`subset`</span></a> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, then the whole data set is traversed unobstructed.:
+:param shuffle: Whether the data set should be shuffled.
+:type shuffle: bool
+:param seed: Seed for <code class="docutils literal notranslate"><span class="pre">numpy</span></code>’s random number generator used for
+:type seed: int, 1-d array_like
+:param shuffling.:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body">(<code class="docutils literal notranslate"><span class="pre">tuple(AudioSignal,</span> <span class="pre">AudioSignal,</span> <span class="pre">AudioSignal)</span></code>) –     A tuple of three <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects, with audio loaded for each source. In
+the tuple, they are returned in the following order:
+<code class="docutils literal notranslate"><span class="pre">(mixture,</span> <span class="pre">vocals,</span> <span class="pre">accompaniment)</span></code>. In iKala, the audio files are such that the
+vocals are hard panned to one channel and the accompaniment is hard panned to the other.
+So, the ‘mixture’ yielded here by this function reflects this, and needs to ‘mixed’
+down to mono. In other words, <code class="docutils literal notranslate"><span class="pre">mixture</span></code> is a stereo <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> object,
+where each channel is on source, and similarly <code class="docutils literal notranslate"><span class="pre">vocals</span></code> and <code class="docutils literal notranslate"><span class="pre">accompaniment</span></code> are
+mono <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects made from a single channel in <cite>mixture</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.datasets.mir1k">
+<code class="descclassname">nussl.datasets.</code><code class="descname">mir1k</code><span class="sig-paren">(</span><em>directory</em>, <em>check_hash=True</em>, <em>subset=None</em>, <em>shuffle=False</em>, <em>seed=None</em>, <em>undivided=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.datasets.mir1k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator function for the MIR-1K data set. This allows you to loop through the entire data set
+with only a few <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects stored in memory at a time. There are options for
+only looping through a subset of the data set and shuffling the data set (with a seed). See
+details about those options below.</p>
+<p><cite>nussl</cite> calculates the hash of the MIR-1K directory and compares it against a precomputed hash
+for MIR-1K that ships with <cite>nussl</cite>. This hash is used to verify that <cite>nussl</cite> understands the
+directory structure when reading the files. Calculating the hash can be turned off if the
+user needs a speed up, but this might cause oblique errors if the MIR-1K directory is not set up
+in the same way as a fresh download of MIR-1K.</p>
+<p>MIR-1K also ships with two ‘sets’ of audio files: the divided and undivided sets. They contain
+the same content, the only difference is that the undivided set is one file per song, each song
+taking up the whole file, and the divided set has the same song divided into segments of ~3-12
+seconds. The <a href="#id15"><span class="problematic" id="id16">:param:`undivided`</span></a> parameter controls which of these two sets <cite>nussl</cite> will loop
+through.</p>
+<p class="rubric">Examples</p>
+<p>Using this generator function to loop through the MIR-1K data set. In this example, we use
+the generator directly in the <code class="docutils literal notranslate"><span class="pre">for</span></code> loop.</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">mir1k_path</span> <span class="o">=</span> <span class="s1">&#39;/path/to/MIR-1K&#39;</span>  <span class="c1"># the MIR-1K directory in disc</span>
+<span class="k">for</span> <span class="n">mix</span><span class="p">,</span> <span class="n">vox</span><span class="p">,</span> <span class="n">acc</span> <span class="ow">in</span> <span class="n">nussl</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">mir1k</span><span class="p">(</span><span class="n">mir1k_path</span><span class="p">):</span>
+    <span class="n">mix</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># sum to mono to make a &#39;mixture&#39;</span>
+
+    <span class="c1"># Get some basic metadata on the files.</span>
+    <span class="c1"># (They&#39;ll all have the same file name, but different labels)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Mixture       - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">mix</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Vocals        - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vox</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">vox</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Accompaniment - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">acc</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">acc</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+
+    <span class="c1"># Run an algorithm on the MIR-1K files and save to disc</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mix</span><span class="p">)</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="p">,</span> <span class="n">fg_est</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_bg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">fg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_fg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table></div>
+<p>It’s also possible to use <code class="docutils literal notranslate"><span class="pre">tqdm</span></code> to print the progress to the console. This is useful
+because running through an entire data set can take a while. Here’s a more advanced example
+using some other options as well:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="kn">import</span> <span class="nn">tdqm</span>
+
+<span class="n">mir1k_path</span> <span class="o">=</span> <span class="s1">&#39;path/to/MIR-1K&#39;</span> <span class="c1"># the MIR-1K directory on disc</span>
+<span class="n">idxs</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">29</span><span class="p">,</span> <span class="mi">150</span><span class="p">)[::</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># Only get every other song between [29, 150)</span>
+<span class="n">mir1k_gen</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">mir1k</span><span class="p">(</span><span class="n">mir1k_path</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="n">idxs</span><span class="p">,</span>
+                                 <span class="n">check_hash</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">undivided</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Tell tqdm the number of files we&#39;re running on so it can estimate a completion time</span>
+<span class="k">for</span> <span class="n">mixture</span><span class="p">,</span> <span class="n">vocals</span><span class="p">,</span> <span class="n">accompaniment</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">mir1k_gen</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">idxs</span><span class="p">)):</span>
+    <span class="n">mix</span><span class="o">.</span><span class="n">to_mono</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># sum to mono to make a &#39;mixture&#39;</span>
+
+    <span class="c1"># Run an algorithm on the MIR-1K files and save to disc</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mix</span><span class="p">)</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="p">,</span> <span class="n">fg_est</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_bg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">fg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_fg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table></div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> (<em>str</em>) – Top-level directory for the MIR-1K data set.</li>
+<li><strong>check_hash</strong> (<em>bool</em><em>, </em><em>str</em>) – In the case that there is a mismatch between the expected and</li>
+<li><strong>hash</strong><strong>, </strong><strong>if this parameter is True</strong> (<em>calculated</em>) – </li>
+<li><strong>this parameter is 'warn'</strong> (<em>if</em>) – </li>
+<li><strong>parameter is False</strong><strong>, </strong><strong>the hash will not be calculated for this directory</strong><strong>, </strong><strong>i.e.</strong><strong>,</strong> (<em>this</em>) – </li>
+<li><strong>function does nothing.</strong> (<em>this</em>) – </li>
+<li><strong>subset</strong> (<em>float</em><em>, </em><em>list</em><em>, </em><em>str</em><em>, </em><em>None</em>) – This parameter determines how to make a subset of the</li>
+<li><strong>files in the data set. There are four ways to use it</strong><strong>, </strong><strong>depending on what type</strong> (<em>audio</em>) – </li>
+<li><strong>parameter takes</strong> (<em>this</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:param 1) If <a href="#id17"><span class="problematic" id="id18">:param:`subset`</span></a> is a <code class="docutils literal notranslate"><span class="pre">float</span></code>, then <a href="#id19"><span class="problematic" id="id20">:param:`subset`</span></a> will return the first:
+:param <code class="docutils literal notranslate"><span class="pre">X.Y%</span></code> of audio files, where <code class="docutils literal notranslate"><span class="pre">X.Y%</span></code> is some arbitrary percentage. In this case,:
+:param <a href="#id21"><span class="problematic" id="id22">:param:`subset`</span></a> is expected to be in the range [0.0, 1.0].:
+:param 2) If <a href="#id23"><span class="problematic" id="id24">:param:`subset`</span></a> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>, it is expected to be a list of indices (as:
+:param <code class="docutils literal notranslate"><span class="pre">int``s).</span> <span class="pre">This</span> <span class="pre">function</span> <span class="pre">will</span> <span class="pre">then</span> <span class="pre">produce</span> <span class="pre">the</span> <span class="pre">audio</span> <span class="pre">files</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">list</span> <span class="pre">that</span> <span class="pre">correspond:</span>
+<span class="pre">:param</span> <span class="pre">to</span> <span class="pre">those</span> <span class="pre">indices.:</span>
+<span class="pre">:param</span> <span class="pre">3)</span> <span class="pre">If</span> <span class="pre">:param:`subset`</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">``str</span></code>, it will only include audio files with that string:
+:param somewhere in the directory name.:
+:param 4) If <a href="#id25"><span class="problematic" id="id26">:param:`subset`</span></a> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, then the whole data set is traversed unobstructed.:
+:param shuffle: Whether the data set should be shuffled.
+:type shuffle: bool
+:param seed: Seed for <code class="docutils literal notranslate"><span class="pre">numpy</span></code>’s random number generator used for
+:type seed: int, 1-d array_like
+:param shuffling.:
+:param undivided: Whether to use the divided (in the <code class="docutils literal notranslate"><span class="pre">Wavefile</span></code> directory) or undivided
+:type undivided: bool
+:param (in the <code class="docutils literal notranslate"><span class="pre">UndividedWavefile</span></code> directory).:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body">(<code class="docutils literal notranslate"><span class="pre">tuple(AudioSignal,</span> <span class="pre">AudioSignal,</span> <span class="pre">AudioSignal)</span></code>) –     A tuple of three <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects, with audio loaded for each source. In
+the tuple, they are returned in the following order:
+<code class="docutils literal notranslate"><span class="pre">(mixture,</span> <span class="pre">vocals,</span> <span class="pre">accompaniment)</span></code>. In MIR-1K, the audio files are such that the
+vocals are hard panned to one channel and the accompaniment is hard panned to the other.
+So, the ‘mixture’ yielded here by this function reflects this, and needs to ‘mixed’
+down to mono. In other words, <code class="docutils literal notranslate"><span class="pre">mixture</span></code> is a stereo <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> object,
+where each channel is on source, and similarly <code class="docutils literal notranslate"><span class="pre">vocals</span></code> and <code class="docutils literal notranslate"><span class="pre">accompaniment</span></code> are
+mono <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects made from a single channel in <cite>mixture</cite>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.datasets.timit">
+<code class="descclassname">nussl.datasets.</code><code class="descname">timit</code><span class="sig-paren">(</span><em>directory</em>, <em>check_hash=True</em>, <em>subset=None</em>, <em>shuffle=False</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.datasets.timit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented yet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> – </li>
+<li><strong>check_hash</strong> – </li>
+<li><strong>subset</strong> – </li>
+<li><strong>shuffle</strong> – </li>
+<li><strong>seed</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Yields:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.datasets.medleyDB">
+<code class="descclassname">nussl.datasets.</code><code class="descname">medleyDB</code><span class="sig-paren">(</span><em>directory</em>, <em>raw=False</em>, <em>check_hash=True</em>, <em>subset=None</em>, <em>shuffle=False</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.datasets.medleyDB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented yet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> – </li>
+<li><strong>check_hash</strong> – </li>
+<li><strong>subset</strong> – </li>
+<li><strong>shuffle</strong> – </li>
+<li><strong>seed</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.datasets.musdb18">
+<code class="descclassname">nussl.datasets.</code><code class="descname">musdb18</code><span class="sig-paren">(</span><em>directory</em>, <em>check_hash=True</em>, <em>subset=None</em>, <em>folder=None</em>, <em>shuffle=False</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.datasets.musdb18" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator function for the MUSDB18 data set. This allows you to loop through the entire data set
+with only a few <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects stored in memory at a time. There are options for
+only looping through a subset of the data set and shuffling the data set (with a seed). See
+details about those options below.</p>
+<p><cite>nussl</cite> calculates the hash of the MUSDB18 directory and compares it against a precomputed hash
+for MUSDB18 that ships with <cite>nussl</cite>. This hash is used to verify that <cite>nussl</cite> understands the
+directory structure when reading the files. Calculating the hash can be turned off if the
+user needs a speed up, but this might cause oblique errors if the MUSDB directory is not set up
+in the same way as a fresh download of MUSDB18.</p>
+<p>The audio in MUSDB18 is stored in the ‘stempeg’ format from Native Instruments. <cite>nussl</cite> uses
+the <cite>stempeg</cite> library to read these files from disc, and returns each of the sources as
+individual <code class="xref py py-obj docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects.</p>
+<p class="rubric">Examples</p>
+<p>Using this generator function to loop through the MUSDB18 data set. In this example, we use
+the generator directly in the <code class="docutils literal notranslate"><span class="pre">for</span></code> loop.</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">musdb_path</span> <span class="o">=</span> <span class="s1">&#39;/path/to/MUSDB18&#39;</span>  <span class="c1"># the MUSDB18 directory in disc</span>
+<span class="k">for</span> <span class="n">mix</span><span class="p">,</span> <span class="n">drums</span><span class="p">,</span> <span class="n">bass</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">vox</span> <span class="ow">in</span> <span class="n">nussl</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">musdb</span><span class="p">(</span><span class="n">musdb_path</span><span class="p">):</span>
+
+    <span class="c1"># Get some basic metadata on the files.</span>
+    <span class="c1"># (They&#39;ll all have the same file name, but different labels)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Mixture  - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">mix</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Vocals   - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vox</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">vox</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Drums    - Filename: {}, Label: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">drums</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">drums</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+
+    <span class="c1"># Run an algorithm on the MUSDB18 files and save to disc</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mix</span><span class="p">)</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="p">,</span> <span class="n">fg_est</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_bg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">fg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_fg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table></div>
+<p>It’s also possible to use <code class="docutils literal notranslate"><span class="pre">tqdm</span></code> to print the progress to the console. This is useful
+because running through an entire data set can take a while. Here’s a more advanced example
+using some other options as well:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="kn">import</span> <span class="nn">tdqm</span>
+
+<span class="n">musdb_path</span> <span class="o">=</span> <span class="s1">&#39;path/to/MUSDB18&#39;</span> <span class="c1"># the MUSDB18 directory on disc</span>
+
+<span class="c1"># Only run on the &#39;test&#39; folder (this has 50 songs)</span>
+<span class="n">musdb_gen</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">musdb</span><span class="p">(</span><span class="n">musdb_path</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">check_hash</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># Tell tqdm the number of files we&#39;re running on so it can estimate a completion time</span>
+<span class="k">for</span> <span class="n">mix</span><span class="p">,</span> <span class="n">drums</span><span class="p">,</span> <span class="n">bass</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">vox</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">musdb_gen</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+
+    <span class="c1"># Run an algorithm on the MUSDB18 files and save to disc</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">mix</span><span class="p">)</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="p">,</span> <span class="n">fg_est</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+    <span class="n">bg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_bg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">fg_est</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;{}_fg.wav&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">mix</span><span class="o">.</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</td></tr></table></div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> (<em>str</em>) – Top-level directory for the MUSDB18 data set.</li>
+<li><strong>check_hash</strong> (<em>bool</em><em>, </em><em>str</em>) – In the case that there is a mismatch between the expected and
+calculated hash, if this parameter is <code class="docutils literal notranslate"><span class="pre">True</span></code> (a bool) an exception is raised and
+if this parameter is <code class="docutils literal notranslate"><span class="pre">'warn'</span></code> (a string) a warning is printed to the console. If
+this parameter is <code class="docutils literal notranslate"><span class="pre">False</span></code>, the hash will not be calculated for this directory, i.e.,
+this function does nothing.</li>
+<li><strong>subset</strong> (<em>float</em><em>, </em><em>list</em><em>, </em><em>str</em><em>, </em><em>None</em>) – This parameter determines how to make a subset of the</li>
+<li><strong>files in the data set. There are four ways to use it</strong><strong>, </strong><strong>depending on what type</strong> (<em>audio</em>) – </li>
+<li><strong>parameter takes</strong> (<em>this</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>:param * If <a href="#id27"><span class="problematic" id="id28">:param:`subset`</span></a> is a <code class="docutils literal notranslate"><span class="pre">float</span></code>, then <a href="#id29"><span class="problematic" id="id30">:param:`subset`</span></a> will return the first:
+:param <code class="docutils literal notranslate"><span class="pre">X.Y%</span></code> of audio files, where <code class="docutils literal notranslate"><span class="pre">X.Y%</span></code> is some arbitrary percentage. In this case,:
+:param <a href="#id31"><span class="problematic" id="id32">:param:`subset`</span></a> is expected to be in the range [0.0, 1.0].:
+:param ( If <a href="#id33"><span class="problematic" id="id34">:param:`subset`</span></a> is a <code class="docutils literal notranslate"><span class="pre">list</span></code>, it is expected to be a list of indices (as:
+:param <code class="docutils literal notranslate"><span class="pre">int``s).</span> <span class="pre">This</span> <span class="pre">function</span> <span class="pre">will</span> <span class="pre">then</span> <span class="pre">produce</span> <span class="pre">the</span> <span class="pre">audio</span> <span class="pre">files</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">list</span> <span class="pre">that</span> <span class="pre">correspond:</span>
+<span class="pre">:param</span> <span class="pre">to</span> <span class="pre">those</span> <span class="pre">indices.:</span>
+<span class="pre">:param</span> <span class="pre">(</span> <span class="pre">If</span> <span class="pre">:param:`subset`</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">``str</span></code>, it will only include audio files with that string:
+:param somewhere in the directory name.:
+:param * If <a href="#id35"><span class="problematic" id="id36">:param:`subset`</span></a> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, then the whole data set is traversed unobstructed.:
+:param shuffle: Whether the data set should be shuffled.
+:type shuffle: bool
+:param seed: Seed for <code class="docutils literal notranslate"><span class="pre">numpy</span></code>’s random number generator used for
+:type seed: int, 1-d array_like
+:param shuffling.:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><em>(tuple)</em> –     A tuple of five <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects, with audio loaded for each source. In
+the tuple, they are returned in the following order:
+<code class="docutils literal notranslate"><span class="pre">(mixture,</span> <span class="pre">drums,</span> <span class="pre">bass,</span> <span class="pre">other,</span> <span class="pre">vox)</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.datasets.dsd100">
+<code class="descclassname">nussl.datasets.</code><code class="descname">dsd100</code><span class="sig-paren">(</span><em>directory</em>, <em>check_hash=True</em>, <em>subset=None</em>, <em>shuffle=False</em>, <em>seed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.datasets.dsd100" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented yet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> – </li>
+<li><strong>check_hash</strong> – </li>
+<li><strong>subset</strong> – </li>
+<li><strong>shuffle</strong> – </li>
+<li><strong>seed</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="utils.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="audio_signal.html" class="btn btn-neutral" title="AudioSignal Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

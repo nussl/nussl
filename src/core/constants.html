@@ -1,0 +1,494 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>constants.py &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="nussl Separation Classes" href="../separation/separation_classes.html" />
+    <link rel="prev" title="stft_utils.py" href="stft_utils.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="core.html">Core</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html">Data Set Integrations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">General Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="efz_utils.html">External File Zoo (EFZ) Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stft_utils.html">STFT Utilities</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Constants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="core.html">Core nussl Utilities</a> &raquo;</li>
+        
+      <li>constants.py</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/core/constants.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.core.constants">
+<span id="constants-py"></span><h1>constants.py<a class="headerlink" href="#module-nussl.core.constants" title="Permalink to this headline">¶</a></h1>
+<p>A repository containing all of the constants frequently used in
+this wacky, mixed up source separation stuff.</p>
+<dl class="data">
+<dt id="nussl.core.constants.DEFAULT_SAMPLE_RATE">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">DEFAULT_SAMPLE_RATE</code><em class="property"> = 44100</em><a class="headerlink" href="#nussl.core.constants.DEFAULT_SAMPLE_RATE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default sample rate. 44.1 kHz, CD-quality</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.DEFAULT_WIN_LEN_PARAM">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">DEFAULT_WIN_LEN_PARAM</code><em class="property"> = 0.04</em><a class="headerlink" href="#nussl.core.constants.DEFAULT_WIN_LEN_PARAM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default window length. 40ms</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(float)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.DEFAULT_BIT_DEPTH">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">DEFAULT_BIT_DEPTH</code><em class="property"> = 16</em><a class="headerlink" href="#nussl.core.constants.DEFAULT_BIT_DEPTH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default bit depth. 16-bits, CD-quality</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.DEFAULT_MAX_VAL">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">DEFAULT_MAX_VAL</code><em class="property"> = 65536</em><a class="headerlink" href="#nussl.core.constants.DEFAULT_MAX_VAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Max value of 16-bit audio file (unsigned)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.EPSILON">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">EPSILON</code><em class="property"> = 1e-16</em><a class="headerlink" href="#nussl.core.constants.EPSILON" title="Permalink to this definition">¶</a></dt>
+<dd><p>epsilon for determining small values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(float)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.MAX_FREQUENCY">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">MAX_FREQUENCY</code><em class="property"> = 22050</em><a class="headerlink" href="#nussl.core.constants.MAX_FREQUENCY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum frequency representable. 22050 Hz</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.WINDOW_HAMMING">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">WINDOW_HAMMING</code><em class="property"> = 'hamming'</em><a class="headerlink" href="#nussl.core.constants.WINDOW_HAMMING" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name for calling Hamming window. ‘hamming’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.WINDOW_RECTANGULAR">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">WINDOW_RECTANGULAR</code><em class="property"> = 'rectangular'</em><a class="headerlink" href="#nussl.core.constants.WINDOW_RECTANGULAR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name for calling Rectangular window. ‘rectangular’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.WINDOW_HANN">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">WINDOW_HANN</code><em class="property"> = 'hann'</em><a class="headerlink" href="#nussl.core.constants.WINDOW_HANN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name for calling Hann window. ‘hann’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.WINDOW_BLACKMAN">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">WINDOW_BLACKMAN</code><em class="property"> = 'blackman'</em><a class="headerlink" href="#nussl.core.constants.WINDOW_BLACKMAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name for calling Blackman window. ‘blackman’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.WINDOW_TRIANGULAR">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">WINDOW_TRIANGULAR</code><em class="property"> = 'triangular'</em><a class="headerlink" href="#nussl.core.constants.WINDOW_TRIANGULAR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name for calling Triangular window. ‘triangular’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.WINDOW_DEFAULT">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">WINDOW_DEFAULT</code><em class="property"> = 'hamming'</em><a class="headerlink" href="#nussl.core.constants.WINDOW_DEFAULT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default window, Hamming.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.ALL_WINDOWS">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">ALL_WINDOWS</code><em class="property"> = ['hamming', 'rectangular', 'hann', 'blackman', 'triangular']</em><a class="headerlink" href="#nussl.core.constants.ALL_WINDOWS" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of all available windows in <em>nussl</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">list(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.NUMPY_JSON_KEY">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">NUMPY_JSON_KEY</code><em class="property"> = 'py/numpy.ndarray'</em><a class="headerlink" href="#nussl.core.constants.NUMPY_JSON_KEY" title="Permalink to this definition">¶</a></dt>
+<dd><p>key used when turning numpy arrays into json</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.LEN_INDEX">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">LEN_INDEX</code><em class="property"> = 1</em><a class="headerlink" href="#nussl.core.constants.LEN_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index of the number of samples in an audio signal. Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.CHAN_INDEX">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">CHAN_INDEX</code><em class="property"> = 0</em><a class="headerlink" href="#nussl.core.constants.CHAN_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index of the number of channels in an audio signal. Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.STFT_VERT_INDEX">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">STFT_VERT_INDEX</code><em class="property"> = 0</em><a class="headerlink" href="#nussl.core.constants.STFT_VERT_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Index of the number of frequency (vertical) values in a time-frequency representation.
+Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a> and in <a class="reference internal" href="../separation/mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase</span></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.STFT_LEN_INDEX">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">STFT_LEN_INDEX</code><em class="property"> = 1</em><a class="headerlink" href="#nussl.core.constants.STFT_LEN_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Index of the number of time (horizontal) hops in a time-frequency representation.
+Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a> and in <a class="reference internal" href="../separation/mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase</span></a>.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="nussl.core.constants.STFT_CHAN_INDEX">
+<code class="descclassname">nussl.core.constants.</code><code class="descname">STFT_CHAN_INDEX</code><em class="property"> = 2</em><a class="headerlink" href="#nussl.core.constants.STFT_CHAN_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) Index of the number of channels in a time-frequency representation.
+Used in <a class="reference internal" href="audio_signal.html#audio-signal"><span class="std std-ref">AudioSignal Class</span></a> and in <a class="reference internal" href="../separation/mask_classes/mask_base.html#mask-base"><span class="std std-ref">MaskBase</span></a>.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../separation/separation_classes.html" class="btn btn-neutral float-right" title="nussl Separation Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="stft_utils.html" class="btn btn-neutral" title="stft_utils.py" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

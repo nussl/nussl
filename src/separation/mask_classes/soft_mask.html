@@ -1,164 +1,211 @@
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>SoftMask &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
     
-    <title>SoftMask Class &#8212; nussl 0.1.5a10 documentation</title>
-    
-    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '0.1.5a10',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Repetition Separation Classes" href="../repetition/repetition.html" />
-    <link rel="prev" title="BinaryMask Class" href="binary_mask.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="next" title="Repetition-based Separation" href="../repetition/repetition.html" />
+    <link rel="prev" title="BinaryMask" href="binary_mask.html" /> 
 
-  </head>
-  <body>
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
 
-  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../../../index.html">
-          nussl</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
-      </div>
+</head>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../../../index.html">Site <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul>
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../audio_signal.html">AudioSignal</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformer Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../core/core.html">Core</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../base_classes/separation_base_classes.html">Base Classes</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="mask_classes.html">Masks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mask_base.html">MaskBase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="binary_mask.html">BinaryMask</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">SoftMask</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../repetition/repetition.html">Repetition-based Separation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fore_background/fore_background.html">Other Foreground/Background Separation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../spatialization/spatialization.html">Spatialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nmf_classes/nmf_classes.html">Non-negative Matrix Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../component/component.html">Component Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_learning/deep_learning.html">Deep Learning algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmarking/benchmarking.html">Benchmarking Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../composite/composite.html">Composite Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformers</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contribution Guide</a></li>
 </ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">SoftMask Class</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
 </ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="binary_mask.html" title="Previous Chapter: BinaryMask Class"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; BinaryMask Class</span>
-    </a>
-  </li>
-  <li>
-    <a href="../repetition/repetition.html" title="Next Chapter: Repetition Separation Classes"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Repetition Se... &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="../../../_sources/src/separation/mask_classes/soft_mask.rst.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="../../../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-  <div class="section" id="module-separation.masks.soft_mask">
-<span id="softmask-class"></span><span id="soft-mask"></span><h1>SoftMask Class<a class="headerlink" href="#module-separation.masks.soft_mask" title="Permalink to this headline">¶</a></h1>
-<p>The <a class="reference internal" href="#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">SoftMask</span></code></a> class is for creating a time-frequency mask with values in the range <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>. Like all
-<a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> objects, <a class="reference internal" href="#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">SoftMask</span></code></a> is initialized with a 2D or 3D numpy array
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../separation_classes.html">nussl Separation Classes</a> &raquo;</li>
+        
+          <li><a href="mask_classes.html">Mask Classes</a> &raquo;</li>
+        
+      <li>SoftMask</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/src/separation/mask_classes/soft_mask.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.separation.masks.soft_mask">
+<span id="softmask"></span><span id="soft-mask"></span><h1>SoftMask<a class="headerlink" href="#module-nussl.separation.masks.soft_mask" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask" title="nussl.separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal notranslate"><span class="pre">SoftMask</span></code></a> class is for creating a time-frequency mask with values in the range <code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>. Like all
+<code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.mask_base.MaskBase</span></code> objects, <a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask" title="nussl.separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal notranslate"><span class="pre">SoftMask</span></code></a> is initialized with a 2D or 3D numpy array
 containing the mask data. The data type (numpy.dtype) of the initial mask must be float.
 The mask is stored as a 3-dimensional boolean-valued numpy array.</p>
-<p><a class="reference internal" href="#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">SoftMask</span></code></a> (like <code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code>) is one of the return types for the <code class="xref py py-func docutils literal"><span class="pre">run()</span></code>
-methods of <code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>-derived objects (this is most of the
+<p><a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask" title="nussl.separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal notranslate"><span class="pre">SoftMask</span></code></a> (like <code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code>) is one of the return types for the <code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code>
+methods of <code class="xref py py-class docutils literal notranslate"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>-derived objects (this is most of the
 separation methods in <cite>nussl</cite>.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a>: The base class for BinaryMask and SoftMask</li>
-<li><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code>: Similar to BinaryMask, but instead of taking floats,
+<li><code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.mask_base.MaskBase</span></code>: The base class for BinaryMask and SoftMask</li>
+<li><code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code>: Similar to BinaryMask, but instead of taking floats,
 it accepts boolean values.</li>
-<li><code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>: Base class for all mask-based separation methods
+<li><code class="xref py py-class docutils literal notranslate"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>: Base class for all mask-based separation methods
 in <cite>nussl</cite>.</li>
 </ul>
 </div>
 <p class="rubric">Examples</p>
 <p>Initializing a mask from a numpy array…</p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -179,9 +226,9 @@ in <cite>nussl</cite>.</li>
 <span class="n">bin_mask_bool</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">SoftMask</span><span class="p">(</span><span class="n">rand_bool_mask</span><span class="p">)</span>
 </pre></div>
 </td></tr></table></div>
-<p><code class="xref py py-class docutils literal"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>-derived methods return
-<a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> masks, like so…</p>
-<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">separation.mask_separation_base.MaskSeparationBase</span></code>-derived methods return
+<code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.mask_base.MaskBase</span></code> masks, like so…</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
  4
@@ -205,29 +252,81 @@ in <cite>nussl</cite>.</li>
 </pre></div>
 </td></tr></table></div>
 <dl class="class">
-<dt id="separation.masks.soft_mask.SoftMask">
-<em class="property">class </em><code class="descclassname">separation.masks.soft_mask.</code><code class="descname">SoftMask</code><span class="sig-paren">(</span><em>input_mask</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.soft_mask.SoftMask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a></p>
+<dt id="nussl.separation.masks.soft_mask.SoftMask">
+<em class="property">class </em><code class="descclassname">nussl.separation.masks.soft_mask.</code><code class="descname">SoftMask</code><span class="sig-paren">(</span><em>input_mask=None</em>, <em>mask_shape=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mask_base.html#nussl.separation.masks.mask_base.MaskBase" title="nussl.separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">nussl.separation.masks.mask_base.MaskBase</span></code></a></p>
 <p>A simple class for making a soft mask. The soft mask is represented as a numpy array of floats between
 0.0 and 1.0, inclusive.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_mask</strong> (<code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code>) – 2- or 3-D <code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> that represents the mask.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_mask</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) – 2- or 3-D <code class="xref py py-obj docutils literal notranslate"><span class="pre">np.array</span></code> that represents the mask.</td>
 </tr>
 </tbody>
 </table>
-<dl class="attribute">
-<dt id="separation.masks.soft_mask.SoftMask.dtype">
-<code class="descname">dtype</code><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.dtype" title="Permalink to this definition">¶</a></dt>
-<dd><p>(str) Returns the data type of the values of the mask.</p>
+<dl class="method">
+<dt id="nussl.separation.masks.soft_mask.SoftMask.mask_to_binary">
+<code class="descname">mask_to_binary</code><span class="sig-paren">(</span><em>threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.mask_to_binary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code> object from this object’s data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>threshold</strong> (<em>float</em><em>, </em><em>Optional</em>) – Threshold (between <code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>) to set the True/False cutoff for the binary
+mask.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code> object</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
-<dt id="separation.masks.soft_mask.SoftMask.get_channel">
-<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.get_channel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets mask channel <code class="docutils literal"><span class="pre">n</span></code> and returns it as a 2D <code class="xref py py-obj docutils literal"><span class="pre">np.ndarray</span></code></p>
+<dt id="nussl.separation.masks.soft_mask.SoftMask.invert_mask">
+<code class="descname">invert_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.invert_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new mask with inverted values set like <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">mask</span></code> for <a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask.mask" title="nussl.separation.masks.soft_mask.SoftMask.mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">mask</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A new <a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask" title="nussl.separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal notranslate"><span class="pre">SoftMask</span></code></a> object with values set at <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">mask</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.masks.soft_mask.SoftMask.dtype">
+<code class="descname">dtype</code><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>(str) Returns the data type of the values of the mask.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="nussl.separation.masks.soft_mask.SoftMask.from_json">
+<em class="property">classmethod </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskBase</span></code> object from the parameters stored in this JSON string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>str</em>) – A JSON string containing all the data to create a new <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskBase</span></code>
+object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code>) A new <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskBase</span></code> object from the JSON string.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask.to_json" title="nussl.separation.masks.soft_mask.SoftMask.to_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_json()</span></code></a> to make a JSON string to freeze this object.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.masks.soft_mask.SoftMask.get_channel">
+<code class="descname">get_channel</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.get_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets mask channel <code class="docutils literal notranslate"><span class="pre">n</span></code> and returns it as a 2D <code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -235,12 +334,12 @@ in <cite>nussl</cite>.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n</strong> (<em>int</em>) – Channel index to return (0-based).</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal"><span class="pre">np.array</span></code> with the mask channel</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal notranslate"><span class="pre">np.array</span></code> with the mask channel</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><code class="xref py py-obj docutils literal"><span class="pre">AttributeError</span></code> if <a class="reference internal" href="#separation.masks.soft_mask.SoftMask.mask" title="separation.masks.soft_mask.SoftMask.mask"><code class="xref py py-attr docutils literal"><span class="pre">mask</span></code></a> is <code class="docutils literal"><span class="pre">None</span></code></li>
-<li><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code> if <code class="docutils literal"><span class="pre">n</span></code> is less than 0 or greater than the number of channels that this mask object has.</li>
+<li><code class="xref py py-obj docutils literal notranslate"><span class="pre">AttributeError</span></code> if <a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask.mask" title="nussl.separation.masks.soft_mask.SoftMask.mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">mask</span></code></a> is <code class="docutils literal notranslate"><span class="pre">None</span></code></li>
+<li><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code> if <code class="docutils literal notranslate"><span class="pre">n</span></code> is less than 0 or greater than the number of channels that this mask object has.</li>
 </ul>
 </td>
 </tr>
@@ -249,50 +348,45 @@ in <cite>nussl</cite>.</li>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="separation.masks.soft_mask.SoftMask.height">
-<code class="descname">height</code><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.height" title="Permalink to this definition">¶</a></dt>
+<dt id="nussl.separation.masks.soft_mask.SoftMask.height">
+<code class="descname">height</code><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.height" title="Permalink to this definition">¶</a></dt>
 <dd><p>(int) Number of frequency bins this mask has.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="separation.masks.soft_mask.SoftMask.inverse_mask">
-<code class="descname">inverse_mask</code><span class="sig-paren">(</span><em>channel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.inverse_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a new mask with inverted values set like <code class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">mask</span></code> for <a class="reference internal" href="#separation.masks.soft_mask.SoftMask.mask" title="separation.masks.soft_mask.SoftMask.mask"><code class="xref py py-attr docutils literal"><span class="pre">mask</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>channel</strong> (<em>int</em><em>, </em><em>Optional</em>) – If not <code class="docutils literal"><span class="pre">None</span></code> will only invert that channel. <strong>0-based</strong></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <a class="reference internal" href="#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">SoftMask</span></code></a> object with values set at <code class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">mask</span></code>.</td>
-</tr>
-</tbody>
-</table>
+<dt id="nussl.separation.masks.soft_mask.SoftMask.inverse_mask">
+<code class="descname">inverse_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.inverse_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for <a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask.invert_mask" title="nussl.separation.masks.soft_mask.SoftMask.invert_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">invert_mask()</span></code></a></p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#nussl.separation.masks.soft_mask.SoftMask.invert_mask" title="nussl.separation.masks.soft_mask.SoftMask.invert_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">invert_mask()</span></code></a></p>
+</div>
+<p>Returns:</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="separation.masks.soft_mask.SoftMask.length">
-<code class="descname">length</code><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.length" title="Permalink to this definition">¶</a></dt>
+<dt id="nussl.separation.masks.soft_mask.SoftMask.length">
+<code class="descname">length</code><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.length" title="Permalink to this definition">¶</a></dt>
 <dd><p>(int) Number of time hops that this mask represents.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="separation.masks.soft_mask.SoftMask.mask">
-<code class="descname">mask</code><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.mask" title="Permalink to this definition">¶</a></dt>
+<dt id="nussl.separation.masks.soft_mask.SoftMask.mask">
+<code class="descname">mask</code><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>PROPERTY</p>
-<p>The actual mask. This is represented as a three dimensional numpy <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> object.
-The input gets validated by <code class="xref py py-func docutils literal"><span class="pre">_validate_mask()</span></code>. In the case of
-<a class="reference internal" href="binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> the validation checks that the values are all 1 or 0
-(or bools), in the case of <a class="reference internal" href="#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> the validation checks that all values
-are within the domain <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</p>
-<p>This base class will throw a <code class="docutils literal"><span class="pre">NotImplementedError</span></code> if instantiated directly.</p>
+<p>The actual mask. This is represented as a three dimensional numpy <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> object.
+The input gets validated by <code class="xref py py-func docutils literal notranslate"><span class="pre">_validate_mask()</span></code>. In the case of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code> the validation checks that the values are all 1 or 0
+(or bools), in the case of <code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.soft_mask.SoftMask</span></code> the validation checks that all values
+are within the domain <code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</p>
+<p>This base class will throw a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> if instantiated directly.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><code class="xref py py-obj docutils literal"><span class="pre">ValueError</span></code> if <code class="xref py py-attr docutils literal"><span class="pre">mask.ndim</span></code> is less than 2 or greater than 3, or if values fail validation.</li>
-<li><code class="xref py py-obj docutils literal"><span class="pre">NotImplementedError</span></code> if instantiated directly.</li>
+<li><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code> if <code class="xref py py-attr docutils literal notranslate"><span class="pre">mask.ndim</span></code> is less than 2 or greater than 3, or if values fail validation.</li>
+<li><code class="xref py py-obj docutils literal notranslate"><span class="pre">NotImplementedError</span></code> if instantiated directly.</li>
 </ul>
 </td>
 </tr>
@@ -300,33 +394,40 @@ are within the domain <code class="docutils literal"><span class="pre">[0.0,</sp
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="separation.masks.soft_mask.SoftMask.mask_to_binary">
-<code class="descname">mask_to_binary</code><span class="sig-paren">(</span><em>threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.mask_to_binary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new <code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code> object from this object’s data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>threshold</strong> (<em>float</em><em>, </em><em>Optional</em>) – Threshold (between <code class="docutils literal"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>) to set the True/False cutoff for the binary
-mask.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A new <code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.BinaryMask</span></code> object</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="attribute">
-<dt id="separation.masks.soft_mask.SoftMask.num_channels">
-<code class="descname">num_channels</code><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.num_channels" title="Permalink to this definition">¶</a></dt>
+<dt id="nussl.separation.masks.soft_mask.SoftMask.num_channels">
+<code class="descname">num_channels</code><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.num_channels" title="Permalink to this definition">¶</a></dt>
 <dd><p>(int) Number of channels this mask has.</p>
 </dd></dl>
 
+<dl class="classmethod">
+<dt id="nussl.separation.masks.soft_mask.SoftMask.ones">
+<em class="property">classmethod </em><code class="descname">ones</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.ones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a mask with all ones with the specified shape. Exactly the same as <code class="docutils literal notranslate"><span class="pre">np.ones()</span></code>.
+:param shape: Shape of the resultant mask.
+:type shape: tuple</p>
+<p>Returns:</p>
+</dd></dl>
+
 <dl class="attribute">
-<dt id="separation.masks.soft_mask.SoftMask.shape">
-<code class="descname">shape</code><a class="headerlink" href="#separation.masks.soft_mask.SoftMask.shape" title="Permalink to this definition">¶</a></dt>
-<dd><p>(tuple) Returns the shape of the whole mask. Identical to <code class="docutils literal"><span class="pre">np.ndarray.shape()</span></code>.</p>
+<dt id="nussl.separation.masks.soft_mask.SoftMask.shape">
+<code class="descname">shape</code><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>(tuple) Returns the shape of the whole mask. Identical to <code class="docutils literal notranslate"><span class="pre">np.ndarray.shape()</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.masks.soft_mask.SoftMask.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="nussl.separation.masks.soft_mask.SoftMask.zeros">
+<em class="property">classmethod </em><code class="descname">zeros</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.masks.soft_mask.SoftMask.zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a mask with all zeros with the specified shape. Exactly the same as <code class="docutils literal notranslate"><span class="pre">np.zeros()</span></code>.
+:param shape: Shape of the resultant mask.
+:type shape: tuple</p>
+<p>Returns:</p>
 </dd></dl>
 
 </dd></dl>
@@ -334,22 +435,70 @@ mask.</td>
 </div>
 
 
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../repetition/repetition.html" class="btn btn-neutral float-right" title="Repetition-based Separation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="binary_mask.html" class="btn btn-neutral" title="BinaryMask" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Sep 15, 2017.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

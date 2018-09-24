@@ -1,9 +1,9 @@
 .. _duet:
 
-Duet Class
-==========
+Duet
+====
 
-.. automodule:: separation.Duet
+.. automodule:: nussl.separation.Duet
     :members:
     :show-inheritance:
     :undoc-members:

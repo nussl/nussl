@@ -1,0 +1,503 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>HighLowPassFilter &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Composite Methods" href="../composite/composite.html" />
+    <link rel="prev" title="IdealMask" href="ideal_mask.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../core/core.html">Core</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../base_classes/separation_base_classes.html">Base Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mask_classes/mask_classes.html">Masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../repetition/repetition.html">Repetition-based Separation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fore_background/fore_background.html">Other Foreground/Background Separation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../spatialization/spatialization.html">Spatialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nmf_classes/nmf_classes.html">Non-negative Matrix Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../component/component.html">Component Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_learning/deep_learning.html">Deep Learning algorithms</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="benchmarking.html">Benchmarking Methods</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ideal_mask.html">IdealMask</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">High/Low Pass Filter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../composite/composite.html">Composite Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../separation_classes.html">nussl Separation Classes</a> &raquo;</li>
+        
+          <li><a href="benchmarking.html">Benchmark Classes</a> &raquo;</li>
+        
+      <li>HighLowPassFilter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/src/separation/benchmarking/hplp.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.separation.high_low_pass_filter">
+<span id="highlowpassfilter"></span><span id="hplp"></span><h1>HighLowPassFilter<a class="headerlink" href="#module-nussl.separation.high_low_pass_filter" title="Permalink to this headline">¶</a></h1>
+<p>Implements a simple high/low pass filter for audio source separation</p>
+<dl class="class">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter">
+<em class="property">class </em><code class="descclassname">nussl.separation.high_low_pass_filter.</code><code class="descname">HighLowPassFilter</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>high_pass_cutoff_hz</em>, <em>do_fir_filter=False</em>, <em>force_recompute_stft=False</em>, <em>mask_type='binary'</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">nussl.separation.mask_separation_base.MaskSeparationBase</span></code></p>
+<p>A simple high/low pass filter that creates a mask in the time frequency representation</p>
+<dl class="method">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.BINARY_MASK">
+<code class="descname">BINARY_MASK</code><em class="property"> = 'binary'</em><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.BINARY_MASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK">
+<code class="descname">SOFT_MASK</code><em class="property"> = 'soft'</em><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.audio_signal">
+<code class="descname">audio_signal</code><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy of the <code class="xref py py-class docutils literal notranslate"><span class="pre">audio_signal.AudioSignal</span></code> object passed in
+upon initialization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<code class="xref py py-class docutils literal notranslate"><span class="pre">audio_signal.AudioSignal</span></code>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.from_json">
+<em class="property">classmethod </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code> object from the parameters stored in this JSON string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>str</em>) – A JSON string containing all the data to create a new <code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code>
+object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code>) A new <code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code> object from the JSON string.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.to_json" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.to_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_json()</span></code></a> to make a JSON string to freeze this object.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_threshold">
+<code class="descname">mask_threshold</code><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>PROPERTY</p>
+<p>Threshold of determining True/False if <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_type" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">mask_type</span></code></a> is <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.BINARY_MASK" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.BINARY_MASK"><code class="xref py py-attr docutils literal notranslate"><span class="pre">BINARY_MASK</span></code></a>. Some algorithms will first
+make a soft mask and then convert that to a binary mask using this threshold parameter. All values of the
+soft mask are between <code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code> and as such <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_threshold" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_threshold"><code class="xref py py-func docutils literal notranslate"><span class="pre">mask_threshold()</span></code></a> is expected to be a float between
+<code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_threshold (float)</em> – Value between <code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code> that indicates the True/False cutoff when converting a
+soft mask to binary mask.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if not a float or if set outside <code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_type">
+<code class="descname">mask_type</code><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>PROPERTY</p>
+<p>This property indicates what type of mask the derived algorithm will create and be returned by <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.run" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.run"><code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a>.
+Options are either ‘soft’ or ‘binary’.
+<a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_type" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.mask_type"><code class="xref py py-attr docutils literal notranslate"><span class="pre">mask_type</span></code></a> is usually set when initializing a <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskSeparationBase</span></code>-derived class
+and defaults to <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK"><code class="xref py py-attr docutils literal notranslate"><span class="pre">SOFT_MASK</span></code></a>.</p>
+<p>This property, though stored as a string, can be set in two ways when initializing:</p>
+<ul>
+<li><p class="first">First, it is possible to set this property with a string. Only <code class="docutils literal notranslate"><span class="pre">'soft'</span></code> and <code class="docutils literal notranslate"><span class="pre">'binary'</span></code> are accepted
+(case insensitive), every other value will raise an error. When initializing with a string, two helper
+attributes are provided: <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.BINARY_MASK" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.BINARY_MASK"><code class="xref py py-attr docutils literal notranslate"><span class="pre">BINARY_MASK</span></code></a> and <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK"><code class="xref py py-attr docutils literal notranslate"><span class="pre">SOFT_MASK</span></code></a>.</p>
+<p>It is <strong>HIGHLY</strong> encouraged to use these, as the API may change and code that uses bare strings
+(e.g. <code class="docutils literal notranslate"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'soft'</span></code> or <code class="docutils literal notranslate"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">'binary'</span></code>) for assignment might not be future-proof.
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">BINARY_MASK`</span></code> and <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.SOFT_MASK"><code class="xref py py-attr docutils literal notranslate"><span class="pre">SOFT_MASK</span></code></a> are safe aliases in case these underlying types change.</p>
+</li>
+<li><p class="first">The second way to set this property is by using a class prototype of either the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">separation.masks.soft_mask.SoftMask</span></code> class
+prototype. This is probably the most stable way to set this, and it’s fairly succinct.
+For example, <code class="docutils literal notranslate"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.BinaryMask</span></code> or <code class="docutils literal notranslate"><span class="pre">mask_type</span> <span class="pre">=</span> <span class="pre">nussl.SoftMask</span></code> are both perfectly valid.</p>
+</li>
+</ul>
+<p>Though uncommon, this can be set outside of <code class="xref py py-func docutils literal notranslate"><span class="pre">__init__()</span></code></p>
+<p>Examples of both methods are shown below.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>mask_type (str)</em> – Either <code class="docutils literal notranslate"><span class="pre">'soft'</span></code> or <code class="docutils literal notranslate"><span class="pre">'binary'</span></code>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ValueError if set invalidly.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="n">mixture_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">()</span>
+
+<span class="c1"># Two options for determining mask upon init...</span>
+
+<span class="c1"># Option 1: Init with a string (BINARY_MASK is a string &#39;constant&#39;)</span>
+<span class="n">repet_sim</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">RepetSim</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">BINARY_MASK</span><span class="p">)</span>
+
+<span class="c1"># Option 2: Init with a class type</span>
+<span class="n">ola</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">OverlapAdd</span><span class="p">(</span><span class="n">mixture_signal</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="n">nussl</span><span class="o">.</span><span class="n">SoftMask</span><span class="p">)</span>
+
+<span class="c1"># It&#39;s also possible to change these values after init by changing the `mask_type` property...</span>
+<span class="n">repet_sim</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">MaskSeparationBase</span><span class="o">.</span><span class="n">SOFT_MASK</span>  <span class="c1"># using a string</span>
+<span class="n">ola</span><span class="o">.</span><span class="n">mask_type</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">BinaryMask</span>  <span class="c1"># or using a class type</span>
+</pre></div>
+</td></tr></table></div>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.ones_mask">
+<code class="descname">ones_mask</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.ones_mask" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>shape</strong> – </td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots relevant data for mask-based separation algorithm. Base class: Do not call directly!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Cannot call base class!</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.sample_rate">
+<code class="descname">sample_rate</code><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample rate of <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.audio_signal" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.audio_signal"><code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal</span></code></a>.
+Literally <code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal.sample_rate</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.stft_params">
+<code class="descname">stft_params</code><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.stft_params" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">spectral_utils.StftParams</span></code> of <a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.audio_signal" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.audio_signal"><code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal</span></code></a>
+Literally <code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal.stft_params</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<code class="xref py py-class docutils literal notranslate"><span class="pre">spectral_utils.StftParams</span></code>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs JSON from the data stored in this object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(str) a JSON string containing all of the information to restore this object exactly as it was when this
+was called.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.from_json" title="nussl.separation.high_low_pass_filter.HighLowPassFilter.from_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_json()</span></code></a> to restore a JSON frozen object.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.high_low_pass_filter.HighLowPassFilter.zeros_mask">
+<code class="descname">zeros_mask</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.high_low_pass_filter.HighLowPassFilter.zeros_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new zeros mask with this object’s type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>shape</strong> – </td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../composite/composite.html" class="btn btn-neutral float-right" title="Composite Methods" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ideal_mask.html" class="btn btn-neutral" title="IdealMask" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

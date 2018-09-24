@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-
+The original REpeating Pattern Extraction Technique (REPET).
 """
 
 import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
 
-import nussl.config
-import nussl.constants
 import mask_separation_base
 import masks
+from ..core import constants
 
 
 class Repet(mask_separation_base.MaskSeparationBase):
@@ -60,12 +59,12 @@ class Repet(mask_separation_base.MaskSeparationBase):
         use_find_period_complex (bool): Determines whether to use complex peak picker to find the repeating period.
         repeating_period (int): Repeating period in units of hops (stft time bins)
         stft (:obj:`np.ndarray`): Local copy of the STFT input from ``input_audio_array``
-        mangitude_spectrogram (:obj:`np.ndarray`): Local copy of the mangitude spectrogram 
+        mangitude_spectrogram (:obj:`np.ndarray`): Local copy of the magnitude spectrogram
 
     """
-    def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=None,
+    def __init__(self, input_audio_signal, min_period=None, max_period=None, period=None, high_pass_cutoff=100.0,
                  do_mono=False, use_find_period_complex=False,
-                 use_librosa_stft=nussl.config.USE_LIBROSA_STFT, matlab_fidelity=False,
+                 use_librosa_stft=constants.USE_LIBROSA_STFT, matlab_fidelity=False,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
         super(Repet, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type,
                                     mask_threshold=mask_threshold)
@@ -74,11 +73,10 @@ class Repet(mask_separation_base.MaskSeparationBase):
         if (min_period or max_period) and period:
             raise ValueError('Cannot set both period and (min_period or max_period)!')
 
-        self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
+        self.high_pass_cutoff = float(high_pass_cutoff)
         self.background = None
         self.foreground = None
         self.beat_spectrum = None
-        self.masks = None
         self.use_find_period_complex = use_find_period_complex
         self.use_librosa_stft = use_librosa_stft
 
@@ -164,9 +162,9 @@ class Repet(mask_separation_base.MaskSeparationBase):
         if self.mask_type == self.BINARY_MASK:
             background_mask = background_mask.mask_to_binary(self.mask_threshold)
 
-        self.masks = [background_mask, background_mask.inverse_mask()]
+        self.result_masks = [background_mask, background_mask.inverse_mask()]
 
-        return self.masks
+        return self.result_masks
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
@@ -369,7 +367,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
         # take minimum of computed mask and original input and scale
         min_median_mask = np.minimum(median_mask, magnitude_spectrogram_channel)
-        mask = (min_median_mask + nussl.constants.EPSILON) / (magnitude_spectrogram_channel + nussl.constants.EPSILON)
+        mask = (min_median_mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
 
         return mask
 
@@ -414,7 +412,6 @@ class Repet(mask_separation_base.MaskSeparationBase):
     def plot(self, output_file, **kwargs):
         """
         Creates a plot of the beat spectrum and outputs to output_file.
-
 
         Parameters:
             output_file (string) : string representing a path to the desired output file to be created.
@@ -493,6 +490,6 @@ class Repet(mask_separation_base.MaskSeparationBase):
         if self.background is None:
             raise ValueError('Cannot make audio signals prior to running algorithm!')
 
-        self.foreground = self.audio_signal - self.background
-        self.foreground.sample_rate = self.audio_signal.sample_rate
+        foreground_array = self.audio_signal.audio_data - self.background.audio_data
+        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
         return [self.background, self.foreground]

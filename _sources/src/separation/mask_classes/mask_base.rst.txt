@@ -1,9 +1,9 @@
 .. _mask_base:
 
-MaskBase Class
-==============
+MaskBase
+========
 
-.. automodule:: separation.masks.mask_base
+.. automodule:: nussl.separation.masks.mask_base
     :members:
     :undoc-members:
     :show-inheritance:

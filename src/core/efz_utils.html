@@ -1,0 +1,611 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>efz_utils.py &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="stft_utils.py" href="stft_utils.html" />
+    <link rel="prev" title="utils.py" href="utils.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="core.html">Core</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html">Data Set Integrations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">General Utilities</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">External File Zoo (EFZ) Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stft_utils.html">STFT Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constants.html">Constants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="core.html">Core nussl Utilities</a> &raquo;</li>
+        
+      <li>efz_utils.py</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/core/efz_utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.efz_utils">
+<span id="efz-utils-py"></span><span id="efz-utils"></span><h1>efz_utils.py<a class="headerlink" href="#module-nussl.efz_utils" title="Permalink to this headline">¶</a></h1>
+<p>The <em>nussl</em> External File Zoo (EFZ) is a server that houses all files that are too large to
+bundle with <em>nussl</em> when distributing it through <code class="docutils literal notranslate"><span class="pre">pip</span></code> or Github. These types of files include
+audio examples, benchmark files for tests, and trained neural network models.</p>
+<p><em>nussl</em> has built-in utilities for accessing the EFZ through its API. Here, it is possible to
+see what files are available on the EFZ and download desired files. The EFZ utilities allow
+for such functionality.</p>
+<dl class="function">
+<dt id="nussl.efz_utils.get_available_audio_files">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">get_available_audio_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.get_available_audio_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of dicts containing metadata of the available audio files on the nussl External
+File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</p>
+<p>Each entry in the list is in the following format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="sa">u</span><span class="s1">&#39;file_length_seconds&#39;</span><span class="p">:</span> <span class="mf">5.00390022675737</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;visible&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_name&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;K0140.wav&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;date_modified&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;2018-06-01&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_hash&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;f0d8d3c8d199d3790b0e42d1e5df50a6801f928d10f533149ed0babe61b5d7b5&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_size_bytes&#39;</span><span class="p">:</span> <span class="mi">441388</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_description&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;Acoustic piano playing middle C.&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;audio_attributes&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;piano, middle C&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_size&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;431.0KiB&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;date_added&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;2018-06-01&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#nussl.efz_utils.print_available_audio_files" title="nussl.efz_utils.print_available_audio_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">print_available_audio_files()</span></code></a>, prints a list of the audio files to the console.</li>
+<li><a class="reference internal" href="#nussl.efz_utils.download_audio_file" title="nussl.efz_utils.download_audio_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_audio_file()</span></code></a> to download an audio file from the EFZ.</li>
+</ul>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(list)</em> – A list of dicts containing metadata of the available audio files on the nussl
+External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.print_available_audio_files">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">print_available_audio_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.print_available_audio_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints a message to the console that shows all of the available audio files that are on the
+nussl External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#nussl.efz_utils.get_available_audio_files" title="nussl.efz_utils.get_available_audio_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_available_audio_files()</span></code></a> to get this same data from the EFZ server as a list.</li>
+<li><a class="reference internal" href="#nussl.efz_utils.download_audio_file" title="nussl.efz_utils.download_audio_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_audio_file()</span></code></a> to download an audio file from the EFZ.</li>
+</ul>
+</div>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">print_available_audio_files</span><span class="p">()</span>
+<span class="go">File Name                                Duration (sec)  Size       Description</span>
+<span class="go">dev1_female3_inst_mix.wav                10.0            1.7MiB     Instantaneous mixture of three female speakers talking in a stereo field.</span>
+<span class="go">dev1_female3_synthconv_130ms_5cm_mix.wav 10.0            1.7MiB     Three female speakers talking in a stereo field, with 130ms of inter-channel delay.</span>
+<span class="go">K0140.wav                                5.0             431.0KiB   Acoustic piano playing middle C.</span>
+<span class="go">K0149.wav                                5.0             430.0KiB   Acoustic piano playing the A above middle C. (A440)</span>
+</pre></div>
+</div>
+<p>To download one of these files insert the file name as the first parameter to
+<a class="reference internal" href="#nussl.efz_utils.download_audio_file" title="nussl.efz_utils.download_audio_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_audio_file()</span></code></a>, like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">download_audio_file</span><span class="p">(</span><span class="s1">&#39;K0140.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.get_available_benchmark_files">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">get_available_benchmark_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.get_available_benchmark_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of dicts containing metadata of the available benchmark files for tests on the
+nussl External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</p>
+<p>Each entry in the list is in the following format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="sa">u</span><span class="s1">&#39;for_class&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;DuetUnitTests&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;visible&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;file_name&#39;</span><span class="p">:</span>
+    <span class="sa">u</span><span class="s1">&#39;benchmark_atn_bins.npy&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;date_modified&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;2018-06-19&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_hash&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;cf7fef6f4ea9af3dbde8b9880602eeaf72507b6c78f04097c5e79d34404a8a1f&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_size_bytes&#39;</span><span class="p">:</span> <span class="mi">488</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_description&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;Attenuation bins numpy array for DUET benchmark test.&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_size&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;488.0B&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;date_added&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;2018-06-19&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>Most of the entries in the dictionary are self-explanatory, but note the <cite>for_class</cite>
+entry. The <cite>for_class</cite> entry specifies which <cite>nussl</cite> benchmark class will load the
+corresponding benchmark file. Make sure these match exactly when writing tests!</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#nussl.efz_utils.print_available_benchmark_files" title="nussl.efz_utils.print_available_benchmark_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">print_available_benchmark_files()</span></code></a>, prints a list of the benchmark files to the</dt>
+<dd>console.</dd>
+</dl>
+</li>
+<li><a class="reference internal" href="#nussl.efz_utils.download_benchmark_file" title="nussl.efz_utils.download_benchmark_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_benchmark_file()</span></code></a> to download an benchmark file from the EFZ.</li>
+</ul>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(list)</em> – A list of dicts containing metadata of the available audio files on the nussl
+External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.print_available_benchmark_files">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">print_available_benchmark_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.print_available_benchmark_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints a message to the console that shows all of the available benchmark files that are on the
+nussl External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</p>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">print_available_benchmark_files</span><span class="p">()</span>
+<span class="go">File Name                                For Class            Size       Description</span>
+<span class="go">mix3_matlab_repet_foreground.mat         TestRepet            6.4MiB     Foreground matrix for Repet class benchmark test.</span>
+<span class="go">benchmark_atn_bins.npy                   DuetUnitTests        488.0B     Attenuation bins numpy array for DUET benchmark test.</span>
+<span class="go">benchmark_sym_atn.npy                    DuetUnitTests        3.4MiB     Symmetric attenuation histogram for the DUET benchmark test.</span>
+<span class="go">benchmark_wmat.npy                       DuetUnitTests        3.4MiB     Frequency matrix for the DUET benchmark test.</span>
+</pre></div>
+</div>
+<p>To download one of these files insert the file name as the first parameter to nussl.download_benchmark_file, like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">download_benchmark_file</span><span class="p">(</span><span class="s1">&#39;example.npy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>Most of the entries in the printed list are self-explanatory, but note the <code class="docutils literal notranslate"><span class="pre">for_class</span></code>
+entry. The <code class="docutils literal notranslate"><span class="pre">for_class</span></code> entry specifies which <cite>nussl</cite> benchmark class will load the
+corresponding benchmark file. Make sure these match exactly when writing tests!</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#nussl.efz_utils.get_available_benchmark_files" title="nussl.efz_utils.get_available_benchmark_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_available_benchmark_files()</span></code></a>, prints a list of the benchmark files to the</dt>
+<dd>console.</dd>
+</dl>
+</li>
+<li><a class="reference internal" href="#nussl.efz_utils.download_benchmark_file" title="nussl.efz_utils.download_benchmark_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_benchmark_file()</span></code></a> to download an benchmark file from the EFZ.</li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.get_available_trained_models">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">get_available_trained_models</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.get_available_trained_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of dicts containing metadata of the available trained models on the nussl
+External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</p>
+<p>Each entry in the list is in the following format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="sa">u</span><span class="s1">&#39;for_class&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;DeepClustering&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;visible&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_name&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;deep_clustering_vocals_44k_long.model&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;date_modified&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;2018-06-01&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_hash&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;e09034c2cb43a293ece0b121f113b8e4e1c5a247331c71f40cb9ca38227ccc2c&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_size_bytes&#39;</span><span class="p">:</span> <span class="mi">94543355</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_description&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;Deep clustering for vocal separation trained on augmented DSD100.&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;file_size&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;90.2MiB&#39;</span><span class="p">,</span>
+    <span class="sa">u</span><span class="s1">&#39;date_added&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;2018-06-01&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>Most of the entries in the dictionary are self-explanatory, but note the <code class="docutils literal notranslate"><span class="pre">for_class</span></code>
+entry. The <code class="docutils literal notranslate"><span class="pre">for_class</span></code> entry specifies which <cite>nussl</cite> separation class the given model will
+work with. Usually, <cite>nussl</cite> separation classes that require a model will default so
+retrieving a model on the EFZ server (if not already found on the user’s machine), but
+sometimes it is desirable to use a model other than the default one provided. In this case,
+the <code class="docutils literal notranslate"><span class="pre">for_class</span></code> entry lets the user know which class it is valid for use with.
+Additionally, trying to load a model into a class that it is not explicitly labeled for that
+class will raise an exception. Just don’t do it, ok?</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#nussl.efz_utils.print_available_trained_models" title="nussl.efz_utils.print_available_trained_models"><code class="xref py py-func docutils literal notranslate"><span class="pre">print_available_trained_models()</span></code></a>, prints a list of the trained models to</dt>
+<dd>the console.</dd>
+</dl>
+</li>
+<li><a class="reference internal" href="#nussl.efz_utils.download_trained_model" title="nussl.efz_utils.download_trained_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_trained_model()</span></code></a> to download a trained model from the EFZ.</li>
+</ul>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(list)</em> – A list of dicts containing metadata of the available trained models on the nussl
+External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.print_available_trained_models">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">print_available_trained_models</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.print_available_trained_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints a message to the console that shows all of the available trained models that are on the
+nussl External File Zoo (EFZ) server (<a class="reference external" href="http://nussl.ci.northwestern.edu/">http://nussl.ci.northwestern.edu/</a>).</p>
+<p class="rubric">Notes</p>
+<p>Most of the entries in the dictionary are self-explanatory, but note the <code class="docutils literal notranslate"><span class="pre">for_class</span></code>
+entry. The <code class="docutils literal notranslate"><span class="pre">for_class</span></code> entry specifies which <cite>nussl</cite> separation class the given model will
+work with. Usually, <cite>nussl</cite> separation classes that require a model will default so
+retrieving a model on the EFZ server (if not already found on the user’s machine), but
+sometimes it is desirable to use a model other than the default one provided. In this case,
+the <code class="docutils literal notranslate"><span class="pre">for_class</span></code> entry lets the user know which class it is valid for use with.
+Additionally, trying to load a model into a class that it is not explicitly labeled for that
+class will raise an exception. Just don’t do it, ok?</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="#nussl.efz_utils.get_available_trained_models" title="nussl.efz_utils.get_available_trained_models"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_available_trained_models()</span></code></a> to get this same data from the EFZ server as a list.</li>
+<li><a class="reference internal" href="#nussl.efz_utils.download_trained_model" title="nussl.efz_utils.download_trained_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_trained_model()</span></code></a> to download a trained model from the EFZ.</li>
+</ul>
+</div>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">print_available_trained_models</span><span class="p">()</span>
+<span class="go">File Name                                For Class            Size       Description</span>
+<span class="go">deep_clustering_model.model              DeepClustering       48.1MiB    example Deep Clustering model</span>
+<span class="go">deep_clustering_vocal_44k_long.model     DeepClustering       90.2MiB    trained DC model for vocal extraction</span>
+</pre></div>
+</div>
+<p>To download one of these files insert the file name as the first parameter to download_trained_model(), like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">download_trained_model</span><span class="p">(</span><span class="s1">&#39;deep_clustering_model.h5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.download_audio_file">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">download_audio_file</code><span class="sig-paren">(</span><em>audio_file_name</em>, <em>local_folder=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.download_audio_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads the specified audio file from the <cite>nussl</cite> External File Zoo (EFZ) server. The
+downloaded file is stored in <a href="#id1"><span class="problematic" id="id2">:param:`local_folder`</span></a> if a folder is provided. If a folder is
+not provided, <cite>nussl</cite> attempts to save the downloaded file in <cite>~/.nussl/</cite> (expanded) or in
+<cite>tmp/.nussl</cite>. If the requested file is already in <a href="#id3"><span class="problematic" id="id4">:param:`local_folder`</span></a> (or one of the two
+aforementioned directories) and the calculated hash matches the precomputed hash from the EFZ
+server metadata, then the file will not be downloaded.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>audio_file_name</strong> – (str) Name of the audio file to attempt to download.</li>
+<li><strong>local_folder</strong> – (str) Path to local folder in which to download the file.
+If no folder is provided, <cite>nussl</cite> will store the file in <cite>~/.nussl/</cite> (expanded) or in
+<cite>tmp/.nussl</cite>.</li>
+<li><strong>verbose</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> prints the status of the download to the console.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(String) Full path to the requested file (whether downloaded or not).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">piano_path</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">download_audio_file</span><span class="p">(</span><span class="s1">&#39;K0140.wav&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">piano_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">piano_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.download_benchmark_file">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">download_benchmark_file</code><span class="sig-paren">(</span><em>benchmark_name</em>, <em>local_folder=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.download_benchmark_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads the specified benchmark file from the <cite>nussl</cite> External File Zoo (EFZ) server. The
+downloaded file is stored in <a href="#id5"><span class="problematic" id="id6">:param:`local_folder`</span></a> if a folder is provided. If a folder is
+not provided, <cite>nussl</cite> attempts to save the downloaded file in <cite>~/.nussl/</cite> (expanded) or in
+<cite>tmp/.nussl</cite>. If the requested file is already in <a href="#id7"><span class="problematic" id="id8">:param:`local_folder`</span></a> (or one of the two
+aforementioned directories) and the calculated hash matches the precomputed hash from the EFZ
+server metadata, then the file will not be downloaded.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>audio_file_name</strong> – (str) Name of the trained model to attempt to download.</li>
+<li><strong>local_folder</strong> – (str) Path to local folder in which to download the file.
+If no folder is provided, <cite>nussl</cite> will store the file in <cite>~/.nussl/</cite> (expanded) or in
+<cite>tmp/.nussl</cite>.</li>
+<li><strong>verbose</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> prints the status of the download to the console.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(String) Full path to the requested file (whether downloaded or not).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stm_atn_path</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">download_benchmark_file</span><span class="p">(</span><span class="s1">&#39;benchmark_sym_atn.npy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sym_atm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">stm_atn_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.efz_utils.download_trained_model">
+<code class="descclassname">nussl.efz_utils.</code><code class="descname">download_trained_model</code><span class="sig-paren">(</span><em>model_name</em>, <em>local_folder=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.efz_utils.download_trained_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads the specified trained model from the <cite>nussl</cite> External File Zoo (EFZ) server. The
+downloaded file is stored in <a href="#id9"><span class="problematic" id="id10">:param:`local_folder`</span></a> if a folder is provided. If a folder is
+not provided, <cite>nussl</cite> attempts to save the downloaded file in <cite>~/.nussl/</cite> (expanded) or in
+<cite>tmp/.nussl</cite>. If the requested file is already in <a href="#id11"><span class="problematic" id="id12">:param:`local_folder`</span></a> (or one of the two
+aforementioned directories) and the calculated hash matches the precomputed hash from the EFZ
+server metadata, then the file will not be downloaded.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>audio_file_name</strong> – (str) Name of the trained model to attempt to download.</li>
+<li><strong>local_folder</strong> – (str) Path to local folder in which to download the file.
+If no folder is provided, <cite>nussl</cite> will store the file in <cite>~/.nussl/</cite> (expanded) or in
+<cite>tmp/.nussl</cite>.</li>
+<li><strong>verbose</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> prints the status of the download to the console.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(String) Full path to the requested file (whether downloaded or not).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nussl</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model_path</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">efz_utils</span><span class="o">.</span><span class="n">download_trained_model</span><span class="p">(</span><span class="s1">&#39;deep_clustering_model.h5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">piano_signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">DeepClustering</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="n">model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="exception">
+<dt id="nussl.efz_utils.FailedDownloadError">
+<em class="property">exception </em><code class="descclassname">nussl.efz_utils.</code><code class="descname">FailedDownloadError</code><a class="headerlink" href="#nussl.efz_utils.FailedDownloadError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception class for failed file downloads.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="nussl.efz_utils.MismatchedHashError">
+<em class="property">exception </em><code class="descclassname">nussl.efz_utils.</code><code class="descname">MismatchedHashError</code><a class="headerlink" href="#nussl.efz_utils.MismatchedHashError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception class for when a computed hash function does match a pre-computed hash.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="nussl.efz_utils.MetadataError">
+<em class="property">exception </em><code class="descclassname">nussl.efz_utils.</code><code class="descname">MetadataError</code><a class="headerlink" href="#nussl.efz_utils.MetadataError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception class for errors with metadata.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="stft_utils.html" class="btn btn-neutral float-right" title="stft_utils.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="utils.html" class="btn btn-neutral" title="utils.py" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

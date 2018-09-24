@@ -1,169 +1,207 @@
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>EvaluationBase Class &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
     
-    <title>EvaluationBase Class &#8212; nussl 0.1.5a10 documentation</title>
-    
-    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.1.5a10',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../../_static/bootstrap-sphinx.js"></script>
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="PrecisionRecallFScore Class" href="precision_recall_fscore.html" />
-    <link rel="prev" title="nussl Evaluation Classes" href="evaluation_classes.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="prev" title="nussl Evaluation Classes" href="evaluation_classes.html" /> 
 
-  </head>
-  <body>
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
 
-  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../../index.html">
-          nussl</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
-      </div>
+</head>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../../index.html">Site <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul>
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../audio_signal.html">AudioSignal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation Classes</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformer Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core/core.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">EvaluationBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="precision_recall_fscore.html">PrecisionRecallFScore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_base.html">BSSEvalBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_sources.html">BSSEvalSources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_images.html">BSSEvalImages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_v4.html">BSSEvalV4</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformers</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
 </ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">EvaluationBase Class</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
 </ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="evaluation_classes.html" title="Previous Chapter: nussl Evaluation Classes"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; nussl Evaluat...</span>
-    </a>
-  </li>
-  <li>
-    <a href="precision_recall_fscore.html" title="Next Chapter: PrecisionRecallFScore Class"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">PrecisionReca... &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="../../_sources/src/evaluation/evaluation_base.rst.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="../../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-  <div class="section" id="module-evaluation.evaluation_base">
-<span id="evaluationbase-class"></span><span id="evaluation-base"></span><h1>EvaluationBase Class<a class="headerlink" href="#module-evaluation.evaluation_base" title="Permalink to this headline">¶</a></h1>
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="evaluation_classes.html">nussl Evaluation Classes</a> &raquo;</li>
+        
+      <li>EvaluationBase Class</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/evaluation/evaluation_base.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.evaluation.evaluation_base">
+<span id="evaluationbase-class"></span><span id="evaluation-base"></span><h1>EvaluationBase Class<a class="headerlink" href="#module-nussl.evaluation.evaluation_base" title="Permalink to this headline">¶</a></h1>
 <p>EvaluationBase is the base class for all evaluation methods in nussl.</p>
 <dl class="class">
-<dt id="evaluation.evaluation_base.EvaluationBase">
-<em class="property">class </em><code class="descclassname">evaluation.evaluation_base.</code><code class="descname">EvaluationBase</code><span class="sig-paren">(</span><em>true_sources_list</em>, <em>estimated_sources_list</em>, <em>source_labels=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase" title="Permalink to this definition">¶</a></dt>
+<dt id="nussl.evaluation.evaluation_base.EvaluationBase">
+<em class="property">class </em><code class="descclassname">nussl.evaluation.evaluation_base.</code><code class="descname">EvaluationBase</code><span class="sig-paren">(</span><em>true_sources_list</em>, <em>estimated_sources_list</em>, <em>source_labels=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.evaluation_base.EvaluationBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for all Evaluation classes for source separation algorithm in nussl.
-Contains common functions for all evaluation techniques. This class should not be instantiated directly.</p>
-<p>Both <code class="docutils literal"><span class="pre">true_sources_list</span></code> and <code class="docutils literal"><span class="pre">estimated_sources_list</span></code> get validated using the private method
-<a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase._verify_input_list" title="evaluation.evaluation_base.EvaluationBase._verify_input_list"><code class="xref py py-func docutils literal"><span class="pre">_verify_input_list()</span></code></a>. If your evaluation needs to verify that input is set correctly (recommended)
-overwrite that method to add checking.</p>
+Contains common functions for all evaluation techniques. This class should not be instantiated
+directly.</p>
+<p>Both <code class="docutils literal notranslate"><span class="pre">true_sources_list</span></code> and <code class="docutils literal notranslate"><span class="pre">estimated_sources_list</span></code> get validated using the private method
+<a class="reference internal" href="#nussl.evaluation.evaluation_base.EvaluationBase._verify_input_list" title="nussl.evaluation.evaluation_base.EvaluationBase._verify_input_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">_verify_input_list()</span></code></a>. If your evaluation needs to verify that input is set correctly
+(recommended) overwrite that method to add checking.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>true_sources_list</strong> (<em>list</em>) – List of objects that contain one ground truth source per object. In some instances
-(such as the BSSEval-objects) this list is filled with <code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignals</span></code> but in other
-cases it is populated with <a class="reference internal" href="../separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> -derived objects (i.e., either a
-<a class="reference internal" href="../separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a> object).</li>
-<li><strong>estimated_sources_list</strong> (<em>list</em>) – List of objects that contain source estimations from a source separation
-algorithm. List should be populated with the same type of objects and in the same order as
-<code class="docutils literal"><span class="pre">true_sources_list</span></code>.</li>
-<li><strong>source_labels</strong> (<em>list</em><em>, </em><em>Optional</em>) – List of strings that are labels for each source to be used as keys for
+<li><strong>true_sources_list</strong> (<em>list</em>) – List of objects that contain one ground truth source per object.
+In some instances (such as the <code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEval</span></code> objects) this list is filled with
+<code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignals</span></code> but in other cases it is populated with
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MaskBase</span></code> -derived objects (i.e., either a <code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryMask</span></code> or
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SoftMask</span></code> object).</li>
+<li><strong>estimated_sources_list</strong> (<em>list</em>) – List of objects that contain source estimations from a source
+separation algorithm. List should be populated with the same type of objects and in the
+same order as <a href="#id1"><span class="problematic" id="id2">:param:`true_sources_list`</span></a>.</li>
+<li><strong>source_labels</strong> (<em>list</em>) – List of strings that are labels for each source to be used as keys for
 the scores. Default value is <cite>None</cite> and in that case labels are <cite>Source 0</cite>, <cite>Source 1</cite>, etc.</li>
-<li><strong>do_mono</strong> (<em>bool</em><em>, </em><em>Optional</em>) – Whether to make the objects in <code class="docutils literal"><span class="pre">true_sources_list</span></code> and <code class="docutils literal"><span class="pre">estimated_sources_list</span></code>
-mono prior to doing the evaluation. This may not work for all <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">EvaluationBase</span></code></a>-derived objects.</li>
+<li><strong>do_mono</strong> (<em>bool</em>) – Whether to make the objects in <code class="docutils literal notranslate"><span class="pre">true_sources_list</span></code> and <code class="docutils literal notranslate"><span class="pre">estimated_sources_list</span></code>
+mono prior to doing the evaluation. This may not work for all <a class="reference internal" href="#nussl.evaluation.evaluation_base.EvaluationBase" title="nussl.evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">EvaluationBase</span></code></a>-derived objects.</li>
 <li><strong>**kwargs</strong> – Additional arguments for subclasses.</li>
 </ul>
 </td>
@@ -171,23 +209,23 @@ mono prior to doing the evaluation. This may not work for all <a class="referenc
 </tbody>
 </table>
 <dl class="staticmethod">
-<dt id="evaluation.evaluation_base.EvaluationBase._verify_input_list">
-<em class="property">static </em><code class="descname">_verify_input_list</code><span class="sig-paren">(</span><em>audio_signal_list</em><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase._verify_input_list" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base method for verifying a list of input objects for an <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">EvaluationBase</span></code></a>-derived object. Override this
-method when creating new <code class="xref py py-class docutils literal"><span class="pre">EvaluationBased</span></code>-derived class.</p>
-<p>By default calls <code class="xref py py-func docutils literal"><span class="pre">nussl.utils._verify_audio_signal_list_strict()</span></code>, which verifies that all objects in the
-input list are <a class="reference internal" href="../audio_signal.html#audio_signal.AudioSignal" title="audio_signal.AudioSignal"><code class="xref py py-class docutils literal"><span class="pre">audio_signal.AudioSignal</span></code></a> objects with the same length, sample rate and have identical
-number of channels.</p>
+<dt id="nussl.evaluation.evaluation_base.EvaluationBase._verify_input_list">
+<em class="property">static </em><code class="descname">_verify_input_list</code><span class="sig-paren">(</span><em>audio_signal_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.evaluation_base.EvaluationBase._verify_input_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base method for verifying a list of input objects for an <a class="reference internal" href="#nussl.evaluation.evaluation_base.EvaluationBase" title="nussl.evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">EvaluationBase</span></code></a>-derived
+object. Override this method when creating new <code class="xref py py-class docutils literal notranslate"><span class="pre">EvaluationBased</span></code>-derived class.</p>
+<p>By default calls <code class="xref py py-func docutils literal notranslate"><span class="pre">nussl.utils.verify_audio_signal_list_strict()</span></code>, which verifies that
+all objects in the input list are <code class="xref py py-class docutils literal notranslate"><span class="pre">audio_signal.AudioSignal</span></code> objects with the same
+length, sample rate and have identical number of channels.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>audio_signal_list</strong> (<em>list</em>) – List of objects that contain one signal per object. In some instances
-(such as the BSSEval-objects) this list is filled with <span class="xref std std-ref">AudioSignals</span> but in other cases it is
-populated with <a class="reference internal" href="../separation/mask_classes/mask_base.html#separation.masks.mask_base.MaskBase" title="separation.masks.mask_base.MaskBase"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.mask_base.MaskBase</span></code></a> -derived objects (i.e., either a
-<a class="reference internal" href="../separation/mask_classes/binary_mask.html#separation.masks.binary_mask.BinaryMask" title="separation.masks.binary_mask.BinaryMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.binary_mask.BinaryMask</span></code></a> or <a class="reference internal" href="../separation/mask_classes/soft_mask.html#separation.masks.soft_mask.SoftMask" title="separation.masks.soft_mask.SoftMask"><code class="xref py py-class docutils literal"><span class="pre">separation.masks.soft_mask.SoftMask</span></code></a>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>audio_signal_list</strong> (<em>list</em>) – List of objects that contain one signal per object. In some
+instances (such as the <code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEval</span></code>) this list is filled with
+<span class="xref std std-ref">AudioSignals</span> but in other cases it is populated with <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskBase</span></code>
+-derived objects (i.e., either a <code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryMask</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">SoftMask</span></code>
 object). In the latter case, this method is overridden with a specific function
-in <a class="reference internal" href="precision_recall_fscore.html#evaluation.precision_recall_fscore.PrecisionRecallFScore" title="evaluation.precision_recall_fscore.PrecisionRecallFScore"><code class="xref py py-class docutils literal"><span class="pre">evaluation.precision_recall_fscore.PrecisionRecallFScore</span></code></a>.</td>
+in <code class="xref py py-class docutils literal notranslate"><span class="pre">evaluation.precision_recall_fscore.PrecisionRecallFScore</span></code>.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A verified list of objects that are ready for running the evaluation method.</td>
 </tr>
@@ -196,46 +234,103 @@ in <a class="reference internal" href="precision_recall_fscore.html#evaluation.p
 </dd></dl>
 
 <dl class="method">
-<dt id="evaluation.evaluation_base.EvaluationBase.evaluate">
-<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function runs the evaluation method. Do not call this directly from <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase" title="evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal"><span class="pre">EvaluationBase</span></code></a></p>
+<dt id="nussl.evaluation.evaluation_base.EvaluationBase.evaluate">
+<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.evaluation_base.EvaluationBase.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function runs the evaluation method. Do not call this directly from
+<a class="reference internal" href="#nussl.evaluation.evaluation_base.EvaluationBase" title="nussl.evaluation.evaluation_base.EvaluationBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">EvaluationBase</span></code></a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code></td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code></td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="evaluation.evaluation_base.EvaluationBase.scores">
-<code class="descname">scores</code><a class="headerlink" href="#evaluation.evaluation_base.EvaluationBase.scores" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary that stores all scores from the evaluation method. Gets populated when <a class="reference internal" href="#evaluation.evaluation_base.EvaluationBase.evaluate" title="evaluation.evaluation_base.EvaluationBase.evaluate"><code class="xref py py-func docutils literal"><span class="pre">evaluate()</span></code></a> gets run.</p>
+<dt id="nussl.evaluation.evaluation_base.EvaluationBase.scores">
+<code class="descname">scores</code><a class="headerlink" href="#nussl.evaluation.evaluation_base.EvaluationBase.scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary that stores all scores from the evaluation method. Gets populated when
+<a class="reference internal" href="#nussl.evaluation.evaluation_base.EvaluationBase.evaluate" title="nussl.evaluation.evaluation_base.EvaluationBase.evaluate"><code class="xref py py-func docutils literal notranslate"><span class="pre">evaluate()</span></code></a> gets run.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="exception">
+<dt id="nussl.evaluation.evaluation_base.AudioSignalListMismatchError">
+<em class="property">exception </em><code class="descclassname">nussl.evaluation.evaluation_base.</code><code class="descname">AudioSignalListMismatchError</code><a class="headerlink" href="#nussl.evaluation.evaluation_base.AudioSignalListMismatchError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error class for when true_sources_list and estimated_sources_list are different
+lengths.</p>
 </dd></dl>
 
 </div>
 
 
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="precision_recall_fscore.html" class="btn btn-neutral float-right" title="PrecisionRecallFScore Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="evaluation_classes.html" class="btn btn-neutral" title="nussl Evaluation Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Sep 15, 2017.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

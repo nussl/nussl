@@ -14,13 +14,15 @@
 
 import sys
 import os
-import sphinx_bootstrap_theme
+import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../nussl'))
+
 
 # -- General configuration ------------------------------------------------
 
@@ -53,7 +55,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'nussl'
-copyright = u'2017, Interactive Audio Lab'
+copyright = u'2018, Interactive Audio Lab'
 author = u'Interactive Audio Lab'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -119,8 +121,8 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'bootstrap'
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+html_theme = 'sphinx_rtd_theme'
+# html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -294,4 +296,4 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-# autodoc_member_order = 'bysource'
+autodoc_member_order = 'bysource'

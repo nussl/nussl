@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>BSSEvalBase Class &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="BSSEvalSourcesClass" href="bss_eval_sources.html" />
+    <link rel="prev" title="PrecisionRecallFScore Class" href="precision_recall_fscore.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../core/core.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="evaluation_classes.html">Evaluation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="evaluation_base.html">EvaluationBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="precision_recall_fscore.html">PrecisionRecallFScore</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">BSSEvalBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_sources.html">BSSEvalSources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_images.html">BSSEvalImages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bss_eval_v4.html">BSSEvalV4</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="evaluation_classes.html">nussl Evaluation Classes</a> &raquo;</li>
+        
+      <li>BSSEvalBase Class</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/evaluation/bss_eval_base.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.evaluation.bss_eval_base">
+<span id="bssevalbase-class"></span><span id="bss-eval-base"></span><h1>BSSEvalBase Class<a class="headerlink" href="#module-nussl.evaluation.bss_eval_base" title="Permalink to this headline">¶</a></h1>
+<p>Base class for both BSS Eval algorithms (<span class="xref std std-ref">BSSEvalSources</span> and <span class="xref std std-ref">BSSEvalImages</span>). Contains
+most of the logic for these base classes.</p>
+<dl class="class">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase">
+<em class="property">class </em><code class="descclassname">nussl.evaluation.bss_eval_base.</code><code class="descname">BSSEvalBase</code><span class="sig-paren">(</span><em>true_sources_list</em>, <em>estimated_sources_list</em>, <em>source_labels=None</em>, <em>algorithm_name=None</em>, <em>do_mono=False</em>, <em>compute_permutation=True</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code> implementation of the BSS-Eval metrics (SDR, SIR, SAR).
+Contains logic for loading ground truth <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal`s</span> <span class="pre">and</span> <span class="pre">estimated</span>
+<span class="pre">:class:`AudioSignal`s</span> <span class="pre">to</span> <span class="pre">compute</span> <span class="pre">BSS-Eval</span> <span class="pre">metrics.</span> <span class="pre">The</span> <span class="pre">``mir_eval`</span></code> module contains
+an implementation of BSS-Eval version 3.</p>
+<p>The BSS-Eval metrics attempt to measure perceptual quality by comparing sources
+estimated from a source separation algorithm to the ground truth, known sources.
+These metrics evaluate the distortion (SDR) and artifacts (SAR) present in the
+estimated signals as well as the interference (SIR) from other sources in a given
+estimated source. Results are returned in units of dB, with higher values indicating
+better quality.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="simple">
+<li>For more information on <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code> (python implementation of BSS-Eval v3) see</li>
+</ul>
+<p class="last"><cite>its Github page&lt;https://github.com/craffel/mir_eval&gt;</cite>.
+* For more information on the BSS-Eval metrics, see the webpage for
+<cite>the original MATLAB implementation&lt;http://bass-db.gforge.inria.fr/bss_eval/&gt;</cite>.
+* Implementations of this base class: <code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEvalSources</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEvalImages</span></code>.
+* <code class="xref py py-class docutils literal notranslate"><span class="pre">BSSEvalV4</span></code> for the <code class="docutils literal notranslate"><span class="pre">museval</span></code> version 4 BSS-Eval implementation.</p>
+</div>
+<p class="rubric">References</p>
+<ul class="simple">
+<li>Emmanuel Vincent, Rémi Gribonval, Cédric Févotte. Performance measurement in blind</li>
+</ul>
+<p>audio source separation. IEEE Transactions on Audio, Speech and Language Processing,
+Institute of Electrical and Electronics Engineers, 2006, 14 (4), pp.1462–1469.
+&lt;inria-00544230&gt;
+* Colin Raffel, Brian McFee, Eric J. Humphrey, Justin Salamon, Oriol Nieto, Dawen Liang,
+and Daniel P. W. Ellis, “mir_eval: A Transparent Implementation of Common MIR Metrics”,
+Proceedings of the 15th International Conference on Music Information Retrieval, 2014.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>true_sources_list</strong> (<em>list</em>) – List of <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects that contain the ground
+truth sources for the mixture.</li>
+<li><strong>estimated_sources_list</strong> (<em>list</em>) – List of <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects that contain estimate
+sources, output from source separation algorithms.</li>
+<li><strong>source_labels</strong> (<em>list</em>) – List of strings that are labels for each source to be used as keys for
+the scores. Default value is <code class="docutils literal notranslate"><span class="pre">None</span></code> and in that case labels are <code class="docutils literal notranslate"><span class="pre">Source</span> <span class="pre">0</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Source</span> <span class="pre">1</span></code>, etc.</li>
+<li><strong>algorithm_name</strong> (<em>str</em>) – Name of the algorithm if using this object to compute many
+BSS-Eval metrics. Can be changed later.</li>
+<li><strong>do_mono</strong> (<em>bool</em>) – Should flatten the audio to mono before calculating metrics.</li>
+<li><strong>compute_permutation</strong> (<em>bool</em>) – Should try to find the best permutation for the estimated
+sources.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.SDR">
+<code class="descname">SDR</code><em class="property"> = 'SDR'</em><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.SDR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.SIR">
+<code class="descname">SIR</code><em class="property"> = 'SIR'</em><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.SIR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.SAR">
+<code class="descname">SAR</code><em class="property"> = 'SAR'</em><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.SAR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.ISR">
+<code class="descname">ISR</code><em class="property"> = 'ISR'</em><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.ISR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.PERMUTATION">
+<code class="descname">PERMUTATION</code><em class="property"> = 'permutation'</em><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.PERMUTATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.RAW_VALUES">
+<code class="descname">RAW_VALUES</code><em class="property"> = 'raw_values'</em><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.RAW_VALUES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.algorithm_name">
+<code class="descname">algorithm_name</code><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.algorithm_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the algorithm that is being evaluated.
+:returns: (str) Name of the algorithm being evaluated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.validate">
+<code class="descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to make sure the all of the input <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code> objects have the
+same length.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase._preprocess_sources">
+<code class="descname">_preprocess_sources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase._preprocess_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the <span class="xref std std-ref">audio_data</span> in the sources for <code class="docutils literal notranslate"><span class="pre">mir_eval</span></code>.
+:returns: (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) reference_source_array, estimated_source_array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase.evaluate">
+<code class="descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actually runs the evaluation algorithm. Will be <code class="docutils literal notranslate"><span class="pre">museval.metrics.bss_eval_images</span></code> or
+<code class="docutils literal notranslate"><span class="pre">museval.metrics.bss_eval_sources</span></code> depending on which subclass is instantiated.
+:returns: <em>(dict)</em> – Dictionary containing the scores.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.evaluation.bss_eval_base.BSSEvalBase._populate_scores_dict">
+<code class="descname">_populate_scores_dict</code><span class="sig-paren">(</span><em>bss_output</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BSSEvalBase._populate_scores_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats and populates the <code class="xref py py-attr docutils literal notranslate"><span class="pre">scores</span></code> dict from <a class="reference internal" href="#nussl.evaluation.bss_eval_base.BSSEvalBase.evaluate" title="nussl.evaluation.bss_eval_base.BSSEvalBase.evaluate"><code class="xref py py-func docutils literal notranslate"><span class="pre">evaluate()</span></code></a>.
+:param bss_output: Direct output from the <code class="docutils literal notranslate"><span class="pre">museval</span></code> function.
+:type bss_output: tuple</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(dict) Reformatted dictionary from <code class="docutils literal notranslate"><span class="pre">museval</span></code> output.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="nussl.evaluation.bss_eval_base.BssEvalException">
+<em class="property">exception </em><code class="descclassname">nussl.evaluation.bss_eval_base.</code><code class="descname">BssEvalException</code><a class="headerlink" href="#nussl.evaluation.bss_eval_base.BssEvalException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception class for BSS-Eval</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="bss_eval_sources.html" class="btn btn-neutral float-right" title="BSSEvalSourcesClass" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="precision_recall_fscore.html" class="btn btn-neutral" title="PrecisionRecallFScore Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

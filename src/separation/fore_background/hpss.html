@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>HPSS &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Melodia" href="melodia.html" />
+    <link rel="prev" title="Other Foreground/Background Separation Techniques" href="fore_background.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../core/core.html">Core</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../base_classes/separation_base_classes.html">Base Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mask_classes/mask_classes.html">Masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../repetition/repetition.html">Repetition-based Separation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="fore_background.html">Other Foreground/Background Separation</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">HPSS (Harmonic/Percussive)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="melodia.html">Melodia (Melody Masking)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../spatialization/spatialization.html">Spatialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nmf_classes/nmf_classes.html">Non-negative Matrix Factorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../component/component.html">Component Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_learning/deep_learning.html">Deep Learning algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmarking/benchmarking.html">Benchmarking Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../composite/composite.html">Composite Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../separation_classes.html">nussl Separation Classes</a> &raquo;</li>
+        
+          <li><a href="fore_background.html">Other Foreground/Background Separation Techniques</a> &raquo;</li>
+        
+      <li>HPSS</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/src/separation/fore_background/hpss.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="hpss">
+<span id="id1"></span><h1>HPSS<a class="headerlink" href="#hpss" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-nussl.separation.hpss"></span><dl class="class">
+<dt id="nussl.separation.hpss.HPSS">
+<em class="property">class </em><code class="descclassname">nussl.separation.hpss.</code><code class="descname">HPSS</code><span class="sig-paren">(</span><em>input_audio_signal</em>, <em>kernel_size=31</em>, <em>do_mono=False</em>, <em>use_librosa_stft=False</em>, <em>mask_type='soft'</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.hpss.HPSS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">nussl.separation.mask_separation_base.MaskSeparationBase</span></code></p>
+<p>Implements harmonic/percussive source separation based on:</p>
+<p>1. Fitzgerald, Derry. “Harmonic/percussive separation using median filtering.”
+13th International Conference on Digital Audio Effects (DAFX10), Graz, Austria, 2010.</p>
+<p>2. Driedger, Müller, Disch. “Extending harmonic-percussive separation of audio.”
+15th International Society for Music Information Retrieval Conference (ISMIR 2014),
+Taipei, Taiwan, 2014.</p>
+<p>This is a wrapper around the librosa implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input_audio_signal</strong> – (AudioSignal object) The AudioSignal object that has the
+audio data that REPET will be run on.</li>
+<li><strong>kernel_size</strong> – int or tuple (kernel_harmonic, kernel_percussive) kernel size(s) for the
+median filters.</li>
+<li><strong>do_mono</strong> – (Optional) (bool) Flattens AudioSignal to mono before running the algorithm
+(does not effect the input AudioSignal object)</li>
+<li><strong>use_librosa_stft</strong> – (Optional) (bool) Calls librosa’s stft function instead of nussl’s</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="nussl.separation.hpss.HPSS.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.hpss.HPSS.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:</p>
+<p class="rubric">Example</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.hpss.HPSS.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.hpss.HPSS.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the background and foreground audio signals. You must have run <a class="reference internal" href="#nussl.separation.hpss.HPSS.run" title="nussl.separation.hpss.HPSS.run"><code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a> prior
+to calling this function. This function will return <code class="docutils literal notranslate"><span class="pre">None</span></code> if <a class="reference internal" href="#nussl.separation.hpss.HPSS.run" title="nussl.separation.hpss.HPSS.run"><code class="xref py py-func docutils literal notranslate"><span class="pre">run()</span></code></a> has not been
+called.</p>
+<p>Order of the list is <code class="docutils literal notranslate"><span class="pre">[self.background,</span> <span class="pre">self.foreground]</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>(list)</em> – List containing two <code class="xref py py-class docutils literal notranslate"><span class="pre">audio_signal.AudioSignal</span></code> objects, one for the
+calculated background
+and the next for the remaining foreground, in that order.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># set up AudioSignal object</span>
+<span class="n">signal</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="s1">&#39;path_to_file.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># set up and run repet</span>
+<span class="n">hpss</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">HPSS</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+<span class="n">hpss</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1"># get audio signals (AudioSignal objects)</span>
+<span class="n">harmonic</span><span class="p">,</span> <span class="n">percussive</span> <span class="o">=</span> <span class="n">ft2d</span><span class="o">.</span><span class="n">make_audio_signals</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="melodia.html" class="btn btn-neutral float-right" title="Melodia" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="fore_background.html" class="btn btn-neutral" title="Other Foreground/Background Separation Techniques" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,8 +1,8 @@
 .. _audio_signal:
 
-======================
-The AudioSignal Object
-======================
+============================
+Introduction to AudioSignals
+============================
 
 .. toctree::
     :maxdepth: 1

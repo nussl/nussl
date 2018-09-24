@@ -1,172 +1,208 @@
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Spectrograms and STFTs &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
     
-    <title>Spectrograms and STFTs &#8212; nussl 0.1.5a10 documentation</title>
-    
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '0.1.5a10',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Using REPET" href="repet.html" />
-    <link rel="prev" title="AudioSignal Basics" href="audio_signal_basics.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="prev" title="AudioSignal Basics" href="audio_signal_basics.html" /> 
 
-  </head>
-  <body>
+  
+  <script src="../_static/js/modernizr.min.js"></script>
 
-  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../index.html">
-          nussl</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
-      </div>
+</head>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../index.html">Site <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="getting_started.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="audio_signal.html">Introduction to AudioSignals</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="audio_signal_basics.html">AudioSignal Basics</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Spectrograms and STFTs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#stft-basics">STFT Basics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#inverse-stfts">Inverse STFTs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stft-parameters">STFT Parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="repet.html">Example: Using REPET</a></li>
+</ul>
+</li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../src/audio_signal.html">AudioSignal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../src/separation/separation_classes.html">Separation Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../src/evaluation/evaluation_classes.html">Evaluation Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../src/transformers/transformer_classes.html">Transformer Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../src/modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/core/core.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../src/transformers/transformer_classes.html">Transformers</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Code Examples</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contribution Guide</a></li>
 </ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">Spectrograms and STFTs</a><ul>
-<li><a class="reference internal" href="#stft-basics">STFT Basics</a></li>
-<li><a class="reference internal" href="#inverse-stfts">Inverse STFTs</a></li>
-<li><a class="reference internal" href="#stft-parameters">STFT Parameters</a><ul>
-<li><a class="reference internal" href="#stftparams-object">StftParams Object</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="audio_signal_basics.html" title="Previous Chapter: AudioSignal Basics"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; AudioSignal Basics</span>
-    </a>
-  </li>
-  <li>
-    <a href="repet.html" title="Next Chapter: Using REPET"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Using REPET &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="../_sources/getting_started/audio_signal_stft.rst.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="getting_started.html">Getting Started</a> &raquo;</li>
+        
+          <li><a href="audio_signal.html">Introduction to AudioSignals</a> &raquo;</li>
+        
+      <li>Spectrograms and STFTs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/getting_started/audio_signal_stft.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
   <div class="section" id="spectrograms-and-stfts">
 <span id="audio-signal-stft"></span><h1>Spectrograms and STFTs<a class="headerlink" href="#spectrograms-and-stfts" title="Permalink to this headline">¶</a></h1>
 <p>Most, if not all, source separation algorithms do not their operations in the time domain, but rather in the frequency
 domain. For this, <em>nussl</em> provides an interface for working with <a class="reference external" href="https://en.wikipedia.org/wiki/Short-time_Fourier_transform">Short-Time Fourier Transform (STFT)</a>
-data. Here, we describe how to do some simple STFT operations with the <code class="xref py py-class docutils literal"><span class="pre">nussl.AudioSignal</span></code> object.</p>
+data. Here, we describe how to do some simple STFT operations with the <code class="xref py py-class docutils literal notranslate"><span class="pre">nussl.AudioSignal</span></code> object.</p>
 <div class="section" id="stft-basics">
 <h2>STFT Basics<a class="headerlink" href="#stft-basics" title="Permalink to this headline">¶</a></h2>
-<p>Let’s reinitialize <code class="docutils literal"><span class="pre">signal1</span></code> from the previous page. We should be able to get frequency domain data by looking
-at <code class="docutils literal"><span class="pre">signal1.stft_data</span></code>. Let’s try that.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
+<p>Let’s reinitialize <code class="docutils literal notranslate"><span class="pre">signal1</span></code> from the previous page. We should be able to get frequency domain data by looking
+at <code class="docutils literal notranslate"><span class="pre">signal1.stft_data</span></code>. Let’s try that.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span>
 <span class="go">None</span>
 </pre></div>
 </div>
-<p>Whoops! Because this object was initialized from a .wav file (i.e., time-series data), this <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object has
+<p>Whoops! Because this object was initialized from a .wav file (i.e., time-series data), this <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object has
 no frequency domain data by default. To populate it with frequency data we do thusly:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Aha! Now we can examine how STFT data is stored in the <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object. Similar to <code class="docutils literal"><span class="pre">signal1.audio_data</span></code>,
-STFT data is stored in a (complex-valued) numpy array called <code class="docutils literal"><span class="pre">signal1.stft_data</span></code> <a class="footnote-reference" href="#f1" id="id1">[1]</a>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span>
+<p>Aha! Now we can examine how STFT data is stored in the <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object. Similar to <code class="docutils literal notranslate"><span class="pre">signal1.audio_data</span></code>,
+STFT data is stored in a (complex-valued) numpy array called <code class="docutils literal notranslate"><span class="pre">signal1.stft_data</span></code> <a class="footnote-reference" href="#f1" id="id1">[1]</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span>
 <span class="go">array([[[  5.65585184e+00 -0.00000000e+00j,</span>
 <span class="go">           9.01010437e+01 -0.00000000e+00j],</span>
 <span class="go">        [ -2.49999994e-03 -3.83490305e-06j,</span>
@@ -198,15 +234,15 @@ STFT data is stored in a (complex-valued) numpy array called <code class="docuti
 </div>
 <p>By inspecting the shape we see that the first dimension represents the number of FFT bins taken at each hop,
 the second represents the length of our signal (in hops), and the third dimension is number of channels. There is
-an easy way to get all of this data from our <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object without having to do array indexing:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_length</span>
+an easy way to get all of this data from our <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object without having to do array indexing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_length</span>
 <span class="go">88</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">num_fft_bins</span>
 <span class="go">1025</span>
 </pre></div>
 </div>
 <p>We can get a single STFT channel like so:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">get_stft_channel</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># see footnote 2 on AudioSignal Basics page</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">get_stft_channel</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># see footnote 2 on AudioSignal Basics page</span>
 <span class="go">array([[ 1.23336256 -0.00000000e+00j,  0.03598116 -0.00000000e+00j,</span>
 <span class="go">         0.10520950 -0.00000000e+00j, ...,  0.06182364 -0.00000000e+00j,</span>
 <span class="go">        -1.39272857 -0.00000000e+00j, -0.27395117 -0.00000000e+00j],</span>
@@ -229,8 +265,8 @@ an easy way to get all of this data from our <code class="xref py py-class docut
 </pre></div>
 </div>
 <p>We can also get power spectrogram data from our signal as well. As we would expect, this is the same
-shape as <code class="docutils literal"><span class="pre">signal1.stft_data</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">power_spectrogram_data</span>  <span class="c1"># np.abs(signal1.stft_data) ** 2</span>
+shape as <code class="docutils literal notranslate"><span class="pre">signal1.stft_data</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">power_spectrogram_data</span>  <span class="c1"># np.abs(signal1.stft_data) ** 2</span>
 <span class="go">array([[[  1.52118325e+00],</span>
 <span class="go">        [  1.29464362e-03],</span>
 <span class="go">        [  1.10690389e-02],</span>
@@ -245,25 +281,25 @@ shape as <code class="docutils literal"><span class="pre">signal1.stft_data</spa
 </div>
 <div class="section" id="inverse-stfts">
 <h2>Inverse STFTs<a class="headerlink" href="#inverse-stfts" title="Permalink to this headline">¶</a></h2>
-<p>Let’s do something a little more interesting with our <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object. Since <code class="docutils literal"><span class="pre">signal1.stft_data</span></code> is just
+<p>Let’s do something a little more interesting with our <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object. Since <code class="docutils literal notranslate"><span class="pre">signal1.stft_data</span></code> is just
 a regular numpy array, we can access and manipulate it as such. So let’s implement a low pass filter by creating a
-new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object and leaving <code class="docutils literal"><span class="pre">signal1</span></code> unaltered.</p>
+new <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object and leaving <code class="docutils literal notranslate"><span class="pre">signal1</span></code> unaltered.</p>
 <p>Let’s eliminate all frequencies above about 400 Hz in our signal.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lp_stft</span> <span class="o">=</span> <span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lp_stft</span> <span class="o">=</span> <span class="n">signal1</span><span class="o">.</span><span class="n">stft_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lp_cutoff</span> <span class="o">=</span> <span class="mi">400</span>  <span class="c1"># Hz</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">frequency_vector</span> <span class="o">=</span> <span class="n">signal1</span><span class="o">.</span><span class="n">freq_vector</span>  <span class="c1"># a vector of frequency values for each FFT bin</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">frequency_vector</span> <span class="o">-</span> <span class="n">lp_cutoff</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>  <span class="c1"># trick to find the index of the closest value to 400 Hz</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lp_stft</span><span class="p">[</span><span class="n">idx</span><span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span>  <span class="c1"># every freq above ~400 Hz is 0 now</span>
 </pre></div>
 </div>
-<p>Okay, so now we have low passed STFT data in the numpy array <code class="docutils literal"><span class="pre">lp_stft</span></code>. Now we are going to see how we can initialize
-a new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object using this data.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">stft</span><span class="o">=</span><span class="n">lp_stft</span><span class="p">)</span>
+<p>Okay, so now we have low passed STFT data in the numpy array <code class="docutils literal notranslate"><span class="pre">lp_stft</span></code>. Now we are going to see how we can initialize
+a new <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object using this data.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">stft</span><span class="o">=</span><span class="n">lp_stft</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Easy-peasy! Now <code class="docutils literal"><span class="pre">signal1_lp</span></code> is a new <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object that has been initialized with STFT data instead of
+<p>Easy-peasy! Now <code class="docutils literal notranslate"><span class="pre">signal1_lp</span></code> is a new <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object that has been initialized with STFT data instead of
 time series data. Before we can write this to a file, we need to do an Inverse STFT to get back time-series data.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">audio_data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">audio_data</span>
 <span class="go">None</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">istft</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1_lp</span><span class="o">.</span><span class="n">write_audio_to_file</span><span class="p">(</span><span class="s1">&#39;path/to/signal1_lowpass.wav&#39;</span><span class="p">)</span>
@@ -274,8 +310,8 @@ time series data. Before we can write this to a file, we need to do an Inverse S
 <div class="section" id="stft-parameters">
 <h2>STFT Parameters<a class="headerlink" href="#stft-parameters" title="Permalink to this headline">¶</a></h2>
 <p>I wanted to make a few quick notes about <em>nussl</em>’s parameter settings for STFTs and iSTFTs. Let’s have a quick look
-at the function signature for <code class="docutils literal"><span class="pre">AudioSignal.stft()</span></code> and <code class="docutils literal"><span class="pre">AudioSignal.istft()</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">stft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hop_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_fft_bins</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+at the function signature for <code class="docutils literal notranslate"><span class="pre">AudioSignal.stft()</span></code> and <code class="docutils literal notranslate"><span class="pre">AudioSignal.istft()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">stft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hop_length</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_fft_bins</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
          <span class="n">remove_reflection</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">use_librosa</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="o">...</span>
 
@@ -285,7 +321,7 @@ at the function signature for <code class="docutils literal"><span class="pre">A
 </pre></div>
 </div>
 <p>Almost all low level parameters are accessible through this interface and can be adjusted accordingly.</p>
-<p>As with <code class="docutils literal"><span class="pre">to_mono()</span></code> on the previous page, <code class="docutils literal"><span class="pre">stft()</span></code> and <code class="docutils literal"><span class="pre">istft()</span></code> have parameters to overwrite the internal
+<p>As with <code class="docutils literal notranslate"><span class="pre">to_mono()</span></code> on the previous page, <code class="docutils literal notranslate"><span class="pre">stft()</span></code> and <code class="docutils literal notranslate"><span class="pre">istft()</span></code> have parameters to overwrite the internal
 data representations. By default they are true, be sure to set them to false when needed.</p>
 <p>While <em>nussl</em> does have its own STFT and iSTFT implementations, it also contains wrappers for
 <a class="reference external" href="https://librosa.github.io/librosa/generated/librosa.core.stft.html#librosa.core.stft">librosa’s</a> STFT and iSTFT
@@ -299,37 +335,37 @@ know not to reconstruct the reflection when doing an inverse STFT. It is the use
 kind of bookkeeping.</p>
 <div class="section" id="stftparams-object">
 <h3>StftParams Object<a class="headerlink" href="#stftparams-object" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="xref py py-class docutils literal"><span class="pre">nussl.StftParams</span></code> is an object that stores parameters for doing STFTs and iSTFTs. Its main function is to
-keep track of user-set parameters for the duration of the <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object’s life. The separation
-objects (<code class="xref py py-class docutils literal"><span class="pre">nussl.Repet</span></code>, for instance) also have a <code class="docutils literal"><span class="pre">StftParams</span></code> object, which is copied from the input
-<code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object.</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">nussl.StftParams</span></code> is an object that stores parameters for doing STFTs and iSTFTs. Its main function is to
+keep track of user-set parameters for the duration of the <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object’s life. The separation
+objects (<code class="xref py py-class docutils literal notranslate"><span class="pre">nussl.Repet</span></code>, for instance) also have a <code class="docutils literal notranslate"><span class="pre">StftParams</span></code> object, which is copied from the input
+<code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object.</p>
 <p>Let’s get to some examples to demonstrate.</p>
 <p>We can calculate an STFT with special, non-default parameters:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">(</span><span class="n">window_length</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">hop_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">window_type</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">WINDOW_HANN</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>But the next time we do an STFT, we’ll have the default parameters again. And <em>furthermore</em>, any other code
-that calls <code class="docutils literal"><span class="pre">signal1.sift()</span></code> (like, <code class="docutils literal"><span class="pre">nussl.Repet</span></code>) will use the default parameters.</p>
-<p>If we want to have these settings saved for the life of this <code class="xref py py-class docutils literal"><span class="pre">AudioSignal</span></code>: object, we have to set them
-in <code class="docutils literal"><span class="pre">signal1</span></code>’s <code class="docutils literal"><span class="pre">StftParams</span></code> object, at <code class="docutils literal"><span class="pre">signal1.stft_params</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
+that calls <code class="docutils literal notranslate"><span class="pre">signal1.sift()</span></code> (like, <code class="docutils literal notranslate"><span class="pre">nussl.Repet</span></code>) will use the default parameters.</p>
+<p>If we want to have these settings saved for the life of this <code class="xref py py-class docutils literal notranslate"><span class="pre">AudioSignal</span></code>: object, we have to set them
+in <code class="docutils literal notranslate"><span class="pre">signal1</span></code>’s <code class="docutils literal notranslate"><span class="pre">StftParams</span></code> object, at <code class="docutils literal notranslate"><span class="pre">signal1.stft_params</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">AudioSignal</span><span class="p">(</span><span class="n">input_file_path</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span> <span class="o">=</span> <span class="mi">4096</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">=</span> <span class="mi">1024</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_type</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">WINDOW_HANN</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">signal1</span><span class="o">.</span><span class="n">stft</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>This block of code is equivalent to the first, but now when we call <code class="docutils literal"><span class="pre">signal1.stft()</span></code> again it will use the same
+<p>This block of code is equivalent to the first, but now when we call <code class="docutils literal notranslate"><span class="pre">signal1.stft()</span></code> again it will use the same
 settings again.</p>
-<p>So now when <code class="docutils literal"><span class="pre">Repet</span></code> does an STFT (or any other separation method in <em>nussl</em>), it will use our settings again.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal1</span><span class="p">)</span>
+<p>So now when <code class="docutils literal notranslate"><span class="pre">Repet</span></code> does an STFT (or any other separation method in <em>nussl</em>), it will use our settings again.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span> <span class="o">=</span> <span class="n">nussl</span><span class="o">.</span><span class="n">Repet</span><span class="p">(</span><span class="n">signal1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The STFT inside <code class="docutils literal"><span class="pre">Repet</span></code> used the parameters we set for <code class="docutils literal"><span class="pre">signal1</span></code>. Automatically, <code class="docutils literal"><span class="pre">my_repet</span></code> has a copy of
-<code class="docutils literal"><span class="pre">signal1.stft_params</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span>
+<p>The STFT inside <code class="docutils literal notranslate"><span class="pre">Repet</span></code> used the parameters we set for <code class="docutils literal notranslate"><span class="pre">signal1</span></code>. Automatically, <code class="docutils literal notranslate"><span class="pre">my_repet</span></code> has a copy of
+<code class="docutils literal notranslate"><span class="pre">signal1.stft_params</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">window_length</span>
 <span class="go">4096</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span>
 <span class="go">1024</span>
@@ -338,12 +374,12 @@ settings again.</p>
 </pre></div>
 </div>
 <p>What if I want to change just one of the STFT parameters for only this repet instance? We can change the STFT parameters
-for <code class="docutils literal"><span class="pre">my_repet</span></code> and they won’t affect <code class="docutils literal"><span class="pre">signal1.stft_params</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">==</span> <span class="mi">2048</span>
+for <code class="docutils literal notranslate"><span class="pre">my_repet</span></code> and they won’t affect <code class="docutils literal notranslate"><span class="pre">signal1.stft_params</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">stft_params</span><span class="o">.</span><span class="n">hop_length</span> <span class="o">==</span> <span class="mi">2048</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">my_repet</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Now when we run <code class="docutils literal"><span class="pre">my_repet</span></code>, the hop length is 2048 instead of what was set in <code class="docutils literal"><span class="pre">signal1</span></code>, 1024.</p>
+<p>Now when we run <code class="docutils literal notranslate"><span class="pre">my_repet</span></code>, the hop length is 2048 instead of what was set in <code class="docutils literal notranslate"><span class="pre">signal1</span></code>, 1024.</p>
 <p><a class="reference external" href="http://i.giphy.com/d2Z9QYzA2aidiWn6.gif">Awesome!</a></p>
 <p class="rubric">Footnotes</p>
 <table class="docutils footnote" frame="void" id="f1" rules="none">
@@ -363,22 +399,70 @@ for <code class="docutils literal"><span class="pre">my_repet</span></code> and 
 </div>
 
 
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="repet.html" class="btn btn-neutral float-right" title="Using REPET" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="audio_signal_basics.html" class="btn btn-neutral" title="AudioSignal Basics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, Interactive Audio Lab.<br/>
-      Last updated on Sep 15, 2017.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.<br/>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

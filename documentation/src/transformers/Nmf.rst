@@ -1,9 +1,9 @@
 .. _nmf:
 
-Nmf Class
-=========
+Transformer NMF Class
+=====================
 
-.. automodule:: Nmf
+.. automodule:: nussl.transformers.transformer_nmf
     :members:
     :undoc-members:
     :show-inheritance:

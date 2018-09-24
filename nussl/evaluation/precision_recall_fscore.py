@@ -59,7 +59,7 @@ See Also:
 import sklearn
 
 import evaluation_base
-from nussl.separation.masks import binary_mask
+from ..separation.masks import binary_mask
 
 
 class PrecisionRecallFScore(evaluation_base.EvaluationBase):
@@ -76,6 +76,11 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
          See :ref:`nussl.PrecisionRecallFScore.evaluate` below.
         
     """
+
+    ACCURACY_KEY = 'Accuracy'
+    PRECISION_KEY = 'Precision'
+    RECALL_KEY = 'Recall'
+    FSCORE_KEY = 'F1-Score'
 
     def __init__(self, true_sources_mask_list, estimated_sources_mask_list, source_labels=None):
         super(PrecisionRecallFScore, self).__init__(true_sources_list=true_sources_mask_list,
@@ -190,10 +195,10 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
             est_mask = self.estimated_sources_list[i]
 
             label = self.source_labels[i]
-            results = {'Accuracy': self._accuracy(true_mask, est_mask),
-                       'Precision': self._precision(true_mask, est_mask),
-                       'Recall': self._recall(true_mask, est_mask),
-                       'F1-Score': self._f_score(true_mask, est_mask)}
+            results = {self.ACCURACY_KEY: self._accuracy(true_mask, est_mask),
+                       self.PRECISION_KEY: self._precision(true_mask, est_mask),
+                       self.RECALL_KEY: self._recall(true_mask, est_mask),
+                       self.FSCORE_KEY: self._f_score(true_mask, est_mask)}
 
             self.scores[label] = results
 

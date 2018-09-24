@@ -8,5 +8,5 @@ Getting Started
     :maxdepth: 2
 
     Installation <install>
-    The AudioSignal Object <audio_signal>
-    Using REPET <repet>
+    Introduction to AudioSignals <audio_signal>
+    Example: Using REPET <repet>

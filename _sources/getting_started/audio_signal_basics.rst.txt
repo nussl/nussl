@@ -88,9 +88,9 @@ Exception: Cannot add with two signals that have a different number of channels!
 Uh oh! I guess it doesn’t make sense to add a stereo signal (``signal1``) and mono signal (``signal2``).
 But if we really want to add these two signals, we have a few options.
 
-First, we can just get one of the channels like this [#f2]_:
+First, we can just get one of the channels like this:
 
->>> signal1.get_channel(1)
+>>> signal1.get_channel(0)
 
 Another option we have is to we can make ``signal1`` mono. *nussl* does this by simply averaging the
 two channels at every sample. We have to explicitly tell *nussl* that we are okay with ``to_mono()``
@@ -118,4 +118,3 @@ Awesome! Now lets see how we can manipulate the audio in the frequency domain...
 .. rubric:: Footnotes
 
 .. [#f1] Here, ``signal2`` has no value for ``file_name`` or ``path_to_input_file``. They are ``None``.
-.. [#f2] This is currently 1-based, but `will be 0-based in an upcoming release. <https://github.com/interactiveaudiolab/nussl/issues/58>`_

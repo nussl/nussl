@@ -1,0 +1,443 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ICA &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="RPCA" href="rpca.html" />
+    <link rel="prev" title="Component Analysis" href="component.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../core/core.html">Core</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../separation_classes.html">Separation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../base_classes/separation_base_classes.html">Base Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mask_classes/mask_classes.html">Masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../repetition/repetition.html">Repetition-based Separation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fore_background/fore_background.html">Other Foreground/Background Separation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../spatialization/spatialization.html">Spatialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nmf_classes/nmf_classes.html">Non-negative Matrix Factorization</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="component.html">Component Analysis</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ICA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rpca.html">RPCA</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_learning/deep_learning.html">Deep Learning algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmarking/benchmarking.html">Benchmarking Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../composite/composite.html">Composite Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../separation_classes.html">nussl Separation Classes</a> &raquo;</li>
+        
+          <li><a href="component.html">Component Analysis</a> &raquo;</li>
+        
+      <li>ICA</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/src/separation/component/ica.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="ica">
+<span id="id1"></span><h1>ICA<a class="headerlink" href="#ica" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-nussl.separation.ica"></span><dl class="class">
+<dt id="nussl.separation.ica.ICA">
+<em class="property">class </em><code class="descclassname">nussl.separation.ica.</code><code class="descname">ICA</code><span class="sig-paren">(</span><em>observations_list=None</em>, <em>sample_rate=44100</em>, <em>max_iterations=None</em>, <em>random_seed=None</em>, <em>fast_ica_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">nussl.separation.separation_base.SeparationBase</span></code></p>
+<p>Separate sources using the Independent Component Analysis, given observations of the audio scene.
+nussl’s ICA is a wrapper for sci-kit learn’s implementation of FastICA, and provides a way to interop between
+nussl’s <span class="xref std std-ref">AudioSignal</span> objects and FastICA.</p>
+<p class="rubric">References</p>
+<p><a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.fastica.html">sci-kit learn FastICA</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>observations_list</strong> – multichannel AudioSignal object containing each observation of the mixture in each channel.</li>
+<li><strong>prepare this input_audio_signal from multiple AudioSignal objects using</strong> (<em>Can</em>) – </li>
+<li><strong>ICA.numpy_observations_to_audio_signal</strong> (<em>observations</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="staticmethod">
+<dt id="nussl.separation.ica.ICA.numpy_observations_to_audio_signal">
+<em class="property">static </em><code class="descname">numpy_observations_to_audio_signal</code><span class="sig-paren">(</span><em>observations</em>, <em>sample_rate=44100</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA.numpy_observations_to_audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>observations</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) – </li>
+<li><strong>sample_rate</strong> (<em>int</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="nussl.separation.ica.ICA.audio_signal_observations_to_audio_signal">
+<em class="property">static </em><code class="descname">audio_signal_observations_to_audio_signal</code><span class="sig-paren">(</span><em>observations</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA.audio_signal_observations_to_audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>observations</strong> – </td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.ica.ICA.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA.run" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>background (AudioSignal)</em> – An AudioSignal object with repeating background in background.audio_data
+(to get the corresponding non-repeating foreground run self.make_audio_signals())</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.ica.ICA.make_audio_signals">
+<code class="descname">make_audio_signals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA.make_audio_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the background and foreground audio signals. You must have run ICA.run() prior
+to calling this function. This function will return None if run() has not been called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>Audio Signals (list)</em> – list</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.ica.ICA.audio_signal">
+<code class="descname">audio_signal</code><a class="headerlink" href="#nussl.separation.ica.ICA.audio_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy of the <code class="xref py py-class docutils literal notranslate"><span class="pre">audio_signal.AudioSignal</span></code> object passed in
+upon initialization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<code class="xref py py-class docutils literal notranslate"><span class="pre">audio_signal.AudioSignal</span></code>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="nussl.separation.ica.ICA.from_json">
+<em class="property">classmethod </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_string</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code> object from the parameters stored in this JSON string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_string</strong> (<em>str</em>) – A JSON string containing all the data to create a new <code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code>
+object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code>) A new <code class="xref py py-class docutils literal notranslate"><span class="pre">SeparationBase</span></code> object from the JSON string.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#nussl.separation.ica.ICA.to_json" title="nussl.separation.ica.ICA.to_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_json()</span></code></a> to make a JSON string to freeze this object.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.ica.ICA.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots relevant data for separation algorithm</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – Cannot call base class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.ica.ICA.sample_rate">
+<code class="descname">sample_rate</code><a class="headerlink" href="#nussl.separation.ica.ICA.sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample rate of <a class="reference internal" href="#nussl.separation.ica.ICA.audio_signal" title="nussl.separation.ica.ICA.audio_signal"><code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal</span></code></a>.
+Literally <code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal.sample_rate</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(int)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="nussl.separation.ica.ICA.stft_params">
+<code class="descname">stft_params</code><a class="headerlink" href="#nussl.separation.ica.ICA.stft_params" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">spectral_utils.StftParams</span></code> of <a class="reference internal" href="#nussl.separation.ica.ICA.audio_signal" title="nussl.separation.ica.ICA.audio_signal"><code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal</span></code></a>
+Literally <code class="xref py py-attr docutils literal notranslate"><span class="pre">audio_signal.stft_params</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">(<code class="xref py py-class docutils literal notranslate"><span class="pre">spectral_utils.StftParams</span></code>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="nussl.separation.ica.ICA.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.separation.ica.ICA.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs JSON from the data stored in this object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(str) a JSON string containing all of the information to restore this object exactly as it was when this
+was called.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#nussl.separation.ica.ICA.from_json" title="nussl.separation.ica.ICA.from_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_json()</span></code></a> to restore a JSON frozen object.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="rpca.html" class="btn btn-neutral float-right" title="RPCA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="component.html" class="btn btn-neutral" title="Component Analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

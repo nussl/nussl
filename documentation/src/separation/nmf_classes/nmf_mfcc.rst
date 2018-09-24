@@ -3,7 +3,7 @@
 NMF MFCC Class
 ==============
 
-.. automodule:: separation.nmf_mfcc
+.. automodule:: nussl.separation.nmf_mfcc
     :members:
     :show-inheritance:
     :undoc-members:

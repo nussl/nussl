@@ -1,0 +1,552 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>utils.py &mdash; nussl 0.1.6a0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="efz_utils.py" href="efz_utils.html" />
+    <link rel="prev" title="datasets.py" href="datasets.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> nussl
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/getting_started.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="core.html">Core</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audio_signal.html">AudioSignal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datasets.html">Data Set Integrations</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">General Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="efz_utils.html">External File Zoo (EFZ) Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stft_utils.html">STFT Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constants.html">Constants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../separation/separation_classes.html">Separation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation/evaluation_classes.html">Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transformers/transformer_classes.html">Transformers</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Code Examples</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contribution Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">nussl</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="core.html">Core nussl Utilities</a> &raquo;</li>
+        
+      <li>utils.py</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/src/core/utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-nussl.utils">
+<span id="utils-py"></span><span id="utils"></span><h1>utils.py<a class="headerlink" href="#module-nussl.utils" title="Permalink to this headline">¶</a></h1>
+<p>Provides utilities for running nussl algorithms that do not belong to
+any specific algorithm or that are shared between algorithms.</p>
+<dl class="function">
+<dt id="nussl.utils.find_peak_indices">
+<code class="descclassname">nussl.utils.</code><code class="descname">find_peak_indices</code><span class="sig-paren">(</span><em>input_array</em>, <em>n_peaks</em>, <em>min_dist=None</em>, <em>do_min=False</em>, <em>threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.find_peak_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will find the indices of the peaks of an input n-dimensional numpy array.
+This can be configured to find max or min peak indices, distance between the peaks, and
+a lower bound, at which the algorithm will stop searching for peaks (or upper bound if
+searching for max). Used exactly the same as <a class="reference internal" href="#nussl.utils.find_peak_values" title="nussl.utils.find_peak_values"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_peak_values()</span></code></a>.</p>
+<p>This function currently only accepts 1-D and 2-D numpy arrays.</p>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li>This function only returns the indices of peaks. If you want to find peak values,</li>
+</ul>
+<p>use <a class="reference internal" href="#nussl.utils.find_peak_values" title="nussl.utils.find_peak_values"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_peak_values()</span></code></a>.</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>min_dist can be an int or a tuple of length 2.</dt>
+<dd>If input_array is 1-D, min_dist must be an integer.
+If input_array is 2-D, min_dist can be an integer, in which case the minimum
+distance in both dimensions will be equal. min_dist can also be a tuple if
+you want each dimension to have a different minimum distance between peaks.
+In that case, the 0th value in the tuple represents the first dimension, and
+the 1st value represents the second dimension in the numpy array.</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">:: <a class="reference internal" href="#nussl.utils.find_peak_values" title="nussl.utils.find_peak_values"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_peak_values()</span></code></a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_array</strong> – a 1- or 2- dimensional numpy array that will be inspected.</li>
+<li><strong>n_peaks</strong> – (int) maximum number of peaks to find</li>
+<li><strong>min_dist</strong> – (int) minimum distance between peaks. Default value: len(input_array) / 4</li>
+<li><strong>do_min</strong> – (bool) if True, finds indices at minimum value instead of maximum</li>
+<li><strong>threshold</strong> – (float) the value (scaled between 0.0 and 1.0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>peak_indices</em> – (list) list of the indices of the peak values</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.find_peak_values">
+<code class="descclassname">nussl.utils.</code><code class="descname">find_peak_values</code><span class="sig-paren">(</span><em>input_array</em>, <em>n_peaks</em>, <em>min_dist=None</em>, <em>do_min=False</em>, <em>threshold=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.find_peak_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the values of the peaks in a 1-D or 2-D numpy array. Used exactly the same as
+<a class="reference internal" href="#nussl.utils.find_peak_indices" title="nussl.utils.find_peak_indices"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_peak_indices()</span></code></a>. This function will find the values of the peaks of an input
+n-dimensional numpy array.</p>
+<p>This can be configured to find max or min peak values, distance between the peaks, and
+a lower bound, at which the algorithm will stop searching for peaks (or upper bound if
+searching for max).</p>
+<p>This function currently only accepts 1-D and 2-D numpy arrays.</p>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li>This function only returns the indices of peaks. If you want to find peak values,</li>
+</ul>
+<p>use <a class="reference internal" href="#nussl.utils.find_peak_indices" title="nussl.utils.find_peak_indices"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_peak_indices()</span></code></a>.</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>min_dist can be an int or a tuple of length 2.</dt>
+<dd>If input_array is 1-D, min_dist must be an integer.
+If input_array is 2-D, min_dist can be an integer, in which case the minimum
+distance in both dimensions will be equal. min_dist can also be a tuple if
+you want each dimension to have a different minimum distance between peaks.
+In that case, the 0th value in the tuple represents the first dimension, and
+the 1st value represents the second dimension in the numpy array.</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">:: <a class="reference internal" href="#nussl.utils.find_peak_indices" title="nussl.utils.find_peak_indices"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_peak_indices()</span></code></a></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_array</strong> – a 1- or 2- dimensional numpy array that will be inspected.</li>
+<li><strong>n_peaks</strong> – (int) maximum number of peaks to find</li>
+<li><strong>min_dist</strong> – (int) minimum distance between peaks. Default value: len(input_array) / 4</li>
+<li><strong>do_min</strong> – (bool) if True, finds indices at minimum value instead of maximum</li>
+<li><strong>threshold</strong> – (float) the value (scaled between 0.0 and 1.0)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>peak_values</em> – (list) list of the values of the peak values</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.json_ready_numpy_array">
+<code class="descclassname">nussl.utils.</code><code class="descname">json_ready_numpy_array</code><span class="sig-paren">(</span><em>array</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.json_ready_numpy_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapted from:
+<a class="reference external" href="http://stackoverflow.com/a/27948073/5768001">http://stackoverflow.com/a/27948073/5768001</a>
+:param array: np array to make json ready.</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.json_serialize_numpy_array">
+<code class="descclassname">nussl.utils.</code><code class="descname">json_serialize_numpy_array</code><span class="sig-paren">(</span><em>array</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.json_serialize_numpy_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a JSON string of the numpy array.</p>
+<p class="rubric">Notes</p>
+<p>The generated JSON strings can be converted back to numpy arrays with load_numpy_json()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array</strong> – (numpy array) any numpy array to convert to JSON</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(string) JSON-ified numpy array.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">load_numpy_json()</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.load_numpy_json">
+<code class="descclassname">nussl.utils.</code><code class="descname">load_numpy_json</code><span class="sig-paren">(</span><em>array_json</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.load_numpy_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns a JSON-ified numpy array back into a regular numpy array.</p>
+<p class="rubric">Notes</p>
+<p>This function is only guaranteed to work with JSON generated by json_serialize_numpy_array()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>array_json</strong> – (string) JSON-ified nump array</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(numpy array) numpy array from the input JSON string</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">json_serialize_numpy_array()</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.json_numpy_obj_hook">
+<code class="descclassname">nussl.utils.</code><code class="descname">json_numpy_obj_hook</code><span class="sig-paren">(</span><em>dct</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.json_numpy_obj_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decodes a previously encoded numpy ndarray
+with proper shape and dtype
+from: <a class="reference external" href="http://stackoverflow.com/a/27948073/5768001">http://stackoverflow.com/a/27948073/5768001</a>
+:param dct: (dict) json encoded ndarray
+:return: (ndarray) if input was an encoded ndarray</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.add_mismatched_arrays">
+<code class="descclassname">nussl.utils.</code><code class="descname">add_mismatched_arrays</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em>, <em>truncate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.add_mismatched_arrays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will add two 1D numpy arrays of different length. If <a href="#id1"><span class="problematic" id="id2">:param:`truncate`</span></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, it will
+expand the resultant array to the larger of the two, if <code class="docutils literal notranslate"><span class="pre">True</span></code> it will truncate the resultant
+array to the smaller of the two.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>array1</strong> – (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) 1D numeric numpy array</li>
+<li><strong>array2</strong> – (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) 1D numeric numpy array</li>
+<li><strong>truncate</strong> – (bool) If <a href="#id3"><span class="problematic" id="id4">``</span></a>Tru``e, will truncate the resultant array to the smaller of the two</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) – A 1D numpy array that is the element-wise sum of the two input arrays.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.add_mismatched_arrays2D">
+<code class="descclassname">nussl.utils.</code><code class="descname">add_mismatched_arrays2D</code><span class="sig-paren">(</span><em>array1</em>, <em>array2</em>, <em>truncate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.add_mismatched_arrays2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Will add two 2D numpy arrays of different length. If <a href="#id5"><span class="problematic" id="id6">:param:`truncate`</span></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, it will
+expand the resultant array to the larger of the two, if <code class="docutils literal notranslate"><span class="pre">True</span></code> it will truncate the resultant
+array to the smaller of the two.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>array1</strong> – (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.array</span></code>) 2D numeric numpy array.</li>
+<li><strong>array2</strong> – (<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.array</span></code>) 2D numeric numpy array.</li>
+<li><strong>truncate</strong> – (bool) If <code class="docutils literal notranslate"><span class="pre">True</span></code>, will truncate the resultant array to the smaller of the two.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) – A 2D numpy array that is the element-wise sum of the two input arrays.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.complex_randn">
+<code class="descclassname">nussl.utils.</code><code class="descname">complex_randn</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.complex_randn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a complex-valued numpy array of random values with shape <a href="#id7"><span class="problematic" id="id8">:param:`shape`</span></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>shape</strong> (<em>tuple</em>) – Tuple of ints that will be the shape of the resultant complex numpy array.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<code class="xref py py-obj docutils literal notranslate"><span class="pre">np.ndarray</span></code>) – a complex-valued numpy array of random values with shape <cite>shape</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.print_all_separation_algorithms">
+<code class="descclassname">nussl.utils.</code><code class="descname">print_all_separation_algorithms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.print_all_separation_algorithms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays the list of all separation algorithms in nussl to the console.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.verify_audio_signal_list_lax">
+<code class="descclassname">nussl.utils.</code><code class="descname">verify_audio_signal_list_lax</code><span class="sig-paren">(</span><em>audio_signal_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.verify_audio_signal_list_lax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies that an input (<a href="#id9"><span class="problematic" id="id10">:param:`audio_signal_list`</span></a>) is a list of <span class="xref std std-ref">AudioSignal</span> objects.
+If not so, attempts to correct the list (if possible) and returns the corrected list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>audio_signal_list</strong> (<em>list</em>) – List of <span class="xref std std-ref">AudioSignal</span> objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>audio_signal_list (list)</em> – Verified list of <span class="xref std std-ref">AudioSignal</span> objects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.verify_audio_signal_list_strict">
+<code class="descclassname">nussl.utils.</code><code class="descname">verify_audio_signal_list_strict</code><span class="sig-paren">(</span><em>audio_signal_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.verify_audio_signal_list_strict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies that an input (<a href="#id11"><span class="problematic" id="id12">:param:`audio_signal_list`</span></a>) is a list of <span class="xref std std-ref">AudioSignal</span> objects and
+that they all have the same sample rate and same number of channels. If not true,
+attempts to correct the list (if possible) and returns the corrected list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>audio_signal_list</strong> (<em>list</em>) – List of <span class="xref std std-ref">AudioSignal</span> objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>audio_signal_list (list)</em> – Verified list of <span class="xref std std-ref">AudioSignal</span> objects, that all have
+the same sample rate and number of channels.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.verify_separation_base_list">
+<code class="descclassname">nussl.utils.</code><code class="descname">verify_separation_base_list</code><span class="sig-paren">(</span><em>separation_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.verify_separation_base_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies that all items in <a href="#id13"><span class="problematic" id="id14">:param:`separation_list`</span></a> are <span class="xref std std-ref">SeparationBase</span> -derived objects.
+If not so, attempts to correct the list if possible and returns the corrected list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>separation_list</strong> (<em>list</em>) – List of <span class="xref std std-ref">SeparationBase</span> -derived objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>separation_list (list)</em> – Verified list of <span class="xref std std-ref">SeparationBase</span> -derived objects</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="nussl.utils.verify_mask_separation_base_list">
+<code class="descclassname">nussl.utils.</code><code class="descname">verify_mask_separation_base_list</code><span class="sig-paren">(</span><em>mask_separation_list</em><span class="sig-paren">)</span><a class="headerlink" href="#nussl.utils.verify_mask_separation_base_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies that all items in <a href="#id15"><span class="problematic" id="id16">:param:`separation_list`</span></a> are <span class="xref std std-ref">MaskSeparationBase</span> -derived
+objects. If not so, attempts to correct the list if possible and returns the corrected list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mask_separation_list</strong> (<em>list</em>) – List of <span class="xref std std-ref">MaskSeparationBase</span> -derived objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>separation_list (list)</em> – Verified list of <span class="xref std std-ref">MaskSeparationBase</span> -derived objects</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="efz_utils.html" class="btn btn-neutral float-right" title="efz_utils.py" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="datasets.html" class="btn btn-neutral" title="datasets.py" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Interactive Audio Lab.
+      Last updated on Sep 24, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.6a0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

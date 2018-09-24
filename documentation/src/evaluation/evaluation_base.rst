@@ -3,7 +3,7 @@
 EvaluationBase Class
 ====================
 
-.. automodule:: evaluation.evaluation_base
+.. automodule:: nussl.evaluation.evaluation_base
     :members:
     :undoc-members:
     :private-members:

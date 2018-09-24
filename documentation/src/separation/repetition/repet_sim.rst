@@ -1,9 +1,9 @@
 .. _repet_sim:
 
-RepetSim Class
-==============
+RepetSim
+========
 
-.. automodule:: separation.repet_sim
+.. automodule:: nussl.separation.repet_sim
     :members:
     :show-inheritance:
     :undoc-members:

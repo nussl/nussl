@@ -3,13 +3,15 @@
 Installation
 ============
 
-There are many ways to install *nussl*. The easiest way is to use the Python Package Index (PyPI), also known as
-`pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_. pip comes pre-installed with most python distributions
-and will automatically install *nussl's* required dependencies.
+There are many ways to install *nussl*. The easiest way is to use the Python Package Index (PyPI),
+which is used through the command line with
+`pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_. pip comes pre-installed with most
+python distributions and will automatically install *nussl's* required dependencies.
 
-**It is highly recommended to install** *nussl* **inside a virtual environment because it is under active development.**
-We also recommend installing `anaconda <https://www.continuum.io/>`_ and setting up an anaconda virtual environment
-(see :ref:`Making an anaconda env <anaconda_env>`) prior to using this package.
+**It is highly recommended to install** *nussl* **inside a virtual environment because it is under
+active development.**
+We also recommend installing `anaconda <https://www.continuum.io/>`_ and setting up an anaconda
+virtual environment (see :ref:`Making an anaconda env <anaconda_env>`) prior to using this package.
 
 Requirements
 ------------

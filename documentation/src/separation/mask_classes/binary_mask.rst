@@ -1,9 +1,9 @@
 .. _binary_mask:
 
-BinaryMask Class
-================
+BinaryMask
+==========
 
-.. automodule:: separation.masks.binary_mask
+.. automodule:: nussl.separation.masks.binary_mask
     :members:
     :show-inheritance:
     :undoc-members:
