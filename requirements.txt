@@ -1,6 +1,6 @@
 audioread >= 2.1.4
 jsonpickle >= 0.9.5
-librosa >= 0.6.0
+librosa >= 0.6.2
 matplotlib >= 2.0.0
 mir_eval >= 0.4
 museval >= 0.2.0
