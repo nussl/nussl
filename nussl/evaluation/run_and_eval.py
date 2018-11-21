@@ -8,7 +8,7 @@ evaluation method of your choosing, all in one fell swoop.
 
 import warnings
 
-import evaluation_base
+from . import evaluation_base
 from ..core import utils
 from ..core import constants
 from .precision_recall_fscore import PrecisionRecallFScore
@@ -88,7 +88,7 @@ def run_and_eval_prf(separation_list, separation_kwargs,
     for i, separation_object in enumerate(separation_list):
         for j, mixture in enumerate(mixture_list):
             if verbose:
-                print('Starting {} and {}'.format(str(separation_object), mixture.file_name))
+                print(('Starting {} and {}'.format(str(separation_object), mixture.file_name)))
 
             true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[j])
 

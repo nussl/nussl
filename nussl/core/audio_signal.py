@@ -96,7 +96,7 @@ See Also:
 
 """
 
-from __future__ import division
+
 
 import copy
 import json
@@ -110,9 +110,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io.wavfile as wav
 
-import constants
-import stft_utils
-import utils
+from . import constants
+from . import stft_utils
+from . import utils
 
 __all__ = ['AudioSignal']
 
@@ -868,10 +868,10 @@ class AudioSignal(object):
 
             wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception as e:
-            print("Cannot write to file, {file}.".format(file=output_file_path))
+            print(("Cannot write to file, {file}.".format(file=output_file_path)))
             raise e
         if verbose:
-            print("Successfully wrote {file}.".format(file=output_file_path))
+            print(("Successfully wrote {file}.".format(file=output_file_path)))
 
     ##################################################
     #                Active Region
@@ -1229,7 +1229,7 @@ class AudioSignal(object):
     def _check_if_valid_img_type(name):
         import matplotlib.pyplot as plt
         fig = plt.figure()
-        result = any([name[-len(k):] == k for k in fig.canvas.get_supported_filetypes().keys()])
+        result = any([name[-len(k):] == k for k in list(fig.canvas.get_supported_filetypes().keys())])
         plt.close()
         return result
 
@@ -1509,7 +1509,7 @@ class AudioSignal(object):
             raise TypeError
 
         d = copy.copy(o.__dict__)
-        for k, v in d.items():
+        for k, v in list(d.items()):
             if isinstance(v, np.ndarray):
                 d[k] = utils.json_ready_numpy_array(v)
         d['__class__'] = o.__class__.__name__
@@ -1555,11 +1555,11 @@ class AudioSignal(object):
             stft_params = json_dict.pop('stft_params')
             a.stft_params = stft_utils.StftParams.from_json(stft_params)
 
-            for k, v in json_dict.items():
+            for k, v in list(json_dict.items()):
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
                     a.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
                 else:
-                    a.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
+                    a.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
             return a
         else:
             return json_dict
@@ -1893,7 +1893,7 @@ class AudioSignal(object):
         return self.signal_length
 
     def __eq__(self, other):
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             if isinstance(v, np.ndarray):
                 if not np.array_equal(v, other.__dict__[k]):
                     return False

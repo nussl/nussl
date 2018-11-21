@@ -58,8 +58,8 @@ Examples:
 import numpy as np
 import warnings
 
-import mask_base
-import binary_mask
+from . import mask_base
+from . import binary_mask
 
 
 class SoftMask(mask_base.MaskBase):

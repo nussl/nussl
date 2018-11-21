@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import mask_separation_base
-import masks
+from . import mask_separation_base
+from . import masks
 from ..core import constants
 import librosa
 import copy

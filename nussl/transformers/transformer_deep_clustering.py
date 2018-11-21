@@ -98,4 +98,4 @@ class TransformerDeepClustering(nn.Module):
         for p in model.parameters():
             if p.requires_grad:
                 num_parameters += np.cumprod(p.size())[-1]
-        print('Number of parameters: {}'.format(num_parameters))
+        print(('Number of parameters: {}'.format(num_parameters)))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+
 
 import json
 import os.path
@@ -13,7 +13,7 @@ import numpy as np
 import scipy.fftpack as scifft
 import scipy.signal
 
-import constants
+from . import constants
 
 __all__ = ['plot_stft', 'e_stft', 'e_istft', 'e_stft_plus', 'librosa_stft_wrapper', 'librosa_istft_wrapper',
            'make_window', 'StftParams']
@@ -395,7 +395,7 @@ def e_stft_plus(signal, window_length, hop_length, window_type, sample_rate,
     else:
         frequency_vector = sample_rate * np.linspace(0, 1, n_fft_bins + 1)
 
-    time_vector = np.array(range(stft.shape[1]))
+    time_vector = np.array(list(range(stft.shape[1])))
     hop_in_secs = hop_length / (1.0 * sample_rate)
     time_vector = np.multiply(hop_in_secs, time_vector)
 
@@ -639,14 +639,14 @@ class StftParams(object):
                 raise TypeError
             sr = json_dict['sample_rate']
             s = StftParams(sr)
-            for k, v in json_dict.items():
-                s.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
+            for k, v in list(json_dict.items()):
+                s.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
             return s
         else:
             return json_dict
 
     def __eq__(self, other):
-        return all([v == other.__dict__[k] for k, v in self.__dict__.items()])
+        return all([v == other.__dict__[k] for k, v in list(self.__dict__.items())])
 
     def __ne__(self, other):
         return not self == other

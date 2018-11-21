@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import division
+
 
 import unittest
 import nussl
@@ -193,11 +193,11 @@ class DuetUnitTests(BenchmarkTestBase):
         # Is the audio data the same?
         assert all(np.array_equal(benchmark_final_signals[i].audio_data,
                                   final_signals[i].audio_data)
-                   for i in range(len(final_signals)))
+                   for i in list(range(len(final_signals))))
 
         # Check to see if AudioSignal's API changed; do we need to refreeze?
         assert all(benchmark_final_signals[i] == final_signals[i]
-                   for i in range(len(final_signals)))
+                   for i in list(range(len(final_signals))))
 
         assert np.all(benchmark_final_signals == final_signals)
 

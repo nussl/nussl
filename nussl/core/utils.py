@@ -5,7 +5,7 @@ Provides utilities for running nussl algorithms that do not belong to
 any specific algorithm or that are shared between algorithms.
 """
 
-from __future__ import division
+
 import warnings
 import base64
 import json
@@ -15,7 +15,7 @@ import collections
 import numpy as np
 import musdb
 
-import constants
+from . import constants
 
 __all__ = ['find_peak_indices', 'find_peak_values',
            'json_ready_numpy_array', 'json_serialize_numpy_array', 'load_numpy_json',
@@ -406,7 +406,7 @@ def _format(string):
     """ Formats a class name correctly for checking function and class names.
         Strips all non-alphanumeric chars and makes lowercase.
     """
-    return str(filter(str.isalnum, string)).lower()
+    return str(list(filter(str.isalnum, string))).lower()
 
 
 def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
@@ -447,7 +447,7 @@ def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
     Returns:
         (:obj:`musdb.Track`) populated as specified by inputs.
     """
-    verify_audio_signal_list_strict(sources_dict.values() + [mixture])
+    verify_audio_signal_list_strict(list(sources_dict.values()) + [mixture])
 
     track = musdb.Track(mixture.file_name, is_wav=True, stem_id=0)
     track.audio = mixture.audio_data.T
@@ -654,4 +654,4 @@ def print_all_separation_algorithms():
     Displays the list of all separation algorithms in nussl to the console.
     """
     from ..separation import all_separation_algorithms
-    print('\n'.join([a.__name__ for a in all_separation_algorithms]))
+    print(('\n'.join([a.__name__ for a in all_separation_algorithms])))

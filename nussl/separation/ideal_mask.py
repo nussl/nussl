@@ -19,8 +19,8 @@ import warnings
 import numpy as np
 import librosa
 
-import mask_separation_base
-import masks
+from . import mask_separation_base
+from . import masks
 from ..core import constants
 from ..core import utils
 

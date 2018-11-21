@@ -21,7 +21,7 @@ from six.moves.urllib.error import HTTPError
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import urlopen, Request
 
-import constants
+from . import constants
 
 
 __all__ = ['get_available_audio_files', 'print_available_audio_files',
@@ -92,11 +92,11 @@ def print_available_audio_files():
     """
     file_metadata = get_available_audio_files()
 
-    print('{:40} {:15} {:10} {:50}'.format('File Name', 'Duration (sec)',
-                                           'Size', 'Description'))
+    print(('{:40} {:15} {:10} {:50}'.format('File Name', 'Duration (sec)',
+                                           'Size', 'Description')))
     for f in file_metadata:
-        print('{:40} {:<15.1f} {:10} {:50}'.format(f['file_name'], f['file_length_seconds'],
-                                                   f['file_size'], f['file_description']))
+        print(('{:40} {:<15.1f} {:10} {:50}'.format(f['file_name'], f['file_length_seconds'],
+                                                   f['file_size'], f['file_description'])))
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_audio_file(), like so: \n'
           ' >>> nussl.efz_utils.download_audio_file(\'K0140.wav\')')
@@ -178,10 +178,10 @@ def print_available_trained_models():
     """
     file_metadata = get_available_trained_models()
 
-    print('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
+    print(('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description')))
     for f in file_metadata:
-        print('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
-                                               f['file_size'], f['file_description']))
+        print(('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
+                                               f['file_size'], f['file_description'])))
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_trained_model, like so: \n'
           ' >>> nussl.efz_utils.download_trained_model(\'deep_clustering_model.h5\')')
@@ -257,10 +257,10 @@ def print_available_benchmark_files():
     """
     file_metadata = get_available_benchmark_files()
 
-    print('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description'))
+    print(('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description')))
     for f in file_metadata:
-        print('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
-                                               f['file_size'], f['file_description']))
+        print(('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
+                                               f['file_size'], f['file_description'])))
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_benchmark_file, like so: \n'
           ' >>> nussl.efz_utils.download_benchmark_file(\'example.npy\')')
@@ -489,7 +489,7 @@ def _download_file(file_name, url, local_folder, cache_subdir,
                                   "Downloading {} from servers...".format(file_path, file_name))
                 download = True
             elif verbose:
-                print('Matching file found at {}, skipping download.'.format(file_path))
+                print(('Matching file found at {}, skipping download.'.format(file_path)))
 
         else:
             download = True
@@ -499,8 +499,8 @@ def _download_file(file_name, url, local_folder, cache_subdir,
 
     if download:
         if verbose:
-            print('Saving file at {}'.format(file_path))
-            print('Downloading {} from {}'.format(file_name, url))
+            print(('Saving file at {}'.format(file_path)))
+            print(('Downloading {} from {}'.format(file_name, url)))
 
         def _dl_progress(count, block_size, total_size):
             percent = int(count * block_size * 100 / total_size)

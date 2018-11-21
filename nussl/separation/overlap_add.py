@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+
 
 import warnings
 
 import numpy as np
 
-import separation_base
+from . import separation_base
 from ..core import stft_utils
 from ..core import constants
 
-from ft2d import FT2D
-from repet import Repet
-from repet_sim import RepetSim
+from .ft2d import FT2D
+from .repet import Repet
+from .repet_sim import RepetSim
 
 
 class OverlapAdd(separation_base.SeparationBase):
@@ -97,7 +97,7 @@ class OverlapAdd(separation_base.SeparationBase):
         Returns:
 
         """
-        return OverlapAdd._valid_separation_methods.values()
+        return list(OverlapAdd._valid_separation_methods.values())
 
     @staticmethod
     def valid_separation_method_names():
@@ -106,13 +106,13 @@ class OverlapAdd(separation_base.SeparationBase):
         Returns:
 
         """
-        return [method.__name__ for method in OverlapAdd._valid_separation_methods.values()]
+        return [method.__name__ for method in list(OverlapAdd._valid_separation_methods.values())]
 
     @staticmethod
     def _valid_methods_lower():
         """Case invariant (lowercase) version of self._valid_separation_methods dictionary.
         """
-        return {OverlapAdd._format(name): obj for name, obj in OverlapAdd._valid_separation_methods.items()}
+        return {OverlapAdd._format(name): obj for name, obj in list(OverlapAdd._valid_separation_methods.items())}
 
     @property
     def separation_method_name(self):
@@ -145,12 +145,12 @@ class OverlapAdd(separation_base.SeparationBase):
         """
         error = ValueError("Invalid separation method for OverlapAdd! \n" +
                            "Got {0}, but valid methods are: {1}"
-                           .format(value, ', '.join(self._valid_separation_methods.keys())))
+                           .format(value, ', '.join(list(self._valid_separation_methods.keys()))))
         if value is None:
             raise error
 
         if isinstance(value, str):
-            if self._format(value) in self._valid_methods_lower().keys():
+            if self._format(value) in list(self._valid_methods_lower().keys()):
                 # The user input a string with a valid method name. It should be in our dictionary
                 self._separation_method = self._valid_methods_lower()[self._format(value)]
             else:
@@ -158,7 +158,7 @@ class OverlapAdd(separation_base.SeparationBase):
                 raise error
 
         elif issubclass(value, separation_base.SeparationBase) and \
-                        value in self._valid_separation_methods.values():
+                        value in list(self._valid_separation_methods.values()):
             # The user gave us a class, so we use that
             self._separation_method = value
 
@@ -172,7 +172,7 @@ class OverlapAdd(separation_base.SeparationBase):
         """ Formats a class name correctly for self._valid_methods_lower.
             Strips all non-alphanumeric chars and makes lowercase.
         """
-        return str(filter(str.isalnum, string)).lower()
+        return str(list(filter(str.isalnum, string))).lower()
 
     @property
     def separation_instance(self):

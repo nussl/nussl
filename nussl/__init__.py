@@ -29,7 +29,7 @@ from .core import utils, efz_utils, stft_utils, datasets
 from .evaluation import *
 from .separation import *
 from .transformers import *
-import core.constants
+from . import core.constants
 
 __all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation']
 

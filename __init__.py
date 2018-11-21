@@ -1,1 +1,1 @@
-from nussl import *
+from .nussl import *

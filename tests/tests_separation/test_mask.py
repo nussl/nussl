@@ -4,7 +4,7 @@
 Tests for Mask class
 """
 
-from __future__ import division
+
 import unittest
 import numpy as np
 import librosa

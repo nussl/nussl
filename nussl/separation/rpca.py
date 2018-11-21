@@ -4,8 +4,8 @@
 import numpy as np
 
 from ..core import constants
-import masks
-import mask_separation_base
+from . import masks
+from . import mask_separation_base
 from .. import AudioSignal
 
 
@@ -132,7 +132,7 @@ class RPCA(mask_separation_base.MaskSeparationBase):
 
         while not converged and num_iteration < self.num_iterations:
             if self.verbose:
-                print('Iteration: {}, Error: {}'.format(num_iteration, error))
+                print(('Iteration: {}, Error: {}'.format(num_iteration, error)))
 
             num_iteration += 1
             low_rank = self.svd_threshold(magnitude_spectrogram - sparse_matrix + residuals / mu,

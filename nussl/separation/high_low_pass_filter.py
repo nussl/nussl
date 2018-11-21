@@ -5,12 +5,12 @@
 Implements a simple high/low pass filter for audio source separation
 """
 
-from __future__ import division
+
 import numpy as np
 import scipy.signal
 
-import mask_separation_base
-from ideal_mask import IdealMask
+from . import mask_separation_base
+from .ideal_mask import IdealMask
 
 
 class HighLowPassFilter(mask_separation_base.MaskSeparationBase):

@@ -58,7 +58,7 @@ See Also:
 
 import sklearn
 
-import evaluation_base
+from . import evaluation_base
 from ..separation.masks import binary_mask
 
 

@@ -20,7 +20,7 @@ modified by Ethan Manilow and Prem Seetharaman for incorporation into nussl.
 
 import numpy as np
 
-import separation_base
+from . import separation_base
 from ..core import utils
 from ..core import constants
 from ..core.audio_signal import AudioSignal
@@ -126,7 +126,7 @@ class Projet(separation_base.SeparationBase):
         for iteration in range(self.num_iterations):
 
             if self.verbose:
-                print('Iteration {}'.format(iteration))
+                print(('Iteration {}'.format(iteration)))
 
             sigma = np.dot(P, np.dot(panning_sources_matrix.T, K.T))
 

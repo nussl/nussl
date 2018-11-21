@@ -8,7 +8,7 @@ most of the logic for these base classes.
 
 import numpy as np
 
-import evaluation_base
+from . import evaluation_base
 
 
 class BSSEvalBase(evaluation_base.EvaluationBase):

@@ -9,8 +9,8 @@ import numpy as np
 import scipy.fftpack as scifft
 import scipy.spatial.distance
 
-import mask_separation_base
-import masks
+from . import mask_separation_base
+from . import masks
 from ..core import constants
 
 
@@ -327,7 +327,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
         m = np.amax(extrema_neighbors, axis=0)
         extrema_values = extrema_values.flatten()
         maxima = np.where(extrema_values >= m)[0]
-        maxima = zip(sign_changes[maxima], extrema_values[maxima])
+        maxima = list(zip(sign_changes[maxima], extrema_values[maxima]))
         maxima = maxima[1:]
         maxima = sorted(maxima, key=lambda x: -x[1])
         period = maxima[0][0]

@@ -8,8 +8,8 @@ Base class for separation algorithms that make masks. Most algorithms in nussl a
 import json
 import warnings
 
-import masks
-import separation_base
+from . import masks
+from . import separation_base
 from ..core import utils
 from ..core import audio_signal
 from ..core import constants
@@ -264,12 +264,12 @@ class MaskSeparationBaseDecoder(separation_base.SeparationBaseDecoder):
             json_dict, separator = self._inspect_json_and_create_new_instance(json_dict)
 
             # fill out the rest of the fields
-            for k, v in json_dict.items():
+            for k, v in list(json_dict.items()):
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
                     separator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
                     
                 # TODO: test this in python3
-                elif isinstance(v, (str, bytes, unicode)) and audio_signal.__name__ in v:
+                elif isinstance(v, (str, bytes)) and audio_signal.__name__ in v:
 
                     separator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
                 elif k == 'result_masks':
@@ -277,7 +277,7 @@ class MaskSeparationBaseDecoder(separation_base.SeparationBaseDecoder):
 
                     separator.result_masks = [masks.MaskBase.from_json(itm) for itm in v]
                 else:
-                    separator.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
+                    separator.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
 
             return separator
         else:

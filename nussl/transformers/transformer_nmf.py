@@ -284,8 +284,8 @@ class TransformerNMF(object):
         for indices, val in np.ndenumerate(self.activation_matrix):
             (a, mu) = indices
             result = sum((self.template_dictionary[i][a] * self.input_matrix[i][mu]) / dot[i][mu]
-                         for i in range(self.template_dictionary.shape[0]))
-            result /= sum(self.template_dictionary[k][a] for k in range(self.template_dictionary.shape[0]))
+                         for i in list(range(self.template_dictionary.shape[0])))
+            result /= sum(self.template_dictionary[k][a] for k in list(range(self.template_dictionary.shape[0])))
             result *= self.activation_matrix[indices]
             activation_copy[indices] = result
 
@@ -305,8 +305,8 @@ class TransformerNMF(object):
         for indices, val in np.ndenumerate(self.template_dictionary):
             (i, a) = indices
             result = sum((self.activation_matrix[a][mu] * self.input_matrix[i][mu]) / dot[i][mu]
-                         for mu in range(self.activation_matrix.shape[1]))
-            result /= sum(self.activation_matrix[a][nu] for nu in range(self.activation_matrix.shape[1]))
+                         for mu in list(range(self.activation_matrix.shape[1])))
+            result /= sum(self.activation_matrix[a][nu] for nu in list(range(self.activation_matrix.shape[1])))
             result *= self.template_dictionary[indices]
             template_copy[indices] = result
 
@@ -403,7 +403,7 @@ class TransformerNMF(object):
         # Labels for major ticks
         ax2.set_xticklabels(['' for _ in range(self.num_components)])
         ax2.set_yticklabels(['' for _ in range(y_len)])
-        ax2.tick_params(axis=u'both', which=u'both', length=0)
+        ax2.tick_params(axis='both', which='both', length=0)
 
         # Minor ticks
         if show_divider_lines:
@@ -424,7 +424,7 @@ class TransformerNMF(object):
         # Labels for major ticks
         ax3.set_xticklabels(['' for _ in range(self.num_components)])
         ax3.set_yticklabels(['' for _ in range(y_len)])
-        ax3.tick_params(axis=u'both', which=u'both', length=0)
+        ax3.tick_params(axis='both', which='both', length=0)
 
         # Minor ticks
         if show_divider_lines:

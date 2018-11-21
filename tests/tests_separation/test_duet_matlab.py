@@ -5,7 +5,7 @@ Why are these tests here? (Are the functional?)
 What did you do?
 """
 
-from __future__ import division
+
 
 import unittest
 import nussl

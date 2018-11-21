@@ -241,7 +241,7 @@ class MaskBase(object):
             raise TypeError('MaskBase._to_json_helper() got foreign object!')
 
         d = copy.copy(o.__dict__)
-        for k, v in d.items():
+        for k, v in list(d.items()):
             if isinstance(v, np.ndarray):
                 d[k] = utils.json_ready_numpy_array(v)
 
@@ -333,7 +333,7 @@ class MaskBaseDecoder(json.JSONDecoder):
             class_name = json_dict.pop('__class__')
             module_name = json_dict.pop('__module__')
 
-            mask_modules, mask_names = zip(*[(c.__module__, c.__name__) for c in MaskBase.__subclasses__()])
+            mask_modules, mask_names = list(zip(*[(c.__module__, c.__name__) for c in MaskBase.__subclasses__()]))
 
             if class_name not in mask_names or module_name not in mask_modules:
                 raise TypeError('Got unknown mask type ({}.{}) from json!'.format(module_name, class_name))

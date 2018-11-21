@@ -6,7 +6,7 @@
 
 import museval
 
-import bss_eval_base
+from . import bss_eval_base
 
 
 class BSSEvalSources(bss_eval_base.BSSEvalBase):

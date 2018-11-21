@@ -7,8 +7,8 @@ from scipy.ndimage.filters import convolve
 import vamp
 
 from ..core import constants
-import mask_separation_base
-import masks
+from . import mask_separation_base
+from . import masks
 from .. import AudioSignal
 
 

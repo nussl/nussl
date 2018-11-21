@@ -114,7 +114,7 @@ class SeparationBase(object):
             raise TypeError('SeparationBase._to_json_helper() got foreign object!')
 
         d = copy.copy(o.__dict__)
-        for k, v in d.items():
+        for k, v in list(d.items()):
             if isinstance(v, np.ndarray):
                 d[k] = utils.json_ready_numpy_array(v)
             elif hasattr(v, 'to_json'):
@@ -161,7 +161,7 @@ class SeparationBase(object):
         return self.__class__.__name__ + ' instance'
 
     def __eq__(self, other):
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             if isinstance(v, np.ndarray):
                 if not np.array_equal(v, other.__dict__[k]):
                     return False
@@ -232,13 +232,13 @@ class SeparationBaseDecoder(json.JSONDecoder):
             json_dict, separator = self._inspect_json_and_create_new_instance(json_dict)
 
             # fill out the rest of the fields
-            for k, v in json_dict.items():
+            for k, v in list(json_dict.items()):
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
                     separator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
                 elif isinstance(v, (str, bytes)) and audio_signal.__name__ in v:  # TODO: test this
                     separator.__dict__[k] = AudioSignal.from_json(v)
                 else:
-                    separator.__dict__[k] = v if not isinstance(v, unicode) else v.encode('ascii')
+                    separator.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
 
             return separator
         else:

@@ -4,5 +4,5 @@
 Imports for core nussl components
 """
 
-from audio_signal import AudioSignal
+from .audio_signal import AudioSignal
 
