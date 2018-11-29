@@ -62,8 +62,12 @@ class SeparationModel(nn.Module):
         """
         super(SeparationModel, self).__init__()
         if type(config) is str:
-            with open(config, 'r') as f:
-                config = json.load(f)
+            if 'json' in config:
+                with open(config, 'r') as f:
+                    config = json.load(f)
+            else:
+                config = json.loads(config)
+
         module_dict = {}
         self.input = {}
         for module_key in config['modules']:
@@ -77,6 +81,7 @@ class SeparationModel(nn.Module):
         self.layers = nn.ModuleDict(module_dict)
         self.connections = config['connections']
         self.output_keys = config['output']
+        self.config = config
 
     def forward(self, data):
         """
@@ -127,7 +132,7 @@ class SeparationModel(nn.Module):
 
         """
         torch.save({'state_dict': self.state_dict(),
-                    'model': self}, location)
+                    'config': json.dumps(self.config)}, location)
     
     def __repr__(self):
         output = super().__repr__()
