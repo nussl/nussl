@@ -14,6 +14,9 @@ from .repet_sim import RepetSim
 from .ft2d import FT2D
 from .hpss import HPSS
 
+if torch_imported:
+    from .networks import SeparationModel
+
 median_algorithms = [Repet, RepetSim, FT2D, HPSS]
 
 # Melody-based methods

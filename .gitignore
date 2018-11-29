@@ -2,3 +2,6 @@
 **/.DS_Store
 .idea/
 Output/
+*.DS_STORE
+.mypy_cache
+*.swp
