@@ -53,12 +53,13 @@ component_analysis_algorithms = [ICA, RPCA]
 # Deep learning algorithms
 if torch_imported:
     from .deep_clustering import DeepClustering
+    from .deep_separation import DeepSeparation
 else:
     class DeepClustering(ImportErrorClass):
         def __init__(self, **kwargs):
             super(DeepClustering, self).__init__('pytorch')
 
-deep_learning_algorithms = [DeepClustering]
+deep_learning_algorithms = [DeepClustering, DeepSeparation]
 
 all_separation_algorithms = [median_algorithms, melody_algorithms, spatialization_algorithms,
                              benchmark_algorithms, nmf_algorithms, component_analysis_algorithms,
@@ -75,4 +76,4 @@ __all__ = ['SeparationBase', 'MaskSeparationBase',
            'composite_instruments', 'OverlapAdd',
            'nmf_algorithms', 'NMF_MFCC',
            'component_analysis_algorithms', 'ICA', 'RPCA',
-           'deep_learning_algorithms', 'DeepClustering']
+           'deep_learning_algorithms', 'DeepClustering', 'DeepSeparation']

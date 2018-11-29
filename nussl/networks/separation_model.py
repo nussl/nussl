@@ -121,7 +121,7 @@ class SeparationModel(nn.Module):
             data = data.clamp(0.0, 1.0)
         return data
 
-    def save(self, location):
+    def save(self, location, metadata=None):
         """
         Saves a SeparationModel into a location into a dictionary with the
         weights and model configuration.
@@ -131,8 +131,12 @@ class SeparationModel(nn.Module):
         Returns:
 
         """
-        torch.save({'state_dict': self.state_dict(),
-                    'config': json.dumps(self.config)}, location)
+        save_dict = {
+            'state_dict': self.state_dict(),
+            'config': json.dumps(self.config)
+        }
+        save_dict = {**save_dict, **(metadata if metadata else {})}
+        torch.save(save_dict, location)
     
     def __repr__(self):
         output = super().__repr__()
