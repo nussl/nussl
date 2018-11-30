@@ -41,6 +41,8 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         self.num_sources = num_sources                                     
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model, self.metadata = self.load_model(model_path)
+        if self.audio_signal.sample_rate != self.metadata['sample_rate']:
+            self.audio_signal.resample(self.metadata['sample_rate'])
         self.use_librosa_stft = use_librosa_stft
         self.clusterer = modules.Clusterer(**clustering_options)
         self._compute_spectrograms()
