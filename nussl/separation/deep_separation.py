@@ -31,7 +31,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
     """Implements deep source separation models using PyTorch.
     """
     def __init__(self, input_audio_signal, model_path, num_sources,
-                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
+                 mask_type='soft',
                  use_librosa_stft=True,
                  clustering_options=None):
 
@@ -43,7 +43,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
             'num_clusters': num_sources,
             'n_iterations': 10,
             'covariance_type': 'tied:spherical',
-            'covariance_init': 5.0
+            'covariance_init': 1.0
         }
 
         clustering_options = {**clustering_defaults, **(clustering_options if clustering_options else {})}
