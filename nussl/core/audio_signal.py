@@ -1788,7 +1788,7 @@ class AudioSignal(object):
         return utils._get_axis(np.array(self.magnitude_spectrogram_data),
                                constants.STFT_CHAN_INDEX, n)
 
-    def to_mono(self, overwrite=False, keep_dims=False):
+    def to_mono(self, overwrite=True, keep_dims=False):
         """ Converts :attr:`audio_data` to mono by averaging every sample.
 
         Args:
