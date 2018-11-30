@@ -862,7 +862,7 @@ class AudioSignal(object):
 
             # TODO: better fix
             # convert to fixed point again
-            if not np.issubdtype(audio_output.dtype, np.int):
+            if not np.issubdtype(audio_output.dtype, np.dtype(int).type):
                 audio_output = np.multiply(audio_output,
                                            2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
 

@@ -225,7 +225,7 @@ def librosa_stft_wrapper(signal, window_length, hop_length, window_type=None, re
     """
 
     if window_type is not None and n_fft_bins is not None:
-        warnings.warn("n_fft_bins ignored. Librosa's stft uses window_length as n_fft_bins")
+        n_fft_bins = window_length
 
     window = make_window(window_type, window_length) if window_type is not None else None
     signal = librosa.util.fix_length(signal, len(signal) + hop_length)
