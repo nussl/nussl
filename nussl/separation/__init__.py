@@ -21,7 +21,7 @@ if vamp_imported:
     from .melodia import Melodia
 else:
     class Melodia(ImportErrorClass):
-        def __init__(self, **kwargs):
+        def __init__(self, *args, **kwargs):
             super(Melodia, self).__init__('vamp')
 
 melody_algorithms = [Melodia]
