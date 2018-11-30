@@ -58,6 +58,9 @@ else:
     class DeepClustering(ImportErrorClass):
         def __init__(self, **kwargs):
             super(DeepClustering, self).__init__('pytorch')
+    class DeepSeparation(ImportErrorClass):
+        def __init__(self, **kwargs):
+            super(DeepSeparation, self).__init__('pytorch')
 
 deep_learning_algorithms = [DeepClustering, DeepSeparation]
 
