@@ -301,9 +301,9 @@ def e_istft(stft, window_length, hop_length, window_type, reconstruct_reflection
     for n in range(n_hops):
         start = n * hop_length
         end = start + window_length
-        inv_sig_temp = np.real(scifft.ifft(stft[:, n]))
+        inv_sig_temp = np.real(scifft.ifft(stft[:, n])) * window
         signal[start:end] += inv_sig_temp[:window_length]
-        norm_window[start:end] = norm_window[start:end] + window
+        norm_window[start:end] = norm_window[start:end] + window**2
 
     norm_window[norm_window == 0.0] = constants.EPSILON  # Prevent dividing by zero
     signal_norm = signal / norm_window
