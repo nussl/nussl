@@ -56,10 +56,10 @@ if torch_imported:
     from .deep_separation import DeepSeparation
 else:
     class DeepClustering(ImportErrorClass):
-        def __init__(self, **kwargs):
+        def __init__(self, *args, **kwargs):
             super(DeepClustering, self).__init__('pytorch')
     class DeepSeparation(ImportErrorClass):
-        def __init__(self, **kwargs):
+        def __init__(self, *args, **kwargs):
             super(DeepSeparation, self).__init__('pytorch')
 
 deep_learning_algorithms = [DeepClustering, DeepSeparation]
