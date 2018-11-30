@@ -24,7 +24,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
     """
     def __init__(self, input_audio_signal, model_path, num_sources,
                  mask_type='soft',
-                 use_librosa_stft=True,
+                 use_librosa_stft=False,
                  clustering_options=None):
 
         super(DeepSeparation, self).__init__(input_audio_signal=input_audio_signal,
@@ -65,6 +65,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
     def _compute_spectrograms(self):
         self.audio_signal.stft_params.window_length = self.metadata['n_fft']
+        self.audio_signal.stft_params.n_fft_bins = self.metadata['n_fft']
         self.audio_signal.stft_params.hop_length = self.metadata['hop_length']
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
                                            use_librosa=self.use_librosa_stft)
@@ -97,7 +98,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
                 axes_loc = [0, 3, 2, 1]
                 data[key] = np.moveaxis(data[key], [0, 1, 2, 3], axes_loc)
             
-            data[key] = torch.from_numpy(data[key]).to(self.device)
+            data[key] = torch.from_numpy(data[key]).to(self.device).float()
 
         return data
 
