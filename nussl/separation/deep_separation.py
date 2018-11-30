@@ -6,15 +6,7 @@ Deep Clustering Separation Class
 import copy
 import warnings
 
-try:
-    import torch
-    from torch.autograd import Variable
-    torch_okay = True
-except ImportError:
-    warnings.warn('Cannot import pytorch!')
-    torch_okay = False
-
-from sklearn.cluster import KMeans
+import torch
 import librosa
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,8 +27,6 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
                  use_librosa_stft=True,
                  clustering_options=None):
 
-        if not torch_okay:
-            raise ImportError('Cannot import pytorch! Install pytorch to continue.')
         super(DeepSeparation, self).__init__(input_audio_signal=input_audio_signal,
                                              mask_type=mask_type)
         clustering_defaults = {
@@ -119,6 +109,8 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         if 'embedding' in output:
             num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
+            self.embedding = output['embedding'].data.cpu().numpy()
+            self.embedding = self.embedding.reshape(-1, embedding_size)
             output['embedding'] = output['embedding'].reshape(1, num_channels*sequence_length, num_features, embedding_size)
             clusters = self.clusterer(output['embedding'])
             clusters['assignments'] = clusters['assignments'].reshape(num_channels, sequence_length, num_features, self.num_sources)
@@ -127,9 +119,10 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         elif 'estimates' in output:
             _masks = output['estimates']
         
+        self.assignments = _masks
         self.masks = []
         for i in range(self.num_sources):
-            mask = _masks[i, :, :, :]
+            mask = self.assignments[i, :, :, :]
             if self.mask_type == self.BINARY_MASK:
                 mask = np.round(mask)
                 mask_object = masks.BinaryMask(mask)
@@ -140,6 +133,19 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
             self.masks.append(mask_object)
 
         return self.masks
+
+    def project_embeddings(self, num_dimensions):
+        """
+        Does a PCA projection of the embedding space
+        Args:
+            num_dimensions:
+
+        Returns:
+
+        """
+        transform = PCA(n_components=num_dimensions)
+        output_transform = transform.fit_transform(self.embedding)
+        return output_transform
 
 
     def apply_mask(self, mask):
@@ -165,3 +171,45 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
             self.sources.append(self.apply_mask(mask))
 
         return self.sources
+
+    def plot(self, **kwargs):
+        """ Plots relevant information for deep clustering onto the active figure,
+            given by matplotlib.pyplot.figure()
+            outside of this function. The three plots are:
+                1. PCA of emeddings onto 2 dimensions for visualization
+                2. The mixture mel-spectrogram.
+                3. The source assignments of each tf-bin in the mixture spectrogram.
+        Returns:
+            None
+        """
+        grid = GridSpec(6, 10)
+        output_transform = self.project_embeddings(2)
+        plt.subplot(grid[:3, 3:])
+        plt.imshow(np.mean(np.abs(self.stft), axis=-1), origin='lower',
+                   aspect='auto', cmap='magma')
+        plt.xticks([])
+        plt.ylabel('Frequency (mel)')
+        plt.title('Mixture')
+
+        plt.subplot(grid[1:-1, :3])
+
+        xmin = output_transform[:, 0].min()
+        xmax = output_transform[:, 0].max()
+        ymin = output_transform[:, 1].min()
+        ymax = output_transform[:, 1].max()
+
+        plt.hexbin(output_transform[:, 0], output_transform[:, 1], bins='log', gridsize=100)
+        plt.axis([xmin, xmax, ymin, ymax])
+        plt.xlabel('PCA dim 1')
+        plt.ylabel('PCA dim 2')
+        plt.title('Embedding visualization')
+
+        assignments = np.max(np.argmax(self.assignments, axis=0), axis=-1) + 1
+        silence_mask = np.mean(librosa.amplitude_to_db(np.abs(self.stft), ref=np.max), axis=-1) > -40
+        assignments *= silence_mask
+        plt.subplot(grid[3:, 3:])
+        plt.imshow(assignments,
+                   origin='lower', aspect='auto', cmap='Greys')
+        plt.xlabel('Time (frames)')
+        plt.ylabel('Frequency (mel)')
+        plt.title('Source assignments')
