@@ -205,7 +205,6 @@ class Clusterer(nn.Module):
         """
 
         Args:
-            clustering_type:
             n_iterations:
             num_clusters:
             covariance_type:
@@ -222,8 +221,10 @@ class Clusterer(nn.Module):
         num_batch, sequence_length, num_features, embedding_size = data.shape
         data = data.reshape(num_batch, sequence_length*num_features, embedding_size)
         output = self.clusterer(data, parameters)
-
-        return
+        for key in output:
+            if key in ['assignments', 'likelihoods']:
+                output[key] = output[key].reshape(num_batch, sequence_length, num_features, -1)
+        return output
 
 
 class CentroidGenerator(nn.Module):

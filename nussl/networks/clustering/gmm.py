@@ -102,17 +102,6 @@ class GMM(nn.Module):
         return posteriors, likelihoods
     
     def update_likelihoods(self, data, means, var, pi):
-        """
-
-        Args:
-            data:
-            means:
-            var:
-            pi:
-
-        Returns:
-
-        """
         num_batch = data.shape[0]
         num_examples = data.shape[1]
         num_features = data.shape[-1]

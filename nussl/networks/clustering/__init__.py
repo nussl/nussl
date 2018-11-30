@@ -1,2 +1,2 @@
-from .kmeans import *
-from .gmm import *
+from .kmeans import KMeans
+from .gmm import GMM
