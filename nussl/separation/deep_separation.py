@@ -66,12 +66,13 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         self.audio_signal.stft_params.hop_length = self.metadata['hop_length']
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
                                            use_librosa=self.use_librosa_stft)
+        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft), ref=np.max)
         
 
     def _preprocess(self):
         data = {}
         data['magnitude_spectrogram'] = np.abs(self.stft)
-        data['log_spectrogram'] = librosa.amplitude_to_db(data['magnitude_spectrogram'], ref=np.max)
+        data['log_spectrogram'] = self.log_spectrogram.copy()
         data['log_spectrogram'] -= np.mean(data['log_spectrogram'])
         data['log_spectrogram'] /= np.std(data['log_spectrogram']) + 1e-7
 
@@ -185,7 +186,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         grid = GridSpec(6, 10)
         output_transform = self.project_embeddings(2)
         plt.subplot(grid[:3, 3:])
-        plt.imshow(np.mean(np.abs(self.stft), axis=-1), origin='lower',
+        plt.imshow(np.mean(self.log_spectrogram, axis=-1), origin='lower',
                    aspect='auto', cmap='magma')
         plt.xticks([])
         plt.ylabel('Frequency (mel)')
@@ -198,14 +199,14 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         ymin = output_transform[:, 1].min()
         ymax = output_transform[:, 1].max()
 
-        plt.hexbin(output_transform[:, 0], output_transform[:, 1], bins='log', gridsize=100)
+        plt.hexbin(output_transform[:, 0], output_transform[:, 1], bins=None, gridsize=100)
         plt.axis([xmin, xmax, ymin, ymax])
         plt.xlabel('PCA dim 1')
         plt.ylabel('PCA dim 2')
         plt.title('Embedding visualization')
 
         assignments = np.max(np.argmax(self.assignments, axis=0), axis=-1) + 1
-        silence_mask = np.mean(librosa.amplitude_to_db(np.abs(self.stft), ref=np.max), axis=-1) > -40
+        silence_mask = np.mean(self.log_spectrogram, axis=-1) > -40
         assignments *= silence_mask
         plt.subplot(grid[3:, 3:])
         plt.imshow(assignments,
