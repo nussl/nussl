@@ -9,8 +9,6 @@ import warnings
 import torch
 import librosa
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 
 from ..networks import SeparationModel
 from ..networks import modules
@@ -138,7 +136,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         return self.masks
 
-    def project_embeddings(self, num_dimensions):
+    def project_embeddings(self, num_dimensions, threshold=-80):
         """
         Does a PCA projection of the embedding space
         Args:
@@ -148,7 +146,8 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         """
         transform = PCA(n_components=num_dimensions)
-        output_transform = transform.fit_transform(self.embedding)
+        _embedding = self.embedding[(self.log_spectrogram >= threshold).flatten()]
+        output_transform = transform.fit_transform(_embedding)
         return output_transform
 
 
@@ -176,7 +175,10 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         return self.sources
 
-    def plot(self, **kwargs):
+    def _repr_html_(self):
+        return 'test'
+
+    def plot(self, threshold=-25, cmap='Blues'):
         """ Plots relevant information for deep clustering onto the active figure,
             given by matplotlib.pyplot.figure()
             outside of this function. The three plots are:
@@ -186,17 +188,24 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         Returns:
             None
         """
+        import matplotlib.pyplot as plt
+        from matplotlib.gridspec import GridSpec
+        import pandas as pd
+        from mpl_toolkits.mplot3d import axes3d
+        import matplotlib as mpl
+
         grid = GridSpec(6, 10)
-        output_transform = self.project_embeddings(2)
+        
         plt.subplot(grid[:3, 3:])
         plt.imshow(np.mean(self.log_spectrogram, axis=-1), origin='lower',
                    aspect='auto', cmap='magma')
         plt.xticks([])
-        plt.ylabel('Frequency (mel)')
+        plt.ylabel('Frequency')
         plt.title('Mixture')
 
-        plt.subplot(grid[1:-1, :3])
+        plt.subplot(grid[:3, :3])
 
+        output_transform = self.project_embeddings(2, threshold=threshold)
         xmin = output_transform[:, 0].min()
         xmax = output_transform[:, 0].max()
         ymin = output_transform[:, 1].min()
@@ -206,14 +215,43 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         plt.axis([xmin, xmax, ymin, ymax])
         plt.xlabel('PCA dim 1')
         plt.ylabel('PCA dim 2')
-        plt.title('Embedding visualization')
+        plt.title('Embedding visualization (2D)')
 
-        assignments = np.max(np.argmax(self.assignments, axis=0), axis=-1) + 1
-        silence_mask = np.mean(self.log_spectrogram, axis=-1) > -40
-        assignments *= silence_mask
+        ax = plt.subplot(grid[3:, :3], projection='3d')
+        output_transform = self.project_embeddings(3, threshold=max(-10, threshold / 4))
+        result=pd.DataFrame(output_transform, columns=['PCA%i' % i for i in range(3)])
+        ax.scatter(result['PCA0'], result['PCA1'], result['PCA2'], cmap="Set2_r", s=10)
+        # make simple, bare axis lines through space:
+        xAxisLine = ((min(result['PCA0']), max(result['PCA0'])), (0, 0), (0,0))
+        ax.plot(xAxisLine[0], xAxisLine[1], xAxisLine[2], 'r')
+        yAxisLine = ((0, 0), (min(result['PCA1']), max(result['PCA1'])), (0,0))
+        ax.plot(yAxisLine[0], yAxisLine[1], yAxisLine[2], 'r')
+        zAxisLine = ((0, 0), (0,0), (min(result['PCA2']), max(result['PCA2'])))
+        ax.plot(zAxisLine[0], zAxisLine[1], zAxisLine[2], 'r')
+        # label the axes
+        ax.set_xlabel("PC1")
+        ax.set_ylabel("PC2")
+        ax.set_zlabel("PC3")
+        ax.set_title("Embedding visualization (3D)")
+
         plt.subplot(grid[3:, 3:])
+        assignments = (np.max(np.argmax(self.assignments, axis=0), axis=-1)) + 1
+        silence_mask = np.mean(self.log_spectrogram, axis=-1) > threshold
+        assignments *= silence_mask
+
+
         plt.imshow(assignments,
-                   origin='lower', aspect='auto', cmap='Greys')
+                   origin='lower', aspect='auto', cmap=cmap)
         plt.xlabel('Time (frames)')
-        plt.ylabel('Frequency (mel)')
+        plt.ylabel('Frequency')
         plt.title('Source assignments')
+
+        norm = mpl.colors.Normalize(vmin=np.min(assignments), vmax=np.max(assignments))
+        labels = [f'Source {i}' for i in range(1, self.num_sources + 1)]
+        values = list(range(np.min(assignments), np.max(assignments) + 1))
+        mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+        _legend = [mpl.patches.Patch(color=mapper.to_rgba(0), label='Silence')]
+
+        for value, label in zip(values, labels):
+            _legend.append(mpl.patches.Patch(color=mapper.to_rgba(value), label=label))
+        plt.legend(handles=_legend)

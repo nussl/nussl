@@ -339,7 +339,7 @@ def download_audio_file(audio_file_name, local_folder=None, verbose=True):
         audio_file_name: (str) Name of the audio file to attempt to download.
         local_folder: (str) Path to local folder in which to download the file.
             If no folder is provided, `nussl` will store the file in `~/.nussl/` (expanded) or in
-            `tmp/.nussl`.
+            `/tmp/.nussl`.
         verbose (bool): If ``True`` prints the status of the download to the console.
 
     Returns:
@@ -375,7 +375,7 @@ def download_trained_model(model_name, local_folder=None, verbose=True):
         audio_file_name: (str) Name of the trained model to attempt to download.
         local_folder: (str) Path to local folder in which to download the file.
             If no folder is provided, `nussl` will store the file in `~/.nussl/` (expanded) or in
-            `tmp/.nussl`.
+            `/tmp/.nussl`.
         verbose (bool): If ``True`` prints the status of the download to the console.
 
     Returns:
@@ -404,7 +404,7 @@ def download_benchmark_file(benchmark_name, local_folder=None, verbose=True):
     Downloads the specified benchmark file from the `nussl` External File Zoo (EFZ) server. The
     downloaded file is stored in :param:`local_folder` if a folder is provided. If a folder is
     not provided, `nussl` attempts to save the downloaded file in `~/.nussl/` (expanded) or in
-    `tmp/.nussl`. If the requested file is already in :param:`local_folder` (or one of the two
+    `/tmp/.nussl`. If the requested file is already in :param:`local_folder` (or one of the two
     aforementioned directories) and the calculated hash matches the precomputed hash from the EFZ
     server metadata, then the file will not be downloaded.
 
