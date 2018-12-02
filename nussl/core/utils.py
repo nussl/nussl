@@ -134,7 +134,7 @@ def _set_array_zero_indices(index, zero_distance, max_len):
     upper = index + zero_distance + 1
     lower = 0 if lower < 0 else lower
     upper = max_len if upper >= max_len else upper
-    return lower, upper
+    return int(lower), int(upper)
 
 
 def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):

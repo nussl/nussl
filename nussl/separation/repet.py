@@ -409,7 +409,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
                               overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)
 
-    def plot(self, output_file, **kwargs):
+    def plot(self, **kwargs):
         """
         Creates a plot of the beat spectrum and outputs to output_file.
 
@@ -430,7 +430,6 @@ class Repet(mask_separation_base.MaskSeparationBase):
             repet.plot('new_beat_spec_plot.png', title="Beat Spectrum of Sample.wav", show_repeating_period=True)
         """
         import matplotlib.pyplot as plt
-        plt.close('all')
         title = None
         show_repeating_period = False
 
@@ -459,7 +458,6 @@ class Repet(mask_separation_base.MaskSeparationBase):
         plt.grid('on')
 
         plt.axis('tight')
-        plt.savefig(output_file)
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run :func:`run()` prior

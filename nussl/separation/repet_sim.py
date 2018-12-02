@@ -283,9 +283,8 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
         return [self.background, self.foreground]
 
-    def plot(self, output_file, **kwargs):
+    def plot(self, **kwargs):
         import matplotlib.pyplot as plt
-        plt.close('all')
 
         title = None
 
@@ -301,4 +300,3 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         plt.title(title)
 
         plt.axis('tight')
-        plt.savefig(output_file)

@@ -205,14 +205,6 @@ class MaskSeparationBase(separation_base.SeparationBase):
         else:
             return masks.SoftMask.ones(shape)
 
-    def plot(self, output_name, **kwargs):
-        """Plots relevant data for mask-based separation algorithm. Base class: Do not call directly!
-
-        Raises:
-            NotImplementedError: Cannot call base class!
-        """
-        raise NotImplementedError('Cannot call base class!')
-
     def run(self):
         """Runs mask-based separation algorithm. Base class: Do not call directly!
 

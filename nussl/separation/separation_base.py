@@ -67,13 +67,14 @@ class SeparationBase(object):
     def audio_signal(self, input_audio_signal):
         self._audio_signal = copy.copy(input_audio_signal)
 
-    def plot(self, output_name, **kwargs):
+    def plot(self, **kwargs):
         """Plots relevant data for separation algorithm
 
         Raises:
             NotImplementedError: Cannot call base class
         """
-        raise NotImplementedError('Cannot call base class.')
+        print("Plotting not implemented for this class")
+        pass
 
     def run(self):
         """Runs separation algorithm
