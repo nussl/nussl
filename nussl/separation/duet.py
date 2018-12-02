@@ -75,7 +75,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
     def __init__(self, input_audio_signal, num_sources,
                  attenuation_min=-3, attenuation_max=3, num_attenuation_bins=50,
                  delay_min=-3, delay_max=3, num_delay_bins=50,
-                 peak_threshold=0.2, attenuation_min_distance=5, delay_min_distance=5, p=1, q=0):
+                 peak_threshold=0.0, attenuation_min_distance=5, delay_min_distance=5, p=1, q=0):
         super(Duet, self).__init__(input_audio_signal=input_audio_signal,
                                    mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK)
 
@@ -447,7 +447,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             signals.append(cur_signal)
         return signals
 
-    def plot(self, output_name, three_d_plot=False, normalize=True):
+    def plot(self, normalize=True):
         """Plots histograms with the results of the DUET algorithm
 
         Parameters:
@@ -455,8 +455,8 @@ class Duet(mask_separation_base.MaskSeparationBase):
             three_d_plot (Optional[bool]): Flags whether or not to plot in 3d. Defaults to False
             normalize (Optional[bool]): Flags whether the matrix should be normalized or not
         """
-        plt.close('all')
-
+        from mpl_toolkits.mplot3d import axes3d
+        
         histogram_data = self.get_atn_delay_histogram(recompute=True, normalized=normalize) \
             if self.attenuation_delay_histogram is None \
             else self.attenuation_delay_histogram
@@ -465,25 +465,19 @@ class Duet(mask_separation_base.MaskSeparationBase):
         delay_tile = np.tile(self.delay_bins[1:].T, (self.num_attenuation_bins, 1))
 
         # plot the histogram in 2D
-        if not three_d_plot:
-            plt.figure()
-            plt.pcolormesh(atn_tile, delay_tile, histogram_data)
-            plt.xlabel(r'$\alpha$', fontsize=16)
-            plt.ylabel(r'$\delta$', fontsize=16)
-            plt.title(r'$\alpha-\delta$ Histogram')
-            plt.axis('tight')
-            plt.savefig(output_name)
-            plt.close()
+        plt.subplot(121)
+        plt.pcolormesh(atn_tile, delay_tile, histogram_data)
+        plt.xlabel(r'$\alpha$', fontsize=16)
+        plt.ylabel(r'$\delta$', fontsize=16)
+        plt.title(r'$\alpha-\delta$ Histogram')
+        plt.axis('tight')
 
-        else:
-            # plot the histogram in 3D
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax.plot_wireframe(atn_tile, delay_tile, histogram_data, rstride=2, cstride=2)
-            plt.xlabel(r'$\alpha$', fontsize=16)
-            plt.ylabel(r'$\delta$', fontsize=16)
-            plt.title(r'$\alpha-\delta$ Histogram')
-            plt.axis('tight')
-            ax.view_init(30, 30)
-            plt.savefig(output_name)
-            plt.close()
+        # plot the histogram in 3D
+        fig = plt.gcf()
+        ax = fig.add_subplot(122, projection='3d')
+        ax.plot_wireframe(atn_tile, delay_tile, histogram_data, rstride=2, cstride=2)
+        plt.xlabel(r'$\alpha$', fontsize=16)
+        plt.ylabel(r'$\delta$', fontsize=16)
+        plt.title(r'$\alpha-\delta$ Histogram')
+        plt.axis('tight')
+        ax.view_init(30, 30)
