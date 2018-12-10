@@ -98,27 +98,48 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         data['log_spectrogram'] /= np.std(data['log_spectrogram']) + 1e-7
 
         for key in data:
-            """[num_batch, sequence_length, num_frequencies*num_channels, ...], 
-        while 'cnn' produces [num_batch, num_channels, num_frequencies, sequence_length, ...]
-        """
-            if self.metadata['format'] == 'rnn':
-                data[key] = np.expand_dims(data[key], axis=0)
-                if self.metadata['num_channels'] != self.audio_signal.num_channels:
-                    data[key] = np.swapaxes(data[key], 0, 3)
-
-                _shape = data[key].shape
-                shape = [_shape[0], _shape[1], _shape[2]*_shape[3]]
-                data[key] = np.reshape(data[key], shape)
-                data[key] = np.swapaxes(data[key], 1, 2)
-
-
-            elif self.metadata['format'] == 'cnn':
-                axes_loc = [0, 3, 2, 1]
-                data[key] = np.moveaxis(data[key], [0, 1, 2, 3], axes_loc)
-
+            data[key] = self._format(data[key], self.metadata['format'])
             data[key] = torch.from_numpy(data[key]).to(self.device).float()
 
         return data
+
+    def _format(
+        self,
+        datum: np.ndarray,
+        format_type: str,
+    ) -> np.ndarray:
+        """Formats data for input to model
+
+        Formats produced based on `format_type`:
+            - `rnn`
+                [num_batch, sequence_length, num_frequencies*num_channels, ...]
+            - `cnn`
+                [num_batch, num_channels, num_frequencies, sequence_length, ...]
+
+        Args:
+            datum - numpy array holding input data to be formatted
+            format_type - indicates the architecture (and therefore necessary
+                formatting). Choices: ['rnn', 'cnn'].
+                TODO: make this an enum, not a `str`
+
+        Returns:
+            formatted datum
+        """
+        if format_type == 'rnn':
+            datum = np.expand_dims(datum, axis=0)
+            if self.metadata['num_channels'] != self.audio_signal.num_channels:
+                datum = np.swapaxes(datum, 0, 3)
+
+            _shape = datum.shape
+            shape = [_shape[0], _shape[1], _shape[2]*_shape[3]]
+            datum = np.reshape(datum, shape)
+            datum = np.swapaxes(datum, 1, 2)
+        elif format_type == 'cnn':
+            datum = np.moveaxis(datum, [0, 1, 2, 3], [0, 3, 2, 1])
+        else:
+            raise Exception(f'Unexpected format type: {format_type}')
+
+        return datum
 
     def run(self):
         """
