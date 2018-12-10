@@ -18,16 +18,22 @@ from . import masks
 
 
 class DeepSeparation(mask_separation_base.MaskSeparationBase):
-    """Implements deep source separation models using PyTorch.
-    """
-    def __init__(self, input_audio_signal, model_path, num_sources,
-                 mask_type='soft',
-                 use_librosa_stft=False,
-                 use_cuda=True,
-                 clustering_options=None):
+    """Implements deep source separation models using PyTorch"""
 
-        super(DeepSeparation, self).__init__(input_audio_signal=input_audio_signal,
-                                             mask_type=mask_type)
+    def __init__(
+        self,
+        input_audio_signal,
+        model_path,
+        num_sources,
+        mask_type='soft',
+        use_librosa_stft=False,
+        use_cuda=True,
+        clustering_options=None
+    ):
+        super(DeepSeparation, self).__init__(
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type
+        )
         clustering_defaults = {
             'num_clusters': num_sources,
             'n_iterations': 10,
@@ -35,10 +41,17 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
             'covariance_init': 1.0
         }
 
-        clustering_options = {**clustering_defaults, **(clustering_options if clustering_options else {})}
+        clustering_options = {
+            **clustering_defaults,
+            **(clustering_options if clustering_options else {})
+        }
 
-        self.num_sources = num_sources                                     
-        self.device = torch.device('cuda' if torch.cuda.is_available() and use_cuda else 'cpu')
+        self.num_sources = num_sources
+        self.device = torch.device(
+            'cuda'
+            if torch.cuda.is_available() and use_cuda
+            else 'cpu'
+        )
         self.model, self.metadata = self.load_model(model_path)
         if self.audio_signal.sample_rate != self.metadata['sample_rate']:
             self.audio_signal.resample(self.metadata['sample_rate'])
@@ -47,8 +60,8 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         self._compute_spectrograms()
 
     def load_model(self, model_path):
-        """
-        Loads the model at specified path ``model_path``
+        """Loads the model at specified path `model_path`
+
         Args:
             model_path:
 
@@ -66,15 +79,21 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         self.audio_signal.stft_params.window_length = self.metadata['n_fft']
         self.audio_signal.stft_params.n_fft_bins = self.metadata['n_fft']
         self.audio_signal.stft_params.hop_length = self.metadata['hop_length']
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
-                                           use_librosa=self.use_librosa_stft)
-        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft), ref=np.max)
-        
+        self.stft = self.audio_signal.stft(
+            overwrite=True,
+            remove_reflection=True,
+            use_librosa=self.use_librosa_stft
+        )
+        self.log_spectrogram = librosa.amplitude_to_db(
+            np.abs(self.stft),
+            ref=np.max
+        )
 
     def _preprocess(self):
-        data = {}
-        data['magnitude_spectrogram'] = np.abs(self.stft)
-        data['log_spectrogram'] = self.log_spectrogram.copy()
+        data = {
+            'magnitude_spectrogram': np.abs(self.stft),
+            'log_spectrogram': self.log_spectrogram.copy(),
+        }
         data['log_spectrogram'] -= np.mean(data['log_spectrogram'])
         data['log_spectrogram'] /= np.std(data['log_spectrogram']) + 1e-7
 
@@ -91,12 +110,12 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
                 shape = [_shape[0], _shape[1], _shape[2]*_shape[3]]
                 data[key] = np.reshape(data[key], shape)
                 data[key] = np.swapaxes(data[key], 1, 2)
-                
-                    
+
+
             elif self.metadata['format'] == 'cnn':
                 axes_loc = [0, 3, 2, 1]
                 data[key] = np.moveaxis(data[key], [0, 1, 2, 3], axes_loc)
-            
+
             data[key] = torch.from_numpy(data[key]).to(self.device).float()
 
         return data
@@ -108,21 +127,39 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         """
         input_data = self._preprocess()
+
         with torch.no_grad():
             output = self.model(input_data)
 
             if 'embedding' in output:
-                num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
+                (
+                    num_channels,
+                    sequence_length,
+                    num_features,
+                    embedding_size
+                ) = output['embedding'].shape
                 self.embedding = output['embedding'].data.cpu().numpy()
                 self.embedding = self.embedding.reshape(-1, embedding_size)
-                output['embedding'] = output['embedding'].reshape(1, num_channels*sequence_length, num_features, embedding_size)
+                output['embedding'] = output['embedding'].reshape(
+                    1,
+                    num_channels*sequence_length,
+                    num_features,
+                    embedding_size
+                )
                 clusters = self.clusterer(output['embedding'])
-                clusters['assignments'] = clusters['assignments'].reshape(num_channels, sequence_length, num_features, self.num_sources)
-                clusters['assignments'] = clusters['assignments'].permute(3, 2, 1, 0)
+                clusters['assignments'] = clusters['assignments'].reshape(
+                    num_channels,
+                    sequence_length,
+                    num_features,
+                    self.num_sources
+                )
+                clusters['assignments'] = clusters[
+                    'assignments'
+                ].permute(3, 2, 1, 0)
                 _masks = clusters['assignments'].data.cpu().numpy()
             elif 'estimates' in output:
                 _masks = output['estimates']
-        
+
         self.assignments = _masks
         self.masks = []
         for i in range(self.num_sources):
@@ -148,7 +185,9 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         """
         transform = PCA(n_components=num_dimensions)
-        _embedding = self.embedding[(self.log_spectrogram >= threshold).flatten()]
+        _embedding = self.embedding[
+            (self.log_spectrogram >= threshold).flatten()
+        ]
         output_transform = transform.fit_transform(_embedding)
         return output_transform
 
@@ -160,7 +199,10 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         source = copy.deepcopy(self.audio_signal)
         source = source.apply_mask(mask)
         source.stft_params = self.audio_signal.stft_params
-        source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
+        source.istft(
+            overwrite=True,
+            truncate_to_length=self.audio_signal.signal_length
+        )
 
         return source
 
@@ -181,12 +223,13 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         return 'test'
 
     def plot(self, threshold=-25, cmap='Blues'):
-        """ Plots relevant information for deep clustering onto the active figure,
-            given by matplotlib.pyplot.figure()
-            outside of this function. The three plots are:
-                1. PCA of emeddings onto 2 dimensions for visualization
-                2. The mixture mel-spectrogram.
-                3. The source assignments of each tf-bin in the mixture spectrogram.
+        """Plots relevant information for deep clustering onto the active
+        figure, given by matplotlib.pyplot.figure() outside of this function.
+        The three plots are:
+            1. PCA of emeddings onto 2 dimensions for visualization
+            2. The mixture mel-spectrogram.
+            3. The source assignments of each tf-bin in the mixture spectrogram.
+
         Returns:
             None
         """
@@ -197,7 +240,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         import matplotlib as mpl
 
         grid = GridSpec(6, 10)
-        
+
         plt.subplot(grid[:3, 3:])
         plt.imshow(np.mean(self.log_spectrogram, axis=-1), origin='lower',
                    aspect='auto', cmap='magma')
@@ -213,16 +256,33 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         ymin = output_transform[:, 1].min()
         ymax = output_transform[:, 1].max()
 
-        plt.hexbin(output_transform[:, 0], output_transform[:, 1], bins=None, gridsize=100)
+        plt.hexbin(
+            output_transform[:, 0],
+            output_transform[:, 1],
+            bins=None,
+            gridsize=100
+        )
         plt.axis([xmin, xmax, ymin, ymax])
         plt.xlabel('PCA dim 1')
         plt.ylabel('PCA dim 2')
         plt.title('Embedding visualization (2D)')
 
         ax = plt.subplot(grid[3:, :3], projection='3d')
-        output_transform = self.project_embeddings(3, threshold=max(-10, threshold / 4))
-        result=pd.DataFrame(output_transform, columns=['PCA%i' % i for i in range(3)])
-        ax.scatter(result['PCA0'], result['PCA1'], result['PCA2'], cmap="Set2_r", s=10)
+        output_transform = self.project_embeddings(
+            3,
+            threshold=max(-10, threshold / 4),
+        )
+        result=pd.DataFrame(
+            output_transform,
+            columns=['PCA%i' % i for i in range(3)]
+        )
+        ax.scatter(
+            result['PCA0'],
+            result['PCA1'],
+            result['PCA2'],
+            cmap="Set2_r",
+            s=10
+        )
         # make simple, bare axis lines through space:
         xAxisLine = ((min(result['PCA0']), max(result['PCA0'])), (0, 0), (0,0))
         ax.plot(xAxisLine[0], xAxisLine[1], xAxisLine[2], 'r')
@@ -248,12 +308,18 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         plt.ylabel('Frequency')
         plt.title('Source assignments')
 
-        norm = mpl.colors.Normalize(vmin=np.min(assignments), vmax=np.max(assignments))
+        norm = mpl.colors.Normalize(
+            vmin=np.min(assignments),
+            vmax=np.max(assignments)
+        )
         labels = [f'Source {i}' for i in range(1, self.num_sources + 1)]
         values = list(range(np.min(assignments), np.max(assignments) + 1))
         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
         _legend = [mpl.patches.Patch(color=mapper.to_rgba(0), label='Silence')]
 
         for value, label in zip(values, labels):
-            _legend.append(mpl.patches.Patch(color=mapper.to_rgba(value), label=label))
+            _legend.append(mpl.patches.Patch(
+                color=mapper.to_rgba(value),
+                label=label
+            ))
         plt.legend(handles=_legend)
