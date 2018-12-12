@@ -111,17 +111,17 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         with torch.no_grad():
             output = self.model(input_data)
 
-        if 'embedding' in output:
-            num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
-            self.embedding = output['embedding'].data.cpu().numpy()
-            self.embedding = self.embedding.reshape(-1, embedding_size)
-            output['embedding'] = output['embedding'].reshape(1, num_channels*sequence_length, num_features, embedding_size)
-            clusters = self.clusterer(output['embedding'])
-            clusters['assignments'] = clusters['assignments'].reshape(num_channels, sequence_length, num_features, self.num_sources)
-            clusters['assignments'] = clusters['assignments'].permute(3, 2, 1, 0)
-            _masks = clusters['assignments'].data.cpu().numpy()
-        elif 'estimates' in output:
-            _masks = output['estimates']
+            if 'embedding' in output:
+                num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
+                self.embedding = output['embedding'].data.cpu().numpy()
+                self.embedding = self.embedding.reshape(-1, embedding_size)
+                output['embedding'] = output['embedding'].reshape(1, num_channels*sequence_length, num_features, embedding_size)
+                clusters = self.clusterer(output['embedding'])
+                clusters['assignments'] = clusters['assignments'].reshape(num_channels, sequence_length, num_features, self.num_sources)
+                clusters['assignments'] = clusters['assignments'].permute(3, 2, 1, 0)
+                _masks = clusters['assignments'].data.cpu().numpy()
+            elif 'estimates' in output:
+                _masks = output['estimates']
         
         self.assignments = _masks
         self.masks = []
