@@ -67,7 +67,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         Returns:
 
         """
-        model_dict = torch.load(model_path)
+        model_dict = torch.load(model_path, map_location='cpu')
         model = SeparationModel(model_dict['config'])
         model.load_state_dict(model_dict['state_dict'])
         model = model.to(self.device)
