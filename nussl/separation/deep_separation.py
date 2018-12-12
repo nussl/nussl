@@ -108,7 +108,8 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         """
         input_data = self._preprocess()
-        output = self.model(input_data)
+        with torch.no_grad():
+            output = self.model(input_data)
 
         if 'embedding' in output:
             num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
