@@ -41,7 +41,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
             'covariance_init': 1.0
         }
 
-        clustering_options = {
+        self.clustering_options = {
             **clustering_defaults,
             **(clustering_options if clustering_options else {})
         }
@@ -56,7 +56,6 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         if self.audio_signal.sample_rate != self.metadata['sample_rate']:
             self.audio_signal.resample(self.metadata['sample_rate'])
         self.use_librosa_stft = use_librosa_stft
-        self.clusterer = modules.Clusterer(**clustering_options)
         self._compute_spectrograms()
 
     def load_model(self, model_path):
@@ -148,7 +147,6 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         """
         input_data = self._preprocess()
-
         with torch.no_grad():
             output = self.model(input_data)
 
@@ -167,7 +165,9 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
                     num_features,
                     embedding_size
                 )
-                clusters = self.clusterer(output['embedding'])
+                clusters = modules.Clusterer(**self.clustering_options)(
+                    output['embedding']
+                )
                 clusters['assignments'] = clusters['assignments'].reshape(
                     num_channels,
                     sequence_length,
