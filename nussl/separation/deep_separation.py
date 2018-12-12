@@ -23,6 +23,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
     def __init__(self, input_audio_signal, model_path, num_sources,
                  mask_type='soft',
                  use_librosa_stft=False,
+                 use_cuda=True,
                  clustering_options=None):
 
         super(DeepSeparation, self).__init__(input_audio_signal=input_audio_signal,
@@ -37,7 +38,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         clustering_options = {**clustering_defaults, **(clustering_options if clustering_options else {})}
 
         self.num_sources = num_sources                                     
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() and use_cuda else 'cpu')
         self.model, self.metadata = self.load_model(model_path)
         if self.audio_signal.sample_rate != self.metadata['sample_rate']:
             self.audio_signal.resample(self.metadata['sample_rate'])
