@@ -334,7 +334,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
             vmax=np.max(assignments)
         )
         labels = [f'Source {i}' for i in range(1, self.num_sources + 1)]
-        values = list(range(np.min(assignments), np.max(assignments) + 1))
+        values = list(range(np.min(assignments)+1, np.max(assignments) + 1))
         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
         _legend = [mpl.patches.Patch(color=mapper.to_rgba(0), label='Silence')]
 
