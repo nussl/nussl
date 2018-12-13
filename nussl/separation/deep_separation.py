@@ -70,7 +70,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         model_dict = torch.load(model_path, map_location='cpu')
         model = SeparationModel(model_dict['config'])
         model.load_state_dict(model_dict['state_dict'])
-        model = model.to(self.device)
+        model = model.to(self.device).eval()
         metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
         return model, metadata
 
