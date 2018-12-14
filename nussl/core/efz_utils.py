@@ -287,8 +287,10 @@ def _download_all_metadata(url):
     # Make sure to get the newest data
     request.add_header('Pragma', 'no-cache')
     request.add_header('Cache-Control', 'max-age=0')
-    response = urlopen(request)
-    return json.loads(response.read())
+    try:
+        return json.loads(urlopen(request).read())
+    except:
+        raise NoConnectivityError("Can't connect to internet")
 
 
 def _download_metadata_for_file(file_name, file_type):
@@ -606,6 +608,11 @@ else:
 #             Error Classes
 ########################################
 
+class NoConnectivityError(Exception):
+    """
+    Exception class for lack of internet connection.
+    """
+    pass
 
 class FailedDownloadError(Exception):
     """
