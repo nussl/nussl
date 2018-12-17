@@ -156,7 +156,9 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
                 self.embedding = self.embedding.reshape(-1, embedding_size)
                 output['embedding'] = output['embedding'].reshape(1, -1, num_features, embedding_size)
                 clusters = modules.Clusterer(**self.clustering_options)(output['embedding'])
-                clusters['assignments'] = clusters['assignments'].reshape(num_channels, sequence_length, num_features, self.num_sources)
+                clusters['assignments'] = (clusters['assignments']
+                    .reshape(num_channels, sequence_length, num_features, self.num_sources)
+                )
                 clusters['assignments'] = clusters['assignments'].permute(3, 2, 1, 0)
                 _masks = clusters['assignments'].data.cpu().numpy()
             elif 'estimates' in output:
