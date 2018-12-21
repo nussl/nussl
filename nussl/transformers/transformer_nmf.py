@@ -86,8 +86,10 @@ class TransformerNMF(object):
 
         # Check to make sure we understand the distance measure
         if distance_measure is not None and distance_measure not in self.ALL_DISTANCE_TYPES:
-            raise ValueError('distance_measure is not a known distance type! Known types: {}'
-                             .format([t for t in self.ALL_DISTANCE_TYPES]))
+            raise ValueError(
+                'distance_measure is not a known distance type!'
+                f' Known types: {[t for t in self.ALL_DISTANCE_TYPES]}'
+            )
 
         # Initialize distance and update rules
         self.distance_measure = distance_measure if distance_measure is not None else self.DEFAULT_DISTANCE_TYPE

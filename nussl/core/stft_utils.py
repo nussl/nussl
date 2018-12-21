@@ -41,7 +41,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
         signal: (np.array) input time series signal that will be plotted
         file_name: (str) path to file that will be output. Will overwrite any file that is already there.
             Uses mat
-        title: (string) (Optional) Title to go at top of graph. Defaults to 'Spectrogram of [file_name]'
+        title: (string) (Optional) Title to go at top of graph. Defaults to f'Spectrogram of [file_name]'
         win_length: (int) (Optional) number of samples per window. Defaults to StftParams default.
         hop_length: (int) (Optional) number of samples between the start of adjacent windows, or "hop".
             Defaults to StftParams default.
@@ -78,7 +78,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
     if title is None:
         title = os.path.basename(file_name)
         title = os.path.splitext(title)[0]
-        title = 'Spectrogram of {}'.format(title)
+        title = f'Spectrogram of {title}'
 
     required = [win_length, hop_length, window_type]
     if any([r is None for r in required]):
@@ -503,7 +503,7 @@ def _get_window_function(window_type):
     if window_type in dir(scipy.signal):
         return getattr(scipy.signal, window_type)
     else:
-        warnings.warn("Cannot get window type {} from scipy.signal".format(window_type))
+        warnings.warn(f'Cannot get window type {window_type} from scipy.signal')
         return None
 
 

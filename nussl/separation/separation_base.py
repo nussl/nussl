@@ -189,16 +189,17 @@ class SeparationBaseDecoder(json.JSONDecoder):
         class_name = json_dict.pop('__class__')
         module_name = json_dict.pop('__module__')
         if class_name != self.separation_class.__name__ or module_name != self.separation_class.__module__:
-            raise TypeError('Expected {}.{} but got {}.{} from json!'.format(self.separation_class.__module__,
-                                                                             self.separation_class.__name__,
-                                                                             module_name, class_name))
+            raise TypeError(
+                f'Expected {self.separation_class.__module__}.{self.separation_class.__name__}'
+                f' but got {module_name}.{class_name} from json!'
+            )
 
         # load the module and import the class
         module = __import__(module_name)
         class_ = getattr(module, class_name)
 
         if '_audio_signal' not in json_dict:
-            raise TypeError('JSON string from {} does not have an AudioSignal object!'.format(class_name))
+            raise TypeError(f'JSON string from {class_name} does not have an AudioSignal object!')
 
         # we know 'input_audio_signal' is always the first argument
         signal_json = json_dict.pop('_audio_signal')  # this is the AudioSignal object

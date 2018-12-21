@@ -126,7 +126,7 @@ class Projet(separation_base.SeparationBase):
         for iteration in range(self.num_iterations):
 
             if self.verbose:
-                print(('Iteration {}'.format(iteration)))
+                print(f'Iteration {iteration}')
 
             sigma = np.dot(P, np.dot(panning_sources_matrix.T, K.T))
 

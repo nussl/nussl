@@ -26,7 +26,7 @@ class TestEfzUtils(unittest.TestCase):
                         os.remove(found_file)
                         assert not os.path.exists(found_file)
                         if verbose:
-                            print(('Removed {}.'.format(found_file)))
+                            print(f'Removed {found_file}.')
                     except Exception:
                         pass
 

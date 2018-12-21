@@ -167,7 +167,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
 
             # Output the sources
             for i, source in enumerate(sources):
-                output_file_name = str(i) + '.wav'
+                output_file_name = f"{i}.wav"
                 source.write_audio_to_file(output_file_name)
         """
         self.audio_signal.stft_params = self.stft_params
@@ -208,7 +208,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             elif self.mask_type == self.SOFT_MASK:
                 mask_object = masks.SoftMask(mask)
             else:
-                raise ValueError('Unknown mask type {}!'.format(self.mask_type))
+                raise ValueError(f'Unknown mask type {self.mask_type}!')
             self.result_masks.append(mask_object)
 
         return self.result_masks

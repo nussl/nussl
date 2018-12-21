@@ -81,7 +81,7 @@ def _check_hash(audio_dir, check_hash, expected_hash, ext):
     # Check to see if the contents are what we expect
     # by hashing all of the files and checking against a precomputed expected_hash
     if check_hash and _hash_directory(audio_dir, ext) != expected_hash:
-        msg = 'Hash of {} does not match known directory hash!'.format(audio_dir)
+        msg = f'Hash of {audio_dir} does not match known directory hash!'
         if check_hash == 'warn':
             warnings.warn(msg)
         else:
@@ -113,16 +113,15 @@ def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, chec
 
     # Verify the top-level directory is correct
     if not os.path.isdir(directory):
-        raise DataSetException('Expected directory, got \'{}\'!'.format(directory))
+        raise DataSetException(f"Expected directory, got '{directory}'!")
 
     if top_dir_name != os.path.split(directory)[1]:
-        raise DataSetException('Expected {}, got \'{}\''.format(top_dir_name,
-                                                                os.path.split(directory)[1]))
+        raise DataSetException(f"Expected {top_dir_name}, got '{os.path.split(directory)[1]}'")
 
     # This should be tha directory with all of the audio files
     audio_dir = os.path.join(directory, audio_dir_name)
     if not os.path.isdir(audio_dir):
-        raise DataSetException('Expected {} to be a directory but it is not!'.format(audio_dir))
+        raise DataSetException(f'Expected {audio_dir} to be a directory but it is not!')
 
     _check_hash(audio_dir, check_hash, expected_hash, ext)
 
@@ -214,16 +213,16 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
 
                 # Get some basic metadata on the files.
                 # (They'll all have the same file name, but different labels)
-                print('Mixture       - Filename: {}, Label: {}'.format(mix.file_name, mix.label))
-                print('Vocals        - Filename: {}, Label: {}'.format(vox.file_name, vox.label))
-                print('Accompaniment - Filename: {}, Label: {}'.format(acc.file_name, acc.label))
+                print(f'Mixture       - Filename: {mix.file_name}, Label: {mix.label}'
+                print(f'Vocals        - Filename: {vox.file_name}, Label: {vox.label}'
+                print(f'Accompaniment - Filename: {acc.file_name}, Label: {acc.label}'
 
                 # Run an algorithm on the iKala files and save to disc
                 r = nussl.Repet(mix)
                 r.run()
                 bg_est, fg_est = r.make_audio_signals()
-                bg_est.write_audio_to_file('{}_bg.wav'.format(os.path.splitext(mix.file_name)[0]))
-                fg_est.write_audio_to_file('{}_fg.wav'.format(os.path.splitext(mix.file_name)[0]))
+                bg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_bg.wav')
+                fg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_fg.wav')
 
         It's also possible to use ``tqdm`` to print the progress to the console. This is useful
         because running through an entire data set can take a while. Here's a more advanced example
@@ -247,8 +246,8 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
                 r = nussl.Repet(mix)
                 r.run()
                 bg_est, fg_est = r.make_audio_signals()
-                bg_est.write_audio_to_file('{}_bg.wav'.format(os.path.splitext(mix.file_name)[0]))
-                fg_est.write_audio_to_file('{}_fg.wav'.format(os.path.splitext(mix.file_name)[0]))
+                bg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_bg.wav')
+                fg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_fg.wav')
 
     Args:
         directory (str): Top-level directory for the iKala data set.
@@ -340,16 +339,16 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
 
                 # Get some basic metadata on the files.
                 # (They'll all have the same file name, but different labels)
-                print('Mixture       - Filename: {}, Label: {}'.format(mix.file_name, mix.label))
-                print('Vocals        - Filename: {}, Label: {}'.format(vox.file_name, vox.label))
-                print('Accompaniment - Filename: {}, Label: {}'.format(acc.file_name, acc.label))
+                print(f'Mixture       - Filename: {mix.file_name}, Label: {mix.label}'
+                print(f'Vocals        - Filename: {vox.file_name}, Label: {vox.label}'
+                print(f'Accompaniment - Filename: {acc.file_name}, Label: {acc.label}'
 
                 # Run an algorithm on the MIR-1K files and save to disc
                 r = nussl.Repet(mix)
                 r.run()
                 bg_est, fg_est = r.make_audio_signals()
-                bg_est.write_audio_to_file('{}_bg.wav'.format(os.path.splitext(mix.file_name)[0]))
-                fg_est.write_audio_to_file('{}_fg.wav'.format(os.path.splitext(mix.file_name)[0]))
+                bg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_bg.wav')
+                fg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_fg.wav')
 
         It's also possible to use ``tqdm`` to print the progress to the console. This is useful
         because running through an entire data set can take a while. Here's a more advanced example
@@ -374,8 +373,8 @@ def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, und
                 r = nussl.Repet(mix)
                 r.run()
                 bg_est, fg_est = r.make_audio_signals()
-                bg_est.write_audio_to_file('{}_bg.wav'.format(os.path.splitext(mix.file_name)[0]))
-                fg_est.write_audio_to_file('{}_fg.wav'.format(os.path.splitext(mix.file_name)[0]))
+                bg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_bg.wav')
+                fg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_fg.wav')
 
     Args:
         directory (str): Top-level directory for the MIR-1K data set.
@@ -534,16 +533,16 @@ def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False,
 
                 # Get some basic metadata on the files.
                 # (They'll all have the same file name, but different labels)
-                print('Mixture  - Filename: {}, Label: {}'.format(mix.file_name, mix.label))
-                print('Vocals   - Filename: {}, Label: {}'.format(vox.file_name, vox.label))
-                print('Drums    - Filename: {}, Label: {}'.format(drums.file_name, drums.label))
+                print(f'Mixture       - Filename: {mix.file_name}, Label: {mix.label}'
+                print(f'Vocals        - Filename: {vox.file_name}, Label: {vox.label}'
+                print(f'Accompaniment - Filename: {acc.file_name}, Label: {acc.label}'
 
                 # Run an algorithm on the MUSDB18 files and save to disc
                 r = nussl.Repet(mix)
                 r.run()
                 bg_est, fg_est = r.make_audio_signals()
-                bg_est.write_audio_to_file('{}_bg.wav'.format(os.path.splitext(mix.file_name)[0]))
-                fg_est.write_audio_to_file('{}_fg.wav'.format(os.path.splitext(mix.file_name)[0]))
+                bg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_bg.wav')
+                fg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_fg.wav')
 
         It's also possible to use ``tqdm`` to print the progress to the console. This is useful
         because running through an entire data set can take a while. Here's a more advanced example
@@ -567,8 +566,8 @@ def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False,
                 r = nussl.Repet(mix)
                 r.run()
                 bg_est, fg_est = r.make_audio_signals()
-                bg_est.write_audio_to_file('{}_bg.wav'.format(os.path.splitext(mix.file_name)[0]))
-                fg_est.write_audio_to_file('{}_fg.wav'.format(os.path.splitext(mix.file_name)[0]))
+                bg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_bg.wav')
+                fg_est.write_audio_to_file(f'{os.path.splitext(mix.file_name)[0]}_fg.wav')
 
     Args:
         directory (str): Top-level directory for the MUSDB18 data set.

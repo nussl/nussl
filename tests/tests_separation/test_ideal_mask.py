@@ -39,14 +39,14 @@ class IdealMaskTestCase(unittest.TestCase):
                                          mask_type=mask_class)
             masks = ideal_mask.run()
             assert all([isinstance(m, mask_class) for m in masks])
-            self.plot_mask(masks, 'premade_{}'.format(mask_class.__name__))
+            self.plot_mask(masks, f'premade_{mask_class.__name__}')
 
             masked_sources = ideal_mask.make_audio_signals()
             residual = ideal_mask.residual
             assert isinstance(residual, nussl.AudioSignal)
 
             for i, src in enumerate(masked_sources):
-                src.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'premade_src{}.wav'.format(i)))
+                src.write_audio_to_file(os.path.join('..', 'output', 'mixture', f'premade_src{i}.wav'))
             residual.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'premade_residual.wav'))
 
             reconstructed = masked_sources[0].audio_data + masked_sources[1].audio_data + residual.audio_data
@@ -62,7 +62,7 @@ class IdealMaskTestCase(unittest.TestCase):
                                          mask_type=mask_class)
             masks = ideal_mask.run()
             assert all([isinstance(m, mask_class) for m in masks])
-            self.plot_mask(masks, 'new_mixture_{}'.format(mask_class.__name__))
+            self.plot_mask(masks, f'new_mixture_{mask_class.__name__}')
 
             ac = np.allclose(masks[0].mask + masks[1].mask, np.ones(masks[0].shape))
 
@@ -72,7 +72,7 @@ class IdealMaskTestCase(unittest.TestCase):
 
             if mask_class == nussl.separation.SoftMask:
                 for i, src in enumerate(masked_sources):
-                    src.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'new_src{}.wav'.format(i)))
+                    src.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'new_src{i}.wav'))
                 residual.write_audio_to_file(os.path.join('..', 'output', 'mixture', 'new_residual.wav'))
 
             reconstructed = masked_sources[0].audio_data + masked_sources[1].audio_data
@@ -89,7 +89,7 @@ class IdealMaskTestCase(unittest.TestCase):
 
                 plt.axis('tight')
 
-                path = os.path.join('..', 'output', 'masks', '{}_{}_ch{}.png'.format(name, i, ch))
+                path = os.path.join('..', 'output', 'masks', f'{name}_{i}_ch{ch}.png')
                 plt.savefig(path)
 
 

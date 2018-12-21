@@ -68,7 +68,7 @@ class BenchmarkTestBase(unittest.TestCase):
             raise BenchmarkFileLoadError('Cannot load MATLAB file at this time.')
         else:
             os.remove(file_path)
-            raise BenchmarkFileLoadError('Unknown file type {}.'.format(ext))
+            raise BenchmarkFileLoadError(f'Unknown file type {ext}.')
 
     @classmethod
     def remove_benchmarks(cls):

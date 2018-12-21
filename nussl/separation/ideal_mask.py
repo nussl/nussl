@@ -157,7 +157,7 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
                 mask = masks.SoftMask(soft_mask)
             else:
-                raise RuntimeError('Unknown mask type: {}'.format(self.mask_type))
+                raise RuntimeError(f'Unknown mask type: {self.mask_type}')
 
             self.result_masks.append(mask)
 

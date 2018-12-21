@@ -96,14 +96,16 @@ class MaskBase(object):
 
         """
         if self.mask is None:
-            raise AttributeError('Cannot get channel {} when mask has no data!'.format(n))
+            raise AttributeError(f'Cannot get channel {n} when mask has no data!')
 
         if n >= self.num_channels:
-            raise ValueError('Cannot get channel {0} when this object only has {1} channels! (0-based)'
-                             .format(n, self.num_channels))
+            raise ValueError(
+                f'Cannot get channel {n} for object w/ {self.num_channels} channels!'
+                ' (0-based)'
+            )
 
         if n < 0:
-            raise ValueError('Cannot get channel {}. This will cause unexpected results!'.format(n))
+            raise ValueError(f'Cannot get channel {n}. This will cause unexpected results!')
 
         return utils._get_axis(self.mask, constants.STFT_CHAN_INDEX, n)
 
@@ -219,11 +221,11 @@ class MaskBase(object):
             return self.mask + other
 
         else:
-            raise ValueError('Cannot do arithmetic operation with MaskBase and {}'.format(type(other)))
+            raise ValueError(f'Cannot do arithmetic operation with MaskBase and {type(other)}')
 
     def _mult(self, value):
         if not isinstance(value, numbers.Real):
-            raise ValueError('Cannot do operation with MaskBase and {}'.format(type(value)))
+            raise ValueError(f'Cannot do operation with MaskBase and {type(value)}')
 
         return self.mask * value
 
@@ -336,14 +338,14 @@ class MaskBaseDecoder(json.JSONDecoder):
             mask_modules, mask_names = list(zip(*[(c.__module__, c.__name__) for c in MaskBase.__subclasses__()]))
 
             if class_name not in mask_names or module_name not in mask_modules:
-                raise TypeError('Got unknown mask type ({}.{}) from json!'.format(module_name, class_name))
+                raise TypeError(f'Got unknown mask type ({module_name}.{class_name}) from json!')
 
             # load the module and import the class
             module = __import__(module_name).separation.masks
             class_ = getattr(module, class_name)
 
             if '_mask' not in json_dict:
-                raise TypeError('JSON string from {} does not have mask!'.format(class_name))
+                raise TypeError(f'JSON string from {class_name} does not have mask!')
 
             mask_json = json_dict.pop('_mask')  # this is the mask numpy array
             mask_numpy = utils.json_numpy_obj_hook(mask_json[constants.NUMPY_JSON_KEY])

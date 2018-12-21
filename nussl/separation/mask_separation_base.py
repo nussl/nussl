@@ -115,8 +115,10 @@ class MaskSeparationBase(separation_base.SeparationBase):
 
     @mask_type.setter
     def mask_type(self, value):
-        error = ValueError('Invalid mask type! Got {0} but valid masks are: [{1}]!'
-                           .format(value, ', '.join(self._valid_mask_types)))
+        error = ValueError(
+            f'Invalid mask type! Got {value} but valid masks are:'
+            f' [{', '.join(self._valid_mask_types)}]!'
+        )
 
         if value is None:
             raise error

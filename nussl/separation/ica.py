@@ -59,8 +59,10 @@ class ICA(separation_base.SeparationBase):
             return self.audio_signal_observations_to_audio_signal(observations_list)
 
         else:
-            raise ValueError('Expected numpy array or list of AudioSignal objects,'
-                             ' but got {}!'.format(type(observations_list)))
+            raise ValueError(
+                'Expected numpy array or list of AudioSignal objects,'
+                f' given {type(observations_list)}!'
+            )
 
     @staticmethod
     def numpy_observations_to_audio_signal(observations, sample_rate=constants.DEFAULT_SAMPLE_RATE):

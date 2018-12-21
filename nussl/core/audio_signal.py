@@ -868,10 +868,10 @@ class AudioSignal(object):
 
             wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception as e:
-            print(("Cannot write to file, {file}.".format(file=output_file_path)))
+            print(f'Cannot write to file, {output_file_path}.')
             raise e
         if verbose:
-            print(("Successfully wrote {file}.".format(file=output_file_path)))
+            print(f'Successfully wrote {output_file_path}.')
 
     ##################################################
     #                Active Region
@@ -1109,16 +1109,16 @@ class AudioSignal(object):
         from ..separation.masks import mask_base
 
         if not isinstance(mask, mask_base.MaskBase):
-            raise AudioSignalException('mask is {} but is expected to be a '
-                                       'MaskBase-derived object!'.format(type(mask)))
+            raise AudioSignalException(f'Expected MaskBase-derived object, given {type(mask)}')
 
         if not self.has_stft_data:
             raise AudioSignalException('There is no STFT data to apply a mask to!')
 
         if mask.shape != self.stft_data.shape:
-            raise AudioSignalException('Input mask and self.stft_data are not the same shape! '
-                                       'mask: {}, self.stft_data: {}'.format(mask.shape,
-                                                                             self.stft_data.shape))
+            raise AudioSignalException(
+                'Input mask and self.stft_data are not the same shape! mask:'
+                f' {mask.shape}, self.stft_data: {self.stft_data.shape}'
+            )
 
         masked_stft = self.stft_data * mask.mask
 
@@ -1161,8 +1161,7 @@ class AudioSignal(object):
             else:
                 plt.plot(self.audio_data[plot_channels])
                 plt.xlim(0, self.signal_length)
-            channel_num_plot = 'Channel {}'.format(plot_channels)
-            plt.ylabel(channel_num_plot)
+            plt.ylabel(f'Channel {plot_channels}')
 
         # Stereo signal plotting
         elif self.num_channels == 2 and channel is None:
@@ -1187,8 +1186,7 @@ class AudioSignal(object):
                 else:
                     axarr[i].plot(self.audio_data[i], sharex=True)
                     axarr[i].set_xlim(0, self.signal_length)
-                channel_num_plot = 'Ch {}'.format(i)
-                axarr[i].set_ylabel(channel_num_plot)
+                axarr[i].set_ylabel(f'Ch {i}')
 
         if title is None:
             title = self.file_name if self.file_name is not None else self._NAME_STEM
@@ -1413,11 +1411,11 @@ class AudioSignal(object):
 
         """
         if bit_depth not in [8, 16, 24, 32]:
-            raise AudioSignalException('Cannot convert self.audio_data to '
-                                       'integer array of bit depth = {}'.format(bit_depth))
+            raise AudioSignalException(
+                f'Cannot convert self.audio_data to int array w/ bit depth {bit_depth}'
+            )
 
-        int_type = 'int' + str(bit_depth)
-
+        int_type = f'int{bit_depth}'
         return np.multiply(self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype(int_type)
 
     def make_empty_copy(self, verbose=True):
@@ -1543,9 +1541,10 @@ class AudioSignal(object):
             class_name = json_dict.pop('__class__')
             module = json_dict.pop('__module__')
             if class_name != AudioSignal.__name__ or module != AudioSignal.__module__:
-                raise TypeError('Expected {}.{} but got {}.{} '
-                                'from json!'.format(AudioSignal.__module__, AudioSignal.__name__,
-                                                    module, class_name))
+                raise TypeError(
+                    f'Expected {AudioSignal.__module__}.{AudioSignal.__name__}, given'
+                    f' {module}.{class_name} from json!'
+                )
 
             a = AudioSignal()
 
@@ -1648,13 +1647,15 @@ class AudioSignal(object):
 
     def _verify_get_channel(self, n):
         if n >= self.num_channels:
-            raise AudioSignalException('Cannot get channel {0} when this object '
-                                       'only has {1} channels! (0-based)'
-                                       .format(n, self.num_channels))
+            raise AudioSignalException(
+                f'Cannot get channel {n} when this object only has {self.num_channels}'
+                ' channels! (0-based)'
+            )
 
         if n < 0:
-            raise AudioSignalException('Cannot get channel {}. This will cause '
-                                       'unexpected results'.format(n))
+            raise AudioSignalException(
+                f'Cannot get channel {n}. This will cause unexpected results'
+            )
 
     def get_channel(self, n):
         """Gets audio data of n-th channel from :attr:`audio_data` as a 1D :obj:`np.ndarray`

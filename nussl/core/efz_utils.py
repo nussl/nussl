@@ -92,11 +92,12 @@ def print_available_audio_files():
     """
     file_metadata = get_available_audio_files()
 
-    print(('{:40} {:15} {:10} {:50}'.format('File Name', 'Duration (sec)',
-                                           'Size', 'Description')))
+    print(f'{"File Name":40} {"Duration (sec)":15} {"Size":10} {"Description":50}')
     for f in file_metadata:
-        print(('{:40} {:<15.1f} {:10} {:50}'.format(f['file_name'], f['file_length_seconds'],
-                                                   f['file_size'], f['file_description'])))
+        print(
+            f'{f["file_name"]:40} {f["file_length_seconds"]:<15.1f} {f["file_size"]:10}'
+            f' {f["file_description"]:50}'
+        )
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_audio_file(), like so: \n'
           ' >>> nussl.efz_utils.download_audio_file(\'K0140.wav\')')
@@ -178,10 +179,13 @@ def print_available_trained_models():
     """
     file_metadata = get_available_trained_models()
 
-    print(('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description')))
+
+    print(f'{"File Name":40} {"For Class":15} {"Size":10} {"Description":50}')
     for f in file_metadata:
-        print(('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
-                                               f['file_size'], f['file_description'])))
+        print(
+            f'{f["file_name"]:40} {f["for_class"]:<15.1f} {f["file_size"]:10}'
+            f' {f["file_description"]:50}'
+        )
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_trained_model, like so: \n'
           ' >>> nussl.efz_utils.download_trained_model(\'deep_clustering_model.h5\')')
@@ -257,10 +261,12 @@ def print_available_benchmark_files():
     """
     file_metadata = get_available_benchmark_files()
 
-    print(('{:40} {:20} {:10} {:50}'.format('File Name', 'For Class', 'Size', 'Description')))
+    print(f'{"File Name":40} {"For Class":15} {"Size":10} {"Description":50}')
     for f in file_metadata:
-        print(('{:40} {:20} {:10} {:50}'.format(f['file_name'], f['for_class'],
-                                               f['file_size'], f['file_description'])))
+        print(
+            f'{f["file_name"]:40} {f["for_class"]:<15.1f} {f["file_size"]:10}'
+            f' {f["file_description"]:50}'
+        )
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_benchmark_file, like so: \n'
           ' >>> nussl.efz_utils.download_benchmark_file(\'example.npy\')')
@@ -316,7 +322,7 @@ def _download_metadata_for_file(file_name, file_type):
         metadata_url = metadata_urls[file_type]
     else:
         # wrong file type, return
-        raise MetadataError('Cannot find metadata of type {}.'.format(file_type))
+        raise MetadataError(f'Cannot find metadata of type {file_type}.')
 
     metadata = _download_all_metadata(metadata_url)
 
@@ -324,8 +330,10 @@ def _download_metadata_for_file(file_name, file_type):
         if file_metadata['file_name'] == file_name:
             return file_metadata
 
-    raise MetadataError('No matching metadata for file {} at url {}!'
-                        .format(file_name, constants.NUSSL_EFZ_AUDIO_METADATA_URL))
+    raise MetadataError(
+        f'No matching metadata for file {file_name}'
+        f' at url {constants.NUSSL_EFZ_AUDIO_METADATA_URL}!'
+    )
 
 
 def download_audio_file(audio_file_name, local_folder=None, verbose=True):
@@ -487,11 +495,13 @@ def _download_file(file_name, url, local_folder, cache_subdir,
             # if the hashes are equal, we already have the file we need, so don't download
             if file_hash != current_hash:
                 if verbose:
-                    warnings.warn("Hash for {} does not match known hash. "
-                                  "Downloading {} from servers...".format(file_path, file_name))
+                    warnings.warn(
+                        f'Hash for {file_path} does not match known hash. '
+                        f' Downloading {file_name} from servers...'
+                    )
                 download = True
             elif verbose:
-                print(('Matching file found at {}, skipping download.'.format(file_path)))
+                print(f'Matching file found at {file_path}, skipping download.')
 
         else:
             download = True
@@ -501,17 +511,14 @@ def _download_file(file_name, url, local_folder, cache_subdir,
 
     if download:
         if verbose:
-            print(('Saving file at {}'.format(file_path)))
-            print(('Downloading {} from {}'.format(file_name, url)))
+            print(f'Saving file at {file_path}\nDownloading {file_name} from {url}')
 
         def _dl_progress(count, block_size, total_size):
             percent = int(count * block_size * 100 / total_size)
 
             if percent <= 100:
-                sys.stdout.write('\r{}...{}%'.format(file_name, percent))
+                sys.stdout.write(f'\r{file_name}...{percent}%')
                 sys.stdout.flush()
-
-        error_msg = 'URL fetch failure on {}: {} -- {}'
 
         try:
             try:
@@ -520,9 +527,9 @@ def _download_file(file_name, url, local_folder, cache_subdir,
                 if verbose: print()  # print a new line after the progress is done.
 
             except HTTPError as e:
-                raise FailedDownloadError(error_msg.format(url, e.code, e.msg))
+                raise FailedDownloadError(f'URL fetch failure on {url}: {e.code} -- {e.msg}')
             except URLError as e:
-                raise FailedDownloadError(error_msg.format(url, e.errno, e.reason))
+                raise FailedDownloadError(f'URL fetch failure on {url}: {e.errno} -- {e.reason}')
         except (Exception, KeyboardInterrupt) as e:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -534,8 +541,9 @@ def _download_file(file_name, url, local_folder, cache_subdir,
             if file_hash != download_hash:
                 # the downloaded file is not what it should be. Get rid of it.
                 os.remove(file_path)
-                raise MismatchedHashError("Downloaded file ({}) has been deleted "
-                                          "because of a hash mismatch.".format(file_path))
+                raise MismatchedHashError(
+                    f'Deleted downloaded file ({file_path}) because of a hash mismatch.'
+                )
 
         return file_path
 

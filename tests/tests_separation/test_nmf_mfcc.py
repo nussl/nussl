@@ -152,10 +152,8 @@ class NMFMFCCUnitTests(unittest.TestCase):
         metadata_file = os.path.join('tests', 'nmf_mfcc_reference', 'nmf_mfcc_benchmark_files',
                                      'nmf_mfcc_benchmark_metadata.json')
         metadata = json.load(open(metadata_file, 'r'))
-        print(('Reading benchmark files from {}, '
-              'version {}, made by {}'.format(metadata['save_time'],
-                                              metadata['nussl_version'],
-                                              metadata['made_by'])))
+        print(f'Reading benchmark files from {metadata["save_time"]}, '
+              f'version {metadata["nussl_version"]}, made by {metadata["made_by"]}')
 
         # Load the audio
         signal = nussl.AudioSignal(metadata['input_file'])

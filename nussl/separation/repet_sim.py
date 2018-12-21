@@ -294,7 +294,7 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
 
         sim_mat = self.get_similarity_matrix()
         plt.pcolormesh(sim_mat)
-        title = title if title is not None else 'Similarity Matrix for {}'.format(self.audio_signal.file_name)
+        title = title if title else 'Similarity Matrix for {self.audio_signal.file_name}'
         plt.xlabel('Time (s)')
         plt.ylabel('Time (s)')
         plt.title(title)

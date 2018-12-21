@@ -43,7 +43,7 @@ class EvaluationBase(object):
 
         # set the labels up correctly
         if source_labels is None:
-            self.source_labels = ['Source {}'.format(i) for i in range(len(self.true_sources_list))]
+            self.source_labels = [f'Source {i}' for i in range(len(self.true_sources_list))]
         else:
             assert isinstance(source_labels, list), 'Expected source_labels to be ' \
                                                     'a list of strings!'
@@ -58,7 +58,7 @@ class EvaluationBase(object):
             if len(source_labels) < len(self.true_sources_list):
                 start, stop = len(source_labels), len(self.true_sources_list)
                 for i in range(start, stop):
-                    source_labels.append('Source {}'.format(i))
+                    source_labels.append(f'Source {i}')
 
             self.source_labels = source_labels
 

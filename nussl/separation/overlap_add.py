@@ -143,9 +143,10 @@ class OverlapAdd(separation_base.SeparationBase):
         Returns:
 
         """
-        error = ValueError("Invalid separation method for OverlapAdd! \n" +
-                           "Got {0}, but valid methods are: {1}"
-                           .format(value, ', '.join(list(self._valid_separation_methods.keys()))))
+        error = ValueError(
+            f'Invalid separation method for OverlapAdd!\nGot {value}, but valid methods'
+            f' are: {", ".join(list(self._valid_separation_methods.keys()}'
+        )
         if value is None:
             raise error
 
@@ -217,8 +218,10 @@ class OverlapAdd(separation_base.SeparationBase):
         # if our window is larger than the total number of samples in the file,
         # just run the algorithm like normal
         if self.audio_signal.signal_length < self.window_samples + self.hop_samples:
-            warnings.warn('input_audio_signal length is less than one window. '
-                          'Running {} normally...'.format(self.separation_method_name))
+            warnings.warn(
+                'input_audio_signal length is less than one window.'
+                f' Running {self.separation_method_name} normally...'
+            )
 
             self._separation_instance.run()
             self.background, _ = self._separation_instance.make_audio_signals()

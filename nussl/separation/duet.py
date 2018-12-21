@@ -140,7 +140,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             output_name_stem = os.path.join('..', 'Output', 'duet_source')
             i = 1
             for s in duet.make_audio_signals():
-                output_file_name = output_name_stem + str(i) + '.wav'
+                output_file_name = f"{output_name_stem}{i}.wav"
                 s.write_audio_to_file(output_file_name)
                 i += 1
 
