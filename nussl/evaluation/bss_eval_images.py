@@ -88,7 +88,7 @@ class BSSEvalImages(bss_eval_base.BSSEvalBase):
         for i, label in enumerate(self.source_labels):
             self.scores[label] = {}
             for ch in range(self.num_channels):
-                chan = 'Ch {}'.format(ch)
+                chan = f'Ch {ch}'
                 self.scores[label][chan] = {}
 
                 self.scores[label][chan][self.SDR] = sdr_list[perm[idx]]

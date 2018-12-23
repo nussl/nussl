@@ -83,7 +83,7 @@ class HPSS(mask_separation_base.MaskSeparationBase):
             elif self.mask_type == self.SOFT_MASK:
                 mask_object = masks.SoftMask(mask)
             else:
-                raise ValueError('Unknown mask type {}!'.format(self.mask_type))
+                raise ValueError('Unknown mask type {self.mask_type}!')
             self.masks.append(mask_object)
         return self.masks
     

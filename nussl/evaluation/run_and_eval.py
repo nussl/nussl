@@ -35,20 +35,29 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
     """
 
     mixture_list = utils.verify_audio_signal_list_lax(mixture_list)
-    assert issubclass(separation_object, SeparationBase), 'Expected a SeparationBase derived class!'
-    assert issubclass(evaluation_object, evaluation_base.EvaluationBase), \
+    assert (
+        issubclass(separation_object, SeparationBase),
+        'Expected a SeparationBase derived class!'
+    )
+    assert (
+        issubclass(evaluation_object, evaluation_base.EvaluationBase),
         'Expected an EvaluationBase derived class!'
+    )
 
     scores = {}
     for i, mixture in enumerate(mixture_list):
 
         true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[i])
 
-        assert mixture.signal_length == true_sources_list[0].signal_length, \
-            'Mixture signal_length does not match true sources at idx {}'.format(i)
+        assert (
+            mixture.signal_length == true_sources_list[0].signal_length,
+            f'Mixture signal_length does not match true sources at idx {i}'
+        )
 
-        assert mixture.num_channels == true_sources_list[0].num_channels, \
-            'Mixture num_channels does not match true sources at idx {}'.format(i)
+        assert (
+            mixture.num_channels == true_sources_list[0].num_channels,
+            f'Mixture num_channels does not match true sources at idx {i}'
+        )
 
         sep = separation_object(input_audio_signal=mixture, **separation_kwargs)
         sep.run()
@@ -88,12 +97,12 @@ def run_and_eval_prf(separation_list, separation_kwargs,
     for i, separation_object in enumerate(separation_list):
         for j, mixture in enumerate(mixture_list):
             if verbose:
-                print(('Starting {} and {}'.format(str(separation_object), mixture.file_name)))
+                print('Starting {separation_object} and {mixture.file_name}')
 
             true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[j])
 
             if mixture.signal_length != true_sources_list[0].signal_length:
-                error = 'Mixture signal_length does not match true sources at idx {}'.format(j)
+                error = f'Mixture signal_length does not match true sources at idx {j}'
                 if skip_errors:
                     warnings.warn(error)
                     continue
@@ -101,7 +110,7 @@ def run_and_eval_prf(separation_list, separation_kwargs,
                     raise RuntimeError(error)
 
             if mixture.num_channels != true_sources_list[0].num_channels:
-                error = 'Mixture num_channels does not match true sources at idx {}'.format(j)
+                error = f'Mixture num_channels does not match true sources at idx {j}'
                 if skip_errors:
                     warnings.warn(error)
                     continue
@@ -126,7 +135,7 @@ def run_and_eval_prf(separation_list, separation_kwargs,
             cur_score = prf.evaluate()
 
             # TODO: This is a kludge because AudioSignal objects are not named uniquely
-            score_name = mixture.file_name + '_{}'.format(id(mixture))
+            score_name = f'{mixture.file_name}_{id(mixture)}'
             scores[score_name] = cur_score
 
     return scores

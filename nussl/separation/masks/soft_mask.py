@@ -81,8 +81,10 @@ class SoftMask(mask_base.MaskBase):
         if np.max(mask_) > 1.0 or np.min(mask_) < 0.0:
             # raise ValueError('All values must be between [0.0, 1.0] for SoftMask!')
             # TODO: maybe normalize instead of throwing a warning/error?
-            # warnings.warn('All values must be between [0.0, 1.0] for SoftMask! max/min={}/{}'.format(np.max(mask_),
-            #                                                                                          np.min(mask_)))
+            # warnings.warn(
+            #   'All values must be between [0.0, 1.0] for SoftMask! max/min='
+            #   f' {np.max(mask_)}/{np.min(mask_)}'
+            # )
             mask_ /= np.max(mask_)
 
         if mask_.dtype.kind not in np.typecodes['AllFloat']:

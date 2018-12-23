@@ -93,7 +93,7 @@ class SeparationModel(nn.Module):
 
         """
         if not all(name in list(data) for name in list(self.input)):
-            raise ValueError("Not all keys present in data! Needs {}".format(', '.join(self.input)))
+            raise ValueError(f'Not all keys present in data! Needs {", ".join(self.input)}')
         output = {}
         all_connections = [[connection[0]] + connection[1] for connection in self.connections]
         all_connections = list(chain.from_iterable(all_connections))

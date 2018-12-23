@@ -450,7 +450,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
             # plt.plot((self.repeating_period, self.repeating_period), (-1e20, 1e20), 'g--')
             plt.ylim((0.0, np.max(beat_spec) * 1.1))
 
-        title = title if title is not None else 'Beat Spectrum for {}'.format(self.audio_signal.file_name)
+        title = title if title else f'Beat Spectrum for {self.audio_signal.file_name}'
         plt.title(title)
 
         plt.xlabel('Time (s)')

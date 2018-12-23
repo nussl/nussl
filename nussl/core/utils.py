@@ -582,8 +582,7 @@ def verify_mask_separation_base_list(mask_separation_list):
         mask_separation_list = [mask_separation_list]
     elif isinstance(mask_separation_list, list):
         if not all(issubclass(s, MaskSeparationBase) for s in mask_separation_list):
-            raise ValueError('All separation objects must be '
-                             'MaskSeparationBase-derived objects! {}'.format(mask_separation_list))
+            raise ValueError(f'All separation objects must be MaskSeparationBase-derived objects! {mask_separation_list}')
     else:
         raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
 
@@ -654,4 +653,4 @@ def print_all_separation_algorithms():
     Displays the list of all separation algorithms in nussl to the console.
     """
     from ..separation import all_separation_algorithms
-    print(('\n'.join([a.__name__ for a in all_separation_algorithms])))
+    print('\n'.join([a.__name__ for a in all_separation_algorithms]))

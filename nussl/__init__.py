@@ -19,8 +19,7 @@ except Exception:
 
 class ImportErrorClass(object):
     def __init__(self, lib, **kwargs):
-        msg = 'Cannot import {} because {} is not installed'.format(type(self).__name__, lib)
-        raise ImportError(msg)
+        raise ImportError(f'Cannot import {type(self).__name__} because {lib} is not installed')
 
 
 from .core.constants import *

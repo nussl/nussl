@@ -274,8 +274,8 @@ class TestSpectralUtils(unittest.TestCase):
             calframe = inspect.getouterframes(curframe, 2)
             current_test = calframe[1][3]
 
-            msg = "calculated_signal shorter than signal. \n \twin_len={}, hop_len={}, win_type={}, " \
-                  "test={}".format(win_length, hop_length, win_type, current_test)
+            msg = f"calculated_signal shorter than signal. \n \twin_len={win_length},"
+                f"hop_len={hop_length}, win_type={win_type}, test={current_test}"
 
             raise AssertionError(msg)
 
