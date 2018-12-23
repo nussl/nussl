@@ -144,8 +144,8 @@ class OverlapAdd(separation_base.SeparationBase):
 
         """
         error = ValueError(
-            f'Invalid separation method for OverlapAdd!\nGot {value}, but valid methods'
-            f' are: {", ".join(list(self._valid_separation_methods.keys()}'
+            f"Invalid separation method for OverlapAdd! Got {value}, but valid methods"
+            f"are: {', '.join(list(self._valid_separation_methods.keys()))}"
         )
         if value is None:
             raise error

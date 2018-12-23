@@ -35,12 +35,10 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
     """
 
     mixture_list = utils.verify_audio_signal_list_lax(mixture_list)
-    assert (
-        issubclass(separation_object, SeparationBase),
+    assert issubclass(separation_object, SeparationBase), (
         'Expected a SeparationBase derived class!'
     )
-    assert (
-        issubclass(evaluation_object, evaluation_base.EvaluationBase),
+    assert issubclass(evaluation_object, evaluation_base.EvaluationBase), (
         'Expected an EvaluationBase derived class!'
     )
 
@@ -49,13 +47,11 @@ def run_and_evaluate(evaluation_object, evaluation_kwargs,
 
         true_sources_list = utils.verify_audio_signal_list_strict(true_sources_list_of_lists[i])
 
-        assert (
-            mixture.signal_length == true_sources_list[0].signal_length,
+        assert mixture.signal_length == true_sources_list[0].signal_length, (
             f'Mixture signal_length does not match true sources at idx {i}'
         )
 
-        assert (
-            mixture.num_channels == true_sources_list[0].num_channels,
+        assert mixture.num_channels == true_sources_list[0].num_channels, (
             f'Mixture num_channels does not match true sources at idx {i}'
         )
 
