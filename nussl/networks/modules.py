@@ -187,6 +187,7 @@ class RecurrentStack(nn.Module):
             Outputs the features after processing of the RNN. Shape is:
                 (num_batch, sequence_length, hidden_size or hidden_size*2 if bidirectional=True)
         """
+        self.rnn.flatten_parameters()
         data = self.rnn(data)[0]
         return data
 

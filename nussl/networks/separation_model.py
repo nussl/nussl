@@ -115,10 +115,11 @@ class SeparationModel(nn.Module):
 
         return {o: output[o] for o in self.output_keys}
 
-    def project_assignments(self, data):
+    def project_data(self, data, clamp=False):
         if 'mel_projection' in self.layers:
             data = self.layers['mel_projection'](data)
-            data = data.clamp(0.0, 1.0)
+            if clamp:
+                data = data.clamp(0.0, 1.0)
         return data
 
     def save(self, location, metadata=None):

@@ -58,7 +58,7 @@ else:
         def __init__(self, *args, **kwargs):
             super(DeepSeparation, self).__init__('pytorch')
 
-deep_learning_algorithms = [DeepClustering, DeepSeparation]
+deep_learning_algorithms = [DeepSeparation]
 
 all_separation_algorithms = [median_algorithms, melody_algorithms, spatialization_algorithms,
                              benchmark_algorithms, nmf_algorithms, component_analysis_algorithms,

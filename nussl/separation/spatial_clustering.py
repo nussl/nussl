@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Deep Clustering Separation Class
+Spatial Clustering Separation Class
 """
 import copy
 import warnings
@@ -17,20 +17,19 @@ from . import mask_separation_base
 from . import masks
 
 
-class DeepSeparation(mask_separation_base.MaskSeparationBase):
+class SpatialClustering(mask_separation_base.MaskSeparationBase):
     """Implements deep source separation models using PyTorch"""
 
     def __init__(
         self,
         input_audio_signal,
-        model_path,
         num_sources,
         mask_type='soft',
         use_librosa_stft=False,
         use_cuda=True,
         clustering_options=None
     ):
-        super(DeepSeparation, self).__init__(
+        super(SpatialClustering, self).__init__(
             input_audio_signal=input_audio_signal,
             mask_type=mask_type
         )
@@ -152,28 +151,15 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
             if 'embedding' in output:
                 num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
-                self.embedding = output['embedding']
-                
+                self.embedding = output['embedding'].data.cpu().numpy()
+                self.embedding = self.embedding.reshape(-1, embedding_size)
                 output['embedding'] = output['embedding'].reshape(1, -1, num_features, embedding_size)
                 clusters = modules.Clusterer(**self.clustering_options)(output['embedding'])
                 clusters['assignments'] = (clusters['assignments']
                     .reshape(num_channels, sequence_length, num_features, self.num_sources)
                 )
-                _masks = clusters['assignments']
-
-                if self.model.layers['mel_projection'].num_mels > 0:
-                    inverse_projection = modules.MelProjection(
-                        sample_rate=self.metadata['sample_rate'], 
-                        num_frequencies=self.stft.shape[0],
-                        num_mels=self.model.layers['mel_projection'].num_mels,
-                        direction='backward',
-                        clamp=True,
-                    ).to(self.device)
-                    _masks = inverse_projection(_masks)
-                
-                self.embedding = self.embedding.reshape(-1, embedding_size)
-                _masks = _masks.permute(3, 2, 1, 0).data.cpu().numpy()
-
+                clusters['assignments'] = clusters['assignments'].permute(3, 2, 1, 0)
+                _masks = clusters['assignments'].data.cpu().numpy()
             elif 'estimates' in output:
                 _masks = output['estimates']
 
@@ -202,14 +188,9 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
 
         """
         transform = PCA(n_components=num_dimensions)
-        mask = (self.log_spectrogram >= threshold).astype(float).reshape(
-            self.log_spectrogram.shape[0], -1).T
-        if self.model.layers['mel_projection'].num_mels > 0:
-            mask = torch.from_numpy(mask).to(self.device).float().unsqueeze(0)
-            mask = self.model.project_data(mask, clamp=False)
-            mask = (mask > 0).squeeze(0).cpu().data.numpy().astype(bool)
-        mask = mask.T.reshape(-1)
-        _embedding = self.embedding.cpu().data.numpy()[mask]
+        _embedding = self.embedding[
+            (self.log_spectrogram >= threshold).flatten()
+        ]
         output_transform = transform.fit_transform(_embedding)
         return output_transform
 
@@ -292,7 +273,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         ax = plt.subplot(grid[3:, :3], projection='3d')
         output_transform = self.project_embeddings(
             3,
-            threshold=threshold / 4,
+            threshold=max(-10, threshold / 4),
         )
         result=pd.DataFrame(
             output_transform,
