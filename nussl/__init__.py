@@ -28,9 +28,20 @@ from .core import utils, efz_utils, stft_utils, datasets
 from .evaluation import *
 from .separation import *
 from .transformers import *
-from .networks import *
+from .deep import *
 
-__all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation', 'networks']
+__all__ = [
+    'core', 
+    'utils', 
+    'stft_utils', 
+    'transformers', 
+    'separation', 
+    'evaluation', 
+    'deep', 
+    'efz_utils',
+    'datasets',
+    'AudioSignal',
+]
 
 
 __version__ = '0.1.6'
@@ -42,7 +53,7 @@ __title__ = 'nussl'
 __description__ = 'A flexible sound source separation library.'
 __uri__ = 'https://github.com/interactiveaudiolab/nussl'
 
-__author__ = 'E. Manilow, P. Seetharaman, F. Pishdadian'
+__author__ = 'E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, B. Pardo'
 __email__ = 'ethanmanilow@u.northwestern.edu'
 
 __license__ = 'MIT'

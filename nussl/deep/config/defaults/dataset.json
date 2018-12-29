@@ -1,0 +1,16 @@
+{
+  "n_fft": 256,
+  "hop_length": 64,
+  "length": 400,
+  "output_type": "psa",
+  "cache": "~/.tussl/cache",
+  "fraction_of_dataset": 1.0,
+  "weight_type": ["magnitude"],
+  "weight_threshold": -40,
+  "num_channels": 1,
+  "group_sources": [],
+  "source_labels": [],
+  "ignore_sources": [],
+  "format": "rnn",
+  "sample_rate": 8000
+}

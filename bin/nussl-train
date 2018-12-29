@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+import multiprocessing
+import os
+from nussl import deep
+import argparse
+from torch.utils.data import ConcatDataset
+import json
+
+def load_from_json(path: str):
+    with open(path, 'r') as f:
+        return json.load(f)
+
+def parse():
+    parser = argparse.ArgumentParser(
+        description='Parse {model, dataset, train} JSONs',
+    )
+    parser.add_argument(
+        '--train',
+        required=True,
+        help='Path to JSON containing training configuration',
+    )
+    parser.add_argument(
+        '--model',
+        required=True,
+        help='Path to JSON containing model configuration',
+    )
+    parser.add_argument(
+        '--dataset',
+        required=True,
+        help='Path to JSON containing dataset configuration',
+    )
+    parser.add_argument(
+        '--output_folder',
+        required=True,
+        help='Path to folder to write output to (this includes logs &  checkpoints).',
+    )
+
+    return parser.parse_args()
+
+
+def train(output_folder, model, dataset, train):
+    cpu_count = multiprocessing.cpu_count()
+    train['num_workers'] = min(cpu_count, train['num_workers'])
+
+    DatasetClass = deep.train.enums.Datasets[dataset['dataset_type'].upper()].value
+
+    train_data = [
+        DatasetClass(folder, dataset)
+        for folder
+        in train['training_folder']
+    ]
+    train_data = (
+        train_data[0]
+        if len(train_data) == 1
+        else ConcatDataset(train_data)
+    )
+    trainer = deep.train.Trainer(
+        output_folder=output_folder,
+        train_data=train_data,
+        model=model,
+        options=train,
+        validation_data=(
+            DatasetClass(train['validation_folder'], dataset)
+            if train['validation_folder']
+            else None
+        ),
+    )
+    trainer.fit()
+
+if __name__ == "__main__":
+    parsed = vars(parse())
+    jsons = {
+        key: load_from_json(parsed[key])
+        for key
+        in ['train', 'model', 'dataset']
+    }
+    jsons['output_folder'] = parsed['output_folder']
+    train(**jsons)

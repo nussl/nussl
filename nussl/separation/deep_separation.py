@@ -10,8 +10,8 @@ import torch
 import librosa
 import numpy as np
 
-from ..networks import SeparationModel
-from ..networks import modules
+from ..deep import SeparationModel
+from ..deep import modules
 from sklearn.decomposition import PCA
 from . import mask_separation_base
 from . import masks
@@ -149,6 +149,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         input_data = self._preprocess()
         with torch.no_grad():
             output = self.model(input_data)
+            output = {k: output[k].cpu() for k in output}
 
             if 'embedding' in output:
                 num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
@@ -168,14 +169,14 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
                         num_mels=self.model.layers['mel_projection'].num_mels,
                         direction='backward',
                         clamp=True,
-                    ).to(self.device)
+                    )
                     _masks = inverse_projection(_masks)
                 
                 self.embedding = self.embedding.reshape(-1, embedding_size)
-                _masks = _masks.permute(3, 2, 1, 0).data.cpu().numpy()
+                _masks = _masks.permute(3, 2, 1, 0).data.numpy()
 
             elif 'estimates' in output:
-                _masks = output['estimates']
+                _masks = output['estimates'].cpu()
 
         self.assignments = _masks
         self.masks = []
@@ -209,7 +210,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
             mask = self.model.project_data(mask, clamp=False)
             mask = (mask > 0).squeeze(0).cpu().data.numpy().astype(bool)
         mask = mask.T.reshape(-1)
-        _embedding = self.embedding.cpu().data.numpy()[mask]
+        _embedding = self.embedding.data.numpy()[mask]
         output_transform = transform.fit_transform(_embedding)
         return output_transform
 
@@ -281,7 +282,7 @@ class DeepSeparation(mask_separation_base.MaskSeparationBase):
         plt.hexbin(
             output_transform[:, 0],
             output_transform[:, 1],
-            bins=None,
+            bins='log',
             gridsize=100
         )
         plt.axis([xmin, xmax, ymin, ymax])

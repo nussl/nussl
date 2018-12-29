@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+from nussl import deep
+import os
+import json
+
+def save_to_json(path: str, data):
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=2)
+
+def build_model(key, options=None):
+    builders = {
+        'chimera_recurrent': deep.config.build_chimera_config,
+        'dpcl_recurrent': deep.config.build_dpcl_config,
+        'mask_inference_recurrent': deep.config.build_mask_inference_config,
+    }
+    return builders[key](options)
+
+def config():
+    _parser = deep.config.build_parser()
+    _parser.add_argument('--config_folder', default='.', type=str)
+    args = vars(_parser.parse_args())
+
+    if args['subparser']:
+        subparser_name = args.pop('subparser')
+        config_folder = args.pop('config_folder')
+        os.makedirs(config_folder, exist_ok=True)
+        save_to_json(
+            f"{os.path.join(config_folder, subparser_name)}.json",
+            (
+                args
+                if subparser_name in ['dataset', 'train']
+                else build_model(subparser_name, args)
+            )
+        )
+    else:
+        _parser.print_help()
+
+if __name__ == "__main__":
+    config()

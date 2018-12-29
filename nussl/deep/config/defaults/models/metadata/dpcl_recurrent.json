@@ -1,0 +1,48 @@
+{
+  "num_frequencies": {
+    "type": "int",
+    "help":"Specify the number of frequency steps for input representations"
+  },
+  "num_mels": {
+    "type": "int",
+    "help": "Specifies the number of mel frequency steps for projection (-1 avoids projection but still performs clamping)"
+  },
+  "sample_rate": {
+    "type": "int",
+    "help": "Audio sample rate in Hz"
+  },
+  "bidirectional": {
+    "type": "bool",
+    "help": "Whether or not the given architecture is bidirectional"
+  },
+  "hidden_size": {
+    "type": "int",
+    "help": "Size of hidden layers (per layer?)"
+  },
+  "num_layers": {
+    "type": "int",
+    "help": "Number of (hidden?) layers"
+  },
+  "embedding_size": {
+    "type": "int",
+    "help": "Number of dimensions for embedding output"
+  },
+  "dropout": {
+    "type": "float",
+    "help": "Fraction of units to drop (per epoch?)"
+  },
+  "embedding_activations": {
+    "nargs": "+",
+    "choices": ["tanh", "relu", "sigmoid", "softmax", "none", "unitnorm"],
+    "help": "Activation functions, specified as multiple values passed to this argument. To be exact, you may specify ONE of [tanh, relu, sigmoid, softmax, none], then also (optionally) space separated unitnorm."
+  },
+  "projection_trainable": {
+    "type": "bool",
+    "help": "Project to a learned input representation (learned from initial Mel projection)"
+  },
+  "rnn_type": {
+    "type": "str.lower",
+    "choices": ["lstm", "gru"],
+    "help": "Type of RNN (recursive neural net)"
+  }
+}

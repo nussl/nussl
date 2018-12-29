@@ -1,0 +1,18 @@
+{
+  "num_epochs": 100,
+  "learning_rate": 1e-3,
+  "learning_rate_decay": 0.5,
+  "patience": 5,
+  "batch_size": 40,
+  "num_workers": 10,
+  "loss_function": [],
+  "optimizer": "adam",
+  "curriculum_learning": false,
+  "initial_length": 400,
+  "weight_decay": 0.0,
+  "device": "cuda",
+  "data_parallel": true,
+  "training_folder": "",
+  "validation_folder": "",
+  "sample_strategy": "sequential"
+}

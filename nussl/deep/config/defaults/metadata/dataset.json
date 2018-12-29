@@ -1,0 +1,71 @@
+{
+  "dataset_type": {
+    "is_positional": true,
+    "type": "str.lower",
+    "choices": ["scaper", "wsj"],
+    "help": "Type of dataset to use."
+  },
+  "n_fft": {
+    "type": "int",
+    "help": "Number of samples per fft (Fast Fourier Transform)."
+  },
+  "hop_length": {
+    "type": "int",
+    "help": "Number of samples to shift fft (Fast Fourier Transform) window."
+  },
+  "sample_rate": {
+    "type": "int",
+    "help": "Sample rate of audio in dataset. If sample rate of audio doesn't match, the audio will be resampled with librosa. This is slow, so it's better to resample your dataset prior to training."
+  },
+  "length": {
+    "type": "int",
+    "help": "Length (in number of frames) of each sequence. If the sequence is shorter it's padded to this value. If the sequence is longer a slice with length equal to this value is taken at a random offset."
+  },
+  "output_type": {
+    "type": "str.lower",
+    "choices": ["psa", "msa"],
+    "help": "Type of output, either phase sensitive or mask sensitive approximation."
+  },
+  "format": {
+    "type": "str.lower",
+    "choices": ["rnn", "cnn"],
+    "help": "Format for dataset output. 'rnn' produces [num_batch, sequence_length, num_frequencies*num_channels, ...], while 'cnn' produces [num_batch, num_channels, num_frequencies, sequence_length, ...]. The '...' is there because different outputs have different number of trailing dimensions."
+  },
+  "cache": {
+    "help": "Path to folder for caching training data to speed up training. Pass `None` to avoid using a cache."
+  },
+  "fraction_of_dataset": {
+    "type": "float",
+    "help": "Fraction of dataset on which to train, default is all files."
+  },
+  "weight_type": {
+    "type": "str.lower",
+    "nargs": "+",
+    "choices": ["magnitude", "threshold", "none"],
+    "help": "Method by which to weight relative importance of accurately predicting each time-frequency (TF) bin. Given `magnitude`, training prioritizes accurately predicting louder bins. If mutiple listed, weighting combined through multiplication."
+  },
+  "weight_threshold": {
+    "type": "float",
+    "help": "Decibel (db) threshold to retain time-frequency (TF) bins. All bins with magnitudes below this value will be ignored."
+  },
+  "num_channels": {
+    "type": "int",
+    "help": "Number of channels of audio. 1 for mono, 2 for stereo, etc."
+  },
+  "group_sources": {
+    "type": "str.lower",
+    "nargs": "+",
+    "action": "append",
+    "help": "Specify multiple source labels to treat them as one source. This option requires specification of the `--source_labels` option and any grouped sources *must* be listed in the values passed to `--source_labels`. Multiple groupings are allowed, each with separate usages of this flag. For example, if you have source  labels - bass, guitar, drums, violin, and vocals - and you would like to treat vocals as one source, bass and guitar combined as another, and drums and violin as a third: `... --source_labels vocals bass guitar violin drums --group_sources bass guitar --group_sources violin drums`."
+  },
+  "source_labels": {
+    "type": "str.lower",
+    "nargs": "+",
+    "help": "Labels identifying sources in your dataset. List only the labels for sources you want to separate."
+  },
+  "ignore_sources": {
+    "type": "str.lower",
+    "nargs": "+",
+    "help": "Specify sources to ignore for training."
+  }
+}
