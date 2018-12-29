@@ -66,13 +66,31 @@ all_separation_algorithms = [median_algorithms, melody_algorithms, spatializatio
 
 all_separation_algorithms = [val for sublist in all_separation_algorithms for val in sublist]
 
-__all__ = ['SeparationBase', 'MaskSeparationBase',
-           'all_separation_algorithms',
-           'median_algorithms', 'Repet', 'RepetSim', 'HPSS', 'FT2D',
-           'melody_algorithms', 'Melodia',
-           'spatialization_algorithms', 'Duet', 'Projet',
-           'benchmark_algorithms', 'IdealMask', 'HighLowPassFilter',
-           'composite_instruments', 'OverlapAdd',
-           'nmf_algorithms', 'NMF_MFCC',
-           'component_analysis_algorithms', 'ICA', 'RPCA',
-           'deep_learning_algorithms', 'DeepSeparation']
+# TODO why are we grouping things into these lists?
+__all__ = [
+    'SeparationBase', 
+    'MaskSeparationBase',
+    'all_separation_algorithms',
+    'median_algorithms', 
+    'Repet', 
+    'RepetSim', 
+    'HPSS', 
+    'FT2D',
+    'melody_algorithms', 
+    'Melodia',
+    'spatialization_algorithms', 
+    'Duet', 
+    'Projet',
+    'benchmark_algorithms', 
+    'IdealMask', 
+    'HighLowPassFilter',
+    'composite_instruments', 
+    'OverlapAdd',
+    'nmf_algorithms', 
+    'NMF_MFCC',
+    'component_analysis_algorithms', 
+    'ICA', 
+    'RPCA', 
+    'deep_learning_algorithms', 
+    'DeepSeparation',
+]

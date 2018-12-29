@@ -25,23 +25,23 @@ class ImportErrorClass(object):
 from .core.constants import *
 from .core.audio_signal import AudioSignal
 from .core import utils, efz_utils, stft_utils, datasets
-from .evaluation import *
 from .separation import *
-from .transformers import *
-from .deep import *
+from . import evaluation
+from . import transformers
+from . import deep
 
-__all__ = [
-    'core', 
-    'utils', 
-    'stft_utils', 
-    'transformers', 
-    'separation', 
-    'evaluation', 
-    'deep', 
-    'efz_utils',
-    'datasets',
-    'AudioSignal',
-]
+# __all__ = [
+#     'core', 
+#     'utils', 
+#     'stft_utils', 
+#     'transformers', 
+#     'separation', 
+#     'evaluation', 
+#     'deep', 
+#     'efz_utils',
+#     'datasets',
+#     'AudioSignal',
+# ]
 
 
 __version__ = '0.1.6'
