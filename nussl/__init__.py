@@ -30,7 +30,8 @@ from .separation import *
 from .transformers import *
 from .networks import *
 
-__all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation', 'networks']
+__all__ = ['core', 'utils', 'stft_utils', 'transformers', 'separation', 'evaluation', 'networks',
+    'AudioSignal']
 
 
 __version__ = '0.1.6'
