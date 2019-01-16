@@ -54,9 +54,8 @@ ALL_WINDOWS = [
 """list(str): list of all available windows in *nussl*
 """
 
-NUMPY_JSON_KEY = (
-    "py/numpy.ndarray"
-)  #: (str): key used when turning numpy arrays into json
+NUMPY_JSON_KEY = "py/numpy.ndarray"
+#: (str): key used when turning numpy arrays into json
 
 BINARY_MASK = "binary"
 """ String alias for setting this object to return :class:`separation.masks.binary_mask.BinaryMask` objects
@@ -69,12 +68,10 @@ SOFT_MASK = "soft"
 # ############# Array Indices ############# #
 
 # audio_data
-LEN_INDEX = (
-    1
-)  #: (int): Index of the number of samples in an audio signal. Used in :ref:`audio_signal`
-CHAN_INDEX = (
-    0
-)  #: (int): Index of the number of channels in an audio signal. Used in :ref:`audio_signal`
+LEN_INDEX = 1
+#: (int): Index of the number of samples in an audio signal. Used in :ref:`audio_signal`
+CHAN_INDEX = 0
+#: (int): Index of the number of channels in an audio signal. Used in :ref:`audio_signal`
 
 # stft_data
 STFT_VERT_INDEX = 0
