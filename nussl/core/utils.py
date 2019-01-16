@@ -17,15 +17,25 @@ import musdb
 
 from . import constants
 
-__all__ = ['find_peak_indices', 'find_peak_values',
-           'json_ready_numpy_array', 'json_serialize_numpy_array', 'load_numpy_json',
-           'json_numpy_obj_hook',
-           'add_mismatched_arrays', 'add_mismatched_arrays2D', 'complex_randn',
-           '_get_axis',
-           'print_all_separation_algorithms',
-           'verify_audio_signal_list_lax', 'verify_audio_signal_list_strict',
-           'verify_separation_base_list', 'verify_mask_separation_base_list',
-           '_verify_audio_data', '_verify_transformation_data']
+__all__ = [
+    "find_peak_indices",
+    "find_peak_values",
+    "json_ready_numpy_array",
+    "json_serialize_numpy_array",
+    "load_numpy_json",
+    "json_numpy_obj_hook",
+    "add_mismatched_arrays",
+    "add_mismatched_arrays2D",
+    "complex_randn",
+    "_get_axis",
+    "print_all_separation_algorithms",
+    "verify_audio_signal_list_lax",
+    "verify_audio_signal_list_strict",
+    "verify_separation_base_list",
+    "verify_mask_separation_base_list",
+    "_verify_audio_data",
+    "_verify_transformation_data",
+]
 
 
 def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
@@ -67,7 +77,7 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
     input_array = np.array(input_array, dtype=float)
 
     if input_array.ndim > 2:
-        raise ValueError('Cannot find peak indices on data greater than 2 dimensions!')
+        raise ValueError("Cannot find peak indices on data greater than 2 dimensions!")
 
     is_1d = input_array.ndim == 1
     zero_dist = zero_dist0 = zero_dist1 = None
@@ -99,9 +109,9 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
 
     # check to make sure we didn't throw everything out
     if np.size(np.nonzero(input_array)) == 0:
-        raise ValueError('Threshold set incorrectly. No peaks above threshold.')
+        raise ValueError("Threshold set incorrectly. No peaks above threshold.")
     if np.size(np.nonzero(input_array)) < n_peaks:
-        warnings.warn('Threshold set such that there will be less peaks than n_peaks.')
+        warnings.warn("Threshold set such that there will be less peaks than n_peaks.")
 
     peak_indices = []
     for i in range(n_peaks):
@@ -113,14 +123,18 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
         if is_1d:
             cur_peak_idx = cur_peak_idx[0]
             peak_indices.append(cur_peak_idx)
-            lower, upper = _set_array_zero_indices(cur_peak_idx, zero_dist, len(input_array))
+            lower, upper = _set_array_zero_indices(
+                cur_peak_idx, zero_dist, len(input_array)
+            )
             input_array[lower:upper] = 0
         else:
             peak_indices.append(cur_peak_idx)
-            lower0, upper0 = _set_array_zero_indices(cur_peak_idx[0], zero_dist0,
-                                                     input_array.shape[0])
-            lower1, upper1 = _set_array_zero_indices(cur_peak_idx[1], zero_dist1,
-                                                     input_array.shape[1])
+            lower0, upper0 = _set_array_zero_indices(
+                cur_peak_idx[0], zero_dist0, input_array.shape[0]
+            )
+            lower1, upper1 = _set_array_zero_indices(
+                cur_peak_idx[1], zero_dist1, input_array.shape[1]
+            )
             input_array[lower0:upper0, lower1:upper1] = 0
 
         if np.sum(input_array) == 0.0:
@@ -177,14 +191,22 @@ def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshol
 
     """
     if input_array.ndim > 2:
-        raise ValueError('Cannot find peak indices on data greater than 2 dimensions!')
+        raise ValueError("Cannot find peak indices on data greater than 2 dimensions!")
 
     if input_array.ndim == 1:
-        return [input_array[i] for i in find_peak_indices(input_array, n_peaks, min_dist,
-                                                          do_min, threshold)]
+        return [
+            input_array[i]
+            for i in find_peak_indices(
+                input_array, n_peaks, min_dist, do_min, threshold
+            )
+        ]
     else:
-        return [input_array[i, j] for i, j in find_peak_indices(input_array, n_peaks, min_dist,
-                                                                do_min, threshold)]
+        return [
+            input_array[i, j]
+            for i, j in find_peak_indices(
+                input_array, n_peaks, min_dist, do_min, threshold
+            )
+        ]
 
 
 def json_ready_numpy_array(array):
@@ -201,12 +223,12 @@ def json_ready_numpy_array(array):
         # noinspection PyTypeChecker
         data_b64 = base64.b64encode(np.ascontiguousarray(array).data)
         return {
-                constants.NUMPY_JSON_KEY: {
-                        "__ndarray__": data_b64,
-                        "dtype":  str(array.dtype),
-                        "shape": array.shape
-                    }
-                }
+            constants.NUMPY_JSON_KEY: {
+                "__ndarray__": data_b64,
+                "dtype": str(array.dtype),
+                "shape": array.shape,
+            }
+        }
 
     return None
 
@@ -246,7 +268,9 @@ def load_numpy_json(array_json):
     See Also:
         json_serialize_numpy_array()
     """
-    return json.loads(array_json, object_hook=json_numpy_obj_hook)[constants.NUMPY_JSON_KEY]
+    return json.loads(array_json, object_hook=json_numpy_obj_hook)[
+        constants.NUMPY_JSON_KEY
+    ]
 
 
 def json_numpy_obj_hook(dct):
@@ -257,9 +281,9 @@ def json_numpy_obj_hook(dct):
     :param dct: (dict) json encoded ndarray
     :return: (ndarray) if input was an encoded ndarray
     """
-    if isinstance(dct, dict) and '__ndarray__' in dct:
-        data = base64.b64decode(dct['__ndarray__'])
-        return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
+    if isinstance(dct, dict) and "__ndarray__" in dct:
+        data = base64.b64decode(dct["__ndarray__"])
+        return np.frombuffer(data, dct["dtype"]).reshape(dct["shape"])
     return dct
 
 
@@ -287,17 +311,17 @@ def add_mismatched_arrays(array1, array2, truncate=False):
     if truncate:
         if len(array1) < len(array2):
             result = array1.copy()
-            result += array2[:len(array1)]
+            result += array2[: len(array1)]
         else:
             result = array2.copy()
-            result += array1[:len(array2)]
+            result += array1[: len(array2)]
     else:
         if len(array1) < len(array2):
             result = array2.copy()
-            result[:len(array1)] += array1
+            result[: len(array1)] += array1
         else:
             result = array1.copy()
-            result[:len(array2)] += array2
+            result[: len(array2)] += array2
 
     return result
 
@@ -327,17 +351,17 @@ def add_mismatched_arrays2D(array1, array2, truncate=False):
     if truncate:
         if array1.shape[1] < array2.shape[1]:  # Kludge
             result = array1.copy()
-            result += array2[:, :array1.shape[1]]
+            result += array2[:, : array1.shape[1]]
         else:
             result = array2.copy()
-            result += array1[:, :array2.shape[1]]
+            result += array1[:, : array2.shape[1]]
     else:
         if array1.shape[1] < array2.shape[1]:
             result = array2.copy()
-            result[:, :array1.shape[1]] += array1
+            result[:, : array1.shape[1]] += array1
         else:
             result = array1.copy()
-            result[:, :array2.shape[1]] += array2
+            result[:, : array2.shape[1]] += array2
 
     return result
 
@@ -398,8 +422,8 @@ def CamelCase_to_snake_case(text):
     Returns:
 
     """
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', text)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", text)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
 def _format(string):
@@ -500,11 +524,11 @@ def verify_audio_signal_list_lax(audio_signal_list):
         audio_signal_list = [audio_signal_list]
     elif isinstance(audio_signal_list, list):
         if not all(isinstance(s, AudioSignal) for s in audio_signal_list):
-            raise ValueError('All input objects must be AudioSignal objects!')
+            raise ValueError("All input objects must be AudioSignal objects!")
         if not all(s.has_data for s in audio_signal_list):
-            raise ValueError('All AudioSignal objects in input list must have data!')
+            raise ValueError("All AudioSignal objects in input list must have data!")
     else:
-        raise ValueError('All input objects must be AudioSignal objects!')
+        raise ValueError("All input objects must be AudioSignal objects!")
 
     return audio_signal_list
 
@@ -525,14 +549,26 @@ def verify_audio_signal_list_strict(audio_signal_list):
     """
     audio_signal_list = verify_audio_signal_list_lax(audio_signal_list)
 
-    if not all(audio_signal_list[0].sample_rate == s.sample_rate for s in audio_signal_list):
-        raise ValueError('All input AudioSignal objects must have the same sample rate!')
+    if not all(
+        audio_signal_list[0].sample_rate == s.sample_rate for s in audio_signal_list
+    ):
+        raise ValueError(
+            "All input AudioSignal objects must have the same sample rate!"
+        )
 
-    if not all(audio_signal_list[0].num_channels == s.num_channels for s in audio_signal_list):
-        raise ValueError('All input AudioSignal objects must have the same number of channels!')
+    if not all(
+        audio_signal_list[0].num_channels == s.num_channels for s in audio_signal_list
+    ):
+        raise ValueError(
+            "All input AudioSignal objects must have the same number of channels!"
+        )
 
-    if not all(audio_signal_list[0].signal_length == s.signal_length for s in audio_signal_list):
-        raise ValueError('All input AudioSignal objects must have the same signal length!')
+    if not all(
+        audio_signal_list[0].signal_length == s.signal_length for s in audio_signal_list
+    ):
+        raise ValueError(
+            "All input AudioSignal objects must have the same signal length!"
+        )
 
     return audio_signal_list
 
@@ -556,9 +592,13 @@ def verify_separation_base_list(separation_list):
         separation_list = [separation_list]
     elif isinstance(separation_list, list):
         if not all(issubclass(s, SeparationBase) for s in separation_list):
-            raise ValueError('All separation objects must be SeparationBase-derived objects!')
+            raise ValueError(
+                "All separation objects must be SeparationBase-derived objects!"
+            )
     else:
-        raise ValueError('All separation objects must be SeparationBase-derived objects!')
+        raise ValueError(
+            "All separation objects must be SeparationBase-derived objects!"
+        )
 
     return separation_list
 
@@ -582,9 +622,13 @@ def verify_mask_separation_base_list(mask_separation_list):
         mask_separation_list = [mask_separation_list]
     elif isinstance(mask_separation_list, list):
         if not all(issubclass(s, MaskSeparationBase) for s in mask_separation_list):
-            raise ValueError(f'All separation objects must be MaskSeparationBase-derived objects! {mask_separation_list}')
+            raise ValueError(
+                f"All separation objects must be MaskSeparationBase-derived objects! {mask_separation_list}"
+            )
     else:
-        raise ValueError('All separation objects must be MaskSeparationBase-derived objects!')
+        raise ValueError(
+            "All separation objects must be MaskSeparationBase-derived objects!"
+        )
 
     return mask_separation_list
 
@@ -607,18 +651,21 @@ def _verify_audio_data(audio_data):
         audio_data = np.array(audio_data)
 
     if not isinstance(audio_data, np.ndarray):
-        raise ValueError('Type of audio_data must be of type np.ndarray!')
+        raise ValueError("Type of audio_data must be of type np.ndarray!")
 
     if not np.isfinite(audio_data).all():
-        raise ValueError('Not all values of audio_data are finite!')
+        raise ValueError("Not all values of audio_data are finite!")
 
-    if audio_data.ndim > 1 \
-            and audio_data.shape[constants.CHAN_INDEX] > audio_data.shape[constants.LEN_INDEX]:
-        warnings.warn('audio_data is not as we expect it. Transposing signal...')
+    if (
+        audio_data.ndim > 1
+        and audio_data.shape[constants.CHAN_INDEX]
+        > audio_data.shape[constants.LEN_INDEX]
+    ):
+        warnings.warn("audio_data is not as we expect it. Transposing signal...")
         audio_data = audio_data.T
 
     if audio_data.ndim > 2:
-        raise ValueError('audio_data cannot have more than 2 dimensions!')
+        raise ValueError("audio_data cannot have more than 2 dimensions!")
 
     if audio_data.ndim < 2:
         audio_data = np.expand_dims(audio_data, axis=constants.CHAN_INDEX)
@@ -634,16 +681,18 @@ def _verify_transformation_data(transformation_data):
         transformation_data = np.array(transformation_data)
 
     if not isinstance(transformation_data, np.ndarray):
-        raise ValueError('Type of transformation_data must be of type np.ndarray!')
+        raise ValueError("Type of transformation_data must be of type np.ndarray!")
 
     if transformation_data.ndim == 1:
-        raise ValueError('Cannot support arrays with less than 2 dimensions!')
+        raise ValueError("Cannot support arrays with less than 2 dimensions!")
 
     if transformation_data.ndim == 2:
-        transformation_data = np.expand_dims(transformation_data, axis=constants.TF_CHAN_INDEX)
+        transformation_data = np.expand_dims(
+            transformation_data, axis=constants.TF_CHAN_INDEX
+        )
 
     if transformation_data.ndim > 3:
-        raise ValueError('Cannot support arrays with more than 3 dimensions!')
+        raise ValueError("Cannot support arrays with more than 3 dimensions!")
 
     return transformation_data
 
@@ -653,4 +702,5 @@ def print_all_separation_algorithms():
     Displays the list of all separation algorithms in nussl to the console.
     """
     from ..separation import all_separation_algorithms
-    print('\n'.join([a.__name__ for a in all_separation_algorithms]))
+
+    print("\n".join([a.__name__ for a in all_separation_algorithms]))

@@ -19,7 +19,7 @@ References:
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.interactive('True')
+plt.interactive("True")
 import scipy.ndimage.filters
 import scipy
 from ..core.audio_signal import AudioSignal
@@ -91,19 +91,21 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
     fhat: a LF by LT by J Numpy array containing J power spectral dencities      
     """
 
-    # Step (1): 
+    # Step (1):
     # Load the audio mixture from the input path
     if len(Inputfile) == 2:
         Mixture = AudioSignal(audiosig=Inputfile[0], fs=Inputfile[1])
     elif len(Inputfile) == 3:
-        Mixture = AudioSignal(file_name=Inputfile[0], siglen=Inputfile[1], sigstart=Inputfile[2])
+        Mixture = AudioSignal(
+            file_name=Inputfile[0], siglen=Inputfile[1], sigstart=Inputfile[2]
+        )
 
     if len(SpecParams) != 0:
         for i in range(0, len(SpecParams.dtype)):
             nameTemp = SpecParams.dtype.names[i]
             valTemp = SpecParams[0][i]
             valTemp = str(valTemp)
-            exec ('Mixture.' + nameTemp + '=' + valTemp)
+            exec("Mixture." + nameTemp + "=" + valTemp)
 
     x, tvec = np.array([Mixture.x, Mixture.time])  # time-domain channel mixtures
     X, Px, Fvec, Tvec = Mixture.do_STFT()  # stft and PSD of the channel mixtures
@@ -115,27 +117,32 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
 
     F_ind = np.arange(LF)  # frequency bin indices
     T_ind = np.arange(LT)  # time frame indices
-    Tmesh, Fmesh = np.meshgrid(T_ind, F_ind)  # grid of time-freq indices for the median filtering step
-    TFcoords = np.mat(np.zeros((LF * LT, 2), dtype=int))  # all time-freq index combinations
+    Tmesh, Fmesh = np.meshgrid(
+        T_ind, F_ind
+    )  # grid of time-freq indices for the median filtering step
+    TFcoords = np.mat(
+        np.zeros((LF * LT, 2), dtype=int)
+    )  # all time-freq index combinations
     TFcoords[:, 0] = np.mat(np.asarray(Fmesh.T).reshape(-1)).T
     TFcoords[:, 1] = np.mat(np.asarray(Tmesh.T).reshape(-1)).T
-
 
     # Generate source kernels:
     Kj = []
     for ns in range(0, J):
         SKj = SourceKernels[ns]
         if len(SKj) < 2:
-            raise Exception('The information required for generating source kernels is insufficient.'
-                            ' Each sub-list in SourceKernels must contain at least two elements.')
+            raise Exception(
+                "The information required for generating source kernels is insufficient."
+                " Each sub-list in SourceKernels must contain at least two elements."
+            )
         KTYPE = SKj[0]
-        if KTYPE != 'userdef' and len(SKj) == 2:
+        if KTYPE != "userdef" and len(SKj) == 2:
             Kj.append(Kernel(Type=SKj[0], ParamVal=SKj[1]))
-        elif KTYPE != 'userdef' and len(SKj) == 3:
+        elif KTYPE != "userdef" and len(SKj) == 3:
             Kj.append(Kernel(Type=SKj[0], ParamVal=SKj[1]), Wfunc=SKj[2])
-        elif KTYPE == 'userdef' and len(SKj) == 2:
+        elif KTYPE == "userdef" and len(SKj) == 2:
             Kj.append(Kernel(Type=SKj[0], Nhood=SKj[1]))
-        elif KTYPE == 'userdef' and len(SKj) == 3:
+        elif KTYPE == "userdef" and len(SKj) == 3:
             Kj.append(Kernel(Type=SKj[0], Nhood=SKj[1]), Wfunc=SKj[2])
 
     # Step (2): initialization
@@ -147,7 +154,9 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
         MeanPSD = np.mean(Px, axis=2) / (I * J)
     else:
         MeanPSD = Px / (J)
-    MeanPSD = np.reshape(MeanPSD.T, (LF * LT, 1))  # reshape the mean PSD matrix into a vector
+    MeanPSD = np.reshape(
+        MeanPSD.T, (LF * LT, 1)
+    )  # reshape the mean PSD matrix into a vector
 
     fj = np.zeros((LF * LT, I * I, J))
     for j in range(0, J):
@@ -171,7 +180,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
         SumFR.shape = (LF * LT, I, I)
         SumFR += 1e-16 * np.random.randn(LF * LT, I, I)  # to avoid singularity issues
 
-        InvSumFR = np.zeros((LF * LT, I, I), dtype='single')
+        InvSumFR = np.zeros((LF * LT, I, I), dtype="single")
         if I == 1:
             InvSumFR = 1 / SumFR
         elif I == 2:
@@ -184,12 +193,12 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             InvSumFR = np.linalg.inv(SumFR)
         InvSumFR.shape = (LF * LT, I * I)
 
-        # compute sources, update PSDs and covariance matrices 
+        # compute sources, update PSDs and covariance matrices
         for ns in range(0, J):
             FRinvsum = fj[:, :, ns] * Rj[:, :, ns] * InvSumFR
             Stemp = 1j * np.zeros((LF * LT, I))
             for nch in range(0, I):
-                FRtemp = FRinvsum[:, nch * I:nch * I + 2]
+                FRtemp = FRinvsum[:, nch * I : nch * I + 2]
                 Stemp[:, nch] = np.sum(FRtemp * X, axis=1)
             S[:, :, ns] = Stemp
 
@@ -200,7 +209,7 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             Cj_reshape = np.reshape(Cj, (LF * LT, I, I))
             Cj_trace = np.mat(np.matrix.trace(Cj_reshape.T)).T
             MeanCj = Cj / np.tile(Cj_trace, (1, I * I))
-            MeanCj_reshape = np.reshape(np.array(MeanCj), (LF, LT, I * I), order='F')
+            MeanCj_reshape = np.reshape(np.array(MeanCj), (LF, LT, I * I), order="F")
             Rj[:, :, ns] = np.tile(np.sum(MeanCj_reshape, axis=1), (LT, 1))
 
             # Step (4-c):
@@ -210,11 +219,14 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
             Rj_reshape = np.reshape(Rj[:, :, ns], (LF * LT, I, I))
             Rj_reshape += 1e-16 * np.random.randn(LF * LT, I, I)
 
-            InvRj = np.zeros((LF * LT, I, I), dtype='single')
+            InvRj = np.zeros((LF * LT, I, I), dtype="single")
             if I == 1:
                 InvRj = 1 / Rj_reshape
             elif I == 2:
-                InvDetR = 1 / (Rj_reshape[:, 0, 0] * Rj_reshape[1, 1] - Rj_reshape[0, 1] * Rj_reshape[1, 0])
+                InvDetR = 1 / (
+                    Rj_reshape[:, 0, 0] * Rj_reshape[1, 1]
+                    - Rj_reshape[0, 1] * Rj_reshape[1, 0]
+                )
                 InvRj[:, 0, 0] = InvDetR * Rj_reshape[:, 1, 1]
                 InvRj[:, 0, 1] = -InvDetR * Rj_reshape[:, 0, 1]
                 InvRj[:, 1, 0] = -InvDetR * Rj_reshape[:, 1, 0]
@@ -239,11 +251,15 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
                 centerTF = np.mat([centerF, centerT])  # middle time-freq. bin
                 KWin = Ktemp.sim(centerTF, TFcoords)  # sliding kernel window
                 KWin_reshape = np.reshape(KWin, (LT, LF)).T
-                NZ = np.nonzero(KWin_reshape)  # range of element numbers of central nonzero elements
-                KWin_shrink = KWin_reshape[NZ[0].min():NZ[0].max() + 1,
-                              NZ[1].min():NZ[1].max() + 1]  # extract the central nonzero part
-                ZMed = scipy.ndimage.filters.median_filter(np.reshape(zj, (LT, LF)).T,
-                                                           footprint=KWin_shrink)  # median filter
+                NZ = np.nonzero(
+                    KWin_reshape
+                )  # range of element numbers of central nonzero elements
+                KWin_shrink = KWin_reshape[
+                    NZ[0].min() : NZ[0].max() + 1, NZ[1].min() : NZ[1].max() + 1
+                ]  # extract the central nonzero part
+                ZMed = scipy.ndimage.filters.median_filter(
+                    np.reshape(zj, (LT, LF)).T, footprint=KWin_shrink
+                )  # median filter
                 fj[:, :, ns] = np.reshape(ZMed.T, (LF * LT, 1))
 
             else:  # full kernel method (more general but slower approach)
@@ -254,7 +270,6 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
                     fj[ft, :, ns] = np.median(np.array(zjNhood))
 
                     # print time.clock() - start_time, "seconds"
-
 
     # print time.clock() - start_time, "seconds"
 
@@ -269,7 +284,6 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
         for nch in range(0, I):
             Shat[:, :, nch, ns] = np.reshape(S[:, nch, ns], (LT, LF)).T
 
-
     # Compute the inverse_mask stft of the estimated sources
     shat = np.zeros((x.shape[0], I, J))
     sigTemp = AudioSignal()
@@ -279,12 +293,19 @@ def kam(Inputfile, SourceKernels, Numit=1, SpecParams=np.array([]), FullKernel=F
     sigTemp.numCh = I
     for ns in range(0, J):
         sigTemp.X = Shat[:, :, :, ns]
-        shat[:, :, ns] = sigTemp.istft()[0][0:x.shape[0]]
+        shat[:, :, ns] = sigTemp.istft()[0][0 : x.shape[0]]
 
     return shat, fhat
 
 
-def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecParams=np.array([]), FullKernel=False):
+def kaml(
+    Inputfile,
+    SourceKernels,
+    AlgParams=np.array([10, 1]),
+    Numit=1,
+    SpecParams=np.array([]),
+    FullKernel=False,
+):
     """
     The 'kaml' function implements a computationally less expensive version of the 
     kernel backfitting algorithm. The KBF algorithm extracts J audio sources from 
@@ -354,12 +375,14 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     fhat: a LF by LT by J Numpy array containing J power spectral dencities      
     """
 
-    # Step (1): 
+    # Step (1):
     # Load the audio mixture from the input path
     if len(Inputfile) == 2:
         Mixture = AudioSignal(audiosig=Inputfile[0], fs=Inputfile[1])
     elif len(Inputfile) == 3:
-        Mixture = AudioSignal(file_name=Inputfile[0], siglen=Inputfile[1], sigstart=Inputfile[2])
+        Mixture = AudioSignal(
+            file_name=Inputfile[0], siglen=Inputfile[1], sigstart=Inputfile[2]
+        )
 
     numcomp, gamma = AlgParams
 
@@ -368,7 +391,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             nameTemp = SpecParams.dtype.names[i]
             valTemp = SpecParams[0][i]
             valTemp = str(valTemp)
-            exec ('Mixture.' + nameTemp + '=' + valTemp)
+            exec("Mixture." + nameTemp + "=" + valTemp)
 
     x, tvec = np.array([Mixture.x, Mixture.time])  # time-domain channel mixtures
     X, Px, Fvec, Tvec = Mixture.do_STFT()  # stft and PSD of the channel mixtures
@@ -380,8 +403,12 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
 
     F_ind = np.arange(LF)  # frequency bin indices
     T_ind = np.arange(LT)  # time frame indices
-    Tmesh, Fmesh = np.meshgrid(T_ind, F_ind)  # grid of time-freq indices for the median filtering step
-    TFcoords = np.mat(np.zeros((LF * LT, 2), dtype=int))  # all time-freq index combinations
+    Tmesh, Fmesh = np.meshgrid(
+        T_ind, F_ind
+    )  # grid of time-freq indices for the median filtering step
+    TFcoords = np.mat(
+        np.zeros((LF * LT, 2), dtype=int)
+    )  # all time-freq index combinations
     TFcoords[:, 0] = np.mat(np.asarray(Fmesh.T).reshape(-1)).T
     TFcoords[:, 1] = np.mat(np.asarray(Tmesh.T).reshape(-1)).T
 
@@ -390,18 +417,19 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     for ns in range(0, J):
         SKj = SourceKernels[ns]
         if len(SKj) < 2:
-            raise Exception('The information required for generating source kernels is insufficient.'
-                            ' Each sub-list in SourceKernels must contain at least two elements.')
+            raise Exception(
+                "The information required for generating source kernels is insufficient."
+                " Each sub-list in SourceKernels must contain at least two elements."
+            )
         KTYPE = SKj[0]
-        if KTYPE != 'userdef' and len(SKj) == 2:
+        if KTYPE != "userdef" and len(SKj) == 2:
             Kj.append(Kernel(Type=SKj[0], ParamVal=SKj[1]))
-        elif KTYPE != 'userdef' and len(SKj) == 3:
+        elif KTYPE != "userdef" and len(SKj) == 3:
             Kj.append(Kernel(Type=SKj[0], ParamVal=SKj[1]), Wfunc=SKj[2])
-        elif KTYPE == 'userdef' and len(SKj) == 2:
+        elif KTYPE == "userdef" and len(SKj) == 2:
             Kj.append(Kernel(Type=SKj[0], Nhood=SKj[1]))
-        elif KTYPE == 'userdef' and len(SKj) == 3:
+        elif KTYPE == "userdef" and len(SKj) == 3:
             Kj.append(Kernel(Type=SKj[0], Nhood=SKj[1]), Wfunc=SKj[2])
-
 
     # Step (2): initialization
     # Initialize the PSDs with average mixture PSD and the spatial covarince matricies
@@ -415,10 +443,14 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
 
     U = []
     V = []
-    Utemp, Vtemp = randSVD(MeanPSD ** gamma, numcomp, 'compact')[0:3:2]  # compute the compact form of randomized SVD
+    Utemp, Vtemp = randSVD(MeanPSD ** gamma, numcomp, "compact")[
+        0:3:2
+    ]  # compute the compact form of randomized SVD
     del MeanPSD
 
-    numcomp = Utemp.shape[1]  # update the number of components in case the rank of the mixture PSD turns out
+    numcomp = Utemp.shape[
+        1
+    ]  # update the number of components in case the rank of the mixture PSD turns out
     # to be less than the input value or the default value for K
 
     for ns in range(0, J):
@@ -437,7 +469,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
 
         # Step (3-a):
         # compute the inverse_mask term: [sum_j' (pgamma_j')^(1/gamma) R_j']^-1
-        SumPR = np.zeros((LF * LT, I * I), dtype='single')
+        SumPR = np.zeros((LF * LT, I * I), dtype="single")
         for ns in range(0, J):
             Pj_gamma = np.abs(np.dot(U[ns], np.conj(V[ns].T)) ** (1 / gamma))
             Pj_reshape = np.reshape(Pj_gamma.T, (LF * LT, 1))
@@ -447,7 +479,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
         SumPR.shape = (LF * LT, I, I)
         SumPR += 1e-16 * np.random.randn(LF * LT, I, I)
 
-        InvSumPR = np.zeros((LF * LT, I, I), dtype='single')
+        InvSumPR = np.zeros((LF * LT, I, I), dtype="single")
         if I == 1:
             InvSumPR = 1 / SumPR
         elif I == 2:
@@ -461,7 +493,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
         InvSumPR.shape = (LF * LT, I * I)
         del SumPR
 
-        # compute sources, update PSDs and covariance matrices 
+        # compute sources, update PSDs and covariance matrices
         for ns in range(0, J):
             Pj_gamma = np.abs(np.dot(U[ns], np.conj(V[ns].T)) ** (1 / gamma))
             Pj_reshape = np.reshape(Pj_gamma.T, (LF * LT, 1))
@@ -471,7 +503,7 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
 
             Stemp = 1j * np.zeros((LF * LT, I))
             for nch in range(0, I):
-                PRtemp = PRinvsum[:, nch * I:nch * I + 2]
+                PRtemp = PRinvsum[:, nch * I : nch * I + 2]
                 Stemp[:, nch] = np.sum(PRtemp * X, axis=1)
             del PRinvsum, PRtemp
             S[:, :, ns] = Stemp
@@ -483,18 +515,21 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
             Cj_reshape = np.reshape(Cj, (LF * LT, I, I))
             Cj_trace = np.mat(np.matrix.trace(Cj_reshape.T)).T
             MeanCj = Cj / np.tile(Cj_trace, (1, I * I))
-            MeanCj_reshape = np.reshape(np.array(MeanCj), (LF, LT, I * I), order='F')
+            MeanCj_reshape = np.reshape(np.array(MeanCj), (LF, LT, I * I), order="F")
             Rj[:, :, ns] = np.tile(np.sum(MeanCj_reshape, axis=1), (LT, 1))
 
             # Step (3-d):
             Rj_reshape = np.reshape(Rj[:, :, ns], (LF * LT, I, I))
             Rj_reshape += 1e-16 * np.random.randn(LF * LT, I, I)
 
-            InvRj = np.zeros((LF * LT, I, I), dtype='single')
+            InvRj = np.zeros((LF * LT, I, I), dtype="single")
             if I == 1:
                 InvRj = 1 / Rj_reshape
             elif I == 2:
-                InvDetR = 1 / (Rj_reshape[:, 0, 0] * Rj_reshape[1, 1] - Rj_reshape[0, 1] * Rj_reshape[1, 0])
+                InvDetR = 1 / (
+                    Rj_reshape[:, 0, 0] * Rj_reshape[1, 1]
+                    - Rj_reshape[0, 1] * Rj_reshape[1, 0]
+                )
                 InvRj[:, 0, 0] = InvDetR * Rj_reshape[:, 1, 1]
                 InvRj[:, 0, 1] = -InvDetR * Rj_reshape[:, 0, 1]
                 InvRj[:, 1, 0] = -InvDetR * Rj_reshape[:, 1, 0]
@@ -519,29 +554,32 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
                 centerTF = np.mat([centerF, centerT])  # middle time-freq. bin
                 KWin = Ktemp.sim(centerTF, TFcoords)  # sliding kernel window
                 KWin_reshape = np.reshape(KWin, (LT, LF)).T
-                NZ = np.nonzero(KWin_reshape)  # range of element numbers of central nonzero elements
-                KWin_shrink = KWin_reshape[NZ[0].min():NZ[0].max() + 1,
-                              NZ[1].min():NZ[1].max() + 1]  # extract the central nonzero part
-                ZMed = scipy.ndimage.filters.median_filter(np.reshape(zj, (LT, LF)).T,
-                                                           footprint=KWin_shrink)  # median filter
-                U[ns], V[ns] = randSVD(ZMed ** (1 / gamma), numcomp, 'compact')[0:3:2]
+                NZ = np.nonzero(
+                    KWin_reshape
+                )  # range of element numbers of central nonzero elements
+                KWin_shrink = KWin_reshape[
+                    NZ[0].min() : NZ[0].max() + 1, NZ[1].min() : NZ[1].max() + 1
+                ]  # extract the central nonzero part
+                ZMed = scipy.ndimage.filters.median_filter(
+                    np.reshape(zj, (LT, LF)).T, footprint=KWin_shrink
+                )  # median filter
+                U[ns], V[ns] = randSVD(ZMed ** (1 / gamma), numcomp, "compact")[0:3:2]
                 del ZMed, zj
 
             else:  # full kernel method (more general but slower approach)
-                ZMed = np.zeros((LF * LT, 1), dtype='single')
+                ZMed = np.zeros((LF * LT, 1), dtype="single")
                 for ft in range(0, LF * LT):
                     simTemp = Ktemp.sim(TFcoords[ft, :], TFcoords)
                     NhoodTemp = np.nonzero(simTemp)
                     zjNhood = np.multiply(zj[NhoodTemp], simTemp[NhoodTemp])
                     ZMed[ft, 0] = np.median(np.array(zjNhood))
                 ZMed = np.reshape(ZMed, (LT, LF)).T
-                U[ns], V[ns] = randSVD(ZMed ** (1 / gamma), numcomp, 'compact')[0:3:2]
+                U[ns], V[ns] = randSVD(ZMed ** (1 / gamma), numcomp, "compact")[0:3:2]
                 del ZMed, zj
 
                 # print time.clock() - start_time, "seconds"
 
     # print time.clock() - start_time, "seconds"
-
 
     # Reshape the PSDs
     phat = np.zeros((LF, LT, J))
@@ -549,11 +587,10 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
         phat[:, :, ns] = np.abs(np.dot(U[ns], np.conj(V[ns].T)) ** (1 / gamma))
 
     # Reshape the spectrograms
-    Shat = 1j * np.zeros((LF, LT, I, J), dtype='single')  # estimated source STFTs
+    Shat = 1j * np.zeros((LF, LT, I, J), dtype="single")  # estimated source STFTs
     for ns in range(0, J):
         for nch in range(0, I):
             Shat[:, :, nch, ns] = np.reshape(S[:, nch, ns], (LT, LF)).T
-
 
     # Compute the inverse_mask stft of the estimated sources
     shat = np.zeros((x.shape[0], I, J))
@@ -564,12 +601,12 @@ def kaml(Inputfile, SourceKernels, AlgParams=np.array([10, 1]), Numit=1, SpecPar
     sigTemp.numCh = I
     for ns in range(0, J):
         sigTemp.X = Shat[:, :, :, ns]
-        shat[:, :, ns] = sigTemp.istft()[0][0:x.shape[0]]
+        shat[:, :, ns] = sigTemp.istft()[0][0 : x.shape[0]]
 
     return shat, phat
 
 
-def randSVD(A, K, mode='normal'):
+def randSVD(A, K, mode="normal"):
     """
     The function randSVD implements the randomized computation of truncated SVD
     of K components over a m by n matrix A.
@@ -606,9 +643,9 @@ def randSVD(A, K, mode='normal'):
     S = np.diag(S[0:K])
     V = V.T[:, 0:K]
 
-    if mode == 'diagonal':
+    if mode == "diagonal":
         S = np.diag(S)
-    elif mode == 'compact':
+    elif mode == "compact":
         sqrtS = np.diag(np.sqrt(np.diag(S)))
         U = np.dot(U, sqrtS)
         V = np.dot(V, sqrtS)
@@ -667,7 +704,7 @@ class Kernel:
                       
     """
 
-    def __init__(self, Type='', ParamVal=np.mat([]), Nhood=None, Wfunc=None):
+    def __init__(self, Type="", ParamVal=np.mat([]), Nhood=None, Wfunc=None):
 
         """
         Inputs:
@@ -696,8 +733,10 @@ class Kernel:
              Default: all ones over the neighbourhood (binary kernel)
         """
 
-        if Type == 'userdef' and (Nhood is None):
-            raise ValueError('Kernel type is userdef but the kernel neighbourhood is not defined.')
+        if Type == "userdef" and (Nhood is None):
+            raise ValueError(
+                "Kernel type is userdef but the kernel neighbourhood is not defined."
+            )
 
         # kernel properties
         self.kType = Type  # default: no pre-defined kernel selected
@@ -707,11 +746,14 @@ class Kernel:
 
         if self.kNhood is None:
             self.kNhood = lambda TFcoords1, TFcoords2: (
-                TFcoords1 == TFcoords2).all()  # default: neighnourhood includes only the centeral bin
+                TFcoords1 == TFcoords2
+            ).all()  # default: neighnourhood includes only the centeral bin
         if self.kWfunc is None:
-            self.kWfunc = lambda TFcoords1, TFcoords2: self.kNhood(TFcoords1, TFcoords2)  # default: binary kernel
+            self.kWfunc = lambda TFcoords1, TFcoords2: self.kNhood(
+                TFcoords1, TFcoords2
+            )  # default: binary kernel
 
-        if Type in ['cross', 'vertical', 'horizontal', 'periodic', 'harmonic']:
+        if Type in ["cross", "vertical", "horizontal", "periodic", "harmonic"]:
             self.gen_predef_kernel()
 
     def gen_predef_kernel(self):
@@ -723,83 +765,134 @@ class Kernel:
         ParamVal = self.kParamVal
 
         if np.size(ParamVal) == 0:
-            raise ValueError('Kernel parameter values are not specified.')
+            raise ValueError("Kernel parameter values are not specified.")
 
-        if Type == 'cross':
+        if Type == "cross":
 
             Df = ParamVal[0, 0]
             Dt = ParamVal[0, 1]
-            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_or(np.logical_and((np.tile(TFcoords1[:, 0], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))),
-                                                                                    (np.abs(np.tile(TFcoords1[:, 1], (
-                                                                                    1, TFcoords2.shape[0])) - np.tile(
-                                                                                        TFcoords2[:, 1].T, (
-                                                                                        TFcoords1.shape[0], 1))) < Dt)),
-                                                                     np.logical_and((np.tile(TFcoords1[:, 1], (
-                                                                     1, TFcoords2.shape[0])) == np.tile(
-                                                                         TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))),
-                                                                                    (np.abs(np.tile(TFcoords1[:, 0], (
-                                                                                    1, TFcoords2.shape[0])) - np.tile(
-                                                                                        TFcoords2[:, 0].T, (
-                                                                                        TFcoords1.shape[0], 1))) < Df)))
+            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_or(
+                np.logical_and(
+                    (
+                        np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0]))
+                        == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))
+                    ),
+                    (
+                        np.abs(
+                            np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0]))
+                            - np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))
+                        )
+                        < Dt
+                    ),
+                ),
+                np.logical_and(
+                    (
+                        np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0]))
+                        == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))
+                    ),
+                    (
+                        np.abs(
+                            np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0]))
+                            - np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))
+                        )
+                        < Df
+                    ),
+                ),
+            )
             self.kParamVal = ParamVal
 
-        elif Type == 'vertical':
+        elif Type == "vertical":
 
             Df = ParamVal[0, 0]
-            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and((np.tile(TFcoords1[:, 1],
-                                                                               (1, TFcoords2.shape[0])) == np.tile(
-                TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))),
-                                                                      (np.abs(np.tile(TFcoords1[:, 0], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
-                                                                          TFcoords2[:, 0].T,
-                                                                          (TFcoords1.shape[0], 1))) < Df))
+            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(
+                (
+                    np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0]))
+                    == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))
+                ),
+                (
+                    np.abs(
+                        np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0]))
+                        - np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))
+                    )
+                    < Df
+                ),
+            )
             self.kParamVal = ParamVal
 
-        elif Type == 'horizontal':
+        elif Type == "horizontal":
 
             Dt = ParamVal[0, 0]
-            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and((np.tile(TFcoords1[:, 0],
-                                                                               (1, TFcoords2.shape[0])) == np.tile(
-                TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))),
-                                                                      (np.abs(np.tile(TFcoords1[:, 1], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
-                                                                          TFcoords2[:, 1].T,
-                                                                          (TFcoords1.shape[0], 1))) < Dt))
+            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(
+                (
+                    np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0]))
+                    == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))
+                ),
+                (
+                    np.abs(
+                        np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0]))
+                        - np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))
+                    )
+                    < Dt
+                ),
+            )
             self.kParamVal = ParamVal
 
-        elif Type == 'periodic':
+        elif Type == "periodic":
 
             P = ParamVal[0, 0]
             Dt = ParamVal[0, 1] * P + 1
-            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:, 0], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))),
-                                                                                     (np.abs(np.tile(TFcoords1[:, 1], (
-                                                                                     1, TFcoords2.shape[0])) - np.tile(
-                                                                                         TFcoords2[:, 1].T, (
-                                                                                         TFcoords1.shape[0],
-                                                                                         1))) < Dt)),
-                                                                      (np.mod(np.tile(TFcoords1[:, 1], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
-                                                                          TFcoords2[:, 1].T, (TFcoords1.shape[0], 1)),
-                                                                              P) == 0))
+            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(
+                np.logical_and(
+                    (
+                        np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0]))
+                        == np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))
+                    ),
+                    (
+                        np.abs(
+                            np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0]))
+                            - np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))
+                        )
+                        < Dt
+                    ),
+                ),
+                (
+                    np.mod(
+                        np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0]))
+                        - np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1)),
+                        P,
+                    )
+                    == 0
+                ),
+            )
             self.kParamVal = ParamVal
 
-        elif Type == 'harmonic':
+        elif Type == "harmonic":
 
             P = ParamVal[0, 0]
             Df = ParamVal[0, 1] * P + 1
-            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(np.logical_and((np.tile(TFcoords1[:, 1], (
-            1, TFcoords2.shape[0])) == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))),
-                                                                                     (np.abs(np.tile(TFcoords1[:, 0], (
-                                                                                     1, TFcoords2.shape[0])) - np.tile(
-                                                                                         TFcoords2[:, 0].T, (
-                                                                                         TFcoords1.shape[0],
-                                                                                         1))) < Df)),
-                                                                      (np.mod(np.tile(TFcoords1[:, 0], (
-                                                                      1, TFcoords2.shape[0])) - np.tile(
-                                                                          TFcoords2[:, 0].T, (TFcoords1.shape[0], 1)),
-                                                                              P) == 0))
+            self.kNhood = lambda TFcoords1, TFcoords2: np.logical_and(
+                np.logical_and(
+                    (
+                        np.tile(TFcoords1[:, 1], (1, TFcoords2.shape[0]))
+                        == np.tile(TFcoords2[:, 1].T, (TFcoords1.shape[0], 1))
+                    ),
+                    (
+                        np.abs(
+                            np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0]))
+                            - np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1))
+                        )
+                        < Df
+                    ),
+                ),
+                (
+                    np.mod(
+                        np.tile(TFcoords1[:, 0], (1, TFcoords2.shape[0]))
+                        - np.tile(TFcoords2[:, 0].T, (TFcoords1.shape[0], 1)),
+                        P,
+                    )
+                    == 0
+                ),
+            )
             self.kParamVal = ParamVal
 
     def sim(self, TFcoords1, TFcoords2):
@@ -818,7 +911,7 @@ class Kernel:
         """
 
         # update the kernel properties if changed to predefined
-        if self.kType in ['cross', 'vertical', 'horizontal', 'periodic']:
+        if self.kType in ["cross", "vertical", "horizontal", "periodic"]:
             self.gen_predef_kernel()
 
         Nhood_vec = self.kNhood(TFcoords1, TFcoords2)

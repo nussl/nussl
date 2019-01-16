@@ -24,11 +24,20 @@ from six.moves.urllib.request import urlopen, Request
 from . import constants
 
 
-__all__ = ['get_available_audio_files', 'print_available_audio_files',
-           'get_available_benchmark_files', 'print_available_benchmark_files',
-           'get_available_trained_models', 'print_available_trained_models',
-           'download_audio_file', 'download_benchmark_file', 'download_trained_model',
-           'FailedDownloadError', 'MismatchedHashError', 'MetadataError']
+__all__ = [
+    "get_available_audio_files",
+    "print_available_audio_files",
+    "get_available_benchmark_files",
+    "print_available_benchmark_files",
+    "get_available_trained_models",
+    "print_available_trained_models",
+    "download_audio_file",
+    "download_benchmark_file",
+    "download_trained_model",
+    "FailedDownloadError",
+    "MismatchedHashError",
+    "MetadataError",
+]
 
 
 def get_available_audio_files():
@@ -98,9 +107,11 @@ def print_available_audio_files():
             f'{f["file_name"]:40} {f["file_length_seconds"]:<15.1f} {f["file_size"]:10}'
             f' {f["file_description"]:50}'
         )
-    print('To download one of these files insert the file name '
-          'as the first parameter to nussl.download_audio_file(), like so: \n'
-          ' >>> nussl.efz_utils.download_audio_file(\'K0140.wav\')')
+    print(
+        "To download one of these files insert the file name "
+        "as the first parameter to nussl.download_audio_file(), like so: \n"
+        " >>> nussl.efz_utils.download_audio_file('K0140.wav')"
+    )
 
 
 def get_available_trained_models():
@@ -179,16 +190,17 @@ def print_available_trained_models():
     """
     file_metadata = get_available_trained_models()
 
-
     print(f'{"File Name":40} {"For Class":15} {"Size":10} {"Description":50}')
     for f in file_metadata:
         print(
             f'{f["file_name"]:40} {f["for_class"]:<15.1f} {f["file_size"]:10}'
             f' {f["file_description"]:50}'
         )
-    print('To download one of these files insert the file name '
-          'as the first parameter to nussl.download_trained_model, like so: \n'
-          ' >>> nussl.efz_utils.download_trained_model(\'deep_clustering_model.h5\')')
+    print(
+        "To download one of these files insert the file name "
+        "as the first parameter to nussl.download_trained_model, like so: \n"
+        " >>> nussl.efz_utils.download_trained_model('deep_clustering_model.h5')"
+    )
 
 
 def get_available_benchmark_files():
@@ -267,9 +279,11 @@ def print_available_benchmark_files():
             f'{f["file_name"]:40} {f["for_class"]:<15.1f} {f["file_size"]:10}'
             f' {f["file_description"]:50}'
         )
-    print('To download one of these files insert the file name '
-          'as the first parameter to nussl.download_benchmark_file, like so: \n'
-          ' >>> nussl.efz_utils.download_benchmark_file(\'example.npy\')')
+    print(
+        "To download one of these files insert the file name "
+        "as the first parameter to nussl.download_benchmark_file, like so: \n"
+        " >>> nussl.efz_utils.download_benchmark_file('example.npy')"
+    )
 
 
 def _download_all_metadata(url):
@@ -291,8 +305,8 @@ def _download_all_metadata(url):
     request = Request(url)
 
     # Make sure to get the newest data
-    request.add_header('Pragma', 'no-cache')
-    request.add_header('Cache-Control', 'max-age=0')
+    request.add_header("Pragma", "no-cache")
+    request.add_header("Cache-Control", "max-age=0")
     try:
         return json.loads(urlopen(request).read())
     except:
@@ -313,26 +327,26 @@ def _download_metadata_for_file(file_name, file_type):
     """
 
     metadata_urls = {
-        'audio': constants.NUSSL_EFZ_AUDIO_METADATA_URL,
-        'benchmark': constants.NUSSL_EFZ_BENCHMARK_METADATA_URL,
-        'model': constants.NUSSL_EFZ_MODEL_METADATA_URL,
+        "audio": constants.NUSSL_EFZ_AUDIO_METADATA_URL,
+        "benchmark": constants.NUSSL_EFZ_BENCHMARK_METADATA_URL,
+        "model": constants.NUSSL_EFZ_MODEL_METADATA_URL,
     }
 
     if metadata_urls[file_type]:
         metadata_url = metadata_urls[file_type]
     else:
         # wrong file type, return
-        raise MetadataError(f'Cannot find metadata of type {file_type}.')
+        raise MetadataError(f"Cannot find metadata of type {file_type}.")
 
     metadata = _download_all_metadata(metadata_url)
 
     for file_metadata in metadata:
-        if file_metadata['file_name'] == file_name:
+        if file_metadata["file_name"] == file_name:
             return file_metadata
 
     raise MetadataError(
-        f'No matching metadata for file {file_name}'
-        f' at url {constants.NUSSL_EFZ_AUDIO_METADATA_URL}!'
+        f"No matching metadata for file {file_name}"
+        f" at url {constants.NUSSL_EFZ_AUDIO_METADATA_URL}!"
     )
 
 
@@ -361,13 +375,19 @@ def download_audio_file(audio_file_name, local_folder=None, verbose=True):
         >>> piano_signal = nussl.AudioSignal(piano_path)
 
     """
-    file_metadata = _download_metadata_for_file(audio_file_name, 'audio')
+    file_metadata = _download_metadata_for_file(audio_file_name, "audio")
 
-    file_hash = file_metadata['file_hash']
+    file_hash = file_metadata["file_hash"]
 
     file_url = urljoin(constants.NUSSL_EFZ_AUDIO_URL, audio_file_name)
-    result = _download_file(audio_file_name, file_url, local_folder, 'audio',
-                            file_hash=file_hash, verbose=verbose)
+    result = _download_file(
+        audio_file_name,
+        file_url,
+        local_folder,
+        "audio",
+        file_hash=file_hash,
+        verbose=verbose,
+    )
 
     return result
 
@@ -398,13 +418,19 @@ def download_trained_model(model_name, local_folder=None, verbose=True):
         >>> piano_signal = nussl.DeepClustering(signal, model_path=model_path)
 
     """
-    file_metadata = _download_metadata_for_file(model_name, 'model')
+    file_metadata = _download_metadata_for_file(model_name, "model")
 
-    file_hash = file_metadata['file_hash']
+    file_hash = file_metadata["file_hash"]
 
     file_url = urljoin(constants.NUSSL_EFZ_MODELS_URL, model_name)
-    result = _download_file(model_name, file_url, local_folder, 'models',
-                            file_hash=file_hash, verbose=verbose)
+    result = _download_file(
+        model_name,
+        file_url,
+        local_folder,
+        "models",
+        file_hash=file_hash,
+        verbose=verbose,
+    )
 
     return result
 
@@ -435,19 +461,32 @@ def download_benchmark_file(benchmark_name, local_folder=None, verbose=True):
         >>> sym_atm = np.load(stm_atn_path)
 
     """
-    file_metadata = _download_metadata_for_file(benchmark_name, 'benchmark')
+    file_metadata = _download_metadata_for_file(benchmark_name, "benchmark")
 
-    file_hash = file_metadata['file_hash']
+    file_hash = file_metadata["file_hash"]
 
     file_url = urljoin(constants.NUSSL_EFZ_BENCHMARKS_URL, benchmark_name)
-    result = _download_file(benchmark_name, file_url, local_folder, 'benchmarks',
-                            file_hash=file_hash, verbose=verbose)
+    result = _download_file(
+        benchmark_name,
+        file_url,
+        local_folder,
+        "benchmarks",
+        file_hash=file_hash,
+        verbose=verbose,
+    )
 
     return result
 
 
-def _download_file(file_name, url, local_folder, cache_subdir,
-                   file_hash=None, cache_dir=None, verbose=True):
+def _download_file(
+    file_name,
+    url,
+    local_folder,
+    cache_subdir,
+    file_hash=None,
+    cache_dir=None,
+    verbose=True,
+):
     """
     Downloads the specified file from the
 
@@ -466,7 +505,7 @@ def _download_file(file_name, url, local_folder, cache_subdir,
         (String) local path to downloaded file
 
     """
-    if local_folder not in [None, '']:
+    if local_folder not in [None, ""]:
         # local folder provided, let's create it if it doesn't exist and use it as datadir
         if not os.path.exists(os.path.expanduser(local_folder)):
             os.makedirs(os.path.expanduser(local_folder))
@@ -474,11 +513,11 @@ def _download_file(file_name, url, local_folder, cache_subdir,
 
     else:
         if cache_dir is None:
-            cache_dir = os.path.expanduser(os.path.join('~', '.nussl'))
+            cache_dir = os.path.expanduser(os.path.join("~", ".nussl"))
         datadir_base = os.path.expanduser(cache_dir)
 
         if not os.access(datadir_base, os.W_OK):
-            datadir_base = os.path.join('/tmp', '.nussl')
+            datadir_base = os.path.join("/tmp", ".nussl")
 
         datadir = os.path.join(datadir_base, cache_subdir)
         if not os.path.exists(datadir):
@@ -496,12 +535,12 @@ def _download_file(file_name, url, local_folder, cache_subdir,
             if file_hash != current_hash:
                 if verbose:
                     warnings.warn(
-                        f'Hash for {file_path} does not match known hash. '
-                        f' Downloading {file_name} from servers...'
+                        f"Hash for {file_path} does not match known hash. "
+                        f" Downloading {file_name} from servers..."
                     )
                 download = True
             elif verbose:
-                print(f'Matching file found at {file_path}, skipping download.')
+                print(f"Matching file found at {file_path}, skipping download.")
 
         else:
             download = True
@@ -511,25 +550,30 @@ def _download_file(file_name, url, local_folder, cache_subdir,
 
     if download:
         if verbose:
-            print(f'Saving file at {file_path}\nDownloading {file_name} from {url}')
+            print(f"Saving file at {file_path}\nDownloading {file_name} from {url}")
 
         def _dl_progress(count, block_size, total_size):
             percent = int(count * block_size * 100 / total_size)
 
             if percent <= 100:
-                sys.stdout.write(f'\r{file_name}...{percent}%')
+                sys.stdout.write(f"\r{file_name}...{percent}%")
                 sys.stdout.flush()
 
         try:
             try:
                 reporthook = _dl_progress if verbose else None
                 urlretrieve(url, file_path, reporthook)
-                if verbose: print()  # print a new line after the progress is done.
+                if verbose:
+                    print()  # print a new line after the progress is done.
 
             except HTTPError as e:
-                raise FailedDownloadError(f'URL fetch failure on {url}: {e.code} -- {e.msg}')
+                raise FailedDownloadError(
+                    f"URL fetch failure on {url}: {e.code} -- {e.msg}"
+                )
             except URLError as e:
-                raise FailedDownloadError(f'URL fetch failure on {url}: {e.errno} -- {e.reason}')
+                raise FailedDownloadError(
+                    f"URL fetch failure on {url}: {e.errno} -- {e.reason}"
+                )
         except (Exception, KeyboardInterrupt) as e:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -542,7 +586,7 @@ def _download_file(file_name, url, local_folder, cache_subdir,
                 # the downloaded file is not what it should be. Get rid of it.
                 os.remove(file_path)
                 raise MismatchedHashError(
-                    f'Deleted downloaded file ({file_path}) because of a hash mismatch.'
+                    f"Deleted downloaded file ({file_path}) because of a hash mismatch."
                 )
 
         return file_path
@@ -564,8 +608,8 @@ def _hash_file(file_path, chunk_size=65535):
     """
     hasher = hashlib.sha256()
 
-    with open(file_path, 'rb') as fpath_file:
-        for chunk in iter(lambda: fpath_file.read(chunk_size), b''):
+    with open(file_path, "rb") as fpath_file:
+        for chunk in iter(lambda: fpath_file.read(chunk_size), b""):
             hasher.update(chunk)
 
     return hasher.hexdigest()
@@ -573,6 +617,7 @@ def _hash_file(file_path, chunk_size=65535):
 
 # This is stolen wholesale from keras
 if sys.version_info[0] == 2:
+
     def urlretrieve(url, filename, reporthook=None, data=None):
         """Replacement for `urlretrive` for Python 2.
         Under Python 2, `urlretrieve` relies on `FancyURLopener` from legacy
@@ -588,8 +633,9 @@ if sys.version_info[0] == 2:
                 a block size in bytes, and the total size of the file.
             data: `data` argument passed to `urlopen`.
         """
+
         def chunk_read(response, chunk_size=8192, reporthook=None):
-            content_type = response.info().get('Content-Length')
+            content_type = response.info().get("Content-Length")
             total_size = -1
             if content_type is not None:
                 total_size = int(content_type.strip())
@@ -605,27 +651,35 @@ if sys.version_info[0] == 2:
                 yield chunk
 
         response = urlopen(url, data)
-        with open(filename, 'wb') as fd:
+        with open(filename, "wb") as fd:
             for chunk in chunk_read(response, reporthook=reporthook):
                 fd.write(chunk)
+
+
 else:
-    from six.moves.urllib.request import urlretrieve  # pylint: disable=g-import-not-at-top
+    from six.moves.urllib.request import (
+        urlretrieve,
+    )  # pylint: disable=g-import-not-at-top
 
 
 ########################################
 #             Error Classes
 ########################################
 
+
 class NoConnectivityError(Exception):
     """
     Exception class for lack of internet connection.
     """
+
     pass
+
 
 class FailedDownloadError(Exception):
     """
     Exception class for failed file downloads.
     """
+
     pass
 
 
@@ -633,6 +687,7 @@ class MismatchedHashError(Exception):
     """
     Exception class for when a computed hash function does match a pre-computed hash.
     """
+
     pass
 
 
@@ -640,4 +695,5 @@ class MetadataError(Exception):
     """
     Exception class for errors with metadata.
     """
+
     pass

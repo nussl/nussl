@@ -18,11 +18,17 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
     A simple high/low pass filter that creates a mask in the time frequency representation
     """
 
-    def __init__(self, input_audio_signal, high_pass_cutoff_hz, do_fir_filter=False,
-                 force_recompute_stft=False,
-                 mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK):
-        super(HighLowPassFilter, self).__init__(input_audio_signal=input_audio_signal,
-                                                mask_type=mask_type)
+    def __init__(
+        self,
+        input_audio_signal,
+        high_pass_cutoff_hz,
+        do_fir_filter=False,
+        force_recompute_stft=False,
+        mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK,
+    ):
+        super(HighLowPassFilter, self).__init__(
+            input_audio_signal=input_audio_signal, mask_type=mask_type
+        )
         self.high_pass_cutoff_hz = high_pass_cutoff_hz
 
         self.should_do_fir_filter = do_fir_filter
@@ -57,7 +63,9 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             # Make the filter
             filter_order, beta = scipy.signal.kaiserord(ripple_db, width)
-            filter_coeffs = scipy.signal.firwin(filter_order, cutoff_hz, window=('kaiser', beta))
+            filter_coeffs = scipy.signal.firwin(
+                filter_order, cutoff_hz, window=("kaiser", beta)
+            )
 
             # Apply the filter to every channel in the mixture
             low_pass_array = []
@@ -66,13 +74,17 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             # Make a new AudioSignal object with filtered signal
             low_pass_array = np.array(low_pass_array)
-            self.low_pass_signal = self.audio_signal.make_copy_with_audio_data(low_pass_array,
-                                                                               verbose=False)
+            self.low_pass_signal = self.audio_signal.make_copy_with_audio_data(
+                low_pass_array, verbose=False
+            )
             self.high_pass_signal = self.audio_signal - self.low_pass_signal
 
             # Make masks
-            ideal_mask = IdealMask(self.audio_signal, [self.high_pass_signal, self.low_pass_signal],
-                                   mask_type=self.mask_type)
+            ideal_mask = IdealMask(
+                self.audio_signal,
+                [self.high_pass_signal, self.low_pass_signal],
+                mask_type=self.mask_type,
+            )
             self.high_pass_mask, self.low_pass_mask = ideal_mask.run()
 
         else:
@@ -80,7 +92,9 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             # Compute the spectrogram and find the closest frequency bin to the cutoff freq
             self._get_stft()
-            closest_freq_bin = self.audio_signal.get_closest_frequency_bin(self.high_pass_cutoff_hz)
+            closest_freq_bin = self.audio_signal.get_closest_frequency_bin(
+                self.high_pass_cutoff_hz
+            )
 
             # Make masks
             self.low_pass_mask = self.ones_mask(self.stft.shape)
@@ -110,15 +124,17 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
         """
         if self.low_pass_mask is None or self.high_pass_mask is None:
-            raise ValueError('Must call run() before calling make_audio_signals()!')
+            raise ValueError("Must call run() before calling make_audio_signals()!")
 
         if not self.should_do_fir_filter:
             self.high_pass_signal = self.audio_signal.apply_mask(self.high_pass_mask)
-            self.high_pass_signal.istft(overwrite=True,
-                                        truncate_to_length=self.audio_signal.signal_length)
+            self.high_pass_signal.istft(
+                overwrite=True, truncate_to_length=self.audio_signal.signal_length
+            )
 
             self.low_pass_signal = self.audio_signal.apply_mask(self.low_pass_mask)
-            self.low_pass_signal.istft(overwrite=True,
-                                       truncate_to_length=self.audio_signal.signal_length)
+            self.low_pass_signal.istft(
+                overwrite=True, truncate_to_length=self.audio_signal.signal_length
+            )
 
         return self.low_pass_signal, self.high_pass_signal

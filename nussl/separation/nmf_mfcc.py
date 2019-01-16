@@ -100,10 +100,24 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             nmf_mfcc =  nussl.NMF_MFCC(signal, num_sources=2, kmeans_kwargs=kmeans_kwargs)
 
         """
-    def __init__(self, input_audio_signal, num_sources, num_templates=50, num_iterations=50, random_seed=None,
-                 distance_measure=transformer_nmf.TransformerNMF.EUCLIDEAN, kmeans_kwargs=None, to_mono=False,
-                 mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK, mfcc_range=(1, 14), n_mfcc=20):
-        super(NMF_MFCC, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
+
+    def __init__(
+        self,
+        input_audio_signal,
+        num_sources,
+        num_templates=50,
+        num_iterations=50,
+        random_seed=None,
+        distance_measure=transformer_nmf.TransformerNMF.EUCLIDEAN,
+        kmeans_kwargs=None,
+        to_mono=False,
+        mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK,
+        mfcc_range=(1, 14),
+        n_mfcc=20,
+    ):
+        super(NMF_MFCC, self).__init__(
+            input_audio_signal=input_audio_signal, mask_type=mask_type
+        )
 
         self.num_sources = num_sources
         self.num_templates = num_templates
@@ -127,19 +141,29 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         elif isinstance(mfcc_range, (tuple, list)) and len(mfcc_range) == 2:
             self.mfcc_start, self.mfcc_end = mfcc_range[0], mfcc_range[1]
         else:
-            raise ValueError('mfcc_range is not set correctly! Must be a tuple or list with (min, max), or int (max)')
+            raise ValueError(
+                "mfcc_range is not set correctly! Must be a tuple or list with (min, max), or int (max)"
+            )
 
         # If kmeans_kwargs does not include the 'random_state', use the random_seed instead. Else, use the value
         # provided in the dictionary. If kmeans_kwargs is None, use the random_seed.
-        self.kmeans_random_seed = kmeans_kwargs.pop('random_state', random_seed) \
-            if isinstance(kmeans_kwargs, dict) else random_seed
+        self.kmeans_random_seed = (
+            kmeans_kwargs.pop("random_state", random_seed)
+            if isinstance(kmeans_kwargs, dict)
+            else random_seed
+        )
 
         # Initialize the K Means clusterer
         if isinstance(self.kmeans_kwargs, dict):
-            self.clusterer = sklearn.cluster.KMeans(n_clusters=self.num_sources, random_state=self.kmeans_random_seed,
-                                                    **kmeans_kwargs)
+            self.clusterer = sklearn.cluster.KMeans(
+                n_clusters=self.num_sources,
+                random_state=self.kmeans_random_seed,
+                **kmeans_kwargs,
+            )
         else:
-            self.clusterer = sklearn.cluster.KMeans(n_clusters=self.num_sources, random_state=self.kmeans_random_seed)
+            self.clusterer = sklearn.cluster.KMeans(
+                n_clusters=self.num_sources, random_state=self.kmeans_random_seed
+            )
 
     def run(self):
         """ This function calls TransformerNMF on the magnitude spectrogram of each channel in the input audio signal.
@@ -179,25 +203,36 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             channel_stft = self.audio_signal.get_magnitude_spectrogram_channel(ch)
 
             # Set up NMF and run
-            nmf = transformer_nmf.TransformerNMF(input_matrix=channel_stft, num_components=self.num_templates,
-                                                 seed=self.random_seed, should_do_epsilon=False,
-                                                 max_num_iterations=self.num_iterations,
-                                                 distance_measure=self.distance_measure)
+            nmf = transformer_nmf.TransformerNMF(
+                input_matrix=channel_stft,
+                num_components=self.num_templates,
+                seed=self.random_seed,
+                should_do_epsilon=False,
+                max_num_iterations=self.num_iterations,
+                distance_measure=self.distance_measure,
+            )
 
             channel_activation_matrix, channel_templates_matrix = nmf.transform()
 
             # Cluster the templates matrix into Mel frequencies and retrieve labels
-            cluster_templates = librosa.feature.mfcc(S=channel_templates_matrix,
-                                                     n_mfcc=self.n_mfcc)[self.mfcc_start:self.mfcc_end]
+            cluster_templates = librosa.feature.mfcc(
+                S=channel_templates_matrix, n_mfcc=self.n_mfcc
+            )[self.mfcc_start : self.mfcc_end]
             self.clusterer.fit_transform(cluster_templates.T)
             self.labeled_templates = self.clusterer.labels_
 
             # Extract sources from signal
-            uncollated_masks += self._extract_masks(channel_templates_matrix, channel_activation_matrix, ch)
+            uncollated_masks += self._extract_masks(
+                channel_templates_matrix, channel_activation_matrix, ch
+            )
 
         # Reorder mask arrays so that the channels are collated correctly (this allows for multichannel signals)
-        collated_masks = [np.dstack([uncollated_masks[s + ch * self.num_sources] for ch in range(n_chan)])
-                          for s in range(self.num_sources)]
+        collated_masks = [
+            np.dstack(
+                [uncollated_masks[s + ch * self.num_sources] for ch in range(n_chan)]
+            )
+            for s in range(self.num_sources)
+        ]
 
         # Put each numpy array mask into a MaskBase object
         self.result_masks = []
@@ -208,7 +243,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             elif self.mask_type == self.SOFT_MASK:
                 mask_object = masks.SoftMask(mask)
             else:
-                raise ValueError(f'Unknown mask type {self.mask_type}!')
+                raise ValueError(f"Unknown mask type {self.mask_type}!")
             self.result_masks.append(mask_object)
 
         return self.result_masks
@@ -227,7 +262,7 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
         """
 
         if self.audio_signal.stft_data is None:
-            raise ValueError('Cannot extract masks with no signal_stft data')
+            raise ValueError("Cannot extract masks with no signal_stft data")
 
         channel_mask_list = []
         for source_index in range(self.num_sources):
@@ -243,7 +278,9 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
                 activation_mask[idx, :] = activation_matrix[idx, :]
 
             mask_matrix = templates_mask.dot(activation_mask)
-            music_stft_max = np.maximum(mask_matrix, np.abs(self.audio_signal.get_stft_channel(ch)))
+            music_stft_max = np.maximum(
+                mask_matrix, np.abs(self.audio_signal.get_stft_channel(ch))
+            )
             mask_matrix = np.divide(mask_matrix, music_stft_max)
             mask = np.nan_to_num(mask_matrix)
 
@@ -263,7 +300,9 @@ class NMF_MFCC(mask_separation_base.MaskSeparationBase):
             source = copy.deepcopy(self.audio_signal)
             source = source.apply_mask(mask)
             source.stft_params = self.stft_params
-            source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
+            source.istft(
+                overwrite=True, truncate_to_length=self.audio_signal.signal_length
+            )
             self.sources.append(source)
 
         return self.sources
