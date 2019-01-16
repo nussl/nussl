@@ -1133,7 +1133,7 @@ class AudioSignal(object):
 
     _NAME_STEM = 'audio_signal'
 
-    def plot_time_domain(self, channel=None, x_label_time=True, title=None, file_path_name=None):
+    def plot_time_domain(self, channel=None, x_label_time=True):
         """
         Plots a graph of the time domain audio signal.
 
@@ -1187,16 +1187,6 @@ class AudioSignal(object):
                     axarr[i].plot(self.audio_data[i], sharex=True)
                     axarr[i].set_xlim(0, self.signal_length)
                 axarr[i].set_ylabel(f'Ch {i}')
-
-        if title is None:
-            title = self.file_name if self.file_name is not None else self._NAME_STEM
-
-        plt.suptitle(title)
-
-        if file_path_name:
-            file_path_name = file_path_name if self._check_if_valid_img_type(file_path_name) \
-                                            else file_path_name + '.png'
-            plt.savefig(file_path_name)
 
     def plot_spectrogram(self, ch=None):
         """
