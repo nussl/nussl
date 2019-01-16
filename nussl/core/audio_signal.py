@@ -1198,7 +1198,7 @@ class AudioSignal(object):
                                             else file_path_name + '.png'
             plt.savefig(file_path_name)
 
-    def plot_spectrogram(self, file_name=None, ch=None):
+    def plot_spectrogram(self, ch=None):
         """
         Plots the power spectrogram calculated from :attr:`audio_data`.
 
@@ -1210,18 +1210,11 @@ class AudioSignal(object):
         # TODO: use self.stft_data if not None
         # TODO: flatten to mono be default
         # TODO: make other parameters adjustable
-        if file_name is None:
-            name = self.file_name if self.file_name is not None \
-                else self._NAME_STEM + '_spectrogram'
-        else:
-            name = os.path.splitext(file_name)[0]
-
-        name = name if self._check_if_valid_img_type(name) else name + '.png'
 
         if ch is None:
-            stft_utils.plot_stft(self.to_mono(), name, sample_rate=self.sample_rate)
+            stft_utils.plot_stft(self.to_mono(), sample_rate=self.sample_rate)
         else:
-            stft_utils.plot_stft(self.get_channel(ch), name, sample_rate=self.sample_rate)
+            stft_utils.plot_stft(self.get_channel(ch), sample_rate=self.sample_rate)
 
     @staticmethod
     def _check_if_valid_img_type(name):

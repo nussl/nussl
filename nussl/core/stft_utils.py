@@ -19,9 +19,9 @@ __all__ = ['plot_stft', 'e_stft', 'e_istft', 'e_stft_plus', 'librosa_stft_wrappe
            'make_window', 'StftParams']
 
 
-def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
+def plot_stft(signal, win_length=None, hop_length=None,
               window_type=None, sample_rate=constants.DEFAULT_SAMPLE_RATE, n_fft_bins=None,
-              freq_max=None, show_interactive_plot=False):
+              freq_max=None):
     """
     Outputs an image of an stft plot of input audio, signal. This uses matplotlib to create the output file.
     You can specify the same all of the same parameters that are in e_stft(). By default, the StftParams defaults
@@ -75,11 +75,6 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
     """
     freq_max = freq_max if freq_max is not None else sample_rate // 2
 
-    if title is None:
-        title = os.path.basename(file_name)
-        title = os.path.splitext(title)[0]
-        title = f'Spectrogram of {title}'
-
     required = [win_length, hop_length, window_type]
     if any([r is None for r in required]):
         defaults = StftParams(sample_rate)
@@ -91,7 +86,6 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
     (stft, psd, freqs, time) = e_stft_plus(signal, win_length, hop_length,
                                            window_type, sample_rate, n_fft_bins)
 
-    plt.close('all')
 
     # TODO: remove transposes!
     time_tile = np.tile(time, (len(freqs), 1))
@@ -102,14 +96,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
     plt.axis('tight')
     plt.xlabel('Time (sec)')
     plt.ylabel('Frequency (Hz)')
-    plt.title(title)
     plt.ylim(freqs[0], freq_max)
-
-    plt.savefig(file_name)
-
-    if show_interactive_plot:
-        plt.interactive('True')
-        plt.show()
 
 
 def e_stft(signal, window_length, hop_length, window_type,
