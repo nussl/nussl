@@ -6,15 +6,7 @@ from .clustering import GMM
 
 
 class MelProjection(nn.Module):
-    def __init__(
-        self,
-        sample_rate,
-        num_frequencies,
-        num_mels,
-        direction="forward",
-        clamp=False,
-        trainable=False,
-    ):
+    def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward', clamp=False, trainable=False):
         """
         MelProjection takes as input a time-frequency representation (e.g. a spectrogram, or a mask) and outputs a mel
         project that can be learned or fixed. The initialization uses librosa to get a mel filterbank. Direction
@@ -33,33 +25,23 @@ class MelProjection(nn.Module):
         """
         super(MelProjection, self).__init__()
         self.num_mels = num_mels
-        if direction not in ["backward", "forward"]:
+        if direction not in ['backward', 'forward']:
             raise ValueError("direction must be one of ['backward', 'forward']!")
         self.direction = direction
         self.clamp = clamp
 
         if self.num_mels > 0:
-            shape = (
-                (num_frequencies, num_mels)
-                if self.direction == "forward"
-                else (num_mels, num_frequencies)
-            )
-            self.add_module("transform", nn.Linear(*shape))
+            shape = (num_frequencies, num_mels) if self.direction == 'forward' else (num_mels, num_frequencies)
+            self.add_module('transform', nn.Linear(*shape))
 
-            mel_filters = librosa.filters.mel(
-                sample_rate, 2 * (num_frequencies - 1), num_mels
-            )
+            mel_filters = librosa.filters.mel(sample_rate, 2 * (num_frequencies - 1), num_mels)
             mel_filters = (mel_filters.T / mel_filters.sum(axis=1)).T
-            filter_bank = (
-                mel_filters
-                if self.direction == "forward"
-                else np.linalg.pinv(mel_filters)
-            )
+            filter_bank = mel_filters if self.direction == 'forward' else np.linalg.pinv(mel_filters)
 
             for name, param in self.transform.named_parameters():
-                if "bias" in name:
+                if 'bias' in name:
                     nn.init.constant_(param, 0.0)
-                if "weight" in name:
+                if 'weight' in name:
                     param.data = torch.from_numpy(filter_bank).float()
                 param.requires_grad_(trainable)
 
@@ -109,7 +91,7 @@ class Embedding(nn.Module):
                 activation.
         """
         super(Embedding, self).__init__()
-        self.add_module("linear", nn.Linear(hidden_size, num_features * embedding_size))
+        self.add_module('linear', nn.Linear(hidden_size, num_features * embedding_size))
         self.num_features = num_features
         self.activation = activation
         self.embedding_size = embedding_size
@@ -125,20 +107,19 @@ class Embedding(nn.Module):
         """
         data = self.linear(data)
 
-        if "sigmoid" in self.activation:
+        if 'sigmoid' in self.activation:
             data = torch.sigmoid(data)
-        elif "tanh" in self.activation:
+        elif 'tanh' in self.activation:
             data = torch.tanh(data)
-        elif "softmax" in self.activation:
+        elif 'softmax' in self.activation:
             data = nn.functional.softmax(data, dim=-1)
 
         data = data.view(data.shape[0], -1, self.num_features, self.embedding_size)
 
-        if "unit_norm" in self.activation:
+        if 'unit_norm' in self.activation:
             data = nn.functional.normalize(data, dim=-1, p=2)
 
         return data
-
 
 class Mask(nn.Module):
     def __init__(self):
@@ -147,17 +128,8 @@ class Mask(nn.Module):
     def forward(self, mask, magnitude_spectrogram):
         return mask * magnitude_spectrogram.unsqueeze(-1)
 
-
 class RecurrentStack(nn.Module):
-    def __init__(
-        self,
-        num_features,
-        hidden_size,
-        num_layers,
-        bidirectional,
-        dropout,
-        rnn_type="lstm",
-    ):
+    def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout, rnn_type='lstm'):
         """
         Creates a stack of RNNs used to process an audio sequence represented as (sequence_length, num_features). With
         bidirectional = True, hidden_size = 600, num_layers = 4, rnn_type='lstm', and dropout = .3, this becomes
@@ -174,46 +146,36 @@ class RecurrentStack(nn.Module):
             rnn_type: (str) LSTM ('lstm') or GRU ('gru').
         """
         super(RecurrentStack, self).__init__()
-        if rnn_type not in ["lstm", "gru"]:
+        if rnn_type not in ['lstm', 'gru']:
             raise ValueError("rnn_type must be one of ['lstm', 'gru']!")
 
-        if rnn_type == "lstm":
-            self.add_module(
-                "rnn",
-                nn.LSTM(
-                    num_features,
-                    hidden_size,
-                    num_layers,
-                    batch_first=True,
-                    bidirectional=bidirectional,
-                    dropout=dropout,
-                ),
-            )
-        elif rnn_type == "gru":
-            self.add_module(
-                "rnn",
-                nn.GRU(
-                    num_features,
-                    hidden_size,
-                    num_layers,
-                    batch_first=True,
-                    bidirectional=bidirectional,
-                    dropout=dropout,
-                ),
-            )
+        if rnn_type == 'lstm':
+            self.add_module('rnn', nn.LSTM(num_features,
+                                           hidden_size,
+                                           num_layers,
+                                           batch_first=True,
+                                           bidirectional=bidirectional,
+                                           dropout=dropout))
+        elif rnn_type == 'gru':
+            self.add_module('rnn', nn.GRU(num_features,
+                                          hidden_size,
+                                          num_layers,
+                                          batch_first=True,
+                                          bidirectional=bidirectional,
+                                          dropout=dropout))
 
         for name, param in self.rnn.named_parameters():
-            if "bias" in name:
+            if 'bias' in name:
                 nn.init.constant_(param, 0.0)
-            elif "weight" in name:
+            elif 'weight' in name:
                 nn.init.xavier_normal_(param)
 
         for names in self.rnn._all_weights:
-            for name in filter(lambda n: "bias" in n, names):
+            for name in filter(lambda n: "bias" in n,  names):
                 bias = getattr(self.rnn, name)
                 n = bias.size(0)
-                start, end = n // 4, n // 2
-                bias.data[start:end].fill_(1.0)
+                start, end = n//4, n//2
+                bias.data[start:end].fill_(1.)
 
     def forward(self, data):
         """
@@ -240,13 +202,7 @@ class ConvolutionalStack(nn.Module):
 
 
 class Clusterer(nn.Module):
-    def __init__(
-        self,
-        n_iterations,
-        num_clusters,
-        covariance_type="tied:spherical",
-        covariance_init=1.0,
-    ):
+    def __init__(self, n_iterations, num_clusters, covariance_type='tied:spherical', covariance_init=1.0):
         """
 
         Args:
@@ -257,25 +213,18 @@ class Clusterer(nn.Module):
         """
         super(Clusterer, self).__init__()
 
-        self.add_module(
-            "clusterer",
-            GMM(
-                n_clusters=num_clusters,
-                n_iterations=n_iterations,
-                covariance_type=covariance_type,
-                covariance_init=covariance_init,
-            ),
-        )
+        self.add_module('clusterer', GMM(n_clusters=num_clusters,
+                                         n_iterations=n_iterations,
+                                         covariance_type=covariance_type,
+                                         covariance_init=covariance_init))
 
     def forward(self, data, parameters=None):
         num_batch, sequence_length, num_features, embedding_size = data.shape
-        data = data.reshape(num_batch, sequence_length * num_features, embedding_size)
+        data = data.reshape(num_batch, sequence_length*num_features, embedding_size)
         output = self.clusterer(data, parameters)
         for key in output:
-            if key in ["assignments", "likelihoods"]:
-                output[key] = output[key].reshape(
-                    num_batch, sequence_length, num_features, -1
-                )
+            if key in ['assignments', 'likelihoods']:
+                output[key] = output[key].reshape(num_batch, sequence_length, num_features, -1)
         return output
 
 

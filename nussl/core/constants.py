@@ -7,27 +7,12 @@ this wacky, mixed up source separation stuff.
 import scipy.signal
 from six.moves.urllib_parse import urljoin
 
-__all__ = [
-    "DEFAULT_SAMPLE_RATE",
-    "DEFAULT_WIN_LEN_PARAM",
-    "DEFAULT_BIT_DEPTH",
-    "DEFAULT_MAX_VAL",
-    "EPSILON",
-    "MAX_FREQUENCY",
-    "WINDOW_HAMMING",
-    "WINDOW_RECTANGULAR",
-    "WINDOW_HANN",
-    "WINDOW_BLACKMAN",
-    "WINDOW_TRIANGULAR",
-    "WINDOW_DEFAULT",
-    "ALL_WINDOWS",
-    "NUMPY_JSON_KEY",
-    "LEN_INDEX",
-    "CHAN_INDEX",
-    "STFT_VERT_INDEX",
-    "STFT_LEN_INDEX",
-    "STFT_CHAN_INDEX",
-]
+__all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
+           'DEFAULT_MAX_VAL', 'EPSILON', 'MAX_FREQUENCY',
+           'WINDOW_HAMMING', 'WINDOW_RECTANGULAR', 'WINDOW_HANN',
+           'WINDOW_BLACKMAN', 'WINDOW_TRIANGULAR', 'WINDOW_DEFAULT',
+           'ALL_WINDOWS', 'NUMPY_JSON_KEY', 'LEN_INDEX', 'CHAN_INDEX',
+           'STFT_VERT_INDEX', 'STFT_LEN_INDEX', 'STFT_CHAN_INDEX']
 
 DEFAULT_SAMPLE_RATE = 44100  #: (int): Default sample rate. 44.1 kHz, CD-quality
 DEFAULT_WIN_LEN_PARAM = 0.04  #: (float): Default window length. 40ms
@@ -44,37 +29,25 @@ WINDOW_BLACKMAN = scipy.signal.blackman.__name__  #: (str): Blackman window. 'bl
 WINDOW_TRIANGULAR = "triangular"  #: (str): Triangular window. 'triangular'
 
 WINDOW_DEFAULT = WINDOW_HAMMING  #: (str): Default window, Hamming.
-ALL_WINDOWS = [
-    WINDOW_HAMMING,
-    WINDOW_RECTANGULAR,
-    WINDOW_HANN,
-    WINDOW_BLACKMAN,
-    WINDOW_TRIANGULAR,
-]
+ALL_WINDOWS = [WINDOW_HAMMING, WINDOW_RECTANGULAR, WINDOW_HANN, WINDOW_BLACKMAN, WINDOW_TRIANGULAR]
 """list(str): list of all available windows in *nussl*
 """
 
-NUMPY_JSON_KEY = (
-    "py/numpy.ndarray"
-)  #: (str): key used when turning numpy arrays into json
+NUMPY_JSON_KEY = "py/numpy.ndarray"  #: (str): key used when turning numpy arrays into json
 
-BINARY_MASK = "binary"
+BINARY_MASK = 'binary'
 """ String alias for setting this object to return :class:`separation.masks.binary_mask.BinaryMask` objects
 """
 
-SOFT_MASK = "soft"
+SOFT_MASK = 'soft'
 """ String alias for setting this object to return :class:`separation.masks.soft_mask.SoftMask` objects
 """
 
 # ############# Array Indices ############# #
 
 # audio_data
-LEN_INDEX = (
-    1
-)  #: (int): Index of the number of samples in an audio signal. Used in :ref:`audio_signal`
-CHAN_INDEX = (
-    0
-)  #: (int): Index of the number of channels in an audio signal. Used in :ref:`audio_signal`
+LEN_INDEX  = 1  #: (int): Index of the number of samples in an audio signal. Used in :ref:`audio_signal`
+CHAN_INDEX = 0  #: (int): Index of the number of channels in an audio signal. Used in :ref:`audio_signal`
 
 # stft_data
 STFT_VERT_INDEX = 0
@@ -82,7 +55,7 @@ STFT_VERT_INDEX = 0
 (int) Index of the number of frequency (vertical) values in a time-frequency representation. 
 Used in :ref:`audio_signal` and in :ref:`mask_base`.
 """
-STFT_LEN_INDEX = 1
+STFT_LEN_INDEX  = 1
 """
 (int) Index of the number of time (horizontal) hops in a time-frequency representation. 
 Used in :ref:`audio_signal` and in :ref:`mask_base`.
@@ -95,27 +68,23 @@ Used in :ref:`audio_signal` and in :ref:`mask_base`.
 
 # ############# nussl-extras urls ############# #
 
-NUSSL_EFZ_BASE_URL = "http://nussl.ci.northwestern.edu/"
-NUSSL_EFZ_STATIC_BASE_URL = urljoin(NUSSL_EFZ_BASE_URL, "static/")
-NUSSL_EFZ_AUDIO_URL = urljoin(NUSSL_EFZ_STATIC_BASE_URL, "audio/")
-NUSSL_EFZ_MODELS_URL = urljoin(NUSSL_EFZ_STATIC_BASE_URL, "trained_models/")
-NUSSL_EFZ_BENCHMARKS_URL = urljoin(NUSSL_EFZ_STATIC_BASE_URL, "benchmarks/")
-NUSSL_EFZ_AUDIO_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, "audio-metadata.json")
-NUSSL_EFZ_BENCHMARK_METADATA_URL = urljoin(
-    NUSSL_EFZ_BASE_URL, "benchmark-metadata.json"
-)
-NUSSL_EFZ_MODEL_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, "model-metadata.json")
+NUSSL_EFZ_BASE_URL = 'http://nussl.ci.northwestern.edu/'
+NUSSL_EFZ_STATIC_BASE_URL = urljoin(NUSSL_EFZ_BASE_URL, 'static/')
+NUSSL_EFZ_AUDIO_URL = urljoin(NUSSL_EFZ_STATIC_BASE_URL, 'audio/')
+NUSSL_EFZ_MODELS_URL = urljoin(NUSSL_EFZ_STATIC_BASE_URL, 'trained_models/')
+NUSSL_EFZ_BENCHMARKS_URL = urljoin(NUSSL_EFZ_STATIC_BASE_URL, 'benchmarks/')
+NUSSL_EFZ_AUDIO_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, 'audio-metadata.json')
+NUSSL_EFZ_BENCHMARK_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, 'benchmark-metadata.json')
+NUSSL_EFZ_MODEL_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, 'model-metadata.json')
 
 USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will default to librosa stft.
 
 
 # ############# MUSDB interface ############### #
-STEM_TARGET_DICT = {
-    "vocals": {"vocals": 1},
-    "drums": {"drums": 1},
-    "bass": {"bass": 1},
-    "other": {"other": 1},
-    "accompaniment": {"bass": 1, "drums": 1, "other": 1},
-}
+STEM_TARGET_DICT = {'vocals': {'vocals': 1},
+                    'drums': {'drums': 1},
+                    'bass': {'bass': 1},
+                    'other': {'other': 1},
+                    'accompaniment': {'bass': 1, 'drums': 1, 'other': 1}}
 
-VOX_ACC_DICT = {"vocals": {"vocals": 1}, "accompaniment": {"accompaniment": 1}}
+VOX_ACC_DICT = {'vocals': {'vocals': 1}, 'accompaniment': {'accompaniment': 1}}

@@ -89,20 +89,11 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
         compute_permutation (bool): Should try to find the best permutation for the estimated
             sources.
     """
+    SDR_MEANS = 'sdr_means'
 
-    SDR_MEANS = "sdr_means"
-
-    def __init__(
-        self,
-        mixture,
-        true_sources,
-        estimated_sources,
-        target_dict=constants.VOX_ACC_DICT,
-        mode="v4",
-        output_dir=None,
-        win=1.0,
-        hop=1.0,
-    ):
+    def __init__(self, mixture, true_sources, estimated_sources,
+                 target_dict=constants.VOX_ACC_DICT,
+                 mode='v4', output_dir=None, win=1.0, hop=1.0):
         # try:
         #     super(BSSEvalV4, self).__init__(true_sources_list=true_sources_list,
         #                                     estimated_sources_list=estimated_sources_list,
@@ -120,10 +111,8 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
         # self.estimates = {l: self.estimated_sources_list[i].audio_data.T
         #                        for i, l in enumerate(self.source_labels)}
         if type(true_sources) is not type(estimated_sources):
-            raise bss_eval_base.BssEvalException(
-                "true_sources and estimated_sources must both be "
-                "lists or both be dicts!"
-            )
+            raise bss_eval_base.BssEvalException('true_sources and estimated_sources must both be '
+                                                 'lists or both be dicts!')
 
         have_list = type(true_sources) is list
 
@@ -142,23 +131,15 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
         # & self.estimates is raw numpy arrays
         if self.is_vox_acc:
             if have_list:
-                self.estimates = {
-                    "vocals": estimated_sources[0].audio_data.T,
-                    "accompaniment": estimated_sources[1].audio_data.T,
-                }
-                self.true_sources = {
-                    "vocals": true_sources[0],
-                    "accompaniment": true_sources[1],
-                }
+                self.estimates = {'vocals': estimated_sources[0].audio_data.T,
+                                  'accompaniment': estimated_sources[1].audio_data.T}
+                self.true_sources = {'vocals': true_sources[0],
+                                     'accompaniment': true_sources[1]}
             else:
-                self.estimates = {
-                    "vocals": estimated_sources["vocals"].audio_data.T,
-                    "accompaniment": estimated_sources["accompaniment"].audio_data.T,
-                }
-                self.true_sources = {
-                    "vocals": true_sources["vocals"],
-                    "accompaniment": true_sources["accompaniment"],
-                }
+                self.estimates = {'vocals': estimated_sources['vocals'].audio_data.T,
+                                  'accompaniment': estimated_sources['accompaniment'].audio_data.T}
+                self.true_sources = {'vocals': true_sources['vocals'],
+                                     'accompaniment': true_sources['accompaniment']}
         else:
             # Assume they know what they're doing...
             self.true_sources = true_sources
@@ -168,16 +149,14 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
 
     def _get_scores(self, scores):
         s = scores.split()
-        v, a = s[0], s[6].replace("\\n", "")
+        v, a = s[0], s[6].replace('\\n', '')
         i1, i2 = [2, 3, 4, 5], [8, 9, 10, 11]
-        return {
-            v: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i1},
-            a: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i2},
-        }
+        return {v: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i1},
+                a: {self._parse(s[i])[0]: self._parse(s[i])[1] for i in i2}}
 
     @staticmethod
     def _parse(str_):
-        bss_type, val = str_.split(":")
+        bss_type, val = str_.split(':')
         val = float(val[:-3])
         return bss_type, val
 
@@ -185,18 +164,12 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
         return self._get_scores(repr(scores))
 
     def evaluate(self):
-        track = utils.audio_signals_to_musdb_track(
-            self.mixture, self.true_sources, self.target_dict
-        )
+        track = utils.audio_signals_to_musdb_track(self.mixture, self.true_sources,
+                                                   self.target_dict)
 
-        bss_output = museval.eval_mus_track(
-            track,
-            self.estimates,
-            output_dir=self.output_dir,
-            mode=self.mode,
-            win=self.win,
-            hop=self.hop,
-        )
+        bss_output = museval.eval_mus_track(track, self.estimates,
+                                            output_dir=self.output_dir, mode=self.mode,
+                                            win=self.win, hop=self.hop)
 
         self._populate_scores_dict(bss_output)
 
@@ -204,7 +177,5 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
 
     def _populate_scores_dict(self, bss_output):
 
-        self.scores[self.RAW_VALUES] = json.loads(
-            bss_output.json
-        )  # Hack to format dict correctly
+        self.scores[self.RAW_VALUES] = json.loads(bss_output.json)  # Hack to format dict correctly
         self.scores[self.SDR_MEANS] = self._get_mean_scores(repr(bss_output))

@@ -36,11 +36,11 @@ class MaskSeparationBase(separation_base.SeparationBase):
     
     """
 
-    BINARY_MASK = "binary"
+    BINARY_MASK = 'binary'
     """ String alias for setting this object to return :class:`separation.masks.binary_mask.BinaryMask` objects
     """
 
-    SOFT_MASK = "soft"
+    SOFT_MASK = 'soft'
     """ String alias for setting this object to return :class:`separation.masks.soft_mask.SoftMask` objects
     """
 
@@ -131,11 +131,9 @@ class MaskSeparationBase(separation_base.SeparationBase):
                 raise error
 
         elif isinstance(value, masks.MaskBase):
-            warnings.warn(
-                "This separation method is not using the values in the provided mask object."
-            )
+            warnings.warn('This separation method is not using the values in the provided mask object.')
             value = type(value).__name__
-            value = value[: value.find("Mask")].lower()
+            value = value[:value.find('Mask')].lower()
 
             if value not in self._valid_mask_types:
                 # make sure we don't get duped by accident. This shouldn't happen
@@ -176,7 +174,7 @@ class MaskSeparationBase(separation_base.SeparationBase):
     @mask_threshold.setter
     def mask_threshold(self, value):
         if not isinstance(value, float) or not (0.0 < value < 1.0):
-            raise ValueError("Mask threshold must be a float between [0.0, 1.0]!")
+            raise ValueError('Mask threshold must be a float between [0.0, 1.0]!')
 
         self._mask_threshold = value
 
@@ -215,7 +213,7 @@ class MaskSeparationBase(separation_base.SeparationBase):
         Raises:
             NotImplementedError: Cannot call base class!
         """
-        raise NotImplementedError("Cannot call base class!")
+        raise NotImplementedError('Cannot call base class!')
 
     def make_audio_signals(self):
         """Makes :class:`audio_signal.AudioSignal` objects after mask-based separation algorithm is run. 
@@ -224,7 +222,7 @@ class MaskSeparationBase(separation_base.SeparationBase):
         Raises:
             NotImplementedError: Cannot call base class!
         """
-        raise NotImplementedError("Cannot call base class!")
+        raise NotImplementedError('Cannot call base class!')
 
     @classmethod
     def from_json(cls, json_string):
@@ -256,30 +254,24 @@ class MaskSeparationBaseDecoder(separation_base.SeparationBaseDecoder):
         json.JSONDecoder.__init__(self, object_hook=self._json_separation_decoder)
 
     def _json_separation_decoder(self, json_dict):
-        if "__class__" in json_dict and "__module__" in json_dict:
+        if '__class__' in json_dict and '__module__' in json_dict:
             json_dict, separator = self._inspect_json_and_create_new_instance(json_dict)
 
             # fill out the rest of the fields
             for k, v in list(json_dict.items()):
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
-                    separator.__dict__[k] = utils.json_numpy_obj_hook(
-                        v[constants.NUMPY_JSON_KEY]
-                    )
-
+                    separator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
+                    
                 # TODO: test this in python3
                 elif isinstance(v, (str, bytes)) and audio_signal.__name__ in v:
 
                     separator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
-                elif k == "result_masks":
+                elif k == 'result_masks':
                     # for mask_json in v:
 
-                    separator.result_masks = [
-                        masks.MaskBase.from_json(itm) for itm in v
-                    ]
+                    separator.result_masks = [masks.MaskBase.from_json(itm) for itm in v]
                 else:
-                    separator.__dict__[k] = (
-                        v if not isinstance(v, str) else v.encode("ascii")
-                    )
+                    separator.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
 
             return separator
         else:
