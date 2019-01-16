@@ -20,15 +20,13 @@ class AudioSignalUnitTests(unittest.TestCase):
     length = dur * sr
 
     def setUp(self):
-        self.audio_input1 = nussl.efz_utils.download_audio_file("K0140.wav")
-        self.audio_input2 = nussl.efz_utils.download_audio_file("K0149.wav")
-        self.audio_input3 = nussl.efz_utils.download_audio_file(
-            "dev1_female3_inst_mix.wav"
-        )
+        self.audio_input1 = nussl.efz_utils.download_audio_file('K0140.wav')
+        self.audio_input2 = nussl.efz_utils.download_audio_file('K0149.wav')
+        self.audio_input3 = nussl.efz_utils.download_audio_file('dev1_female3_inst_mix.wav')
         self.all_inputs = [self.audio_input1, self.audio_input2, self.audio_input3]
 
-        self.audio_output = "k0140_int_output.wav"
-        self.png_output = "test_graph.png"
+        self.audio_output = 'k0140_int_output.wav'
+        self.png_output = 'test_graph.png'
         self.all_outputs = [self.audio_output, self.png_output]
 
     def tearDown(self):
@@ -42,8 +40,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         b = nussl.AudioSignal()
         b.load_audio_from_file(self.audio_input1)
 
-        assert np.array_equal(a.audio_data, b.audio_data)
-        assert a.sample_rate == b.sample_rate
+        assert (np.array_equal(a.audio_data, b.audio_data))
+        assert (a.sample_rate == b.sample_rate)
 
         # Load from array
         ref_sr, ref_data = wav.read(self.audio_input1)
@@ -52,17 +50,15 @@ class AudioSignalUnitTests(unittest.TestCase):
         with self.assertRaises(Exception):
             nussl.AudioSignal(self.audio_input1, ref_data)
         with self.assertRaises(Exception):
-            nussl.AudioSignal(
-                path_to_input_file=self.audio_input1, audio_data_array=ref_data
-            )
+            nussl.AudioSignal(path_to_input_file=self.audio_input1, audio_data_array=ref_data)
 
         d = nussl.AudioSignal()
         d.load_audio_from_array(ref_data, ref_sr)
 
-        assert np.array_equal(c.audio_data, d.audio_data)
-        assert c.sample_rate == d.sample_rate
-        assert b.sample_rate == c.sample_rate
-        assert np.array_equal(b.audio_data, c.audio_data)
+        assert (np.array_equal(c.audio_data, d.audio_data))
+        assert (c.sample_rate == d.sample_rate)
+        assert (b.sample_rate == c.sample_rate)
+        assert (np.array_equal(b.audio_data, c.audio_data))
 
     def test_load_audio_from_file(self):
 
@@ -72,14 +68,10 @@ class AudioSignalUnitTests(unittest.TestCase):
             ref_sr, ref_data = wav.read(path)
             ref_dur = len(ref_data) / ref_sr
             n_chan = 1 if len(ref_data.shape) == 1 else ref_data.shape[1]
-            signal_info.append(
-                {
-                    "duration": ref_dur,
-                    "sample_rate": ref_sr,
-                    "length": len(ref_data),
-                    "n_chan": n_chan,
-                }
-            )
+            signal_info.append({'duration': ref_dur,
+                                'sample_rate': ref_sr,
+                                'length': len(ref_data),
+                                'n_chan': n_chan})
 
             a = nussl.AudioSignal()
             a.load_audio_from_file(path)
@@ -94,13 +86,9 @@ class AudioSignalUnitTests(unittest.TestCase):
         percentages = [0.1, 0.25, 0.4, 0.5, 0.75, 0.9]
         for i, path in enumerate(self.all_inputs):
             for start in percentages:
-                offset = start * signal_info[i]["duration"]
-                ref_length = int(
-                    round(
-                        signal_info[i]["length"]
-                        - offset * signal_info[i]["sample_rate"]
-                    )
-                )
+                offset = start * signal_info[i]['duration']
+                ref_length = int(round(signal_info[i]['length'] - offset *
+                                       signal_info[i]['sample_rate']))
 
                 a = nussl.AudioSignal()
                 a.load_audio_from_file(path, offset=offset)
@@ -111,8 +99,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         # Test different durations
         for i, path in enumerate(self.all_inputs):
             for start in percentages:
-                duration = start * signal_info[i]["duration"]
-                ref_length = int(round(duration * signal_info[i]["sample_rate"]))
+                duration = start * signal_info[i]['duration']
+                ref_length = int(round(duration * signal_info[i]['sample_rate']))
 
                 a = nussl.AudioSignal()
                 a.load_audio_from_file(path, duration=duration)
@@ -125,9 +113,9 @@ class AudioSignalUnitTests(unittest.TestCase):
         for i, path in enumerate(self.all_inputs):
             for start in percentages:
                 for duration in percentages:
-                    offset = start * signal_info[i]["duration"]
-                    duration = duration * signal_info[i]["duration"]
-                    ref_length = int(round(duration * signal_info[i]["sample_rate"]))
+                    offset = start * signal_info[i]['duration']
+                    duration = duration * signal_info[i]['duration']
+                    ref_length = int(round(duration * signal_info[i]['sample_rate']))
 
                     a = nussl.AudioSignal()
                     a.load_audio_from_file(path, offset=offset, duration=duration)
@@ -146,7 +134,7 @@ class AudioSignalUnitTests(unittest.TestCase):
 
         with self.assertRaises(IOError):
             a = nussl.AudioSignal()
-            a.load_audio_from_file("not a real path")
+            a.load_audio_from_file('not a real path')
 
         # Make sure this is okay
         offset = dur / 2.0
@@ -159,8 +147,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         a.write_audio_to_file(self.audio_output)
         b = nussl.AudioSignal(self.audio_output)
 
-        assert a.sample_rate == b.sample_rate
-        assert np.allclose(a.audio_data, b.audio_data)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_to_file_path2(self):
         a = nussl.AudioSignal()
@@ -168,8 +156,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         a.write_audio_to_file(self.audio_output)
         b = nussl.AudioSignal(self.audio_output)
 
-        assert a.sample_rate == b.sample_rate
-        assert np.allclose(a.audio_data, b.audio_data)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_to_file_array1(self):
         sr, data = wav.read(self.audio_input1)
@@ -177,8 +165,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         a.write_audio_to_file(self.audio_output)
         b = nussl.AudioSignal(self.audio_output)
 
-        assert a.sample_rate == b.sample_rate
-        assert np.allclose(a.audio_data, b.audio_data)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_to_file_array2(self):
         sr, data = wav.read(self.audio_input1)
@@ -187,8 +175,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         a.write_audio_to_file(self.audio_output)
         b = nussl.AudioSignal(self.audio_output)
 
-        assert a.sample_rate == b.sample_rate
-        assert np.allclose(a.audio_data, b.audio_data)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_write_sample_rate(self):
         a = nussl.AudioSignal(self.audio_input1)
@@ -196,7 +184,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         a.write_audio_to_file(self.audio_output, sample_rate=sample_rate)
         b = nussl.AudioSignal(self.audio_output)
 
-        assert b.sample_rate == sample_rate
+        assert (b.sample_rate == sample_rate)
 
     freq = 30
     sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
@@ -206,7 +194,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         a = nussl.AudioSignal(self.audio_input1)
         b = nussl.AudioSignal(self.audio_input1)
         b.resample(a.sample_rate / 2)
-        assert b.sample_rate == a.sample_rate / 2
+        assert (b.sample_rate == a.sample_rate/2)
 
     def test_resample_on_load_from_file(self):
         # Test resample right when loading from file vs resampling after loading
@@ -214,23 +202,23 @@ class AudioSignalUnitTests(unittest.TestCase):
         a.resample(48000)
         b = nussl.AudioSignal()
         b.load_audio_from_file(self.audio_input1, new_sample_rate=48000)
-        assert a.sample_rate == b.sample_rate
-        assert np.allclose(a.audio_data, b.audio_data)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_resample_vs_librosa_load(self):
         # Check against librosa load function
         a = nussl.AudioSignal(self.audio_input1)
         a.resample(48000)
         b_audio_data, b_sample_rate = librosa.load(self.audio_input1, sr=48000)
-        assert a.sample_rate == b_sample_rate
-        assert np.allclose(a.audio_data, b_audio_data)
+        assert (a.sample_rate == b_sample_rate)
+        assert (np.allclose(a.audio_data, b_audio_data))
 
     def test_default_sr_on_load_from_array(self):
         # Check that the default sample rate is set when no sample rate is provided load_audio_from_array
         sr, data = wav.read(self.audio_input1)
         a = nussl.AudioSignal()
         a.load_audio_from_array(data)
-        assert a.sample_rate == nussl.DEFAULT_SAMPLE_RATE
+        assert(a.sample_rate == nussl.DEFAULT_SAMPLE_RATE)
 
     def test_sr_on_load_from_array(self):
         # Check that the passed in sample rate is being set in load_audio_from_array
@@ -238,8 +226,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         sr, data = wav.read(self.audio_input1)
         b = nussl.AudioSignal()
         b.load_audio_from_array(data, sample_rate=sr)
-        assert a.sample_rate == b.sample_rate
-        assert np.allclose(a.audio_data, b.audio_data)
+        assert (a.sample_rate == b.sample_rate)
+        assert (np.allclose(a.audio_data, b.audio_data))
 
     def test_plot_time_domain_stereo(self):
         # Stereo signal that should plot both channels on same plot
@@ -261,13 +249,8 @@ class AudioSignalUnitTests(unittest.TestCase):
         # Plotting a signal with 5 channels
         num_test_channels = 5
         freq_multiple = 5
-        freqs = [i * freq_multiple for i in range(1, num_test_channels + 1)]
-        test_signal = np.array(
-            [
-                np.sin(np.linspace(0, i * 2 * np.pi, self.length))
-                for i in freqs[:num_test_channels]
-            ]
-        )
+        freqs = [i * freq_multiple for i in range(1, num_test_channels+1)]
+        test_signal = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:num_test_channels]])
         a = nussl.AudioSignal(audio_data_array=test_signal)
         a.plot_time_domain()
 
@@ -312,7 +295,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         np_sin = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
 
         sig = nussl.AudioSignal(audio_data_array=np_sin)
-        assert np.isclose(ans, sig.rms(), atol=1e-06)
+        assert (np.isclose(ans, sig.rms(), atol=1e-06))
 
     def test_to_mono(self):
         """
@@ -324,22 +307,22 @@ class AudioSignalUnitTests(unittest.TestCase):
         sin1 = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
 
         sig1 = nussl.AudioSignal(audio_data_array=sin1)
-        assert sig1.num_channels == 1
+        assert (sig1.num_channels == 1)
         sig1.to_mono(overwrite=True)
-        assert sig1.num_channels == 1
+        assert (sig1.num_channels == 1)
 
         sin2 = -1 * sin1
 
         sines = np.vstack((sin1, sin2))
         sig2 = nussl.AudioSignal(audio_data_array=sines)
-        assert sig2.num_channels == 2
+        assert (sig2.num_channels == 2)
         sig2.to_mono()
-        assert sig2.num_channels == 2
+        assert (sig2.num_channels == 2)
         sig2.to_mono(overwrite=False)
-        assert sig2.num_channels == 2
+        assert (sig2.num_channels == 2)
         sig2.to_mono(overwrite=True)
-        assert sig2.num_channels == 1
-        assert np.allclose([0.0] * len(sig2), sig2.audio_data)
+        assert (sig2.num_channels == 1)
+        assert (np.allclose([0.0] * len(sig2), sig2.audio_data))
 
     def test_to_mono_channel_dimension(self):
         """
@@ -351,12 +334,12 @@ class AudioSignalUnitTests(unittest.TestCase):
         signal = nussl.AudioSignal(path_to_input_file=self.audio_input3)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
-        assert signal_stft.shape[nussl.STFT_CHAN_INDEX] == 2
+        assert (signal_stft.shape[nussl.STFT_CHAN_INDEX] == 2)
 
         signal.to_mono(overwrite=True)
         signal.stft_params = signal.stft_params
         signal_stft = signal.stft()
-        assert signal_stft.shape[nussl.STFT_CHAN_INDEX] == 1
+        assert (signal_stft.shape[nussl.STFT_CHAN_INDEX]== 1)
 
     def test_stft(self):
         """
@@ -380,9 +363,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         self.assertTrue(len(signal) == len(self.sine_wave))
 
         # They should not be exactly zero at this point, because overwrite is on
-        self.assertTrue(
-            np.any(signal.get_channel(0)[0 : len(self.sine_wave)] - self.sine_wave)
-        )
+        self.assertTrue(np.any(signal.get_channel(0)[0:len(self.sine_wave)] - self.sine_wave))
 
         # make sure these don't crash or nothing silly
         signal.stft(use_librosa=True)
@@ -399,9 +380,7 @@ class AudioSignalUnitTests(unittest.TestCase):
 
         # Make the signals and test
         for f in range(1, max_n_channels):  # 1-8 channel mixtures
-            sig = np.array(
-                [np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:f]]
-            )
+            sig = np.array([np.sin(np.linspace(0, i * 2 * np.pi, self.length)) for i in freqs[:f]])
             self._get_channel_helper(sig, len(sig))
 
     def _get_channel_helper(self, signal, n_channels):
@@ -472,5 +451,7 @@ class AudioSignalUnitTests(unittest.TestCase):
         self.assertTrue(np.allclose(c.audio_data, d.audio_data))
 
 
-if __name__ == "__main__":
+
+
+if __name__ == '__main__':
     unittest.main()

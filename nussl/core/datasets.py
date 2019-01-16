@@ -16,7 +16,7 @@ import numpy as np
 from . import efz_utils
 from .audio_signal import AudioSignal
 
-__all__ = ["iKala", "mir1k", "timit", "medleyDB", "musdb18", "dsd100"]
+__all__ = ['iKala', 'mir1k', 'timit', 'medleyDB', 'musdb18', 'dsd100']
 
 
 def _hash_directory(directory, ext=None):
@@ -45,26 +45,16 @@ def _hash_directory(directory, ext=None):
     hash_list = []
     for path, sub_dirs, files in os.walk(directory):
         if ext is None:
-            hash_list.extend(
-                [
-                    efz_utils._hash_file(os.path.join(path, f))
-                    for f in files
-                    if os.path.isfile(os.path.join(path, f))
-                ]
-            )
+            hash_list.extend([efz_utils._hash_file(os.path.join(path, f)) for f in files
+                              if os.path.isfile(os.path.join(path, f))])
         else:
-            hash_list.extend(
-                [
-                    efz_utils._hash_file(os.path.join(path, f))
-                    for f in files
-                    if os.path.isfile(os.path.join(path, f))
-                    if os.path.splitext(f)[1] == ext
-                ]
-            )
+            hash_list.extend([efz_utils._hash_file(os.path.join(path, f)) for f in files
+                              if os.path.isfile(os.path.join(path, f))
+                              if os.path.splitext(f)[1] == ext])
 
     hasher = hashlib.sha256()
     for hash_val in sorted(hash_list):  # Sort this list so we're platform agnostic
-        hasher.update(hash_val.encode("utf-8"))
+        hasher.update(hash_val.encode('utf-8'))
 
     return hasher.hexdigest()
 
@@ -91,16 +81,14 @@ def _check_hash(audio_dir, check_hash, expected_hash, ext):
     # Check to see if the contents are what we expect
     # by hashing all of the files and checking against a precomputed expected_hash
     if check_hash and _hash_directory(audio_dir, ext) != expected_hash:
-        msg = f"Hash of {audio_dir} does not match known directory hash!"
-        if check_hash == "warn":
+        msg = f'Hash of {audio_dir} does not match known directory hash!'
+        if check_hash == 'warn':
             warnings.warn(msg)
         else:
             raise DataSetException(msg)
 
 
-def _data_set_setup(
-    directory, top_dir_name, audio_dir_name, expected_hash, check_hash, ext
-):
+def _data_set_setup(directory, top_dir_name, audio_dir_name, expected_hash, check_hash, ext):
     """
     This function does some preliminary checking to make sure the directory we get from the user
     is oriented how we expect, checks the hash of the directory (if :param:`check_hash` is ``True``
@@ -128,24 +116,19 @@ def _data_set_setup(
         raise DataSetException(f"Expected directory, got '{directory}'!")
 
     if top_dir_name != os.path.split(directory)[1]:
-        raise DataSetException(
-            f"Expected {top_dir_name}, got '{os.path.split(directory)[1]}'"
-        )
+        raise DataSetException(f"Expected {top_dir_name}, got '{os.path.split(directory)[1]}'")
 
     # This should be tha directory with all of the audio files
     audio_dir = os.path.join(directory, audio_dir_name)
     if not os.path.isdir(audio_dir):
-        raise DataSetException(f"Expected {audio_dir} to be a directory but it is not!")
+        raise DataSetException(f'Expected {audio_dir} to be a directory but it is not!')
 
     _check_hash(audio_dir, check_hash, expected_hash, ext)
 
     # return a list of the full paths of every audio file
-    return [
-        os.path.join(audio_dir, f)
-        for f in os.listdir(audio_dir)
-        if os.path.isfile(os.path.join(audio_dir, f))
-        if os.path.splitext(f)[1] == ext
-    ]
+    return [os.path.join(audio_dir, f) for f in os.listdir(audio_dir)
+            if os.path.isfile(os.path.join(audio_dir, f))
+            if os.path.splitext(f)[1] == ext]
 
 
 def _subset_and_shuffle(file_list, subset, shuffle, seed):
@@ -185,9 +168,9 @@ def _subset_and_shuffle(file_list, subset, shuffle, seed):
 
     if isinstance(subset, float):
         if subset < 0.0 or subset > 1.0:
-            raise DataSetException("subset must be a number between [0.0, 1.0]!")
+            raise DataSetException('subset must be a number between [0.0, 1.0]!')
 
-        result = file_list[: int(subset * len(file_list))]
+        result = file_list[:int(subset*len(file_list))]
 
     elif isinstance(subset, list):
         result = [file_list[i] for i in subset]
@@ -199,9 +182,7 @@ def _subset_and_shuffle(file_list, subset, shuffle, seed):
         result = file_list
 
     else:
-        raise DataSetException(
-            "subset must be a list of indices or float between [0.0, 1.0]!"
-        )
+        raise DataSetException('subset must be a list of indices or float between [0.0, 1.0]!')
 
     return result
 
@@ -304,32 +285,29 @@ def iKala(directory, check_hash=True, subset=None, shuffle=False, seed=None):
 
     """
 
-    top_dir_name = "iKala"
-    audio_dir_name = "Wavfile"
-    iKala_hash = "d82191c73c3ce0ab0ed3ca21a3912769394e8c9a16d742c6cc446e3f04a9cd9e"
-    audio_extension = ".wav"
-    all_wav_files = _data_set_setup(
-        directory, top_dir_name, audio_dir_name, iKala_hash, check_hash, audio_extension
-    )
+    top_dir_name = 'iKala'
+    audio_dir_name = 'Wavfile'
+    iKala_hash = 'd82191c73c3ce0ab0ed3ca21a3912769394e8c9a16d742c6cc446e3f04a9cd9e'
+    audio_extension = '.wav'
+    all_wav_files = _data_set_setup(directory, top_dir_name, audio_dir_name,
+                                    iKala_hash, check_hash, audio_extension)
 
     all_wav_files = _subset_and_shuffle(all_wav_files, subset, shuffle, seed)
 
     for f in all_wav_files:
         mixture = AudioSignal(f)
-        mixture.label = "mixture"
+        mixture.label = 'mixture'
 
         vocals = mixture.make_audio_signal_from_channel(1)
-        vocals.label = "vocals"
+        vocals.label = 'vocals'
 
         accompaniment = mixture.make_audio_signal_from_channel(0)
-        accompaniment.label = "accompaniment"
+        accompaniment.label = 'accompaniment'
 
         yield mixture, vocals, accompaniment
 
 
-def mir1k(
-    directory, check_hash=True, subset=None, shuffle=False, seed=None, undivided=False
-):
+def mir1k(directory, check_hash=True, subset=None, shuffle=False, seed=None, undivided=False):
     """
     Generator function for the MIR-1K data set. This allows you to loop through the entire data set
     with only a few :class:`AudioSignal` objects stored in memory at a time. There are options for
@@ -436,34 +414,33 @@ def mir1k(
 
     """
 
-    top_dir_name = "MIR-1K"
+    top_dir_name = 'MIR-1K'
 
-    wavfile_hash = "33c085c1a7028199cd20317868849b413e0971022ebc4aefcf1bbc5516646c29"
-    undivided_hash = "3f39af9be17515e042a7005b4c47110c6738623a7fada6233ba104535b7dde1b"
+    wavfile_hash = '33c085c1a7028199cd20317868849b413e0971022ebc4aefcf1bbc5516646c29'
+    undivided_hash = '3f39af9be17515e042a7005b4c47110c6738623a7fada6233ba104535b7dde1b'
 
     if undivided:
-        audio_dir_name = "UndividedWavfile"
+        audio_dir_name = 'UndividedWavfile'
         mir1k_hash = undivided_hash
     else:
-        audio_dir_name = "Wavfile"
+        audio_dir_name = 'Wavfile'
         mir1k_hash = wavfile_hash
 
-    audio_extension = ".wav"
-    all_wav_files = _data_set_setup(
-        directory, top_dir_name, audio_dir_name, mir1k_hash, check_hash, audio_extension
-    )
+    audio_extension = '.wav'
+    all_wav_files = _data_set_setup(directory, top_dir_name, audio_dir_name,
+                                    mir1k_hash, check_hash, audio_extension)
 
     all_wav_files = _subset_and_shuffle(all_wav_files, subset, shuffle, seed)
 
     for f in all_wav_files:
         mixture = AudioSignal(f)
-        mixture.label = "mixture"
+        mixture.label = 'mixture'
 
         vocals = mixture.make_audio_signal_from_channel(1)
-        vocals.label = "vocals"
+        vocals.label = 'vocals'
 
         accompaniment = mixture.make_audio_signal_from_channel(0)
-        accompaniment.label = "accompaniment"
+        accompaniment.label = 'accompaniment'
 
         yield mixture, vocals, accompaniment
 
@@ -482,19 +459,16 @@ def timit(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     Yields:
 
     """
-    dir_name = "TIMIT"
-    hash = ""
-    audio_extension = ".wav"
-    all_wav_files = _data_set_setup(
-        directory, dir_name, dir_name, hash, check_hash, audio_extension
-    )
+    dir_name = 'TIMIT'
+    hash = ''
+    audio_extension = '.wav'
+    all_wav_files = _data_set_setup(directory, dir_name, dir_name,
+                                    hash, check_hash, audio_extension)
 
     all_wav_files = _subset_and_shuffle(all_wav_files, subset, shuffle, seed)
 
 
-def medleyDB(
-    directory, raw=False, check_hash=True, subset=None, shuffle=False, seed=None
-):
+def medleyDB(directory, raw=False, check_hash=True, subset=None, shuffle=False, seed=None):
     """
     Not implemented yet.
 
@@ -508,10 +482,10 @@ def medleyDB(
     Returns:
 
     """
-    top_dir_name = "medleyDB"
-    audio_dir_name = "Audio"
-    hash = ""
-    audio_extension = ".wav"
+    top_dir_name = 'medleyDB'
+    audio_dir_name = 'Audio'
+    hash = ''
+    audio_extension = '.wav'
 
 
 def dsd100(directory, check_hash=True, subset=None, shuffle=False, seed=None):
@@ -530,9 +504,7 @@ def dsd100(directory, check_hash=True, subset=None, shuffle=False, seed=None):
     """
 
 
-def musdb18(
-    directory, check_hash=True, subset=None, folder=None, shuffle=False, seed=None
-):
+def musdb18(directory, check_hash=True, subset=None, folder=None, shuffle=False, seed=None):
     """
     Generator function for the MUSDB18 data set. This allows you to loop through the entire data set
     with only a few :class:`AudioSignal` objects stored in memory at a time. There are options for
@@ -630,33 +602,28 @@ def musdb18(
     try:
         import stempeg
     except Exception:
-        raise ImportError("Cannot read MUSDB18 without stempeg package installed!")
+        raise ImportError('Cannot read MUSDB18 without stempeg package installed!')
 
-    dir_name = "musdb18"
-    audio_dir_names = ["test", "train"] if folder not in ("test", "train") else [folder]
-    hash = "cf4cfcef4eadc212c34df6e8fb1184a3f63b7fedfab23e79d17e735fff0bfaf9"
-    audio_extension = ".mp4"
-    stem_labels = ["mixture", "drums", "bass", "other", "vocals"]
+    dir_name = 'musdb18'
+    audio_dir_names = ['test', 'train'] if folder not in ('test', 'train') else [folder]
+    hash = 'cf4cfcef4eadc212c34df6e8fb1184a3f63b7fedfab23e79d17e735fff0bfaf9'
+    audio_extension = '.mp4'
+    stem_labels = ['mixture', 'drums', 'bass', 'other', 'vocals']
 
     # Check the hash has of the full directory
     _check_hash(directory, check_hash, hash, audio_extension)
 
     files = []
     for audio_dir_name in audio_dir_names:
-        files.extend(
-            _data_set_setup(
-                directory, dir_name, audio_dir_name, "", False, audio_extension
-            )
-        )
+        files.extend(_data_set_setup(directory, dir_name, audio_dir_name,
+                                     '', False, audio_extension))
 
     files = _subset_and_shuffle(files, subset, shuffle, seed)
 
     for f in files:
         stem, sr = stempeg.read_stems(f)
-        yield tuple(
-            _make_audio_signal_from_stem(f, stem, i, sr, l)
-            for i, l in enumerate(stem_labels)
-        )
+        yield tuple(_make_audio_signal_from_stem(f, stem, i, sr, l)
+                    for i, l in enumerate(stem_labels))
 
 
 def _make_audio_signal_from_stem(filename, stem, i, sr, label):
@@ -675,7 +642,7 @@ def _make_audio_signal_from_stem(filename, stem, i, sr, label):
             right metadata.
 
     """
-    signal = AudioSignal(audio_data_array=stem[i, ...], sample_rate=sr)
+    signal = AudioSignal(audio_data_array=stem[i,...], sample_rate=sr)
     signal.path_to_input_file = filename
     signal.label = label
     return signal
@@ -685,5 +652,4 @@ class DataSetException(Exception):
     """
     Exception class for errors when working with data sets in nussl.
     """
-
     pass

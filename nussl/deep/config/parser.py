@@ -5,7 +5,6 @@ import json
 # TODO: handle required named arguments, something like this?
 # ref - https://stackoverflow.com/questions/24180527/argparse-required-arguments-listed-under-optional-arguments
 
-
 def preprocess_metadata(option_name: str, metadata, default=None):
     """Massage data for splatting into `add_argument()`
 
@@ -21,29 +20,28 @@ def preprocess_metadata(option_name: str, metadata, default=None):
     Returns:
         massaged metadata
     """
-
     def process_single_key(key, val):
-        if key == "type":
+        if key == 'type':
             return eval(val)
-        elif key == "metavar":
+        elif key == 'metavar':
             return tuple(val)
 
         return val
 
     is_positional = "is_positional" in metadata and metadata["is_positional"]
-    manual = {"flag": f"{'' if is_positional else '--'}{option_name}"}
-    if default:
-        manual["default"] = default
+    manual = {
+        'flag': f"{'' if is_positional else '--'}{option_name}",
+    }
+    if default: manual['default'] = default
 
     return {
         **manual,
         **{
             key: process_single_key(key, val)
             for key, val in metadata.items()
-            if key not in ["is_positional"]
-        },
+            if key not in ['is_positional']
+        }
     }
-
 
 def add_arguments(subparser, all_defaults: str, all_metadata: str):
     # could also just raise warning here
@@ -55,20 +53,23 @@ def add_arguments(subparser, all_defaults: str, all_metadata: str):
     ]
     if set(all_defaults) != set(no_positional_args):
         print(
-            "In defaults, not no positional:"
-            + f" {set(all_defaults) - set(no_positional_args)}"
+            'In defaults, not no positional:'
+            + f' {set(all_defaults) - set(no_positional_args)}'
         )
         print(
-            "In no positional, not defaults:"
-            + f" {set(no_positional_args) - set(all_defaults)}"
+            'In no positional, not defaults:'
+            + f' {set(no_positional_args) - set(all_defaults)}'
         )
         raise Exception("Metadata keys do not match options keys")
 
     processed_metadata = {
         option_name: preprocess_metadata(
-            option_name, metadata, all_defaults.get(option_name, None)
+            option_name,
+            metadata,
+            all_defaults.get(option_name, None),
         )
-        for option_name, metadata in all_metadata.items()
+        for option_name, metadata
+        in all_metadata.items()
     }
 
     for option, metadata in processed_metadata.items():
@@ -76,35 +77,37 @@ def add_arguments(subparser, all_defaults: str, all_metadata: str):
             metadata["default"] = all_defaults[option]
 
         subparser.add_argument(
-            metadata.pop("flag"),
-            **metadata,  # note that `flag` key has been popped by this point
+            metadata.pop('flag'),
+            **metadata # note that `flag` key has been popped by this point
         )
-
 
 def build_parser():
     parser = argparse.ArgumentParser(
         description=(
-            "NUSSL-TRAIN-CONFIG: Making config files for training deep net based audio"
-            " source separation in nussl"
+            'NUSSL-TRAIN-CONFIG: Making config files for training deep net based audio'
+            ' source separation in nussl'
         ),
         # TODO: also use `MetavarTypeHelpFormatter` somehow?
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter
     )
 
-    subparsers = parser.add_subparsers(dest="subparser")
-    json_loader = lambda path: json.loads(pkg_resources.resource_string(__name__, path))
+    subparsers = parser.add_subparsers(dest='subparser')
+    json_loader = lambda path: json.loads(
+        pkg_resources.resource_string(__name__, path)
+    )
 
     subparsers_json = json_loader("subparsers.json")
 
     for subparser_name, metadata in subparsers_json.items():
         # TODO: handle option aliases
         subparser = subparsers.add_parser(
-            subparser_name, formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            subparser_name,
+            formatter_class = argparse.ArgumentDefaultsHelpFormatter
         )
         add_arguments(
             subparser,
-            json_loader(metadata["defaults_path"]),
-            json_loader(metadata["metadata_path"]),
+            json_loader(metadata['defaults_path']),
+            json_loader(metadata['metadata_path']),
         )
 
     return parser

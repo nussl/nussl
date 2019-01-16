@@ -33,39 +33,32 @@ class EvaluationBase(object):
         **kwargs: Additional arguments for subclasses.
     """
 
-    def __init__(
-        self, true_sources_list, estimated_sources_list, source_labels=None, **kwargs
-    ):
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, **kwargs):
         self.true_sources_list = self._verify_input_list(true_sources_list)
         self.estimated_sources_list = self._verify_input_list(estimated_sources_list)
 
         if len(self.true_sources_list) != len(self.estimated_sources_list):
-            raise AudioSignalListMismatchError(
-                "Must have the same number of objects in "
-                "true_sources_list and estimated_sources_list!"
-            )
+            raise AudioSignalListMismatchError('Must have the same number of objects in '
+                                               'true_sources_list and estimated_sources_list!')
 
         # set the labels up correctly
         if source_labels is None:
-            self.source_labels = [
-                f"Source {i}" for i in range(len(self.true_sources_list))
-            ]
+            self.source_labels = [f'Source {i}' for i in range(len(self.true_sources_list))]
         else:
-            assert isinstance(source_labels, list), (
-                "Expected source_labels to be " "a list of strings!"
-            )
+            assert isinstance(source_labels, list), 'Expected source_labels to be ' \
+                                                    'a list of strings!'
             if not all([isinstance(l, str) for l in source_labels]):
-                raise ValueError("All labels must be strings!")
+                raise ValueError('All labels must be strings!')
 
             # Can't use a source_labels list longer than the sources
             if len(source_labels) > len(self.true_sources_list):
-                raise ValueError("Labels list is longer than sources list!")
+                raise ValueError('Labels list is longer than sources list!')
 
             # If not all sources have labels, we'll just give them generic ones...
             if len(source_labels) < len(self.true_sources_list):
                 start, stop = len(source_labels), len(self.true_sources_list)
                 for i in range(start, stop):
-                    source_labels.append(f"Source {i}")
+                    source_labels.append(f'Source {i}')
 
             self.source_labels = source_labels
 
@@ -74,8 +67,8 @@ class EvaluationBase(object):
         self._scores = {}
         self.num_channels = self.true_sources_list[0].num_channels
 
-        if "do_mono" in kwargs:
-            self.do_mono = kwargs["do_mono"]
+        if 'do_mono' in kwargs:
+            self.do_mono = kwargs['do_mono']
             if self.evaluation_object_type is AudioSignal and self.do_mono:
                 self.num_channels = 1
                 [t.to_mono(overwrite=True) for t in self.true_sources_list]
@@ -114,7 +107,7 @@ class EvaluationBase(object):
             NotImplementedError
 
         """
-        raise NotImplementedError("Cannot call base class!")
+        raise NotImplementedError('Cannot call base class!')
 
     @property
     def scores(self):
@@ -131,5 +124,4 @@ class AudioSignalListMismatchError(Exception):
     Error class for when true_sources_list and estimated_sources_list are different
     lengths.
     """
-
     pass

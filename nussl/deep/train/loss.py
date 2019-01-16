@@ -3,7 +3,6 @@ import torch.nn as nn
 import numpy as np
 from itertools import permutations
 
-
 class DeepClusteringLoss(nn.Module):
     def __init__(self):
         """
@@ -30,7 +29,7 @@ class DeepClusteringLoss(nn.Module):
         embedding = weights.expand_as(embedding) * embedding
         norm = ((((weights) ** 2)).sum(dim=1) ** 2).sum()
 
-        # norm = (((embedding_size ** 2) * (num_weights ** 2)) -
+        #norm = (((embedding_size ** 2) * (num_weights ** 2)) -
         #       2 * (embedding_size * (num_weights ** 2)) + (
         #            num_weights ** 2))
 
@@ -40,49 +39,37 @@ class DeepClusteringLoss(nn.Module):
         loss = (vTv - 2 * vTy + yTy) / norm.detach()
         return loss
 
-
 class PermutationInvariantLoss(nn.Module):
     def __init__(self, loss_function):
         super(PermutationInvariantLoss, self).__init__()
         self.loss_function = loss_function
         self.loss_function.reduce = False
-
+        
     def forward(self, estimates, targets):
         num_batch, sequence_length, num_frequencies, num_sources = estimates.shape
-        estimates = estimates.view(
-            num_batch, sequence_length * num_frequencies, num_sources
-        )
-        targets = targets.view(
-            num_batch, sequence_length * num_frequencies, num_sources
-        )
-
+        estimates = estimates.view(num_batch, sequence_length*num_frequencies, num_sources)
+        targets = targets.view(num_batch, sequence_length*num_frequencies, num_sources)
+        
         losses = []
         for p in permutations(range(num_sources)):
             loss = self.loss_function(estimates[:, :, list(p)], targets)
             loss = loss.mean(dim=1).mean(dim=-1)
             losses.append(loss)
-
-        losses = torch.stack(losses, dim=-1)
+        
+        losses = torch.stack(losses,dim=-1)
         losses = torch.min(losses, dim=-1)[0]
         loss = torch.mean(losses)
         return loss
-
 
 class WeightedL1Loss(nn.Module):
     def __init__(self, loss_function):
         super(WeightedL1Loss, self).__init__()
         self.loss_function = loss_function
         self.loss_function.reduce = False
-
+        
     def forward(self, estimates, targets):
         shape = targets.shape
-        weights = shape[-1] * nn.functional.normalize(
-            1.0 / torch.sum(estimates.view(shape[0], -1, shape[-1]) > 0, dim=1).float(),
-            dim=-1,
-            p=1,
-        ).unsqueeze(1)
-        loss = torch.mean(
-            self.loss_function(estimates, targets).view(shape[0], -1, shape[-1])
-            * weights
-        )
+        weights = shape[-1]*nn.functional.normalize(1./torch.sum(estimates.view(shape[0], -1, shape[-1]) > 0, dim=1).float(), dim=-1, p=1).unsqueeze(1)
+        loss = torch.mean(self.loss_function(estimates, targets).view(shape[0], -1, shape[-1]) * weights)
         return loss
+

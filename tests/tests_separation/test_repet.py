@@ -9,14 +9,13 @@ import os
 
 
 class TestRepet(unittest.TestCase):
+
     def setUp(self):
-        self.audio_path = nussl.efz_utils.download_audio_file("mix3.wav")
+        self.audio_path = nussl.efz_utils.download_audio_file('mix3.wav')
         self.bg_mat_file = nussl.efz_utils.download_benchmark_file(
-            "mix3_matlab_repet_background_bRuDiWq.mat"
-        )  # name got screwed up on the server. NBD
+            'mix3_matlab_repet_background_bRuDiWq.mat')  # name got screwed up on the server. NBD
         self.fg_mat_file = nussl.efz_utils.download_benchmark_file(
-            "mix3_matlab_repet_foreground.mat"
-        )
+            'mix3_matlab_repet_foreground.mat')
 
     def tearDown(self):
         os.remove(self.audio_path)
@@ -24,8 +23,8 @@ class TestRepet(unittest.TestCase):
         os.remove(self.fg_mat_file)
 
     def _load_final_matlab_results(self):
-        matlab_background = scipy.io.loadmat(self.bg_mat_file)["back"].T
-        matlab_foreground = scipy.io.loadmat(self.fg_mat_file)["fore"].T
+        matlab_background = scipy.io.loadmat(self.bg_mat_file)['back'].T
+        matlab_foreground = scipy.io.loadmat(self.fg_mat_file)['fore'].T
 
         return matlab_background, matlab_foreground
 

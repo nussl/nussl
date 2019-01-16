@@ -46,13 +46,11 @@ class TestSpectralUtils(unittest.TestCase):
         for i in range(10):
             np.random.seed(i)
             noise = (np.random.rand(self.n_ch, self.length) * 2) - 1
-            noise = noise[0,]
+            noise = noise[0, ]
 
             for win_length in self.win_lengths:
                 hop_length = win_length
-                self.do_stft_istft_assert_allclose(
-                    win_length, hop_length, win_type, noise
-                )
+                self.do_stft_istft_assert_allclose(win_length, hop_length, win_type, noise)
 
     def test_stft_istft_noise_no_seed(self):
         """
@@ -69,7 +67,7 @@ class TestSpectralUtils(unittest.TestCase):
         for win_length in self.win_lengths:
             hop_length = win_length
             noise = (np.random.rand(self.n_ch, self.length) * 2) - 1
-            noise = noise[0,]
+            noise = noise[0, ]
 
             self.do_stft_istft_assert_allclose(win_length, hop_length, win_type, noise)
 
@@ -171,12 +169,11 @@ class TestSpectralUtils(unittest.TestCase):
         This will NOT raise an error if the calculated array is different than the original array.
         """
         # win_type = nussl.WindowType.RECTANGULAR
-        win_type = "rectangular"
+        win_type = 'rectangular'
         ones = np.ones(self.length)
 
-        nussl.stft_utils.e_stft_plus(
-            ones, self.win_length_40ms, self.win_length_40ms, win_type, self.sr
-        )
+        nussl.stft_utils.e_stft_plus(ones, self.win_length_40ms,
+                                     self.win_length_40ms, win_type, self.sr)
 
     def test_e_stft_plus_sin(self):
         """
@@ -193,9 +190,7 @@ class TestSpectralUtils(unittest.TestCase):
         win_length = 2048
         hop_length = win_length / 2
 
-        stft, p, freq_array, _ = nussl.stft_utils.e_stft_plus(
-            x, win_length, hop_length, win_type, self.sr
-        )
+        stft, p, freq_array, _ = nussl.stft_utils.e_stft_plus(x, win_length, hop_length, win_type, self.sr)
 
     def test_librosa_stft(self):
         """
@@ -213,12 +208,9 @@ class TestSpectralUtils(unittest.TestCase):
         hop_length = win_length / 2
         epsilon = 0.01  # TODO: why doesn't self.librosa_epsilon work?
 
-        stft = nussl.stft_utils.librosa_stft_wrapper(
-            x, win_length, hop_length, win_type
-        )
-        signal = nussl.stft_utils.librosa_istft_wrapper(
-            stft, win_length, hop_length, win_type, original_signal_length=len(x)
-        )
+        stft = nussl.stft_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
+        signal = nussl.stft_utils.librosa_istft_wrapper(stft, win_length, hop_length, win_type,
+                                                        original_signal_length=len(x))
 
         assert max(np.abs(x - signal)) <= epsilon
 
@@ -236,9 +228,7 @@ class TestSpectralUtils(unittest.TestCase):
         win_length = 2048
         hop_length = win_length / 2
 
-        lib_stft = nussl.stft_utils.librosa_stft_wrapper(
-            x, win_length, hop_length, win_type
-        )
+        lib_stft = nussl.stft_utils.librosa_stft_wrapper(x, win_length, hop_length, win_type)
         nussl_stft = nussl.stft_utils.e_stft(x, win_length, hop_length, win_type)
 
         assert lib_stft.shape == nussl_stft.shape
@@ -248,18 +238,14 @@ class TestSpectralUtils(unittest.TestCase):
         # assert np.allclose(np.imag(lib_stft), np.imag(nussl_stft))
 
         # win_type is None => Hann window
-        lib_signal = nussl.stft_utils.librosa_istft_wrapper(
-            lib_stft, win_length, hop_length, "hann"
-        )
-        nussl_signal = nussl.stft_utils.e_istft(
-            nussl_stft, win_length, hop_length, win_type
-        )
+        lib_signal = nussl.stft_utils.librosa_istft_wrapper(lib_stft, win_length, hop_length, 'hann')
+        nussl_signal = nussl.stft_utils.e_istft(nussl_stft, win_length, hop_length, win_type)
 
         assert len(lib_signal) == len(nussl_signal)
 
         # Truncate signals and compare
-        lib_signal = lib_signal[: len(x)]
-        nussl_signal = nussl_signal[: len(x)]
+        lib_signal = lib_signal[:len(x)]
+        nussl_signal = nussl_signal[:len(x)]
 
         assert np.allclose(lib_signal, nussl_signal, atol=self.librosa_epsilon)
 
@@ -280,9 +266,7 @@ class TestSpectralUtils(unittest.TestCase):
         :param win_type: window type, to be given to stft() and istft()
         :param signal: signal to be converted to stft and then back with istft
         """
-        calculated_signal = TestSpectralUtils.do_stft_istft(
-            win_length, hop_length, win_type, signal
-        )
+        calculated_signal = TestSpectralUtils.do_stft_istft(win_length, hop_length, win_type, signal)
 
         if len(calculated_signal) < len(signal):
             # print out what test we're running
@@ -290,15 +274,13 @@ class TestSpectralUtils(unittest.TestCase):
             calframe = inspect.getouterframes(curframe, 2)
             current_test = calframe[1][3]
 
-            msg = (
-                "calculated_signal shorter than signal. \n \twin_len={win_length},"
+            msg = f"calculated_signal shorter than signal. \n \twin_len={win_length},"
                 f"hop_len={hop_length}, win_type={win_type}, test={current_test}"
-            )
 
             raise AssertionError(msg)
 
         # Chop off the end
-        calculated_signal = calculated_signal[: len(signal)]
+        calculated_signal = calculated_signal[:len(signal)]
 
         assert np.allclose(signal, calculated_signal)
         return
@@ -314,12 +296,10 @@ class TestSpectralUtils(unittest.TestCase):
         :return: calculated signal
         """
         stft = nussl.stft_utils.e_stft(signal, win_length, hop_length, win_type)
-        calculated_signal = nussl.stft_utils.e_istft(
-            stft, win_length, hop_length, win_type
-        )
+        calculated_signal = nussl.stft_utils.e_istft(stft, win_length, hop_length, win_type)
 
         return calculated_signal
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

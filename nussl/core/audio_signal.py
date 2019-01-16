@@ -97,6 +97,7 @@ See Also:
 """
 
 
+
 import copy
 import json
 import numbers
@@ -113,7 +114,7 @@ from . import constants
 from . import stft_utils
 from . import utils
 
-__all__ = ["AudioSignal"]
+__all__ = ['AudioSignal']
 
 
 class AudioSignal(object):
@@ -154,17 +155,8 @@ class AudioSignal(object):
   
     """
 
-    def __init__(
-        self,
-        path_to_input_file=None,
-        audio_data_array=None,
-        stft=None,
-        label=None,
-        sample_rate=None,
-        stft_params=None,
-        offset=0,
-        duration=None,
-    ):
+    def __init__(self, path_to_input_file=None, audio_data_array=None, stft=None, label=None,
+                 sample_rate=None, stft_params=None, offset=0, duration=None):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
@@ -182,32 +174,24 @@ class AudioSignal(object):
 
         # noinspection PyPep8
         if len(init_inputs[init_inputs == True]) > 1:  # ignore inspection for clarity
-            raise AudioSignalException(
-                "Can only initialize AudioSignal object with one and only "
-                "one of {path, audio, stft}!"
-            )
+            raise AudioSignalException('Can only initialize AudioSignal object with one and only '
+                                       'one of {path, audio, stft}!')
 
         if path_to_input_file is not None:
-            self.load_audio_from_file(
-                self.path_to_input_file, offset, duration, sample_rate
-            )
+            self.load_audio_from_file(self.path_to_input_file, offset, duration, sample_rate)
         elif audio_data_array is not None:
             self.load_audio_from_array(audio_data_array, sample_rate)
 
         if self._sample_rate is None:
-            self._sample_rate = (
-                constants.DEFAULT_SAMPLE_RATE if sample_rate is None else sample_rate
-            )
+            self._sample_rate = constants.DEFAULT_SAMPLE_RATE \
+                if sample_rate is None else sample_rate
 
         # stft data
         if stft is not None:
             self.stft_data = stft  # complex spectrogram data
 
-        self.stft_params = (
-            stft_utils.StftParams(self.sample_rate)
-            if stft_params is None
-            else stft_params
-        )
+        self.stft_params = stft_utils.StftParams(self.sample_rate) \
+            if stft_params is None else stft_params
         self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
@@ -418,26 +402,17 @@ class AudioSignal(object):
             return
 
         elif not isinstance(value, np.ndarray):
-            raise AudioSignalException(
-                "Type of self.audio_data must be of type np.ndarray!"
-            )
+            raise AudioSignalException('Type of self.audio_data must be of type np.ndarray!')
 
         if not np.isfinite(value).all():
-            raise AudioSignalException("Not all values of audio_data are finite!")
+            raise AudioSignalException('Not all values of audio_data are finite!')
 
-        if (
-            value.ndim > 1
-            and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]
-        ):
-            warnings.warn(
-                "self.audio_data is not as we expect it. Transposing signal..."
-            )
+        if value.ndim > 1 and value.shape[constants.CHAN_INDEX] > value.shape[constants.LEN_INDEX]:
+            warnings.warn('self.audio_data is not as we expect it. Transposing signal...')
             value = value.T
 
         if value.ndim > 2:
-            raise AudioSignalException(
-                "self.audio_data cannot have more than 2 dimensions!"
-            )
+            raise AudioSignalException('self.audio_data cannot have more than 2 dimensions!')
 
         if value.ndim < 2:
             value = np.expand_dims(value, axis=constants.CHAN_INDEX)
@@ -496,28 +471,20 @@ class AudioSignal(object):
             return
 
         elif not isinstance(value, np.ndarray):
-            raise AudioSignalException(
-                "Type of self.stft_data must be of type np.ndarray!"
-            )
+            raise AudioSignalException('Type of self.stft_data must be of type np.ndarray!')
 
         if value.ndim == 1:
-            raise AudioSignalException(
-                "Cannot support arrays with less than 2 dimensions!"
-            )
+            raise AudioSignalException('Cannot support arrays with less than 2 dimensions!')
 
         if value.ndim == 2:
             value = np.expand_dims(value, axis=constants.STFT_CHAN_INDEX)
 
         if value.ndim > 3:
-            raise AudioSignalException(
-                "Cannot support arrays with more than 3 dimensions!"
-            )
+            raise AudioSignalException('Cannot support arrays with more than 3 dimensions!')
 
         if not np.iscomplexobj(value):
-            warnings.warn(
-                "Initializing STFT with data that is non-complex. "
-                "This might lead to weird results!"
-            )
+            warnings.warn('Initializing STFT with data that is non-complex. '
+                          'This might lead to weird results!')
 
         self._stft_data = value
 
@@ -595,14 +562,9 @@ class AudioSignal(object):
             frequency bins.
         """
         if self.stft_data is None:
-            raise AudioSignalException(
-                "Cannot calculate freq_vector until self.stft() is run"
-            )
-        return np.linspace(
-            0.0,
-            self.sample_rate // 2,
-            num=self.stft_data.shape[constants.STFT_VERT_INDEX],
-        )
+            raise AudioSignalException('Cannot calculate freq_vector until self.stft() is run')
+        return np.linspace(0.0, self.sample_rate // 2,
+                           num=self.stft_data.shape[constants.STFT_VERT_INDEX])
 
     @property
     def time_bins_vector(self):
@@ -618,14 +580,9 @@ class AudioSignal(object):
             to each time bin (horizontal/time axis) for :attr:`stft_data`.
         """
         if self.stft_data is None:
-            raise AudioSignalException(
-                "Cannot calculate time_bins_vector until self.stft() is run"
-            )
-        return np.linspace(
-            0.0,
-            self.signal_duration,
-            num=self.stft_data.shape[constants.STFT_LEN_INDEX],
-        )
+            raise AudioSignalException('Cannot calculate time_bins_vector until self.stft() is run')
+        return np.linspace(0.0, self.signal_duration,
+                           num=self.stft_data.shape[constants.STFT_LEN_INDEX])
 
     @property
     def stft_length(self):
@@ -640,9 +597,7 @@ class AudioSignal(object):
             (int): The length of :attr:`stft_data` along the time axis. In units of hops.
         """
         if self.stft_data is None:
-            raise AudioSignalException(
-                "Cannot calculate stft_length until self.stft() is run"
-            )
+            raise AudioSignalException('Cannot calculate stft_length until self.stft() is run')
         return self.stft_data.shape[constants.STFT_LEN_INDEX]
 
     @property
@@ -659,9 +614,7 @@ class AudioSignal(object):
 
         """
         if self.stft_data is None:
-            raise AudioSignalException(
-                "Cannot calculate num_fft_bins until self.stft() is run"
-            )
+            raise AudioSignalException('Cannot calculate num_fft_bins until self.stft() is run')
         return self.stft_data.shape[constants.STFT_VERT_INDEX]
 
     @property
@@ -710,10 +663,8 @@ class AudioSignal(object):
             
         """
         if self.stft_data is None:
-            raise AudioSignalException(
-                "Cannot calculate power_spectrogram_data "
-                "because self.stft_data is None"
-            )
+            raise AudioSignalException('Cannot calculate power_spectrogram_data '
+                                       'because self.stft_data is None')
         return np.abs(self.stft_data) ** 2
 
     @property
@@ -738,10 +689,8 @@ class AudioSignal(object):
             
         """
         if self.stft_data is None:
-            raise AudioSignalException(
-                "Cannot calculate magnitude_spectrogram_data "
-                "because self.stft_data is None"
-            )
+            raise AudioSignalException('Cannot calculate magnitude_spectrogram_data '
+                                       'because self.stft_data is None')
         return np.abs(self.stft_data)
 
     @property
@@ -788,9 +737,7 @@ class AudioSignal(object):
     #                     I/O
     ##################################################
 
-    def load_audio_from_file(
-        self, input_file_path, offset=0, duration=None, new_sample_rate=None
-    ):
+    def load_audio_from_file(self, input_file_path, offset=0, duration=None, new_sample_rate=None):
         # type: (str, float, float, int) -> None
         """
         Loads an audio signal into memory from a file on disc. The audio is stored in
@@ -820,41 +767,37 @@ class AudioSignal(object):
                 sample rate dictated by this parameter.
 
         """
-        assert offset >= 0, "Parameter `offset` must be >= 0!"
+        assert offset >= 0, 'Parameter `offset` must be >= 0!'
         if duration is not None:
-            assert duration >= 0, "Parameter `duration` must be >= 0!"
+            assert duration >= 0, 'Parameter `duration` must be >= 0!'
 
         with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
             file_length = input_file.duration
 
         if offset > file_length:
-            raise AudioSignalException("offset is longer than signal!")
+            raise AudioSignalException('offset is longer than signal!')
 
         if duration is not None and offset + duration >= file_length:
-            warnings.warn(
-                "offset + duration are longer than the signal."
-                " Reading until end of signal...",
-                UserWarning,
-            )
+            warnings.warn('offset + duration are longer than the signal.'
+                          ' Reading until end of signal...',
+                          UserWarning)
 
-        audio_input, self._sample_rate = librosa.load(
-            input_file_path, sr=None, offset=offset, duration=duration, mono=False
-        )
+        audio_input, self._sample_rate = librosa.load(input_file_path,
+                                                      sr=None,
+                                                      offset=offset,
+                                                      duration=duration,
+                                                      mono=False)
 
         # Change from fixed point to floating point
         if not np.issubdtype(audio_input.dtype, np.floating):
-            audio_input = audio_input.astype("float") / (
-                np.iinfo(audio_input.dtype).max + 1.0
-            )
+            audio_input = audio_input.astype('float') / (np.iinfo(audio_input.dtype).max + 1.0)
 
         self.audio_data = audio_input
 
         if new_sample_rate is not None and new_sample_rate != self._sample_rate:
-            warnings.warn(
-                "Input sample rate is different than the sample rate"
-                " read from the file! Resampling...",
-                UserWarning,
-            )
+            warnings.warn('Input sample rate is different than the sample rate'
+                          ' read from the file! Resampling...',
+                          UserWarning)
             self.resample(new_sample_rate)
 
         self.path_to_input_file = input_file_path
@@ -878,21 +821,20 @@ class AudioSignal(object):
                 Default is :ref:`constants.DEFAULT_SAMPLE_RATE` (44.1kHz)
 
         """
-        assert type(signal) == np.ndarray
+        assert (type(signal) == np.ndarray)
 
         self.path_to_input_file = None
 
         # Change from fixed point to floating point
         if not np.issubdtype(signal.dtype, np.floating):
-            if np.max(signal) > np.iinfo(np.dtype("int16")).max:
-                raise AudioSignalException("Please convert your array to 16-bit audio.")
+            if np.max(signal) > np.iinfo(np.dtype('int16')).max:
+                raise AudioSignalException('Please convert your array to 16-bit audio.')
 
-            signal = signal.astype("float") / (np.iinfo(np.dtype("int16")).max + 1.0)
+            signal = signal.astype('float') / (np.iinfo(np.dtype('int16')).max + 1.0)
 
         self.audio_data = signal
-        self._sample_rate = (
-            sample_rate if sample_rate is not None else constants.DEFAULT_SAMPLE_RATE
-        )
+        self._sample_rate = sample_rate if sample_rate is not None \
+            else constants.DEFAULT_SAMPLE_RATE
 
         self.set_active_region_to_default()
 
@@ -908,9 +850,7 @@ class AudioSignal(object):
             verbose (bool): Print out a message if writing the file was successful.
         """
         if self.audio_data is None:
-            raise AudioSignalException(
-                "Cannot write audio file because there is no audio data."
-            )
+            raise AudioSignalException("Cannot write audio file because there is no audio data.")
 
         try:
             self.peak_normalize()
@@ -923,16 +863,15 @@ class AudioSignal(object):
             # TODO: better fix
             # convert to fixed point again
             if not np.issubdtype(audio_output.dtype, np.dtype(int).type):
-                audio_output = np.multiply(
-                    audio_output, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)
-                ).astype("int16")
+                audio_output = np.multiply(audio_output,
+                                           2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
 
             wav.write(output_file_path, sample_rate, audio_output.T)
         except Exception as e:
-            print(f"Cannot write to file, {output_file_path}.")
+            print(f'Cannot write to file, {output_file_path}.')
             raise e
         if verbose:
-            print(f"Successfully wrote {output_file_path}.")
+            print(f'Successfully wrote {output_file_path}.')
 
     ##################################################
     #                Active Region
@@ -1026,16 +965,8 @@ class AudioSignal(object):
     #               STFT Utilities
     ##################################################
 
-    def stft(
-        self,
-        window_length=None,
-        hop_length=None,
-        window_type=None,
-        n_fft_bins=None,
-        remove_reflection=True,
-        overwrite=True,
-        use_librosa=constants.USE_LIBROSA_STFT,
-    ):
+    def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None,
+             remove_reflection=True, overwrite=True, use_librosa=constants.USE_LIBROSA_STFT):
         """
         Computes the Short Time Fourier Transform (STFT) of :attr:`audio_data`.
         The results of the STFT calculation can be accessed from :attr:`stft_data`
@@ -1059,80 +990,40 @@ class AudioSignal(object):
 
         """
         if self.audio_data is None or self.audio_data.size == 0:
-            raise AudioSignalException(
-                "No time domain signal (self.audio_data) to make STFT from!"
-            )
+            raise AudioSignalException("No time domain signal (self.audio_data) to make STFT from!")
 
-        window_length = (
-            self.stft_params.window_length
-            if window_length is None
+        window_length = self.stft_params.window_length if window_length is None \
             else int(window_length)
-        )
-        hop_length = (
-            self.stft_params.hop_length if hop_length is None else int(hop_length)
-        )
-        window_type = (
-            self.stft_params.window_type if window_type is None else window_type
-        )
-        n_fft_bins = (
-            self.stft_params.n_fft_bins if n_fft_bins is None else int(n_fft_bins)
-        )
+        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
+        window_type = self.stft_params.window_type if window_type is None else window_type
+        n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else int(n_fft_bins)
 
-        calculated_stft = self._do_stft(
-            window_length,
-            hop_length,
-            window_type,
-            n_fft_bins,
-            remove_reflection,
-            use_librosa,
-        )
+        calculated_stft = self._do_stft(window_length, hop_length, window_type,
+                                        n_fft_bins, remove_reflection, use_librosa)
 
         if overwrite:
             self.stft_data = calculated_stft
 
         return calculated_stft
 
-    def _do_stft(
-        self,
-        window_length,
-        hop_length,
-        window_type,
-        n_fft_bins,
-        remove_reflection,
-        use_librosa,
-    ):
+    def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection,
+                 use_librosa):
         if self.audio_data is None or self.audio_data.size == 0:
-            raise AudioSignalException("Cannot do stft without signal!")
+            raise AudioSignalException('Cannot do stft without signal!')
 
         stfts = []
 
-        stft_func = (
-            stft_utils.librosa_stft_wrapper if use_librosa else stft_utils.e_stft
-        )
+        stft_func = stft_utils.librosa_stft_wrapper if use_librosa else stft_utils.e_stft
 
         for chan in self.get_channels():
-            stfts.append(
-                stft_func(
-                    signal=chan,
-                    window_length=window_length,
-                    hop_length=hop_length,
-                    window_type=window_type,
-                    n_fft_bins=n_fft_bins,
-                    remove_reflection=remove_reflection,
-                )
-            )
+            stfts.append(stft_func(signal=chan, window_length=window_length,
+                                   hop_length=hop_length, window_type=window_type,
+                                   n_fft_bins=n_fft_bins, remove_reflection=remove_reflection))
 
         return np.array(stfts).transpose((1, 2, 0))
 
-    def istft(
-        self,
-        window_length=None,
-        hop_length=None,
-        window_type=None,
-        overwrite=True,
-        use_librosa=constants.USE_LIBROSA_STFT,
-        truncate_to_length=None,
-    ):
+    def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True,
+              use_librosa=constants.USE_LIBROSA_STFT, truncate_to_length=None):
         """ Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
         The results of the iSTFT calculation can be accessed from :attr:`audio_data`
@@ -1155,31 +1046,19 @@ class AudioSignal(object):
 
         """
         if self.stft_data is None or self.stft_data.size == 0:
-            raise AudioSignalException("Cannot do inverse STFT without self.stft_data!")
+            raise AudioSignalException('Cannot do inverse STFT without self.stft_data!')
 
-        window_length = (
-            self.stft_params.window_length
-            if window_length is None
+        window_length = self.stft_params.window_length if window_length is None \
             else int(window_length)
-        )
-        hop_length = (
-            self.stft_params.hop_length if hop_length is None else int(hop_length)
-        )
+        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
         # TODO: bubble up center
-        window_type = (
-            self.stft_params.window_type if window_type is None else window_type
-        )
+        window_type = self.stft_params.window_type if window_type is None else window_type
 
-        calculated_signal = self._do_istft(
-            window_length, hop_length, window_type, use_librosa
-        )
+        calculated_signal = self._do_istft(window_length, hop_length, window_type, use_librosa)
 
         # Make sure it's shaped correctly
-        calculated_signal = (
-            np.expand_dims(calculated_signal, -1)
-            if calculated_signal.ndim == 1
-            else calculated_signal
-        )
+        calculated_signal = np.expand_dims(calculated_signal, -1) \
+            if calculated_signal.ndim == 1 else calculated_signal
 
         # if truncate_to_length isn't provided
         if truncate_to_length is None:
@@ -1196,21 +1075,15 @@ class AudioSignal(object):
 
     def _do_istft(self, window_length, hop_length, window_type, use_librosa):
         if self.stft_data.size == 0:
-            raise AudioSignalException("Cannot do inverse STFT without self.stft_data!")
+            raise AudioSignalException('Cannot do inverse STFT without self.stft_data!')
 
         signals = []
 
-        istft_func = (
-            stft_utils.librosa_istft_wrapper if use_librosa else stft_utils.e_istft
-        )
+        istft_func = stft_utils.librosa_istft_wrapper if use_librosa else stft_utils.e_istft
 
         for stft in self.get_stft_channels():
-            calculated_signal = istft_func(
-                stft=stft,
-                window_length=window_length,
-                hop_length=hop_length,
-                window_type=window_type,
-            )
+            calculated_signal = istft_func(stft=stft, window_length=window_length,
+                                           hop_length=hop_length, window_type=window_type)
 
             signals.append(calculated_signal)
 
@@ -1236,17 +1109,15 @@ class AudioSignal(object):
         from ..separation.masks import mask_base
 
         if not isinstance(mask, mask_base.MaskBase):
-            raise AudioSignalException(
-                f"Expected MaskBase-derived object, given {type(mask)}"
-            )
+            raise AudioSignalException(f'Expected MaskBase-derived object, given {type(mask)}')
 
         if not self.has_stft_data:
-            raise AudioSignalException("There is no STFT data to apply a mask to!")
+            raise AudioSignalException('There is no STFT data to apply a mask to!')
 
         if mask.shape != self.stft_data.shape:
             raise AudioSignalException(
-                "Input mask and self.stft_data are not the same shape! mask:"
-                f" {mask.shape}, self.stft_data: {self.stft_data.shape}"
+                'Input mask and self.stft_data are not the same shape! mask:'
+                f' {mask.shape}, self.stft_data: {self.stft_data.shape}'
             )
 
         masked_stft = self.stft_data * mask.mask
@@ -1260,11 +1131,9 @@ class AudioSignal(object):
     #                   Plotting
     ##################################################
 
-    _NAME_STEM = "audio_signal"
+    _NAME_STEM = 'audio_signal'
 
-    def plot_time_domain(
-        self, channel=None, x_label_time=True, title=None, file_path_name=None
-    ):
+    def plot_time_domain(self, channel=None, x_label_time=True, title=None, file_path_name=None):
         """
         Plots a graph of the time domain audio signal.
 
@@ -1278,10 +1147,10 @@ class AudioSignal(object):
         """
 
         if self.audio_data is None:
-            raise AudioSignalException("Cannot plot with no audio data!")
+            raise AudioSignalException('Cannot plot with no audio data!')
 
         if channel > self.num_channels - 1:
-            raise AudioSignalException("Channel selected does not exist!")
+            raise AudioSignalException('Channel selected does not exist!')
 
         # Mono or single specific channel selected for plotting
         if self.num_channels == 1 or channel is not None:
@@ -1292,7 +1161,7 @@ class AudioSignal(object):
             else:
                 plt.plot(self.audio_data[plot_channels])
                 plt.xlim(0, self.signal_length)
-            plt.ylabel(f"Channel {plot_channels}")
+            plt.ylabel(f'Channel {plot_channels}')
 
         # Stereo signal plotting
         elif self.num_channels == 2 and channel is None:
@@ -1300,11 +1169,11 @@ class AudioSignal(object):
             bottom_plot = -abs(self.audio_data[1])
             if x_label_time is True:
                 plt.plot(self.time_vector, top_plot)
-                plt.plot(self.time_vector, bottom_plot, "C0")
+                plt.plot(self.time_vector, bottom_plot, 'C0')
                 plt.xlim(self.time_vector[0], self.time_vector[-1])
             else:
                 plt.plot(top_plot)
-                plt.plot(bottom_plot, "C0")
+                plt.plot(bottom_plot, 'C0')
                 plt.xlim(0, self.signal_length)
 
         # Plotting more than 2 channels each on their own plots in a stack
@@ -1317,7 +1186,7 @@ class AudioSignal(object):
                 else:
                     axarr[i].plot(self.audio_data[i], sharex=True)
                     axarr[i].set_xlim(0, self.signal_length)
-                axarr[i].set_ylabel(f"Ch {i}")
+                axarr[i].set_ylabel(f'Ch {i}')
 
         if title is None:
             title = self.file_name if self.file_name is not None else self._NAME_STEM
@@ -1325,11 +1194,8 @@ class AudioSignal(object):
         plt.suptitle(title)
 
         if file_path_name:
-            file_path_name = (
-                file_path_name
-                if self._check_if_valid_img_type(file_path_name)
-                else file_path_name + ".png"
-            )
+            file_path_name = file_path_name if self._check_if_valid_img_type(file_path_name) \
+                                            else file_path_name + '.png'
             plt.savefig(file_path_name)
 
     def plot_spectrogram(self, ch=None):
@@ -1353,14 +1219,8 @@ class AudioSignal(object):
     @staticmethod
     def _check_if_valid_img_type(name):
         import matplotlib.pyplot as plt
-
         fig = plt.figure()
-        result = any(
-            [
-                name[-len(k) :] == k
-                for k in list(fig.canvas.get_supported_filetypes().keys())
-            ]
-        )
+        result = any([name[-len(k):] == k for k in list(fig.canvas.get_supported_filetypes().keys())])
         plt.close()
         return result
 
@@ -1384,9 +1244,8 @@ class AudioSignal(object):
         """
         self._verify_audio(other)
 
-        self.audio_data = np.concatenate(
-            (self.audio_data, other.audio_data), axis=constants.LEN_INDEX
-        )
+        self.audio_data = np.concatenate((self.audio_data, other.audio_data),
+                                         axis=constants.LEN_INDEX)
 
     def truncate_samples(self, n_samples):
         """ Truncates the signal leaving only the first ``n_samples`` samples.
@@ -1401,16 +1260,12 @@ class AudioSignal(object):
 
         """
         if n_samples > self.signal_length:
-            raise AudioSignalException(
-                "n_samples must be less than self.signal_length!"
-            )
+            raise AudioSignalException('n_samples must be less than self.signal_length!')
 
         if not self.active_region_is_default:
-            raise AudioSignalException(
-                "Cannot truncate while active region is not set as default!"
-            )
+            raise AudioSignalException('Cannot truncate while active region is not set as default!')
 
-        self.audio_data = self.audio_data[:, 0:n_samples]
+        self.audio_data = self.audio_data[:, 0: n_samples]
 
     def truncate_seconds(self, n_seconds):
         """ Truncates the signal leaving only the first n_seconds.
@@ -1425,14 +1280,10 @@ class AudioSignal(object):
 
         """
         if n_seconds > self.signal_duration:
-            raise AudioSignalException(
-                "n_seconds must be shorter than self.signal_duration!"
-            )
+            raise AudioSignalException('n_seconds must be shorter than self.signal_duration!')
 
         if not self.active_region_is_default:
-            raise AudioSignalException(
-                "Cannot truncate while active region is not set as default!"
-            )
+            raise AudioSignalException('Cannot truncate while active region is not set as default!')
 
         n_samples = n_seconds * self.sample_rate
         self.truncate_samples(n_samples)
@@ -1448,11 +1299,10 @@ class AudioSignal(object):
 
         """
         if not self.active_region_is_default:
-            raise AudioSignalException(
-                "Cannot crop signal while active region " "is not set as default!"
-            )
+            raise AudioSignalException('Cannot crop signal while active region '
+                                       'is not set as default!')
         num_samples = self.signal_length
-        self.audio_data = self.audio_data[:, before : num_samples - after]
+        self.audio_data = self.audio_data[:, before:num_samples - after]
         self.set_active_region_to_default()
 
     def zero_pad(self, before, after):
@@ -1468,17 +1318,11 @@ class AudioSignal(object):
 
         """
         if not self.active_region_is_default:
-            raise AudioSignalException(
-                "Cannot zero-pad while active region is not set as default!"
-            )
+            raise AudioSignalException('Cannot zero-pad while active region is not set as default!')
 
         for ch in range(self.num_channels):
-            self.audio_data = np.lib.pad(
-                self.get_channel(ch),
-                (before, after),
-                "constant",
-                constant_values=(0, 0),
-            )
+            self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant',
+                                         constant_values=(0, 0))
 
     def peak_normalize(self, overwrite=True):
         """ Normalizes ``abs(self.audio_data)`` to 1.0.
@@ -1490,7 +1334,7 @@ class AudioSignal(object):
         max_val = 1.0
         max_signal = np.max(np.abs(self.audio_data))
         if max_signal > max_val:
-            normalized = self.audio_data.astype("float") / max_signal
+            normalized = self.audio_data.astype('float') / max_signal
             if overwrite:
                 self.audio_data = normalized
             return normalized
@@ -1561,13 +1405,11 @@ class AudioSignal(object):
         """
         if bit_depth not in [8, 16, 24, 32]:
             raise AudioSignalException(
-                f"Cannot convert self.audio_data to int array w/ bit depth {bit_depth}"
+                f'Cannot convert self.audio_data to int array w/ bit depth {bit_depth}'
             )
 
-        int_type = f"int{bit_depth}"
-        return np.multiply(
-            self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)
-        ).astype(int_type)
+        int_type = f'int{bit_depth}'
+        return np.multiply(self.audio_data, 2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype(int_type)
 
     def make_empty_copy(self, verbose=True):
         """ Makes a copy of this :class:`AudioSignal` object with :attr:`audio_data`
@@ -1581,7 +1423,7 @@ class AudioSignal(object):
 
         """
         if not self.active_region_is_default and verbose:
-            warnings.warn("Making a copy when active region is not default!")
+            warnings.warn('Making a copy when active region is not default!')
 
         new_signal = copy.deepcopy(self)
         new_signal.audio_data = np.zeros_like(self.audio_data)
@@ -1604,12 +1446,10 @@ class AudioSignal(object):
         """
         if verbose:
             if not self.active_region_is_default:
-                warnings.warn("Making a copy when active region is not default.")
+                warnings.warn('Making a copy when active region is not default.')
 
             if audio_data.shape != self.audio_data.shape:
-                warnings.warn(
-                    "Shape of new audio_data does not match current audio_data."
-                )
+                warnings.warn('Shape of new audio_data does not match current audio_data.')
 
         new_signal = copy.deepcopy(self)
         new_signal.audio_data = audio_data
@@ -1632,12 +1472,10 @@ class AudioSignal(object):
         """
         if verbose:
             if not self.active_region_is_default:
-                warnings.warn("Making a copy when active region is not default.")
+                warnings.warn('Making a copy when active region is not default.')
 
             if stft_data.shape != self.stft_data.shape:
-                warnings.warn(
-                    "Shape of new stft_data does not match current stft_data."
-                )
+                warnings.warn('Shape of new stft_data does not match current stft_data.')
 
         new_signal = copy.deepcopy(self)
         new_signal.stft_data = stft_data
@@ -1665,9 +1503,9 @@ class AudioSignal(object):
         for k, v in list(d.items()):
             if isinstance(v, np.ndarray):
                 d[k] = utils.json_ready_numpy_array(v)
-        d["__class__"] = o.__class__.__name__
-        d["__module__"] = o.__module__
-        d["stft_params"] = o.stft_params.to_json()
+        d['__class__'] = o.__class__.__name__
+        d['__module__'] = o.__module__
+        d['stft_params'] = o.stft_params.to_json()
         return d
 
     @staticmethod
@@ -1692,30 +1530,28 @@ class AudioSignal(object):
 
     @staticmethod
     def _from_json_helper(json_dict):
-        if "__class__" in json_dict and "__module__" in json_dict:
-            class_name = json_dict.pop("__class__")
-            module = json_dict.pop("__module__")
+        if '__class__' in json_dict and '__module__' in json_dict:
+            class_name = json_dict.pop('__class__')
+            module = json_dict.pop('__module__')
             if class_name != AudioSignal.__name__ or module != AudioSignal.__module__:
                 raise TypeError(
-                    f"Expected {AudioSignal.__module__}.{AudioSignal.__name__}, given"
-                    f" {module}.{class_name} from json!"
+                    f'Expected {AudioSignal.__module__}.{AudioSignal.__name__}, given'
+                    f' {module}.{class_name} from json!'
                 )
 
             a = AudioSignal()
 
-            if "stft_params" not in json_dict:
-                raise TypeError("JSON string must contain StftParams object!")
+            if 'stft_params' not in json_dict:
+                raise TypeError('JSON string must contain StftParams object!')
 
-            stft_params = json_dict.pop("stft_params")
+            stft_params = json_dict.pop('stft_params')
             a.stft_params = stft_utils.StftParams.from_json(stft_params)
 
             for k, v in list(json_dict.items()):
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
-                    a.__dict__[k] = utils.json_numpy_obj_hook(
-                        v[constants.NUMPY_JSON_KEY]
-                    )
+                    a.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
                 else:
-                    a.__dict__[k] = v if not isinstance(v, str) else v.encode("ascii")
+                    a.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
             return a
         else:
             return json_dict
@@ -1754,9 +1590,7 @@ class AudioSignal(object):
 
         """
         if self.freq_vector is None:
-            raise AudioSignalException(
-                "Cannot get frequency bin until self.stft() is run!"
-            )
+            raise AudioSignalException('Cannot get frequency bin until self.stft() is run!')
         return (np.abs(self.freq_vector - freq)).argmin()
 
     def apply_gain(self, value):
@@ -1771,7 +1605,7 @@ class AudioSignal(object):
 
         """
         if not isinstance(value, numbers.Real):
-            raise AudioSignalException("Can only multiply/divide by a scalar!")
+            raise AudioSignalException('Can only multiply/divide by a scalar!')
 
         self.audio_data = self.audio_data * value
         return self
@@ -1788,15 +1622,13 @@ class AudioSignal(object):
         """
 
         if new_sample_rate == self.sample_rate:
-            warnings.warn("Cannot resample to the same sample rate.")
+            warnings.warn('Cannot resample to the same sample rate.')
             return
 
         resampled_signal = []
 
         for channel in self.get_channels():
-            resampled_channel = librosa.resample(
-                channel, self.sample_rate, new_sample_rate
-            )
+            resampled_channel = librosa.resample(channel, self.sample_rate, new_sample_rate)
             resampled_signal.append(resampled_channel)
 
         self.audio_data = np.array(resampled_signal)
@@ -1809,13 +1641,13 @@ class AudioSignal(object):
     def _verify_get_channel(self, n):
         if n >= self.num_channels:
             raise AudioSignalException(
-                f"Cannot get channel {n} when this object only has {self.num_channels}"
-                " channels! (0-based)"
+                f'Cannot get channel {n} when this object only has {self.num_channels}'
+                ' channels! (0-based)'
             )
 
         if n < 0:
             raise AudioSignalException(
-                f"Cannot get channel {n}. This will cause unexpected results"
+                f'Cannot get channel {n}. This will cause unexpected results'
             )
 
     def get_channel(self, n):
@@ -1877,9 +1709,7 @@ class AudioSignal(object):
 
         """
         if self.stft_data is None:
-            raise AudioSignalException(
-                "Cannot get STFT data before STFT is calculated!"
-            )
+            raise AudioSignalException('Cannot get STFT data before STFT is calculated!')
 
         self._verify_get_channel(n)
 
@@ -1932,9 +1762,7 @@ class AudioSignal(object):
         self._verify_get_channel(n)
 
         # np.array helps with duck typing
-        return utils._get_axis(
-            np.array(self.power_spectrogram_data), constants.STFT_CHAN_INDEX, n
-        )
+        return utils._get_axis(np.array(self.power_spectrogram_data), constants.STFT_CHAN_INDEX, n)
 
     def get_magnitude_spectrogram_channel(self, n):
         """ Returns the n-th channel from ``self.magnitude_spectrogram_data``.
@@ -1951,9 +1779,8 @@ class AudioSignal(object):
         self._verify_get_channel(n)
 
         # np.array helps with duck typing
-        return utils._get_axis(
-            np.array(self.magnitude_spectrogram_data), constants.STFT_CHAN_INDEX, n
-        )
+        return utils._get_axis(np.array(self.magnitude_spectrogram_data),
+                               constants.STFT_CHAN_INDEX, n)
 
     def to_mono(self, overwrite=True, keep_dims=False):
         """ Converts :attr:`audio_data` to mono by averaging every sample.
@@ -2008,29 +1835,22 @@ class AudioSignal(object):
 
     def _verify_audio(self, other):
         if self.num_channels != other.num_channels:
-            raise AudioSignalException(
-                "Cannot do operation with two signals that have "
-                "a different number of channels!"
-            )
+            raise AudioSignalException('Cannot do operation with two signals that have '
+                                       'a different number of channels!')
 
         if self.sample_rate != other.sample_rate:
-            raise AudioSignalException(
-                "Cannot do operation with two signals that have "
-                "different sample rates!"
-            )
+            raise AudioSignalException('Cannot do operation with two signals that have '
+                                       'different sample rates!')
 
         if not self.active_region_is_default:
-            raise AudioSignalException(
-                "Cannot do operation while active region is not " "set as default!"
-            )
+            raise AudioSignalException('Cannot do operation while active region is not '
+                                       'set as default!')
 
     def _verify_audio_arithmetic(self, other):
         self._verify_audio(other)
 
         if self.signal_length != other.signal_length:
-            raise AudioSignalException(
-                "Cannot do arithmetic with signals of different length!"
-            )
+            raise AudioSignalException('Cannot do arithmetic with signals of different length!')
 
     def __iadd__(self, other):
         return self + other
@@ -2040,19 +1860,16 @@ class AudioSignal(object):
 
     def __mul__(self, value):
         if not isinstance(value, numbers.Real):
-            raise AudioSignalException("Can only multiply/divide by a scalar!")
+            raise AudioSignalException('Can only multiply/divide by a scalar!')
 
-        return self.make_copy_with_audio_data(
-            np.multiply(self.audio_data, value), verbose=False
-        )
+        return self.make_copy_with_audio_data(np.multiply(self.audio_data, value), verbose=False)
 
     def __div__(self, value):
         if not isinstance(value, numbers.Real):
-            raise AudioSignalException("Can only multiply/divide by a scalar!")
+            raise AudioSignalException('Can only multiply/divide by a scalar!')
 
-        return self.make_copy_with_audio_data(
-            np.divide(self.audio_data, float(value)), verbose=False
-        )
+        return self.make_copy_with_audio_data(np.divide(self.audio_data, float(value)),
+                                              verbose=False)
 
     def __truediv__(self, value):
         return self.__div__(value)
@@ -2086,5 +1903,4 @@ class AudioSignalException(Exception):
     """
     Exception class for :class:`AudioSignal`.
     """
-
     pass

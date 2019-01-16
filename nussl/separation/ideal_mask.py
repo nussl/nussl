@@ -79,31 +79,18 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         
     """
 
-    def __init__(
-        self,
-        input_audio_mixture,
-        sources_list,
-        power=1,
-        split_zeros=False,
-        binary_db_threshold=20,
-        mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
-        use_librosa_stft=constants.USE_LIBROSA_STFT,
-    ):
-        super(IdealMask, self).__init__(
-            input_audio_signal=input_audio_mixture, mask_type=mask_type
-        )
+    def __init__(self, input_audio_mixture, sources_list, power=1, split_zeros=False, binary_db_threshold=20,
+                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
+                 use_librosa_stft=constants.USE_LIBROSA_STFT):
+        super(IdealMask, self).__init__(input_audio_signal=input_audio_mixture, mask_type=mask_type)
 
         self.sources = utils.verify_audio_signal_list_strict(sources_list)
 
         # Make sure input_audio_signal has the same settings as sources_list
         if self.audio_signal.sample_rate != self.sources[0].sample_rate:
-            raise ValueError(
-                "input_audio_signal must have the same sample rate as entries of sources_list!"
-            )
+            raise ValueError('input_audio_signal must have the same sample rate as entries of sources_list!')
         if self.audio_signal.num_channels != self.sources[0].num_channels:
-            raise ValueError(
-                "input_audio_signal must have the same number of channels as entries of sources_list!"
-            )
+            raise ValueError('input_audio_signal must have the same number of channels as entries of sources_list!')
 
         self.result_masks = None
         self.estimated_sources = None
@@ -157,27 +144,20 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
         self.result_masks = []
 
         for source in self.sources:
-            mag = (
-                source.magnitude_spectrogram_data
-            )  # Alias this variable, for easy reading
+            mag = source.magnitude_spectrogram_data # Alias this variable, for easy reading
             if self.mask_type == self.BINARY_MASK:
-                div = np.divide(
-                    mag + constants.EPSILON, self._mixture_mag_spec + constants.EPSILON
-                )
+                div = np.divide(mag + constants.EPSILON, self._mixture_mag_spec + constants.EPSILON)
                 cur_mask = (20 * np.log10(div)) > self.binary_db_threshold
                 mask = masks.BinaryMask(cur_mask)
 
             elif self.mask_type == self.SOFT_MASK:
-                soft_mask = librosa.util.softmask(
-                    self.audio_signal.magnitude_spectrogram_data,
-                    mag,
-                    power=self.power,
-                    split_zeros=self.split_zeros,
-                )
+                soft_mask = librosa.util.softmask(self.audio_signal.magnitude_spectrogram_data,
+                                                  mag, power=self.power,
+                                                  split_zeros=self.split_zeros)
 
                 mask = masks.SoftMask(soft_mask)
             else:
-                raise RuntimeError(f"Unknown mask type: {self.mask_type}")
+                raise RuntimeError(f'Unknown mask type: {self.mask_type}')
 
             self.result_masks.append(mask)
 
@@ -202,12 +182,10 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
         """
         if self.result_masks is None:
-            raise ValueError("Cannot calculate residual prior to running algorithm!")
+            raise ValueError('Cannot calculate residual prior to running algorithm!')
 
         if self.estimated_sources is None:
-            warnings.warn(
-                "Need to run self.make_audio_signals prior to calculating residual..."
-            )
+            warnings.warn('Need to run self.make_audio_signals prior to calculating residual...')
             self.make_audio_signals()
         else:
             residual = self.audio_signal
@@ -216,21 +194,15 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
 
             return residual
 
-        raise Exception("Could not make residual!")
+        raise Exception('Could not make residual!')
 
     def _compute_spectrograms(self):
-        self.audio_signal.stft(
-            overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft
-        )
+        self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
 
         # Alias this variable for ease
         self._mixture_mag_spec = self.audio_signal.magnitude_spectrogram_data
         for source in self.sources:
-            source.stft(
-                overwrite=True,
-                remove_reflection=True,
-                use_librosa=self.use_librosa_stft,
-            )
+            source.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
 
     def make_audio_signals(self):
         """Returns a list of signals (as :class:`audio_signal.AudioSignal` objects) created by applying the ideal masks.
@@ -254,23 +226,17 @@ class IdealMask(mask_separation_base.MaskSeparationBase):
             
         """
         if self.result_masks is None or self.audio_signal.stft_data.size <= 0:
-            raise ValueError("Cannot make audio signals prior to running algorithm!")
+            raise ValueError('Cannot make audio signals prior to running algorithm!')
 
         self.estimated_sources = []
 
         for cur_mask in self.result_masks:
             estimated_stft = np.multiply(cur_mask.mask, self.audio_signal.stft_data)
-            new_signal = self.audio_signal.make_copy_with_stft_data(
-                estimated_stft, verbose=False
-            )
-            new_signal.istft(
-                self.stft_params.window_length,
-                self.stft_params.hop_length,
-                self.stft_params.window_type,
-                overwrite=True,
-                use_librosa=self.use_librosa_stft,
-                truncate_to_length=self.audio_signal.signal_length,
-            )
+            new_signal = self.audio_signal.make_copy_with_stft_data(estimated_stft, verbose=False)
+            new_signal.istft(self.stft_params.window_length, self.stft_params.hop_length,
+                             self.stft_params.window_type, overwrite=True,
+                             use_librosa=self.use_librosa_stft,
+                             truncate_to_length=self.audio_signal.signal_length)
 
             self.estimated_sources.append(new_signal)
 
