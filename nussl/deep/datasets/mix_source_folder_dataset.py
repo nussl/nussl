@@ -2,9 +2,9 @@ from .base_dataset import BaseDataset
 import os
 import numpy as np
 
-class WSJ(BaseDataset):
+class MixSourceFolder(BaseDataset):
     def __init__(self, folder, options=None):
-        super(WSJ, self).__init__(folder, options)
+        super(MixSourceFolder, self).__init__(folder, options)
 
         wav_file = os.path.join(self.folder, 'mix', self.files[0])
         mix = self._load_audio_file(wav_file)[0]

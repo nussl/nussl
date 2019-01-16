@@ -96,7 +96,7 @@ def plot_stft(signal, file_name, title=None, win_length=None, hop_length=None,
     # TODO: remove transposes!
     time_tile = np.tile(time, (len(freqs), 1))
     freq_tile = np.tile(freqs.T, (len(time), 1)).T
-    sp = librosa.logamplitude(np.abs(stft) ** 2, ref_power=np.max)
+    sp = librosa.amplitude_to_db(np.abs(stft) ** 2)
     plt.pcolormesh(time_tile, freq_tile, sp)
 
     plt.axis('tight')

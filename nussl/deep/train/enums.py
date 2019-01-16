@@ -6,7 +6,7 @@ from .. import datasets
 from . import loss
 
 class Datasets(Enum):
-    WSJ = datasets.WSJ
+    MIXSOURCEFOLDER = datasets.MixSourceFolder
     SCAPER = datasets.Scaper
 
 class Samplers(Enum):

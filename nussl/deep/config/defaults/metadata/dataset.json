@@ -2,8 +2,8 @@
   "dataset_type": {
     "is_positional": true,
     "type": "str.lower",
-    "choices": ["scaper", "wsj"],
-    "help": "Type of dataset to use."
+    "choices": ["scaper", "mix_source_folder"],
+    "help": "Type of dataset to use. Scaper type datasets are built using Scaper, which mixes sources into N random mixtures with a specific structure. MixSourceFolder datasets have a specific structure - mixtures are kept in a folder called 'mix' while sources are kept in different folders (either with the name of each folder corresponding to the source. File names correspond between source folder and mixture folder."
   },
   "n_fft": {
     "type": "int",

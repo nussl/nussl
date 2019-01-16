@@ -34,11 +34,17 @@ def parse():
         required=True,
         help='Path to folder to write output to (this includes logs &  checkpoints).',
     )
-
+    parser.add_argument(
+        '--use_tensorboard',
+        default=True,
+        type=bool,
+        help='Whether to log loss and other metrics to tensorboard file, defaults to True',
+    )
+    
     return parser.parse_args()
 
 
-def train(output_folder, model, dataset, train):
+def train(output_folder, model, dataset, train, use_tensorboard=True):
     cpu_count = multiprocessing.cpu_count()
     train['num_workers'] = min(cpu_count, train['num_workers'])
 
@@ -64,6 +70,7 @@ def train(output_folder, model, dataset, train):
             if train['validation_folder']
             else None
         ),
+        use_tensorboard=use_tensorboard,
     )
     trainer.fit()
 
@@ -75,4 +82,5 @@ if __name__ == "__main__":
         in ['train', 'model', 'dataset']
     }
     jsons['output_folder'] = parsed['output_folder']
+    jsons['use_tensorboard'] = parsed['use_tensorboard']
     train(**jsons)

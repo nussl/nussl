@@ -10,6 +10,7 @@ import os
 import shutil
 from typing import Optional
 from itertools import chain
+tqdm.monitor_interval = 0
 
 try:
     from tensorboardX import SummaryWriter
@@ -30,9 +31,9 @@ class Trainer():
         model,
         options,
         validation_data=None,
-        verbose=False,
+        use_tensorboard=True,
     ):
-        self.verbose = verbose
+        self.use_tensorboard = use_tensorboard
         self.prepare_directories(output_folder)
         self.model = self.build_model(model)
         self.device = torch.device(
@@ -45,7 +46,7 @@ class Trainer():
 
         self.writer = (
             SummaryWriter(log_dir=self.output_folder)
-            if verbose and SummaryWriter is not None
+            if use_tensorboard and SummaryWriter is not None
             else None
         )
         self.loss_dictionary = {
@@ -188,7 +189,7 @@ class Trainer():
         return {'loss': epoch_loss / float(num_batches)}
 
     def log_to_tensorboard(self, data, step, scope):
-        if self.verbose:
+        if self.use_tensorboard:
             prefix = 'training' if self.model.training else 'validation'
             for key in data:
                 label = os.path.join(prefix, key)

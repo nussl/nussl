@@ -3,4 +3,4 @@ try:
 except:
     Scaper = None
 
-from .wsj_dataset import WSJ
+from .mix_source_folder_dataset import MixSourceFolder

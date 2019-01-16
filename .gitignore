@@ -6,3 +6,4 @@ Output/
 .mypy_cache
 *.swp
 *.wav
+*.ipynb

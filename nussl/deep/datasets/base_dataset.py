@@ -1,7 +1,6 @@
 from torch.utils.data import Dataset
 import pickle
 import librosa
-from scipy.io import wavfile
 import numpy as np
 import os
 import shutil
@@ -348,22 +347,18 @@ class BaseDataset(Dataset):
         ).astype(np.float32)
 
     @staticmethod
-    def _load_audio_file(file_path: str) -> Tuple[np.ndarray, int]:
-        """Loads audio file at given path
-
-        TODO: only `.wav` files? if so rename to `_load_wav_file`
-
+    def _load_audio_file(file_path: str) -> AudioSignal:
+        """Loads audio file at given path. Uses 
         Args:
             file_path - relative or absolute path to file to load
 
         Returns:
             tuple of loaded audio w/ shape ? and sample rate
         """
-        rate, audio = wavfile.read(file_path)
-        if len(audio.shape) == 1:
-            audio = np.expand_dims(audio, axis=-1)
-        audio = audio.astype(np.float32, order='C') / 32768.0
-        return audio.T, rate
+        audio_signal = AudioSignal(file_path)
+        audio_signal.stft_params.window_length = self.options['n_fft']
+        audio_signal.stft_params.hop_length = self.options['hop_length']
+        return audio_signal
 
     def inspect(self, i):
         import matplotlib.pyplot as plt

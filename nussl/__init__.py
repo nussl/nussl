@@ -30,20 +30,6 @@ from . import evaluation
 from . import transformers
 from . import deep
 
-# __all__ = [
-#     'core', 
-#     'utils', 
-#     'stft_utils', 
-#     'transformers', 
-#     'separation', 
-#     'evaluation', 
-#     'deep', 
-#     'efz_utils',
-#     'datasets',
-#     'AudioSignal',
-# ]
-
-
 __version__ = '0.1.6'
 
 version = __version__  # aliasing version
