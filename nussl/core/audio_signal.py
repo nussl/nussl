@@ -198,9 +198,9 @@ class AudioSignal(object):
         return (
             f"{self.__class__.__name__} "
             f"({self.label if self.label else 'unlabeled'}): "
-            f"{self.num_channels if self.num_channels else "unknown"} ch, "
-            f"{self.signal_duration if self.signal_duration else "unknown"} sec "
-            f"@ {self.path_to_input_file if self.path_to_input_file else "no path"}"
+            f"{self.num_channels if self.num_channels else '[unknown]'} ch, "
+            f"{self.signal_duration if self.signal_duration else '[unknown]'} sec @ "
+            f"{self.path_to_input_file if self.path_to_input_file else 'path unknown'}"
         )
 
     ##################################################
