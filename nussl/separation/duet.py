@@ -72,15 +72,31 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal, num_sources,
-                 attenuation_min=-3, attenuation_max=3, num_attenuation_bins=50,
-                 delay_min=-3, delay_max=3, num_delay_bins=50,
-                 peak_threshold=0.0, attenuation_min_distance=5, delay_min_distance=5, p=1, q=0):
-        super(Duet, self).__init__(input_audio_signal=input_audio_signal,
-                                   mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK)
+    def __init__(
+        self,
+        input_audio_signal,
+        num_sources,
+        attenuation_min=-3,
+        attenuation_max=3,
+        num_attenuation_bins=50,
+        delay_min=-3,
+        delay_max=3,
+        num_delay_bins=50,
+        peak_threshold=0.0,
+        attenuation_min_distance=5,
+        delay_min_distance=5,
+        p=1,
+        q=0,
+    ):
+        super(Duet, self).__init__(
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK,
+        )
 
         if not self.audio_signal.is_stereo:
-            raise ValueError('Duet requires that the input_audio_signal has exactly 2 channels!')
+            raise ValueError(
+                "Duet requires that the input_audio_signal has exactly 2 channels!"
+            )
 
         self.num_sources = num_sources
         self.attenuation_min = attenuation_min
@@ -148,27 +164,39 @@ class Duet(mask_separation_base.MaskSeparationBase):
         self.result_masks = []
 
         if not self.audio_signal.is_stereo:  # double check this
-            raise ValueError('Cannot run Duet on audio signal without exactly 2 channels!')
+            raise ValueError(
+                "Cannot run Duet on audio signal without exactly 2 channels!"
+            )
 
         # Calculate the stft of both channels and create the frequency matrix (the matrix containing the
         #  frequencies of analysis of the Fourier transform)
-        self.stft_ch0, self.stft_ch1, self.frequency_matrix = self._compute_spectrogram(self.sample_rate)
+        self.stft_ch0, self.stft_ch1, self.frequency_matrix = self._compute_spectrogram(
+            self.sample_rate
+        )
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point and return a matrix for each
-        self.symmetric_atn, self.delay = self._compute_atn_delay(self.stft_ch0, self.stft_ch1, self.frequency_matrix)
+        self.symmetric_atn, self.delay = self._compute_atn_delay(
+            self.stft_ch0, self.stft_ch1, self.frequency_matrix
+        )
 
         # Make histogram of attenuation-delay values and get the center values for the bins in this histogram
-        self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = self._make_histogram()
+        self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = (
+            self._make_histogram()
+        )
 
         # Find the location of peaks in the attenuation-delay plane
-        self.peak_indices = utils.find_peak_indices(self.normalized_attenuation_delay_histogram, self.num_sources,
-                                                    threshold=self.peak_threshold,
-                                                    min_dist=[self.attenuation_min_distance,
-                                                              self.delay_min_distance])
+        self.peak_indices = utils.find_peak_indices(
+            self.normalized_attenuation_delay_histogram,
+            self.num_sources,
+            threshold=self.peak_threshold,
+            min_dist=[self.attenuation_min_distance, self.delay_min_distance],
+        )
 
         # compute delay_peak, attenuation peak, and attenuation/delay estimates
-        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks(self.peak_indices)
+        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks(
+            self.peak_indices
+        )
 
         # compute masks for separation
         computed_masks = self._compute_masks()
@@ -188,17 +216,27 @@ class Duet(mask_separation_base.MaskSeparationBase):
         """
 
         if not self.audio_signal.is_stereo:  # double check this
-            raise ValueError('Cannot run Duet on audio signal without exactly 2 channels!')
+            raise ValueError(
+                "Cannot run Duet on audio signal without exactly 2 channels!"
+            )
 
-        if not np.all([self.stft_ch0, self.stft_ch1, self.frequency_matrix]) or recompute:
-            self.stft_ch0, self.stft_ch1, self.frequency_matrix = self._compute_spectrogram(self.sample_rate)
+        if (
+            not np.all([self.stft_ch0, self.stft_ch1, self.frequency_matrix])
+            or recompute
+        ):
+            self.stft_ch0, self.stft_ch1, self.frequency_matrix = self._compute_spectrogram(
+                self.sample_rate
+            )
 
         if not np.all([self.symmetric_atn, self.delay]) or recompute:
-            self.symmetric_atn, self.delay = self._compute_atn_delay(self.stft_ch0, self.stft_ch1,
-                                                                     self.frequency_matrix)
+            self.symmetric_atn, self.delay = self._compute_atn_delay(
+                self.stft_ch0, self.stft_ch1, self.frequency_matrix
+            )
 
         if self.normalized_attenuation_delay_histogram is None or recompute:
-            self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = self._make_histogram()
+            self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = (
+                self._make_histogram()
+            )
 
         if normalized:
             return self.normalized_attenuation_delay_histogram
@@ -215,13 +253,15 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         """
         if peak_indices is None and self.peak_indices is None:
-            raise ValueError('Need peak_indices to make masks!')
+            raise ValueError("Need peak_indices to make masks!")
 
         if self.normalized_attenuation_delay_histogram is None:
             self.get_atn_delay_histogram(recompute=True)
 
         peak_indices = self.peak_indices if peak_indices is None else peak_indices
-        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks(peak_indices)
+        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks(
+            peak_indices
+        )
         return self._compute_masks()
 
     def _compute_spectrogram(self, sample_rate):
@@ -244,7 +284,9 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         # Compute the freq. matrix for later use in phase calculations
         n_time_bins = len(self.audio_signal.time_bins_vector)
-        wmat = np.array(np.tile(np.mat(self.audio_signal.freq_vector).T, (1, n_time_bins))) * (2 * np.pi / sample_rate)
+        wmat = np.array(
+            np.tile(np.mat(self.audio_signal.freq_vector).T, (1, n_time_bins))
+        ) * (2 * np.pi / sample_rate)
         wmat += constants.EPSILON
         return stft_ch0, stft_ch1, wmat
 
@@ -252,10 +294,16 @@ class Duet(mask_separation_base.MaskSeparationBase):
     def _compute_atn_delay(stft_ch0, stft_ch1, frequency_matrix):
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point
-        inter_channel_ratio = (stft_ch1 + constants.EPSILON) / (stft_ch0 + constants.EPSILON)
-        attenuation = np.abs(inter_channel_ratio)  # relative attenuation between the two channels
+        inter_channel_ratio = (stft_ch1 + constants.EPSILON) / (
+            stft_ch0 + constants.EPSILON
+        )
+        attenuation = np.abs(
+            inter_channel_ratio
+        )  # relative attenuation between the two channels
         symmetric_attenuation = attenuation - 1 / attenuation  # symmetric attenuation
-        relative_delay = -np.imag(np.log(inter_channel_ratio)) / (2 * np.pi * frequency_matrix)  # relative delay
+        relative_delay = -np.imag(np.log(inter_channel_ratio)) / (
+            2 * np.pi * frequency_matrix
+        )  # relative delay
         return symmetric_attenuation, relative_delay
 
     def _make_histogram(self):
@@ -275,14 +323,19 @@ class Duet(mask_separation_base.MaskSeparationBase):
             delay_bins (np.array): The range of delay values distributed into bins
         """
         # calculate the weighted histogram
-        time_frequency_weights = (np.abs(self.stft_ch0) * np.abs(self.stft_ch1)) ** self.p * \
-                                 (np.abs(self.frequency_matrix)) ** self.q
+        time_frequency_weights = (
+            np.abs(self.stft_ch0) * np.abs(self.stft_ch1)
+        ) ** self.p * (np.abs(self.frequency_matrix)) ** self.q
 
         # only consider time-freq. points yielding estimates in bounds
-        attenuation_premask = np.logical_and(self.attenuation_min < self.symmetric_atn,
-                                             self.symmetric_atn < self.attenuation_max)
+        attenuation_premask = np.logical_and(
+            self.attenuation_min < self.symmetric_atn,
+            self.symmetric_atn < self.attenuation_max,
+        )
 
-        delay_premask = np.logical_and(self.delay_min < self.delay, self.delay < self.delay_max)
+        delay_premask = np.logical_and(
+            self.delay_min < self.delay, self.delay < self.delay_max
+        )
         attenuation_delay_premask = np.logical_and(attenuation_premask, delay_premask)
 
         nonzero_premask = np.nonzero(attenuation_delay_premask)
@@ -291,12 +344,21 @@ class Duet(mask_separation_base.MaskSeparationBase):
         time_frequency_weights_vector = time_frequency_weights[nonzero_premask]
 
         bins_array = np.array([self.num_attenuation_bins, self.num_delay_bins])
-        range_array = np.array([[self.attenuation_min, self.attenuation_max], [self.delay_min, self.delay_max]])
+        range_array = np.array(
+            [
+                [self.attenuation_min, self.attenuation_max],
+                [self.delay_min, self.delay_max],
+            ]
+        )
 
         # compute the histogram
-        histogram, atn_bins, delay_bins = np.histogram2d(symmetric_attenuation_vector, delay_vector,
-                                                         bins=bins_array, range=range_array,
-                                                         weights=time_frequency_weights_vector)
+        histogram, atn_bins, delay_bins = np.histogram2d(
+            symmetric_attenuation_vector,
+            delay_vector,
+            bins=bins_array,
+            range=range_array,
+            weights=time_frequency_weights_vector,
+        )
 
         # Save non-normalized as an option for plotting later
         self.attenuation_delay_histogram = histogram
@@ -319,13 +381,13 @@ class Duet(mask_separation_base.MaskSeparationBase):
         """
 
         if peak_indices is None:
-            raise ValueError('No peak indices')
+            raise ValueError("No peak indices")
 
         atn_indices = [x[0] for x in peak_indices]
         delay_indices = [x[1] for x in peak_indices]
 
         if any(a > len(self.attenuation_bins) for a in atn_indices):
-            raise ValueError('Attenuation index greater than length of bins')
+            raise ValueError("Attenuation index greater than length of bins")
 
         symmetric_atn_peak = self.attenuation_bins[atn_indices]
         delay_peak = self.delay_bins[delay_indices]
@@ -347,12 +409,16 @@ class Duet(mask_separation_base.MaskSeparationBase):
         for i in range(0, self.num_sources):
             mask_array = np.zeros_like(self.stft_ch0, dtype=bool)
             phase = np.exp(-1j * self.frequency_matrix * self.delay_peak[i])
-            score = np.abs(self.atn_peak[i] * phase * self.stft_ch0 - self.stft_ch1) ** 2 / (1 + self.atn_peak[i] ** 2)
-            mask = (score < best_so_far)
+            score = np.abs(
+                self.atn_peak[i] * phase * self.stft_ch0 - self.stft_ch1
+            ) ** 2 / (1 + self.atn_peak[i] ** 2)
+            mask = score < best_so_far
             mask_array[mask] = True
             background_mask = masks.BinaryMask(np.array(mask_array))
             self.result_masks.append(background_mask)
-            self.result_masks[0].mask = np.logical_xor(self.result_masks[i].mask, self.result_masks[0].mask)
+            self.result_masks[0].mask = np.logical_xor(
+                self.result_masks[i].mask, self.result_masks[0].mask
+            )
             best_so_far[mask] = score[mask]
 
         # Compute first mask based on what the other masks left remaining
@@ -402,25 +468,33 @@ class Duet(mask_separation_base.MaskSeparationBase):
         augmented_matrix = np.vstack(
             [
                 np.hstack(
-                    [matrix[0, 0] * np.ones((copy_row, copy_col)),
-                     np.ones((copy_row, 1)) * matrix[0, :],
-                     matrix[0, -1] * np.ones((copy_row, copy_col))
-                     ]),
+                    [
+                        matrix[0, 0] * np.ones((copy_row, copy_col)),
+                        np.ones((copy_row, 1)) * matrix[0, :],
+                        matrix[0, -1] * np.ones((copy_row, copy_col)),
+                    ]
+                ),
                 np.hstack(
-                    [matrix[:, 0] * np.ones((1, copy_col)),
-                     matrix,
-                     matrix[:, -1] * np.ones((1, copy_col))]),
+                    [
+                        matrix[:, 0] * np.ones((1, copy_col)),
+                        matrix,
+                        matrix[:, -1] * np.ones((1, copy_col)),
+                    ]
+                ),
                 np.hstack(
-                    [matrix[-1, 1] * np.ones((copy_row, copy_col)),
-                     np.ones((copy_row, 1)) * matrix[-1, :],
-                     matrix[-1, -1] * np.ones((copy_row, copy_col))
-                     ]
-                )
+                    [
+                        matrix[-1, 1] * np.ones((copy_row, copy_col)),
+                        np.ones((copy_row, 1)) * matrix[-1, :],
+                        matrix[-1, -1] * np.ones((copy_row, copy_col)),
+                    ]
+                ),
             ]
         )
 
         # perform two-dimensional convolution between the input matrix and the kernel
-        smooted_matrix = signal.convolve2d(augmented_matrix, kernel_matrix[::-1, ::-1], mode='valid')
+        smooted_matrix = signal.convolve2d(
+            augmented_matrix, kernel_matrix[::-1, ::-1], mode="valid"
+        )
 
         return smooted_matrix
 
@@ -432,18 +506,28 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         """
         if len(self.result_masks) == 0:
-            raise ValueError('Cannot make audio signals with no masks to apply!')
+            raise ValueError("Cannot make audio signals with no masks to apply!")
 
         signals = []
         for i in range(self.num_sources):
             # Apply masks to stft channels using equation 8.34 (pg. 11) provided by Rickard
-            stft_sources = ((self.stft_ch0 + self.atn_peak[i] * np.exp(1j * self.frequency_matrix * self.delay_peak[i])
-                             * self.stft_ch1) / (1 + self.atn_peak[i] ** 2))
-            new_sig = self.audio_signal.make_copy_with_stft_data(stft_sources, verbose=False)
+            stft_sources = (
+                self.stft_ch0
+                + self.atn_peak[i]
+                * np.exp(1j * self.frequency_matrix * self.delay_peak[i])
+                * self.stft_ch1
+            ) / (1 + self.atn_peak[i] ** 2)
+            new_sig = self.audio_signal.make_copy_with_stft_data(
+                stft_sources, verbose=False
+            )
             new_sig = new_sig.apply_mask(self.result_masks[i])
             new_sig.stft_params = self.stft_params
-            source_estimate = new_sig.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
-            cur_signal = AudioSignal(audio_data_array=source_estimate, sample_rate=self.sample_rate)
+            source_estimate = new_sig.istft(
+                overwrite=True, truncate_to_length=self.audio_signal.signal_length
+            )
+            cur_signal = AudioSignal(
+                audio_data_array=source_estimate, sample_rate=self.sample_rate
+            )
             signals.append(cur_signal)
         return signals
 
@@ -456,10 +540,12 @@ class Duet(mask_separation_base.MaskSeparationBase):
             normalize (Optional[bool]): Flags whether the matrix should be normalized or not
         """
         from mpl_toolkits.mplot3d import axes3d
-        
-        histogram_data = self.get_atn_delay_histogram(recompute=True, normalized=normalize) \
-            if self.attenuation_delay_histogram is None \
+
+        histogram_data = (
+            self.get_atn_delay_histogram(recompute=True, normalized=normalize)
+            if self.attenuation_delay_histogram is None
             else self.attenuation_delay_histogram
+        )
 
         atn_tile = np.tile(self.attenuation_bins[1:], (self.num_delay_bins, 1)).T
         delay_tile = np.tile(self.delay_bins[1:].T, (self.num_attenuation_bins, 1))
@@ -467,17 +553,17 @@ class Duet(mask_separation_base.MaskSeparationBase):
         # plot the histogram in 2D
         plt.subplot(121)
         plt.pcolormesh(atn_tile, delay_tile, histogram_data)
-        plt.xlabel(r'$\alpha$', fontsize=16)
-        plt.ylabel(r'$\delta$', fontsize=16)
-        plt.title(r'$\alpha-\delta$ Histogram')
-        plt.axis('tight')
+        plt.xlabel(r"$\alpha$", fontsize=16)
+        plt.ylabel(r"$\delta$", fontsize=16)
+        plt.title(r"$\alpha-\delta$ Histogram")
+        plt.axis("tight")
 
         # plot the histogram in 3D
         fig = plt.gcf()
-        ax = fig.add_subplot(122, projection='3d')
+        ax = fig.add_subplot(122, projection="3d")
         ax.plot_wireframe(atn_tile, delay_tile, histogram_data, rstride=2, cstride=2)
-        plt.xlabel(r'$\alpha$', fontsize=16)
-        plt.ylabel(r'$\delta$', fontsize=16)
-        plt.title(r'$\alpha-\delta$ Histogram')
-        plt.axis('tight')
+        plt.xlabel(r"$\alpha$", fontsize=16)
+        plt.ylabel(r"$\delta$", fontsize=16)
+        plt.title(r"$\alpha-\delta$ Histogram")
+        plt.axis("tight")
         ax.view_init(30, 30)

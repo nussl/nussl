@@ -25,17 +25,31 @@ class ICA(separation_base.SeparationBase):
 
     """
 
-    def __init__(self, observations_list=None, sample_rate=constants.DEFAULT_SAMPLE_RATE,
-                 max_iterations=None, random_seed=None, fast_ica_kwargs=None):
-        observations_signal = self._validate_observations_list(observations_list, sample_rate)
+    def __init__(
+        self,
+        observations_list=None,
+        sample_rate=constants.DEFAULT_SAMPLE_RATE,
+        max_iterations=None,
+        random_seed=None,
+        fast_ica_kwargs=None,
+    ):
+        observations_signal = self._validate_observations_list(
+            observations_list, sample_rate
+        )
         super(ICA, self).__init__(input_audio_signal=observations_signal)
 
         # FastICA setup attributes
         self.num_components = self.audio_signal.num_channels
 
-        self.fast_ica_kwargs = fast_ica_kwargs if isinstance(fast_ica_kwargs, dict) else {}
-        self.max_iters = self._get_default_or_key(max_iterations, 'max_iter', self.fast_ica_kwargs)
-        self.random_seed = self._get_default_or_key(random_seed, 'random_state', self.fast_ica_kwargs)
+        self.fast_ica_kwargs = (
+            fast_ica_kwargs if isinstance(fast_ica_kwargs, dict) else {}
+        )
+        self.max_iters = self._get_default_or_key(
+            max_iterations, "max_iter", self.fast_ica_kwargs
+        )
+        self.random_seed = self._get_default_or_key(
+            random_seed, "random_state", self.fast_ica_kwargs
+        )
 
         # Results attributes
         self.estimated_sources = None
@@ -53,19 +67,23 @@ class ICA(separation_base.SeparationBase):
         """
 
         if isinstance(observations_list, np.ndarray):
-            return self.numpy_observations_to_audio_signal(observations_list, sample_rate)
+            return self.numpy_observations_to_audio_signal(
+                observations_list, sample_rate
+            )
 
         elif isinstance(observations_list, list):
             return self.audio_signal_observations_to_audio_signal(observations_list)
 
         else:
             raise ValueError(
-                'Expected numpy array or list of AudioSignal objects,'
-                f' given {type(observations_list)}!'
+                "Expected numpy array or list of AudioSignal objects,"
+                f" given {type(observations_list)}!"
             )
 
     @staticmethod
-    def numpy_observations_to_audio_signal(observations, sample_rate=constants.DEFAULT_SAMPLE_RATE):
+    def numpy_observations_to_audio_signal(
+        observations, sample_rate=constants.DEFAULT_SAMPLE_RATE
+    ):
         """
 
         Args:
@@ -75,9 +93,14 @@ class ICA(separation_base.SeparationBase):
         Returns:
 
         """
-        assert isinstance(observations, np.ndarray), 'Observations must be a numpy array!'
-        if observations.ndim > 1\
-                and observations.shape[constants.CHAN_INDEX] > observations.shape[constants.LEN_INDEX]:
+        assert isinstance(
+            observations, np.ndarray
+        ), "Observations must be a numpy array!"
+        if (
+            observations.ndim > 1
+            and observations.shape[constants.CHAN_INDEX]
+            > observations.shape[constants.LEN_INDEX]
+        ):
             observations = observations.T
 
         return AudioSignal(audio_data_array=observations, sample_rate=sample_rate)
@@ -94,14 +117,20 @@ class ICA(separation_base.SeparationBase):
         """
         observations = utils.verify_audio_signal_list_strict(observations)
 
-        if not all(observations[0].signal_length == o.signal_length for o in observations):
-            raise ValueError('All observation AudioSignal objects must have the same length!')
+        if not all(
+            observations[0].signal_length == o.signal_length for o in observations
+        ):
+            raise ValueError(
+                "All observation AudioSignal objects must have the same length!"
+            )
 
         if not all(o.is_mono for o in observations):
-            raise ValueError('All AudioSignals in observations_list must be mono!')
+            raise ValueError("All AudioSignals in observations_list must be mono!")
 
         observation_data = np.vstack([o.audio_data for o in observations])
-        return AudioSignal(audio_data_array=observation_data, sample_rate=observations[0].sample_rate)
+        return AudioSignal(
+            audio_data_array=observation_data, sample_rate=observations[0].sample_rate
+        )
 
     @staticmethod
     def _get_default_or_key(default_value, key, dict_):
@@ -123,8 +152,12 @@ class ICA(separation_base.SeparationBase):
              ::
 
         """
-        ica = sklearn.decomposition.FastICA(n_components=self.num_components, random_state=self.random_seed,
-                                            max_iter=self.max_iters, **self.fast_ica_kwargs)
+        ica = sklearn.decomposition.FastICA(
+            n_components=self.num_components,
+            random_state=self.random_seed,
+            max_iter=self.max_iters,
+            **self.fast_ica_kwargs,
+        )
 
         # save for normalizing the estimated signals
         max_input_amplitude = np.max(np.abs(self.audio_signal.audio_data))
@@ -140,9 +173,13 @@ class ICA(separation_base.SeparationBase):
         # store the resultant computations
         self.estimated_mixing_params = ica.mixing_
         self.mean = ica.mean_
-        self.estimated_sources = [AudioSignal(audio_data_array=ica_output[i, :],
-                                              sample_rate=self.audio_signal.sample_rate)
-                                  for i in range(ica_output.shape[0])]
+        self.estimated_sources = [
+            AudioSignal(
+                audio_data_array=ica_output[i, :],
+                sample_rate=self.audio_signal.sample_rate,
+            )
+            for i in range(ica_output.shape[0])
+        ]
 
         return self.estimated_sources
 
@@ -157,6 +194,8 @@ class ICA(separation_base.SeparationBase):
              ::
         """
         if self.estimated_sources is None:
-            raise ValueError('ICA.run() must be run prior to calling ICA.make_audio_signals()!')
+            raise ValueError(
+                "ICA.run() must be run prior to calling ICA.make_audio_signals()!"
+            )
 
         return self.estimated_sources

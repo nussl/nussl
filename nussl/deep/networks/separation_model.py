@@ -5,6 +5,7 @@ import torch
 import numpy as np
 from itertools import chain
 
+
 class SeparationModel(nn.Module):
     def __init__(self, config):
         """
@@ -62,25 +63,25 @@ class SeparationModel(nn.Module):
         """
         super(SeparationModel, self).__init__()
         if type(config) is str:
-            if 'json' in config:
-                with open(config, 'r') as f:
+            if "json" in config:
+                with open(config, "r") as f:
                     config = json.load(f)
             else:
                 config = json.loads(config)
 
         module_dict = {}
         self.input = {}
-        for module_key in config['modules']:
-            module = config['modules'][module_key]
-            if 'input_shape' not in module:
-                class_func = getattr(modules, module['class'])
-                module_dict[module_key] = class_func(**module['args'])
+        for module_key in config["modules"]:
+            module = config["modules"][module_key]
+            if "input_shape" not in module:
+                class_func = getattr(modules, module["class"])
+                module_dict[module_key] = class_func(**module["args"])
             else:
-                self.input[module_key] = module['input_shape']
+                self.input[module_key] = module["input_shape"]
 
         self.layers = nn.ModuleDict(module_dict)
-        self.connections = config['connections']
-        self.output_keys = config['output']
+        self.connections = config["connections"]
+        self.output_keys = config["output"]
         self.config = config
 
     def forward(self, data):
@@ -93,9 +94,13 @@ class SeparationModel(nn.Module):
 
         """
         if not all(name in list(data) for name in list(self.input)):
-            raise ValueError(f'Not all keys present in data! Needs {", ".join(self.input)}')
+            raise ValueError(
+                f'Not all keys present in data! Needs {", ".join(self.input)}'
+            )
         output = {}
-        all_connections = [[connection[0]] + connection[1] for connection in self.connections]
+        all_connections = [
+            [connection[0]] + connection[1] for connection in self.connections
+        ]
         all_connections = list(chain.from_iterable(all_connections))
         marked_for_deletion = []
 
@@ -116,8 +121,8 @@ class SeparationModel(nn.Module):
         return {o: output[o] for o in self.output_keys}
 
     def project_data(self, data, clamp=False):
-        if 'mel_projection' in self.layers:
-            data = self.layers['mel_projection'](data)
+        if "mel_projection" in self.layers:
+            data = self.layers["mel_projection"](data)
             if clamp:
                 data = data.clamp(0.0, 1.0)
         return data
@@ -132,18 +137,15 @@ class SeparationModel(nn.Module):
         Returns:
 
         """
-        save_dict = {
-            'state_dict': self.state_dict(),
-            'config': json.dumps(self.config)
-        }
+        save_dict = {"state_dict": self.state_dict(), "config": json.dumps(self.config)}
         save_dict = {**save_dict, **(metadata if metadata else {})}
         torch.save(save_dict, location)
-    
+
     def __repr__(self):
         output = super().__repr__()
         num_parameters = 0
         for p in self.parameters():
             if p.requires_grad:
                 num_parameters += np.cumprod(p.size())[-1]
-        output += '\nNumber of parameters: %d' % num_parameters
+        output += "\nNumber of parameters: %d" % num_parameters
         return output

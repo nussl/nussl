@@ -7,23 +7,34 @@ import numpy as np
 
 
 class TestOverlapAdd(unittest.TestCase):
-
     def setUp(self):
         """
         Set up variables used in the tests.
         """
         self.valid_methods = [nussl.Repet, nussl.RepetSim, nussl.FT2D]
-        self.invalid_methods = [nussl.Duet, nussl.OverlapAdd, nussl.SeparationBase,
-                                nussl.stft_utils.StftParams, nussl.AudioSignal, int, str, unittest.TestCase,
-                                None]
+        self.invalid_methods = [
+            nussl.Duet,
+            nussl.OverlapAdd,
+            nussl.SeparationBase,
+            nussl.stft_utils.StftParams,
+            nussl.AudioSignal,
+            int,
+            str,
+            unittest.TestCase,
+            None,
+        ]
         self.valid_method_names = [m.__name__ for m in self.valid_methods]
-        self.invalid_method_names = [m.__name__ for m in self.invalid_methods if m is not None]
-        self.invalid_method_names.append('None')
+        self.invalid_method_names = [
+            m.__name__ for m in self.invalid_methods if m is not None
+        ]
+        self.invalid_method_names.append("None")
 
         num_samples = nussl.DEFAULT_SAMPLE_RATE * 300  # 300 seconds = 5 min
-        sine_wave = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
+        sine_wave = np.sin(
+            np.linspace(0, 100 * 2 * np.pi, num_samples)
+        )  # Freq = 100 Hz
         self.signal = nussl.AudioSignal(audio_data_array=sine_wave)
-        self.signal.path_to_input_file = 'check/out/this/cool/path.wav'
+        self.signal.path_to_input_file = "check/out/this/cool/path.wav"
 
     def test_overlap_add_setup(self):
         """
@@ -36,18 +47,22 @@ class TestOverlapAdd(unittest.TestCase):
             assert ola1.separation_method == ola2.separation_method == method
 
             instance = method(self.signal)
-            assert type(ola1.separation_instance) == type(ola2.separation_instance) == type(instance)
+            assert (
+                type(ola1.separation_instance)
+                == type(ola2.separation_instance)
+                == type(instance)
+            )
 
         # These special cases should work too
-        ola = nussl.OverlapAdd(self.signal, 'r-e-p*-e-t!@#')
+        ola = nussl.OverlapAdd(self.signal, "r-e-p*-e-t!@#")
         assert ola.separation_method == nussl.Repet
 
-        ola = nussl.OverlapAdd(self.signal, 'repet_sim')
+        ola = nussl.OverlapAdd(self.signal, "repet_sim")
         assert ola.separation_method == nussl.RepetSim
 
         # 'repet_sim' is misspelled --> raise error
         with self.assertRaises(ValueError):
-            ola = nussl.OverlapAdd(self.signal, 'repe_sim')
+            ola = nussl.OverlapAdd(self.signal, "repe_sim")
             assert ola.separation_method == nussl.RepetSim
 
         # Test invalid methods
@@ -69,7 +84,10 @@ class TestOverlapAdd(unittest.TestCase):
             ola = nussl.OverlapAdd(self.signal, method, use_librosa_stft=False)
             assert ola.separation_instance.stft_params == params
             assert ola.separation_instance.audio_signal == self.signal
-            assert ola.separation_instance.audio_signal.path_to_input_file == self.signal.path_to_input_file
+            assert (
+                ola.separation_instance.audio_signal.path_to_input_file
+                == self.signal.path_to_input_file
+            )
 
     def test_overlap_add_simple(self):
         """
@@ -85,8 +103,12 @@ class TestOverlapAdd(unittest.TestCase):
         """
         Tests to make sure the properties are set correctly.
         """
-        assert sorted(nussl.OverlapAdd.valid_separation_methods()) == sorted(self.valid_methods)
-        assert sorted(nussl.OverlapAdd.valid_separation_method_names()) == sorted(self.valid_method_names)
+        assert sorted(nussl.OverlapAdd.valid_separation_methods()) == sorted(
+            self.valid_methods
+        )
+        assert sorted(nussl.OverlapAdd.valid_separation_method_names()) == sorted(
+            self.valid_method_names
+        )
 
         for i, method in enumerate(self.valid_methods):
             ola = nussl.OverlapAdd(self.signal, method)

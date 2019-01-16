@@ -14,7 +14,6 @@ import nussl
 
 
 class MaskSeparationBaseUnitTests(unittest.TestCase):
-
     def test_setup(self):
         """
         Test many different ways for setting up MaskSeparationBase class
@@ -25,11 +24,11 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
 
         # Invalid ways to set up
         with self.assertRaises(ValueError):
-            mask_type = 'bin'
+            mask_type = "bin"
             _ = nussl.MaskSeparationBase(sig, mask_type)
 
         with self.assertRaises(ValueError):
-            mask_type = 'asdf'
+            mask_type = "asdf"
             _ = nussl.MaskSeparationBase(sig, mask_type)
 
         with self.assertRaises(ValueError):
@@ -37,7 +36,7 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
             _ = nussl.MaskSeparationBase(sig, mask_type)
 
         # all valid ways
-        mask_type = 'BiNaRy'
+        mask_type = "BiNaRy"
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.BINARY_MASK
 
@@ -50,7 +49,7 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.BINARY_MASK
 
-        mask_type = 'SOFT'
+        mask_type = "SOFT"
         mask_separator = nussl.MaskSeparationBase(sig, mask_type)
         assert mask_separator.mask_type == nussl.MaskSeparationBase.SOFT_MASK
 
@@ -76,7 +75,7 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
             mask_separator.run()
 
         with self.assertRaises(NotImplementedError):
-            mask_separator.plot('')
+            mask_separator.plot("")
 
         with self.assertRaises(NotImplementedError):
             mask_separator.make_audio_signals()
@@ -95,5 +94,3 @@ class MaskSeparationBaseUnitTests(unittest.TestCase):
         new_mask_separator = nussl.MaskSeparationBase.from_json(mask_json)
 
         assert new_mask_separator == mask_separator
-
-

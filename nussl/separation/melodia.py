@@ -30,14 +30,28 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
     """
 
-    def __init__(self, input_audio_signal, high_pass_cutoff=None, minimum_frequency=55.0,
-                 maximum_frequency=1760.0, voicing_tolerance=0.5, minimum_peak_salience=0.0,
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
-                 mask_type=constants.SOFT_MASK, mask_threshold=0.5):
+    def __init__(
+        self,
+        input_audio_signal,
+        high_pass_cutoff=None,
+        minimum_frequency=55.0,
+        maximum_frequency=1760.0,
+        voicing_tolerance=0.5,
+        minimum_peak_salience=0.0,
+        do_mono=False,
+        use_librosa_stft=constants.USE_LIBROSA_STFT,
+        mask_type=constants.SOFT_MASK,
+        mask_threshold=0.5,
+    ):
 
-        super(Melodia, self).__init__(input_audio_signal=input_audio_signal, 
-                                      mask_type=mask_type, mask_threshold=mask_threshold)
-        self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
+        super(Melodia, self).__init__(
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type,
+            mask_threshold=mask_threshold,
+        )
+        self.high_pass_cutoff = (
+            100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
+        )
         self.background = None
         self.foreground = None
         self.use_librosa_stft = use_librosa_stft
@@ -57,23 +71,31 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
     def extract_melody(self):
         params = {}
-        params['minfqr'] = self.minimum_frequency
-        params['maxfqr'] = self.maximum_frequency
-        params['voicing'] = self.voicing_tolerance
-        params['minpeaksalience'] = self.minimum_peak_salience
+        params["minfqr"] = self.minimum_frequency
+        params["maxfqr"] = self.maximum_frequency
+        params["voicing"] = self.voicing_tolerance
+        params["minpeaksalience"] = self.minimum_peak_salience
 
         try:
-            data = vamp.collect(self.audio_signal.audio_data, self.sample_rate,
-                                "mtg-melodia:melodia", parameters=params)
+            data = vamp.collect(
+                self.audio_signal.audio_data,
+                self.sample_rate,
+                "mtg-melodia:melodia",
+                parameters=params,
+            )
         except Exception as e:
-            print('**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**\n'
-                  '*          Are Vamp and Melodia installed correctly?          *\n'
-                  '* Check https://bit.ly/2DXbrAk for installation instructions! *\n'
-                  '**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**')
+            print(
+                "**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**\n"
+                "*          Are Vamp and Melodia installed correctly?          *\n"
+                "* Check https://bit.ly/2DXbrAk for installation instructions! *\n"
+                "**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**"
+            )
             raise e
 
-        _, melody = data['vector']
-        hop = 128./44100. # hard coded hop in Melodia vamp plugin, converting it to frames.
+        _, melody = data["vector"]
+        hop = (
+            128.0 / 44100.0
+        )  # hard coded hop in Melodia vamp plugin, converting it to frames.
         timestamps = 8 * hop + np.arange(len(melody)) * hop
         melody[melody < 0] = 0
         self.melody = melody
@@ -90,7 +112,9 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
         sample_rate = self.audio_signal.sample_rate
         melody_signal = []
-        transition_length = .010 # duration for fade in/out and frequency interpretation
+        transition_length = (
+            0.010
+        )  # duration for fade in/out and frequency interpretation
         phase = np.zeros(num_overtones)
         previous_frequency = 0
         previous_time = 0
@@ -98,28 +122,36 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         for time, frequency in zip(self.timestamps, self.melody):
             num_samples = int(np.round((time - previous_time) * sample_rate))
             if num_samples > 0:
-                num_transition_samples = float(min(np.round(transition_length * sample_rate),
-                                                   num_samples))
+                num_transition_samples = float(
+                    min(np.round(transition_length * sample_rate), num_samples)
+                )
                 frequency_series = np.ones(num_samples) * previous_frequency
 
                 if previous_frequency > 0 and frequency > 0:
-                    frequency_series += np.minimum(np.arange(num_samples) / num_transition_samples, 1) * \
-                                        (frequency - previous_frequency)
+                    frequency_series += np.minimum(
+                        np.arange(num_samples) / num_transition_samples, 1
+                    ) * (frequency - previous_frequency)
                 elif frequency > 0:
                     frequency_series = np.ones(num_samples) * frequency
 
                 samples = np.zeros(num_samples)
                 for overtone in range(num_overtones):
                     overtone_num = overtone + 1
-                    phasors = 2 * np.pi * overtone_num * frequency_series / float(sample_rate)
+                    phasors = (
+                        2 * np.pi * overtone_num * frequency_series / float(sample_rate)
+                    )
                     phases = phase[overtone] + np.cumsum(phasors)
                     samples += np.sin(phases) / overtone_num
                     phase[overtone] = phases[-1]
 
                 if previous_frequency == 0 and frequency > 0:
-                    samples *= np.minimum(np.arange(num_samples) / num_transition_samples, 1)
+                    samples *= np.minimum(
+                        np.arange(num_samples) / num_transition_samples, 1
+                    )
                 elif previous_frequency > 0 and frequency == 0:
-                    samples *= np.maximum(1 - np.arange(num_samples) / num_transition_samples, 0)
+                    samples *= np.maximum(
+                        1 - np.arange(num_samples) / num_transition_samples, 0
+                    )
                 elif previous_frequency == 0 and frequency == 0:
                     samples *= 0
 
@@ -130,10 +162,14 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
         melody_signal = np.asarray(melody_signal)
         melody_signal *= 0.8 / float(np.max(melody_signal))
-        melody_signal = [melody_signal for channel in range(self.audio_signal.num_channels)]
+        melody_signal = [
+            melody_signal for channel in range(self.audio_signal.num_channels)
+        ]
         melody_signal = np.asarray(melody_signal)
-        melody_signal = melody_signal[:, 0:self.audio_signal.signal_length]
-        melody_signal = AudioSignal(audio_data_array=melody_signal, sample_rate=sample_rate)
+        melody_signal = melody_signal[:, 0 : self.audio_signal.signal_length]
+        melody_signal = AudioSignal(
+            audio_data_array=melody_signal, sample_rate=sample_rate
+        )
 
         self.melody_signal = melody_signal
         return melody_signal
@@ -150,9 +186,11 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
         # Smoothing the mask row-wise using a low-pass filter to
         # get rid of discontuinities in the mask.
-        kernel =  np.full((1, 20), 1/20.)
+        kernel = np.full((1, 20), 1 / 20.0)
         for channel in range(self.audio_signal.num_channels):
-            mask[:, :, channel] = convolve(normalized_melody_stft[:, :, channel], kernel)
+            mask[:, :, channel] = convolve(
+                normalized_melody_stft[:, :, channel], kernel
+            )
         return mask
 
     def run(self):
@@ -168,8 +206,16 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
         """
         # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
-        self.high_pass_cutoff = int(np.ceil(self.high_pass_cutoff * (self.stft_params.n_fft_bins - 1) /
-                                            self.audio_signal.sample_rate)) + 1
+        self.high_pass_cutoff = (
+            int(
+                np.ceil(
+                    self.high_pass_cutoff
+                    * (self.stft_params.n_fft_bins - 1)
+                    / self.audio_signal.sample_rate
+                )
+            )
+            + 1
+        )
         self._compute_spectrum()
 
         # separate the mixture foreground melody by masking
@@ -178,7 +224,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
             self.create_melody_signal(100)
 
         foreground_mask = self.create_harmonic_mask(self.melody_signal)
-        foreground_mask[0:self.high_pass_cutoff, :] = 0
+        foreground_mask[0 : self.high_pass_cutoff, :] = 0
 
         foreground_mask = masks.SoftMask(foreground_mask)
         if self.mask_type == self.BINARY_MASK:
@@ -188,16 +234,21 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         self.background_mask = foreground_mask.invert_mask()
 
         self.foreground = self.audio_signal.apply_mask(foreground_mask)
-        self.foreground.istft(self.stft_params.window_length, self.stft_params.hop_length,
-                              self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft,
-                              truncate_to_length=self.audio_signal.signal_length)
+        self.foreground.istft(
+            self.stft_params.window_length,
+            self.stft_params.hop_length,
+            self.stft_params.window_type,
+            overwrite=True,
+            use_librosa=self.use_librosa_stft,
+            truncate_to_length=self.audio_signal.signal_length,
+        )
 
         return [self.background_mask, self.foreground_mask]
 
     def _compute_spectrum(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
-                                           use_librosa=self.use_librosa_stft)
+        self.stft = self.audio_signal.stft(
+            overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft
+        )
 
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run FT2D.run() prior

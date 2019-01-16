@@ -13,7 +13,6 @@ import nussl
 
 
 class MaskUnitTests(unittest.TestCase):
-
     def test_mask_setup(self):
 
         # make sure Mask does NOT work
@@ -51,7 +50,7 @@ class MaskUnitTests(unittest.TestCase):
         # SoftMask initialized correctly
         arr = np.random.random((self.h, self.l))
         soft_mask = nussl.separation.SoftMask(arr)
-        assert soft_mask.dtype.kind in np.typecodes['AllFloat']
+        assert soft_mask.dtype.kind in np.typecodes["AllFloat"]
         assert soft_mask.length == self.l
         assert soft_mask.height == self.h
         assert soft_mask.num_channels == self.ch
@@ -78,7 +77,7 @@ class MaskUnitTests(unittest.TestCase):
 
         # try with floats that are very close to 0, 1, but above tolerance
         with self.assertRaises(ValueError):
-            arr = np.random.randint(0, 2, size=(self.h, self.l)).astype('float')
+            arr = np.random.randint(0, 2, size=(self.h, self.l)).astype("float")
             arr += np.random.random((self.h, self.l)) * 0.1
             _ = nussl.separation.BinaryMask(arr)
 
@@ -97,16 +96,16 @@ class MaskUnitTests(unittest.TestCase):
 
         for shape in shapes:
             ones_mask = nussl.separation.SoftMask.ones(shape)
-            assert np.all(ones_mask.mask == np.ones(shape).astype('float'))
+            assert np.all(ones_mask.mask == np.ones(shape).astype("float"))
 
             ones_mask = nussl.separation.BinaryMask.ones(shape)
-            assert np.all(ones_mask.mask == np.ones(shape).astype('bool'))
+            assert np.all(ones_mask.mask == np.ones(shape).astype("bool"))
 
             zeros_mask = nussl.separation.SoftMask.zeros(shape)
-            assert np.all(zeros_mask.mask == np.zeros(shape).astype('float'))
+            assert np.all(zeros_mask.mask == np.zeros(shape).astype("float"))
 
             zeros_mask = nussl.separation.BinaryMask.zeros(shape)
-            assert np.all(zeros_mask.mask == np.zeros(shape).astype('bool'))
+            assert np.all(zeros_mask.mask == np.zeros(shape).astype("bool"))
 
     def test_invert_mask(self):
         shape = (1, 100, 100)
@@ -132,7 +131,7 @@ class MaskUnitTests(unittest.TestCase):
         time = np.linspace(0, duration, num_samples)
         signal_array = np.zeros_like(time)
 
-        for i in np.arange(1, num_harmonics+1):
+        for i in np.arange(1, num_harmonics + 1):
             signal_array += np.sin(fundamental_freq * i * time)
 
         return nussl.AudioSignal(audio_data_array=signal_array)
@@ -140,26 +139,21 @@ class MaskUnitTests(unittest.TestCase):
     def test_apply_mask(self):
         signal = self._make_test_signal()
         signal.stft()
-        hplp = nussl.separation.HighLowPassFilter(signal, 150, mask_type='binary')
+        hplp = nussl.separation.HighLowPassFilter(signal, 150, mask_type="binary")
 
         lp_mask, hp_mask = hplp.run()
 
         lp_signal = signal.apply_mask(lp_mask, overwrite=False)
         lp_signal.istft()
 
-        librosa_mask = librosa.util.softmask(lp_mask.get_channel(0),
-                                             signal.get_magnitude_spectrogram_channel(0),
-                                             power=np.inf)
+        librosa_mask = librosa.util.softmask(
+            lp_mask.get_channel(0),
+            signal.get_magnitude_spectrogram_channel(0),
+            power=np.inf,
+        )
         librosa_mask = nussl.separation.BinaryMask(librosa_mask)
 
         lib_signal = signal.apply_mask(librosa_mask, overwrite=False)
         lib_signal.istft()
 
         i = 0
-
-
-
-
-
-
-
