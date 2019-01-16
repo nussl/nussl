@@ -146,12 +146,17 @@ class BaseDataset(Dataset):
         """
         mix, sources, classes = self.load_audio_files(filename)
         output = self.construct_input_output(mix, sources)
+        output['weights'] = self.get_weights(
+            output,
+            self.options['weight_type']
+        )
         output['log_spectrogram'] = self.whiten(output['log_spectrogram'])
         output['classes'] = classes
         output = self.get_target_length_and_transpose(
             output,
             self.options['length']
         )
+
         return self.format_output(output)
 
     def format_output(self, output):
@@ -186,21 +191,13 @@ class BaseDataset(Dataset):
         return data
 
     def construct_input_output(self, mix, sources):
-        log_spectrogram, mix_stft, _ = self.transform(
-            mix,
-            self.options['n_fft'],
-            self.options['hop_length']
-        )
+        log_spectrogram, mix_stft = self.transform(mix)
         mix_magnitude, mix_phase = np.abs(mix_stft), np.angle(mix_stft)
         source_magnitudes = []
         source_log_magnitudes = []
 
         for source in sources:
-            source_log_magnitude, source_stft, _ = self.transform(
-                source,
-                self.options['n_fft'],
-                self.options['hop_length']
-            )
+            source_log_magnitude, source_stft = self.transform(source)
             source_magnitude, source_phase = (
                 np.abs(source_stft),
                 np.angle(source_stft)
@@ -238,10 +235,7 @@ class BaseDataset(Dataset):
             'assignments': assignments,
             'source_spectrograms': source_magnitudes,
         }
-        output['weights'] = self.get_weights(
-            output,
-            self.options['weight_type']
-        )
+
         return output
 
 
@@ -271,53 +265,24 @@ class BaseDataset(Dataset):
         return data_dict
 
     @staticmethod
-    def transform(data, n_fft, hop_length):
-        """Transforms multichannel audio signal into a multichannel spectrogram.
+    def transform(audio_signal):
+        """Uses nussl STFT to transform.
 
         Arguments:
-            data {[np.ndarray]} -- Audio signal of shape (n_channels, n_samples)
-            n_fft {[int]} -- Number of FFT bins for each frame.
-            hop_length {[int]} -- Hop between frames.
+            audio_signal {[np.ndarray]} -- AudioSignal object
 
         Returns:
             [tuple] -- (log_spec, stft, n). log_spec contains the
             log_spectrogram, stft contains the complex spectrogram, and n is the
-            original length of the audio signal (used for reconstruction).
         """
-        n = data.shape[-1]
-        data = librosa.util.fix_length(data, n + n_fft // 2, axis=-1)
-        stft = np.stack(
-            [
-                librosa.stft(data[ch], n_fft=n_fft, hop_length=hop_length)
-                for ch
-                in range(data.shape[0])
-            ],
-            axis=-1,
+        stft = (
+            audio_signal.stft() 
+            if audio_signal.stft_data is None 
+            else audio_signal.stft_data
         )
-        log_spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
-        return log_spectrogram, stft, n
+        log_spectrogram = librosa.amplitude_to_db(np.abs(stft))
+        return log_spectrogram, stft
 
-    @staticmethod
-    def invert_transform(data, n, hop_length):
-        """Inverts a multichannel complex spectrogram back to the audio signal.
-
-        Arguments:
-            data {[np.ndarray]} -- Multichannel complex spectrogram
-            n {int} -- Original length of audio signal
-            hop_length {int} -- Hop length of STFT
-
-        Returns:
-            Multichannel audio signal
-        """
-
-        return np.stack(
-            [
-                librosa.istft(data[:, :, ch], hop_length=hop_length, length=n)
-                for ch
-                in range(data.shape[-1])
-            ],
-            axis=0,
-        )
 
     def get_weights(self, data_dict, weight_type):
         weights = np.ones(data_dict['magnitude_spectrogram'].shape)
@@ -346,8 +311,7 @@ class BaseDataset(Dataset):
             (log_spectrogram - np.max(log_spectrogram)) > threshold
         ).astype(np.float32)
 
-    @staticmethod
-    def _load_audio_file(file_path: str) -> AudioSignal:
+    def _load_audio_file(self, file_path: str) -> AudioSignal:
         """Loads audio file at given path. Uses 
         Args:
             file_path - relative or absolute path to file to load

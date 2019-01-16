@@ -1346,6 +1346,12 @@ class AudioSignal(object):
             (:class:`AudioSignal`): New :class:`AudioSignal` object with the sum of
             ``self`` and ``other``.
         """
+        if type(other) is int:
+            # this is so that sum(list of audio_signals) works.
+            # when sum is called on a list it's evaluated as 0 + elem1 + elem2 + ...
+            # so the 0 case needs to be taken care of (by doing nothing)
+            return self
+
         self._verify_audio_arithmetic(other)
 
         new_signal = copy.deepcopy(self)
@@ -1818,6 +1824,9 @@ class AudioSignal(object):
     ##################################################
 
     def __add__(self, other):
+        return self.add(other)
+
+    def __radd__(self, other):
         return self.add(other)
 
     def __sub__(self, other):

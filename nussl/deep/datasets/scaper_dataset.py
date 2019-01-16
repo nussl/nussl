@@ -28,7 +28,7 @@ class Scaper(BaseDataset):
         return files        
 
     def load_audio_files(self, file_name):
-        mix, sr = self._load_audio_file(file_name[:-4] + 'wav')
+        mix = self._load_audio_file(file_name[:-4] + 'wav')
         jam = jams.load(file_name)
         data = jam.annotations[0]['data']['value']           
         classes = self.options['source_labels']
@@ -38,7 +38,7 @@ class Scaper(BaseDataset):
             if d['role'] == 'foreground':
                 source_path = d['saved_source_file']
                 source_path = os.path.join(self.folder, source_path.split('/')[-1])
-                source_dict[d['label']] = self._load_audio_file(source_path)[0]
+                source_dict[d['label']] = self._load_audio_file(source_path)
 
         for i, group in enumerate(self.options['group_sources']):
             combined = []

@@ -7,8 +7,8 @@ class MixSourceFolder(BaseDataset):
         super(MixSourceFolder, self).__init__(folder, options)
 
         wav_file = os.path.join(self.folder, 'mix', self.files[0])
-        mix = self._load_audio_file(wav_file)[0]
-        self.channels_in_mix = mix.shape[0] if mix.shape[0] < 8 else int(mix.shape[0] / 2)
+        mix = self._load_audio_file(wav_file)
+        self.channels_in_mix = mix.num_channels
 
     def get_files(self, folder):
         files = [x for x in os.listdir(os.path.join(folder, 'mix')) if '.wav' in x]
@@ -24,15 +24,15 @@ class MixSourceFolder(BaseDataset):
         np.random.shuffle(channel_indices)
         channel_indices = channel_indices[:self.options['num_channels']]
 
+        mix_path = os.path.join(self.folder, 'mix', wav_file)
+        mix_signal = self._load_audio_file(mix_path)
+        mix_signal.audio_data = mix_signal.audio_data[channel_indices]
+
         for speaker in self.speaker_folders:
             speaker_path = os.path.join(self.folder, speaker, wav_file)
-            mix_path = os.path.join(self.folder, 'mix', wav_file)
 
-            mix, _ = self._load_audio_file(mix_path)
-            source, _ = self._load_audio_file(speaker_path)
-
-            mix = mix[channel_indices]
-            source = source[channel_indices]
+            source_signal = self._load_audio_file(speaker_path)
+            source_signal.audio_data = source_signal.audio_data[channel_indices]
             sources.append(source)
 
         return mix, sources, np.eye(self.num_speakers)
