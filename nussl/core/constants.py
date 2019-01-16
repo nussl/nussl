@@ -35,23 +35,13 @@ DEFAULT_WIN_LENGTH = 2048  #: (int): Default window length, 2048 samples.
 DEFAULT_BIT_DEPTH = 16  #: (int): Default bit depth. 16-bits, CD-quality
 DEFAULT_MAX_VAL = 2 ** 16  #: (int): Max value of 16-bit audio file (unsigned)
 EPSILON = 1e-16  #: (float): epsilon for determining small values
-MAX_FREQUENCY = (
-    DEFAULT_SAMPLE_RATE // 2
-)  #: (int): Maximum frequency representable. 22050 Hz
+MAX_FREQUENCY = DEFAULT_SAMPLE_RATE // 2  #: (int): Maximum frequency. 22050 Hz
 
-WINDOW_HAMMING = (
-    scipy.signal.hamming.__name__
-)  #: (str): Name for calling Hamming window. 'hamming'
-WINDOW_RECTANGULAR = (
-    "rectangular"
-)  #: (str): Name for calling Rectangular window. 'rectangular'
-WINDOW_HANN = scipy.signal.hann.__name__  #: (str): Name for calling Hann window. 'hann'
-WINDOW_BLACKMAN = (
-    scipy.signal.blackman.__name__
-)  #: (str): Name for calling Blackman window. 'blackman'
-WINDOW_TRIANGULAR = (
-    "triangular"
-)  #: (str): Name for calling Triangular window. 'triangular'
+WINDOW_HAMMING = scipy.signal.hamming.__name__  #: (str): Hamming window. 'hamming'
+WINDOW_RECTANGULAR = "rectangular"  #: (str): Rectangular window. 'rectangular'
+WINDOW_HANN = scipy.signal.hann.__name__  #: (str): Hann window. 'hann'
+WINDOW_BLACKMAN = scipy.signal.blackman.__name__  #: (str): Blackman window. 'blackman'
+WINDOW_TRIANGULAR = "triangular"  #: (str): Triangular window. 'triangular'
 
 WINDOW_DEFAULT = WINDOW_HAMMING  #: (str): Default window, Hamming.
 ALL_WINDOWS = [
@@ -116,9 +106,7 @@ NUSSL_EFZ_BENCHMARK_METADATA_URL = urljoin(
 )
 NUSSL_EFZ_MODEL_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, "model-metadata.json")
 
-USE_LIBROSA_STFT = (
-    False
-)  #: (bool): Whether *nussl* will use librosa's stft function by default
+USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will default to librosa stft.
 
 
 # ############# MUSDB interface ############### #
