@@ -195,7 +195,13 @@ class AudioSignal(object):
         self.use_librosa_stft = constants.USE_LIBROSA_STFT
 
     def __str__(self):
-        return self.__class__.__name__
+        return (
+            f"{self.__class__.__name__} "
+            f"({self.label if self.label else 'unlabeled'}): "
+            f"{self.num_channels if self.num_channels else "unknown"} ch, "
+            f"{self.signal_duration if self.signal_duration else "unknown"} sec "
+            f"@ {self.path_to_input_file if self.path_to_input_file else "no path"}"
+        )
 
     ##################################################
     #                 Properties
