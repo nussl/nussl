@@ -37,17 +37,35 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         :ref:`The RepetSim Demo Example <repet_sim_demo>`
     """
 
-    def __init__(self, input_audio_signal, similarity_threshold=None, min_distance_between_frames=None,
-                 max_repeating_frames=None, high_pass_cutoff=None, do_mono=False,
-                 use_librosa_stft=constants.USE_LIBROSA_STFT, matlab_fidelity=False,
-                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
-        super(RepetSim, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type,
-                                       mask_threshold=mask_threshold)
+    def __init__(
+        self,
+        input_audio_signal,
+        similarity_threshold=None,
+        min_distance_between_frames=None,
+        max_repeating_frames=None,
+        high_pass_cutoff=None,
+        do_mono=False,
+        use_librosa_stft=constants.USE_LIBROSA_STFT,
+        matlab_fidelity=False,
+        mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
+        mask_threshold=0.5,
+    ):
+        super(RepetSim, self).__init__(
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type,
+            mask_threshold=mask_threshold,
+        )
 
         self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
-        self.similarity_threshold = 0 if similarity_threshold is None else similarity_threshold
-        self.min_distance_between_frames = 1 if min_distance_between_frames is None else min_distance_between_frames
-        self.max_repeating_frames = 100 if max_repeating_frames is None else max_repeating_frames
+        self.similarity_threshold = (
+            0 if similarity_threshold is None else similarity_threshold
+        )
+        self.min_distance_between_frames = (
+            1 if min_distance_between_frames is None else min_distance_between_frames
+        )
+        self.max_repeating_frames = (
+            100 if max_repeating_frames is None else max_repeating_frames
+        )
 
         self._min_distance_converted_to_hops = False
 
@@ -79,9 +97,14 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
 
         """
         # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
-        self.high_pass_cutoff = int(np.ceil(float(self.high_pass_cutoff) *
-                                            (self.stft_params.n_fft_bins - 1) /
-                                            self.audio_signal.sample_rate) + 1)
+        self.high_pass_cutoff = int(
+            np.ceil(
+                float(self.high_pass_cutoff)
+                * (self.stft_params.n_fft_bins - 1)
+                / self.audio_signal.sample_rate
+            )
+            + 1
+        )
         low = 1 if self.matlab_fidelity else 0
         self._compute_spectrograms()
         self.similarity_indices = self._get_similarity_indices()
@@ -91,7 +114,9 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         for i in range(self.audio_signal.num_channels):
             repeating_mask = self._compute_mask(self.magnitude_spectrogram[:, :, i])
 
-            repeating_mask[low:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            repeating_mask[
+                low : self.high_pass_cutoff, :
+            ] = 1  # high-pass filter the foreground
             background_mask.append(repeating_mask)
 
             stft_with_mask = repeating_mask * self.stft[:, :, i]
@@ -112,13 +137,22 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         return self.result_masks
 
     def _make_background_signal(self, background_stft):
-        self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft,
-                              truncate_to_length=self.audio_signal.signal_length)
+        self.background = self.audio_signal.make_copy_with_stft_data(
+            background_stft, verbose=False
+        )
+        self.background.istft(
+            self.stft_params.window_length,
+            self.stft_params.hop_length,
+            self.stft_params.window_type,
+            overwrite=True,
+            use_librosa=self.use_librosa_stft,
+            truncate_to_length=self.audio_signal.signal_length,
+        )
 
     def _compute_spectrograms(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
+        self.stft = self.audio_signal.stft(
+            overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft
+        )
         self.magnitude_spectrogram = np.abs(self.stft)
 
     def _get_similarity_indices(self):
@@ -128,7 +162,9 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         self.similarity_matrix = self.get_similarity_matrix()
 
         if not self._min_distance_converted_to_hops:
-            self.min_distance_between_frames *= self.audio_signal.sample_rate / self.stft_params.window_overlap
+            self.min_distance_between_frames *= (
+                self.audio_signal.sample_rate / self.stft_params.window_overlap
+            )
             self._min_distance_converted_to_hops = True
 
         return self._find_similarity_indices()
@@ -142,10 +178,10 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         Returns:
             S (np.array): 2D similarity matrix
         """
-        assert (type(matrix) == np.ndarray)
+        assert type(matrix) == np.ndarray
 
         # ignore the 'divide by zero' warning
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide="ignore"):
             # Code below is adopted from http://stackoverflow.com/a/20687984/5768001
 
             # base similarity matrix (all dot products)
@@ -173,25 +209,28 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
             similarity_indices (list of lists): similarity indices for all time frames
         """
         if self.similarity_matrix is None:
-            raise Exception('self.similarity_matrix cannot be None')
+            raise Exception("self.similarity_matrix cannot be None")
 
         similarity_indices = []
         for i in range(self.audio_signal.stft_length):
-            cur_indices = utils.find_peak_indices(self.similarity_matrix[i, :], self.max_repeating_frames,
-                                                  min_dist=self.min_distance_between_frames,
-                                                  threshold=self.similarity_threshold)
+            cur_indices = utils.find_peak_indices(
+                self.similarity_matrix[i, :],
+                self.max_repeating_frames,
+                min_dist=self.min_distance_between_frames,
+                threshold=self.similarity_threshold,
+            )
 
             # the first peak is always itself so we throw it out
             # we also want only self.max_repeating_frames peaks
             # so +1 for 0-based, and +1 for the first peak we threw out
-            cur_indices = cur_indices[1:self.max_repeating_frames + 2]
+            cur_indices = cur_indices[1 : self.max_repeating_frames + 2]
             similarity_indices.append(cur_indices)
 
         if all(not idx for idx in similarity_indices):
-            raise RuntimeError('No similarity indices!')
+            raise RuntimeError("No similarity indices!")
 
         if any(not idx for idx in similarity_indices):
-            warnings.warn('Not all indices have similarities above threshold!')
+            warnings.warn("Not all indices have similarities above threshold!")
 
         return similarity_indices
 
@@ -219,13 +258,16 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
                 # If there are no similarities, then just add ones to the mask here.
                 mask[:, i] = np.ones(mask.shape[constants.STFT_VERT_INDEX])
             else:
-                similar_times = np.array([magnitude_spectrogram_channel[:, j]
-                                          for j in cur_similarities])
+                similar_times = np.array(
+                    [magnitude_spectrogram_channel[:, j] for j in cur_similarities]
+                )
 
                 mask[:, i] = np.median(similar_times, axis=0)
 
         mask = np.minimum(mask, magnitude_spectrogram_channel)
-        mask = (mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
+        mask = (mask + constants.EPSILON) / (
+            magnitude_spectrogram_channel + constants.EPSILON
+        )
         return mask
 
     def get_similarity_matrix(self):
@@ -289,14 +331,16 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         title = None
 
         if len(kwargs) != 0:
-            if 'title' in kwargs:
-                title = kwargs['title']
+            if "title" in kwargs:
+                title = kwargs["title"]
 
         sim_mat = self.get_similarity_matrix()
         plt.pcolormesh(sim_mat)
-        title = title if title else 'Similarity Matrix for {self.audio_signal.file_name}'
-        plt.xlabel('Time (s)')
-        plt.ylabel('Time (s)')
+        title = (
+            title if title else "Similarity Matrix for {self.audio_signal.file_name}"
+        )
+        plt.xlabel("Time (s)")
+        plt.ylabel("Time (s)")
         plt.title(title)
 
-        plt.axis('tight')
+        plt.axis("tight")

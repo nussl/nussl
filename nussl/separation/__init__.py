@@ -20,9 +20,11 @@ median_algorithms = [Repet, RepetSim, FT2D, HPSS]
 if vamp_imported:
     from .melodia import Melodia
 else:
+
     class Melodia(ImportErrorClass):
         def __init__(self, *args, **kwargs):
-            super(Melodia, self).__init__('vamp')
+            super(Melodia, self).__init__("vamp")
+
 
 melody_algorithms = [Melodia]
 
@@ -40,6 +42,7 @@ benchmark_algorithms = [IdealMask, HighLowPassFilter]
 
 # Composite algorithms
 from .overlap_add import OverlapAdd
+
 composite_instruments = [OverlapAdd]
 
 # Matrix factorization and component analysis
@@ -54,43 +57,53 @@ component_analysis_algorithms = [ICA, RPCA]
 if torch_imported:
     from .deep_separation import DeepSeparation
 else:
+
     class DeepSeparation(ImportErrorClass):
         def __init__(self, *args, **kwargs):
-            super(DeepSeparation, self).__init__('pytorch')
+            super(DeepSeparation, self).__init__("pytorch")
+
 
 deep_learning_algorithms = [DeepSeparation]
 
-all_separation_algorithms = [median_algorithms, melody_algorithms, spatialization_algorithms,
-                             benchmark_algorithms, nmf_algorithms, component_analysis_algorithms,
-                             deep_learning_algorithms]
+all_separation_algorithms = [
+    median_algorithms,
+    melody_algorithms,
+    spatialization_algorithms,
+    benchmark_algorithms,
+    nmf_algorithms,
+    component_analysis_algorithms,
+    deep_learning_algorithms,
+]
 
-all_separation_algorithms = [val for sublist in all_separation_algorithms for val in sublist]
+all_separation_algorithms = [
+    val for sublist in all_separation_algorithms for val in sublist
+]
 
 # TODO why are we grouping things into these lists?
 __all__ = [
-    'SeparationBase', 
-    'MaskSeparationBase',
-    'all_separation_algorithms',
-    'median_algorithms', 
-    'Repet', 
-    'RepetSim', 
-    'HPSS', 
-    'FT2D',
-    'melody_algorithms', 
-    'Melodia',
-    'spatialization_algorithms', 
-    'Duet', 
-    'Projet',
-    'benchmark_algorithms', 
-    'IdealMask', 
-    'HighLowPassFilter',
-    'composite_instruments', 
-    'OverlapAdd',
-    'nmf_algorithms', 
-    'NMF_MFCC',
-    'component_analysis_algorithms', 
-    'ICA', 
-    'RPCA', 
-    'deep_learning_algorithms', 
-    'DeepSeparation',
+    "SeparationBase",
+    "MaskSeparationBase",
+    "all_separation_algorithms",
+    "median_algorithms",
+    "Repet",
+    "RepetSim",
+    "HPSS",
+    "FT2D",
+    "melody_algorithms",
+    "Melodia",
+    "spatialization_algorithms",
+    "Duet",
+    "Projet",
+    "benchmark_algorithms",
+    "IdealMask",
+    "HighLowPassFilter",
+    "composite_instruments",
+    "OverlapAdd",
+    "nmf_algorithms",
+    "NMF_MFCC",
+    "component_analysis_algorithms",
+    "ICA",
+    "RPCA",
+    "deep_learning_algorithms",
+    "DeepSeparation",
 ]

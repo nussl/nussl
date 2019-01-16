@@ -27,14 +27,17 @@ class MaskBase(object):
         input_mask (:obj:`np.ndarray`): A 2- or 3-dimensional numpy ``ndarray`` representing a mask.
         
     """
+
     def __init__(self, input_mask=None, mask_shape=None):
         self._mask = None
 
         if mask_shape is None and input_mask is None:
-            raise ValueError('Cannot initialize mask without mask_shape or input_mask!')
+            raise ValueError("Cannot initialize mask without mask_shape or input_mask!")
 
         if mask_shape is not None and input_mask is not None:
-            raise ValueError('Cannot initialize mask with both mask_shape and input_mask!')
+            raise ValueError(
+                "Cannot initialize mask with both mask_shape and input_mask!"
+            )
 
         if isinstance(input_mask, np.ndarray):
             self.mask = input_mask
@@ -43,7 +46,9 @@ class MaskBase(object):
             self.mask = np.zeros(mask_shape)
 
         else:
-            raise ValueError('input_mask must be a np.ndarray, or mask_shape must be a tuple!')
+            raise ValueError(
+                "input_mask must be a np.ndarray, or mask_shape must be a tuple!"
+            )
 
     @property
     def mask(self):
@@ -67,16 +72,16 @@ class MaskBase(object):
 
     @mask.setter
     def mask(self, value):
-        assert isinstance(value, np.ndarray), 'Type of self.mask must be np.ndarray!'
+        assert isinstance(value, np.ndarray), "Type of self.mask must be np.ndarray!"
 
         if value.ndim == 1:
-            raise ValueError('Cannot support arrays with less than 2 dimensions!')
+            raise ValueError("Cannot support arrays with less than 2 dimensions!")
 
         if value.ndim == 2:
             value = np.expand_dims(value, axis=constants.STFT_CHAN_INDEX)
 
         if value.ndim > 3:
-            raise ValueError('Cannot support arrays with more than 3 dimensions!')
+            raise ValueError("Cannot support arrays with more than 3 dimensions!")
 
         self._mask = self._validate_mask(value)
 
@@ -96,16 +101,18 @@ class MaskBase(object):
 
         """
         if self.mask is None:
-            raise AttributeError(f'Cannot get channel {n} when mask has no data!')
+            raise AttributeError(f"Cannot get channel {n} when mask has no data!")
 
         if n >= self.num_channels:
             raise ValueError(
-                f'Cannot get channel {n} for object w/ {self.num_channels} channels!'
-                ' (0-based)'
+                f"Cannot get channel {n} for object w/ {self.num_channels} channels!"
+                " (0-based)"
             )
 
         if n < 0:
-            raise ValueError(f'Cannot get channel {n}. This will cause unexpected results!')
+            raise ValueError(
+                f"Cannot get channel {n}. This will cause unexpected results!"
+            )
 
         return utils._get_axis(self.mask, constants.STFT_CHAN_INDEX, n)
 
@@ -116,7 +123,9 @@ class MaskBase(object):
 
         """
         if self.mask is None:
-            raise AttributeError('Cannot get length of BinaryMask when there is no mask data!')
+            raise AttributeError(
+                "Cannot get length of BinaryMask when there is no mask data!"
+            )
         return self.mask.shape[constants.STFT_LEN_INDEX]
 
     @property
@@ -126,7 +135,9 @@ class MaskBase(object):
 
         """
         if self.mask is None:
-            raise AttributeError('Cannot get height of BinaryMask when there is no mask data!')
+            raise AttributeError(
+                "Cannot get height of BinaryMask when there is no mask data!"
+            )
         return self.mask.shape[constants.STFT_VERT_INDEX]
 
     @property
@@ -136,7 +147,9 @@ class MaskBase(object):
 
         """
         if self.mask is None:
-            raise AttributeError('Cannot get num_channels of BinaryMask when there is no mask data!')
+            raise AttributeError(
+                "Cannot get num_channels of BinaryMask when there is no mask data!"
+            )
         return self.mask.shape[constants.STFT_CHAN_INDEX]
 
     @property
@@ -146,7 +159,9 @@ class MaskBase(object):
 
         """
         if self.mask is None:
-            raise AttributeError('Cannot get shape of BinaryMask when there is no mask data!')
+            raise AttributeError(
+                "Cannot get shape of BinaryMask when there is no mask data!"
+            )
         return self.mask.shape
 
     @property
@@ -156,7 +171,9 @@ class MaskBase(object):
 
         """
         if self.mask is None:
-            raise AttributeError('Cannot get num_channels of BinaryMask when there is no mask data!')
+            raise AttributeError(
+                "Cannot get num_channels of BinaryMask when there is no mask data!"
+            )
         return self.mask.dtype
 
     @staticmethod
@@ -168,7 +185,7 @@ class MaskBase(object):
         Returns:
 
         """
-        raise NotImplementedError('Cannot call base class! Use BinaryMask or SoftMask!')
+        raise NotImplementedError("Cannot call base class! Use BinaryMask or SoftMask!")
 
     @classmethod
     def ones(cls, shape):
@@ -200,7 +217,7 @@ class MaskBase(object):
         Returns:
 
         """
-        raise NotImplementedError('Cannot call base class! Use BinaryMask or SoftMask!')
+        raise NotImplementedError("Cannot call base class! Use BinaryMask or SoftMask!")
 
     def inverse_mask(self):
         """
@@ -221,11 +238,13 @@ class MaskBase(object):
             return self.mask + other
 
         else:
-            raise ValueError(f'Cannot do arithmetic operation with MaskBase and {type(other)}')
+            raise ValueError(
+                f"Cannot do arithmetic operation with MaskBase and {type(other)}"
+            )
 
     def _mult(self, value):
         if not isinstance(value, numbers.Real):
-            raise ValueError(f'Cannot do operation with MaskBase and {type(value)}')
+            raise ValueError(f"Cannot do operation with MaskBase and {type(value)}")
 
         return self.mask * value
 
@@ -240,17 +259,17 @@ class MaskBase(object):
     @staticmethod
     def _to_json_helper(o):
         if not isinstance(o, MaskBase):
-            raise TypeError('MaskBase._to_json_helper() got foreign object!')
+            raise TypeError("MaskBase._to_json_helper() got foreign object!")
 
         d = copy.copy(o.__dict__)
         for k, v in list(d.items()):
             if isinstance(v, np.ndarray):
                 d[k] = utils.json_ready_numpy_array(v)
 
-        d['__class__'] = o.__class__.__name__
-        d['__module__'] = o.__module__
-        if 'self' in d:
-            del d['self']
+        d["__class__"] = o.__class__.__name__
+        d["__module__"] = o.__module__
+        if "self" in d:
+            del d["self"]
 
         return d
 
@@ -331,23 +350,27 @@ class MaskBaseDecoder(json.JSONDecoder):
             A new :class:`MaskBase`-derived object from JSON serialization
 
         """
-        if '__class__' in json_dict and '__module__' in json_dict:
-            class_name = json_dict.pop('__class__')
-            module_name = json_dict.pop('__module__')
+        if "__class__" in json_dict and "__module__" in json_dict:
+            class_name = json_dict.pop("__class__")
+            module_name = json_dict.pop("__module__")
 
-            mask_modules, mask_names = list(zip(*[(c.__module__, c.__name__) for c in MaskBase.__subclasses__()]))
+            mask_modules, mask_names = list(
+                zip(*[(c.__module__, c.__name__) for c in MaskBase.__subclasses__()])
+            )
 
             if class_name not in mask_names or module_name not in mask_modules:
-                raise TypeError(f'Got unknown mask type ({module_name}.{class_name}) from json!')
+                raise TypeError(
+                    f"Got unknown mask type ({module_name}.{class_name}) from json!"
+                )
 
             # load the module and import the class
             module = __import__(module_name).separation.masks
             class_ = getattr(module, class_name)
 
-            if '_mask' not in json_dict:
-                raise TypeError(f'JSON string from {class_name} does not have mask!')
+            if "_mask" not in json_dict:
+                raise TypeError(f"JSON string from {class_name} does not have mask!")
 
-            mask_json = json_dict.pop('_mask')  # this is the mask numpy array
+            mask_json = json_dict.pop("_mask")  # this is the mask numpy array
             mask_numpy = utils.json_numpy_obj_hook(mask_json[constants.NUMPY_JSON_KEY])
 
             return class_(input_mask=mask_numpy)

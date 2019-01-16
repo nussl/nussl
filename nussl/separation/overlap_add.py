@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 import warnings
 
 import numpy as np
@@ -49,9 +48,17 @@ class OverlapAdd(separation_base.SeparationBase):
          ola.run()
          
     """
-    def __init__(self, input_audio_signal, separation_method,
-                 overlap_window_size=24, overlap_hop_size=12, overlap_window_type=constants.WINDOW_TRIANGULAR,
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT):
+
+    def __init__(
+        self,
+        input_audio_signal,
+        separation_method,
+        overlap_window_size=24,
+        overlap_hop_size=12,
+        overlap_window_type=constants.WINDOW_TRIANGULAR,
+        do_mono=False,
+        use_librosa_stft=constants.USE_LIBROSA_STFT,
+    ):
         super(OverlapAdd, self).__init__(input_audio_signal=input_audio_signal)
         self.background = None
         self.foreground = None
@@ -61,8 +68,12 @@ class OverlapAdd(separation_base.SeparationBase):
         self.overlap_hop_size = overlap_hop_size
         self.overlap_window_type = overlap_window_type
 
-        self.window_samples = int(np.round(self.audio_signal.sample_rate * self.overlap_window_size))
-        self.hop_samples = int(np.round(self.audio_signal.sample_rate * self.overlap_hop_size))
+        self.window_samples = int(
+            np.round(self.audio_signal.sample_rate * self.overlap_window_size)
+        )
+        self.hop_samples = int(
+            np.round(self.audio_signal.sample_rate * self.overlap_hop_size)
+        )
         self.overlap_samples = self.window_samples - self.hop_samples
 
         # Set the separation method
@@ -84,9 +95,11 @@ class OverlapAdd(separation_base.SeparationBase):
     ft2d = FT2D
 
     # 2) And populate this dictionary with your new method like so:
-    _valid_separation_methods = {Repet.__name__: repet,
-                                 RepetSim.__name__: repet_sim,
-                                 FT2D.__name__: ft2d}
+    _valid_separation_methods = {
+        Repet.__name__: repet,
+        RepetSim.__name__: repet_sim,
+        FT2D.__name__: ft2d,
+    }
 
     # 3) Add it to the tests in tests/test_overlap_add.py. If you don't, I will hunt you down!!!
 
@@ -106,13 +119,19 @@ class OverlapAdd(separation_base.SeparationBase):
         Returns:
 
         """
-        return [method.__name__ for method in list(OverlapAdd._valid_separation_methods.values())]
+        return [
+            method.__name__
+            for method in list(OverlapAdd._valid_separation_methods.values())
+        ]
 
     @staticmethod
     def _valid_methods_lower():
         """Case invariant (lowercase) version of self._valid_separation_methods dictionary.
         """
-        return {OverlapAdd._format(name): obj for name, obj in list(OverlapAdd._valid_separation_methods.items())}
+        return {
+            OverlapAdd._format(name): obj
+            for name, obj in list(OverlapAdd._valid_separation_methods.items())
+        }
 
     @property
     def separation_method_name(self):
@@ -153,13 +172,16 @@ class OverlapAdd(separation_base.SeparationBase):
         if isinstance(value, str):
             if self._format(value) in list(self._valid_methods_lower().keys()):
                 # The user input a string with a valid method name. It should be in our dictionary
-                self._separation_method = self._valid_methods_lower()[self._format(value)]
+                self._separation_method = self._valid_methods_lower()[
+                    self._format(value)
+                ]
             else:
                 # Oops. Can't find it in our dictionary
                 raise error
 
-        elif issubclass(value, separation_base.SeparationBase) and \
-                        value in list(self._valid_separation_methods.values()):
+        elif issubclass(value, separation_base.SeparationBase) and value in list(
+            self._valid_separation_methods.values()
+        ):
             # The user gave us a class, so we use that
             self._separation_method = value
 
@@ -192,13 +214,19 @@ class OverlapAdd(separation_base.SeparationBase):
     def _setup_instance(self):
         # instantiate the separation method here
         if self.separation_method is None:
-            raise Exception('Cannot separate before separation_method is set!')
+            raise Exception("Cannot separate before separation_method is set!")
 
-        self._separation_instance = self.separation_method(self.audio_signal, use_librosa_stft=self.use_librosa_stft)
+        self._separation_instance = self.separation_method(
+            self.audio_signal, use_librosa_stft=self.use_librosa_stft
+        )
 
     def __str__(self):
         name = super(OverlapAdd, self).__str__()
-        name += ':' + self.separation_method.__name__ if self.separation_method is not None else ''
+        name += (
+            ":" + self.separation_method.__name__
+            if self.separation_method is not None
+            else ""
+        )
         return name
 
     def run(self):
@@ -219,8 +247,8 @@ class OverlapAdd(separation_base.SeparationBase):
         # just run the algorithm like normal
         if self.audio_signal.signal_length < self.window_samples + self.hop_samples:
             warnings.warn(
-                'input_audio_signal length is less than one window.'
-                f' Running {self.separation_method_name} normally...'
+                "input_audio_signal length is less than one window."
+                f" Running {self.separation_method_name} normally..."
             )
 
             self._separation_instance.run()
@@ -230,7 +258,9 @@ class OverlapAdd(separation_base.SeparationBase):
         background_array = np.zeros_like(self.audio_signal.audio_data)
 
         # Make the window for multiple channels
-        window = stft_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
+        window = stft_utils.make_window(
+            self.overlap_window_type, 2 * self.overlap_samples
+        )
         window = np.vstack([window for _ in range(self.audio_signal.num_channels)])
 
         # Main overlap-add loop
@@ -238,26 +268,38 @@ class OverlapAdd(separation_base.SeparationBase):
 
             if start == 0:
                 # First window is a partial window
-                first_window = window[:, -self.hop_samples:]
+                first_window = window[:, -self.hop_samples :]
                 unwindowed = self._set_active_region_and_run(start, self.hop_samples)
-                background_array[:, :self.hop_samples] = np.multiply(unwindowed.audio_data, first_window)
+                background_array[:, : self.hop_samples] = np.multiply(
+                    unwindowed.audio_data, first_window
+                )
 
             elif end >= self.audio_signal.signal_length:
                 # Last window is a partial window
                 remaining = self.audio_signal.signal_length - start
-                last_window = window[:, remaining:] if remaining != window.shape[-1] else window
-                last_window[:, self.overlap_samples:] = 1  # only do part of the window
+                last_window = (
+                    window[:, remaining:] if remaining != window.shape[-1] else window
+                )
+                last_window[:, self.overlap_samples :] = 1  # only do part of the window
 
-                unwindowed = self._set_active_region_and_run(start, self.audio_signal.signal_length)
-                background_array[:, start:] += np.multiply(unwindowed.audio_data, last_window)
+                unwindowed = self._set_active_region_and_run(
+                    start, self.audio_signal.signal_length
+                )
+                background_array[:, start:] += np.multiply(
+                    unwindowed.audio_data, last_window
+                )
 
             else:
                 # middle cases are straight forward
                 unwindowed = self._set_active_region_and_run(start, end)
-                background_array[:, start:end] += np.multiply(unwindowed.audio_data, window)
+                background_array[:, start:end] += np.multiply(
+                    unwindowed.audio_data, window
+                )
 
         self.audio_signal.set_active_region_to_default()
-        self.background = self.audio_signal.make_copy_with_audio_data(background_array, verbose=False)
+        self.background = self.audio_signal.make_copy_with_audio_data(
+            background_array, verbose=False
+        )
         return self.background
 
     def _next_window(self):
@@ -266,7 +308,9 @@ class OverlapAdd(separation_base.SeparationBase):
         Yields:
 
         """
-        n_segments = 1 + int((self.audio_signal.signal_length-self.window_samples) / self.hop_samples)
+        n_segments = 1 + int(
+            (self.audio_signal.signal_length - self.window_samples) / self.hop_samples
+        )
 
         # We went to return values larger than the signal length so we know when the last
         # n_segments = 1 + int( self.audio_signal.signal_length / self.hop_samples)
@@ -283,7 +327,6 @@ class OverlapAdd(separation_base.SeparationBase):
         bkgnd, _ = self._separation_instance.make_audio_signals()
         return bkgnd
 
-
     def make_audio_signals(self):
         """ Returns the background and foreground audio signals. You must have run :func:`run()` prior
         to calling this function. This function will raise ValueError if :func:`run()` has not been called.
@@ -298,7 +341,7 @@ class OverlapAdd(separation_base.SeparationBase):
              ::
         """
         if self.background is None:
-            raise ValueError('Cannot make audio signals prior to running algorithm!')
+            raise ValueError("Cannot make audio signals prior to running algorithm!")
 
         foreground_array = self.audio_signal.audio_data - self.background.audio_data
         self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)

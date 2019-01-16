@@ -10,6 +10,7 @@ import numpy as np
 import os
 import librosa
 
+
 class TestUtils(unittest.TestCase):
     """
 
@@ -36,8 +37,9 @@ class TestUtils(unittest.TestCase):
     def test_add_mismatched_arrays(self):
         long_array = np.ones((20,))
         short_array = np.arange(10)
-        expected_result = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=float)
+        expected_result = np.array(
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=float
+        )
 
         # Test basic cases
         result = nussl.utils.add_mismatched_arrays(long_array, short_array)
@@ -46,18 +48,23 @@ class TestUtils(unittest.TestCase):
         result = nussl.utils.add_mismatched_arrays(short_array, long_array)
         assert all(np.equal(result, expected_result))
 
-        expected_result = expected_result[:len(short_array)]
+        expected_result = expected_result[: len(short_array)]
 
-        result = nussl.utils.add_mismatched_arrays(long_array, short_array, truncate=True)
+        result = nussl.utils.add_mismatched_arrays(
+            long_array, short_array, truncate=True
+        )
         assert all(np.equal(result, expected_result))
 
-        result = nussl.utils.add_mismatched_arrays(short_array, long_array, truncate=True)
+        result = nussl.utils.add_mismatched_arrays(
+            short_array, long_array, truncate=True
+        )
         assert all(np.equal(result, expected_result))
 
         # Test complex casting
         short_array = np.arange(10, dtype=complex)
-        expected_result = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=complex)
+        expected_result = np.array(
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=complex
+        )
 
         result = nussl.utils.add_mismatched_arrays(long_array, short_array)
         assert all(np.equal(result, expected_result))
@@ -65,12 +72,16 @@ class TestUtils(unittest.TestCase):
         result = nussl.utils.add_mismatched_arrays(short_array, long_array)
         assert all(np.equal(result, expected_result))
 
-        expected_result = expected_result[:len(short_array)]
+        expected_result = expected_result[: len(short_array)]
 
-        result = nussl.utils.add_mismatched_arrays(long_array, short_array, truncate=True)
+        result = nussl.utils.add_mismatched_arrays(
+            long_array, short_array, truncate=True
+        )
         assert all(np.equal(result, expected_result))
 
-        result = nussl.utils.add_mismatched_arrays(short_array, long_array, truncate=True)
+        result = nussl.utils.add_mismatched_arrays(
+            short_array, long_array, truncate=True
+        )
         assert all(np.equal(result, expected_result))
 
         # Test case where arrays are equal length
@@ -80,7 +91,9 @@ class TestUtils(unittest.TestCase):
         result = nussl.utils.add_mismatched_arrays(short_array, short_array)
         assert all(np.equal(result, expected_result))
 
-        result = nussl.utils.add_mismatched_arrays(short_array, short_array, truncate=True)
+        result = nussl.utils.add_mismatched_arrays(
+            short_array, short_array, truncate=True
+        )
         assert all(np.equal(result, expected_result))
 
     def test_musdb_track(self):
@@ -91,7 +104,7 @@ class TestUtils(unittest.TestCase):
 
         bg, fg = repet.make_audio_signals()
 
-        src_dict = {'vocals': fg, 'accompaniment': bg}
+        src_dict = {"vocals": fg, "accompaniment": bg}
         target = nussl.core.constants.STEM_TARGET_DICT
         track = nussl.utils.audio_signals_to_musdb_track(signal, src_dict, target)
 

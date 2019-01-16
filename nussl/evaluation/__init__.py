@@ -15,6 +15,13 @@ from .bss_eval_v4 import BSSEvalV4
 
 from .run_and_eval import *
 
-__all__ = ['EvaluationBase', 'PrecisionRecallFScore',
-           'BSSEvalBase', 'BSSEvalSources', 'BSSEvalImages', 'BSSEvalV4',
-           'run_and_evaluate', 'run_and_eval_prf']
+__all__ = [
+    "EvaluationBase",
+    "PrecisionRecallFScore",
+    "BSSEvalBase",
+    "BSSEvalSources",
+    "BSSEvalImages",
+    "BSSEvalV4",
+    "run_and_evaluate",
+    "run_and_eval_prf",
+]
