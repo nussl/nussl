@@ -26,7 +26,7 @@ class SeparationBase(object):
 
     def __init__(self, input_audio_signal):
         if not isinstance(input_audio_signal, AudioSignal):
-            raise ValueError("input_audio_signal is not an AudioSignal object!")
+            raise ValueError('input_audio_signal is not an AudioSignal object!')
 
         self._audio_signal = None
 
@@ -36,7 +36,7 @@ class SeparationBase(object):
             self.audio_signal = AudioSignal()
 
         if not self.audio_signal.has_data:
-            warnings.warn("input_audio_signal has no data!")
+            warnings.warn('input_audio_signal has no data!')
 
             # initialize to empty arrays so that we don't crash randomly
             self.audio_signal.audio_data = np.array([])
@@ -82,7 +82,7 @@ class SeparationBase(object):
         Raises:
             NotImplementedError: Cannot call base class
         """
-        raise NotImplementedError("Cannot call base class.")
+        raise NotImplementedError('Cannot call base class.')
 
     def make_audio_signals(self):
         """Makes :class:`audio_signal.AudioSignal` objects after separation algorithm is run
@@ -90,7 +90,7 @@ class SeparationBase(object):
         Raises:
             NotImplementedError: Cannot call base class
         """
-        raise NotImplementedError("Cannot call base class.")
+        raise NotImplementedError('Cannot call base class.')
 
     def to_json(self):
         """
@@ -112,29 +112,27 @@ class SeparationBase(object):
     @staticmethod
     def _to_json_helper(o):
         if not isinstance(o, SeparationBase):
-            raise TypeError("SeparationBase._to_json_helper() got foreign object!")
+            raise TypeError('SeparationBase._to_json_helper() got foreign object!')
 
         d = copy.copy(o.__dict__)
         for k, v in list(d.items()):
             if isinstance(v, np.ndarray):
                 d[k] = utils.json_ready_numpy_array(v)
-            elif hasattr(v, "to_json"):
+            elif hasattr(v, 'to_json'):
                 d[k] = v.to_json()
-            elif isinstance(v, (list, tuple, set)) and any(
-                hasattr(itm, "to_json") for itm in v
-            ):
+            elif isinstance(v, (list, tuple, set)) and any(hasattr(itm, 'to_json') for itm in v):
                 s = []
                 for itm in v:
-                    if hasattr(itm, "to_json"):
+                    if hasattr(itm, 'to_json'):
                         s.append(itm.to_json())
                     else:
                         s.append(itm)
                 d[k] = s
 
-        d["__class__"] = o.__class__.__name__
-        d["__module__"] = o.__module__
-        if "self" in d:
-            del d["self"]
+        d['__class__'] = o.__class__.__name__
+        d['__module__'] = o.__module__
+        if 'self' in d:
+            del d['self']
 
         return d
 
@@ -161,14 +159,14 @@ class SeparationBase(object):
         return self.run()
 
     def __repr__(self):
-        return self.__class__.__name__ + " instance"
+        return self.__class__.__name__ + ' instance'
 
     def __eq__(self, other):
         for k, v in list(self.__dict__.items()):
             if isinstance(v, np.ndarray):
                 if not np.array_equal(v, other.__dict__[k]):
                     return False
-            elif k == "self":
+            elif k == 'self':
                 pass
             elif v != other.__dict__[k]:
                 return False
@@ -188,28 +186,23 @@ class SeparationBaseDecoder(json.JSONDecoder):
         json.JSONDecoder.__init__(self, object_hook=self._json_separation_decoder)
 
     def _inspect_json_and_create_new_instance(self, json_dict):
-        class_name = json_dict.pop("__class__")
-        module_name = json_dict.pop("__module__")
-        if (
-            class_name != self.separation_class.__name__
-            or module_name != self.separation_class.__module__
-        ):
+        class_name = json_dict.pop('__class__')
+        module_name = json_dict.pop('__module__')
+        if class_name != self.separation_class.__name__ or module_name != self.separation_class.__module__:
             raise TypeError(
-                f"Expected {self.separation_class.__module__}.{self.separation_class.__name__}"
-                f" but got {module_name}.{class_name} from json!"
+                f'Expected {self.separation_class.__module__}.{self.separation_class.__name__}'
+                f' but got {module_name}.{class_name} from json!'
             )
 
         # load the module and import the class
         module = __import__(module_name)
         class_ = getattr(module, class_name)
 
-        if "_audio_signal" not in json_dict:
-            raise TypeError(
-                f"JSON string from {class_name} does not have an AudioSignal object!"
-            )
+        if '_audio_signal' not in json_dict:
+            raise TypeError(f'JSON string from {class_name} does not have an AudioSignal object!')
 
         # we know 'input_audio_signal' is always the first argument
-        signal_json = json_dict.pop("_audio_signal")  # this is the AudioSignal object
+        signal_json = json_dict.pop('_audio_signal')  # this is the AudioSignal object
         signal = AudioSignal.from_json(signal_json)
 
         # get the rest of the required arguments
@@ -217,7 +210,7 @@ class SeparationBaseDecoder(json.JSONDecoder):
         # first arg is covered above (2), and we don't want the non-defaults (-len(signature.defaults))
         non_required_args = 0 if signature.defaults is None else len(signature.defaults)
         required_args = signature.args[2:-non_required_args]
-        args = dict((k.encode("ascii"), json_dict[k]) for k in required_args)
+        args = dict((k.encode('ascii'), json_dict[k]) for k in required_args)
 
         # make a new instance of separation class
         separator = class_(signal, **args)
@@ -237,23 +230,17 @@ class SeparationBaseDecoder(json.JSONDecoder):
             A new :class:`SeparationBase`-derived object from JSON serialization
 
         """
-        if "__class__" in json_dict and "__module__" in json_dict:
+        if '__class__' in json_dict and '__module__' in json_dict:
             json_dict, separator = self._inspect_json_and_create_new_instance(json_dict)
 
             # fill out the rest of the fields
             for k, v in list(json_dict.items()):
                 if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
-                    separator.__dict__[k] = utils.json_numpy_obj_hook(
-                        v[constants.NUMPY_JSON_KEY]
-                    )
-                elif (
-                    isinstance(v, (str, bytes)) and audio_signal.__name__ in v
-                ):  # TODO: test this
+                    separator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
+                elif isinstance(v, (str, bytes)) and audio_signal.__name__ in v:  # TODO: test this
                     separator.__dict__[k] = AudioSignal.from_json(v)
                 else:
-                    separator.__dict__[k] = (
-                        v if not isinstance(v, str) else v.encode("ascii")
-                    )
+                    separator.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
 
             return separator
         else:

@@ -77,19 +77,15 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
         
     """
 
-    ACCURACY_KEY = "Accuracy"
-    PRECISION_KEY = "Precision"
-    RECALL_KEY = "Recall"
-    FSCORE_KEY = "F1-Score"
+    ACCURACY_KEY = 'Accuracy'
+    PRECISION_KEY = 'Precision'
+    RECALL_KEY = 'Recall'
+    FSCORE_KEY = 'F1-Score'
 
-    def __init__(
-        self, true_sources_mask_list, estimated_sources_mask_list, source_labels=None
-    ):
-        super(PrecisionRecallFScore, self).__init__(
-            true_sources_list=true_sources_mask_list,
-            estimated_sources_list=estimated_sources_mask_list,
-            source_labels=source_labels,
-        )
+    def __init__(self, true_sources_mask_list, estimated_sources_mask_list, source_labels=None):
+        super(PrecisionRecallFScore, self).__init__(true_sources_list=true_sources_mask_list,
+                                                    estimated_sources_list=estimated_sources_mask_list,
+                                                    source_labels=source_labels)
 
     @staticmethod
     def _verify_input_list(mask_list):
@@ -97,12 +93,10 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
             mask_list = [mask_list]
         elif isinstance(mask_list, list):
             if not all(isinstance(m, binary_mask.BinaryMask) for m in mask_list):
-                raise ValueError(
-                    "All items in mask_list must be of type nussl.BinaryMask!"
-                )
+                raise ValueError('All items in mask_list must be of type nussl.BinaryMask!')
 
         if not all(mask_list[0].shape == m.shape for m in mask_list):
-            raise ValueError("All masks must be the same shape!")
+            raise ValueError('All masks must be the same shape!')
 
         return mask_list
 
@@ -133,9 +127,7 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
 
         """
 
-        return sklearn.metrics.precision_score(
-            *self._preprocess(true_mask, estimated_mask)
-        )
+        return sklearn.metrics.precision_score(*self._preprocess(true_mask, estimated_mask))
 
     def _recall(self, true_mask, estimated_mask):
         """
@@ -147,9 +139,7 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
         Returns:
 
         """
-        return sklearn.metrics.recall_score(
-            *self._preprocess(true_mask, estimated_mask)
-        )
+        return sklearn.metrics.recall_score(*self._preprocess(true_mask, estimated_mask))
 
     def _f_score(self, true_mask, estimated_mask):
         """
@@ -173,9 +163,7 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
         Returns:
 
         """
-        return sklearn.metrics.accuracy_score(
-            *self._preprocess(true_mask, estimated_mask)
-        )
+        return sklearn.metrics.accuracy_score(*self._preprocess(true_mask, estimated_mask))
 
     def evaluate(self):
         """
@@ -207,12 +195,10 @@ class PrecisionRecallFScore(evaluation_base.EvaluationBase):
             est_mask = self.estimated_sources_list[i]
 
             label = self.source_labels[i]
-            results = {
-                self.ACCURACY_KEY: self._accuracy(true_mask, est_mask),
-                self.PRECISION_KEY: self._precision(true_mask, est_mask),
-                self.RECALL_KEY: self._recall(true_mask, est_mask),
-                self.FSCORE_KEY: self._f_score(true_mask, est_mask),
-            }
+            results = {self.ACCURACY_KEY: self._accuracy(true_mask, est_mask),
+                       self.PRECISION_KEY: self._precision(true_mask, est_mask),
+                       self.RECALL_KEY: self._recall(true_mask, est_mask),
+                       self.FSCORE_KEY: self._f_score(true_mask, est_mask)}
 
             self.scores[label] = results
 

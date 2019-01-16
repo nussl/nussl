@@ -57,22 +57,12 @@ class BSSEvalImages(bss_eval_base.BSSEvalBase):
             sources.
     """
 
-    def __init__(
-        self,
-        true_sources_list,
-        estimated_sources_list,
-        source_labels=None,
-        algorithm_name=None,
-        do_mono=False,
-        compute_permutation=True,
-    ):
-        super(BSSEvalImages, self).__init__(
-            true_sources_list=true_sources_list,
-            estimated_sources_list=estimated_sources_list,
-            source_labels=source_labels,
-            do_mono=do_mono,
-            compute_permutation=compute_permutation,
-        )
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
+                 algorithm_name=None, do_mono=False, compute_permutation=True):
+        super(BSSEvalImages, self).__init__(true_sources_list=true_sources_list,
+                                            estimated_sources_list=estimated_sources_list,
+                                            source_labels=source_labels, do_mono=do_mono,
+                                            compute_permutation=compute_permutation)
 
         self._mir_eval_func = museval.metrics.bss_eval_images
 
@@ -88,27 +78,17 @@ class BSSEvalImages(bss_eval_base.BSSEvalBase):
 
     def _populate_scores_dict(self, bss_output):
         sdr_list, isr_list, sir_list, sar_list, perm = bss_output  # Unpack
-        assert (
-            len(sdr_list)
-            == len(sir_list)
-            == len(sar_list)
-            == len(isr_list)
-            == len(self.true_sources_list) * self.num_channels
-        )
+        assert len(sdr_list) == len(sir_list) \
+               == len(sar_list) == len(isr_list) == len(self.true_sources_list) * self.num_channels
 
-        self.scores[self.RAW_VALUES] = {
-            self.SDR: sdr_list,
-            self.ISR: isr_list,
-            self.SIR: sir_list,
-            self.SAR: sar_list,
-            self.PERMUTATION: perm,
-        }
+        self.scores[self.RAW_VALUES] = {self.SDR: sdr_list, self.ISR: isr_list, self.SIR: sir_list,
+                                        self.SAR: sar_list, self.PERMUTATION: perm}
 
         idx = 0
         for i, label in enumerate(self.source_labels):
             self.scores[label] = {}
             for ch in range(self.num_channels):
-                chan = f"Ch {ch}"
+                chan = f'Ch {ch}'
                 self.scores[label][chan] = {}
 
                 self.scores[label][chan][self.SDR] = sdr_list[perm[idx]]

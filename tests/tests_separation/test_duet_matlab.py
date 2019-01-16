@@ -6,6 +6,7 @@ What did you do?
 """
 
 
+
 import unittest
 import nussl
 import numpy as np
@@ -17,8 +18,9 @@ import warnings
 
 @unittest.skip("Pretty sure these tests never worked -- Keeping for posterity")
 class DuetUnitTests(unittest.TestCase):
+
     def test_duet_outputs(self):
-        input_file_name = os.path.join("..", "input", "dev1_female3_inst_mix.wav")
+        input_file_name = os.path.join('..', 'input', 'dev1_female3_inst_mix.wav')
         signal = nussl.AudioSignal(path_to_input_file=input_file_name)
         refact_duet = nussl.Duet(signal, num_sources=3)
         refact_duet_result = refact_duet.run()
@@ -28,12 +30,12 @@ class DuetUnitTests(unittest.TestCase):
 
     @staticmethod
     def _load_matlab_results():
-        f_mat_path = os.path.join("duet_reference", "rickard_duet", "fmat")
-        tf1_path = os.path.join("duet_reference", "rickard_duet", "tf1")
-        tf2_path = os.path.join("duet_reference", "rickard_duet", "tf2")
+        f_mat_path = os.path.join('duet_reference', 'rickard_duet', 'fmat')
+        tf1_path = os.path.join('duet_reference', 'rickard_duet', 'tf1')
+        tf2_path = os.path.join('duet_reference', 'rickard_duet', 'tf2')
 
-        fmat = scipy.io.loadmat(f_mat_path)["back"].T
-        delay_mat = scipy.io.loadmat(delay_mat_path)["fore"].T
+        fmat = scipy.io.loadmat(f_mat_path)['back'].T
+        delay_mat = scipy.io.loadmat(delay_mat_path)['fore'].T
         return sym_atn_mat, delay_mat
 
     def test_compute_spectrogram_1_channel(self):
@@ -48,14 +50,14 @@ class DuetUnitTests(unittest.TestCase):
     def test_compute_spectrogram_wmat(self):
         # Load MATLAB values
         # f_mat_path = os.path.join('duet_reference', 'rickard_duet', 'fmat')
-        tf1_path = os.path.join("duet_reference", "rickard_duet", "tf1")
-        tf2_path = os.path.join("duet_reference", "rickard_duet", "tf2")
+        tf1_path = os.path.join('duet_reference', 'rickard_duet', 'tf1')
+        tf2_path = os.path.join('duet_reference', 'rickard_duet', 'tf2')
 
         # fmat = scipy.io.loadmat(f_mat_path)['fmat']
-        tf1_mat = scipy.io.loadmat(tf1_path)["tf1"]
-        tf2_mat = scipy.io.loadmat(tf2_path)["tf2"]
+        tf1_mat = scipy.io.loadmat(tf1_path)['tf1']
+        tf2_mat = scipy.io.loadmat(tf2_path)['tf2']
 
-        path = os.path.join("..", "Input", "dev1_female3_inst_mix.wav")
+        path = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
         signal = nussl.AudioSignal(path)
         duet = nussl.Duet(signal, 3)
         duet.stft_params.window_length = 1024
@@ -84,5 +86,6 @@ class DuetUnitTests(unittest.TestCase):
         # test_smooth_matrix
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
+

@@ -76,7 +76,7 @@ class SoftMask(mask_base.MaskBase):
 
     @staticmethod
     def _validate_mask(mask_):
-        assert isinstance(mask_, np.ndarray), "Mask must be a numpy array!"
+        assert isinstance(mask_, np.ndarray), 'Mask must be a numpy array!'
 
         if np.max(mask_) > 1.0 or np.min(mask_) < 0.0:
             # raise ValueError('All values must be between [0.0, 1.0] for SoftMask!')
@@ -87,8 +87,8 @@ class SoftMask(mask_base.MaskBase):
             # )
             mask_ /= np.max(mask_)
 
-        if mask_.dtype.kind not in np.typecodes["AllFloat"]:
-            raise ValueError("Mask must have type: float! Maybe you want BinaryMask?")
+        if mask_.dtype.kind not in np.typecodes['AllFloat']:
+            raise ValueError('Mask must have type: float! Maybe you want BinaryMask?')
 
         return mask_
 

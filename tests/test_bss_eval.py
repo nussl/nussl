@@ -13,6 +13,7 @@ import nussl
 
 
 class BSSEvalUnitTests(unittest.TestCase):
+
     def setUp(self):
         sample_rate = nussl.DEFAULT_SAMPLE_RATE
         signal_duration = 60  # seconds
@@ -22,9 +23,7 @@ class BSSEvalUnitTests(unittest.TestCase):
         sine = np.sin(2 * time)
         square = np.sign(np.sin(3 * time))
         raw_signal = np.c_[sine, square]  # two channel 'mixture'
-        self.signal = nussl.AudioSignal(
-            audio_data_array=raw_signal, sample_rate=sample_rate
-        )
+        self.signal = nussl.AudioSignal(audio_data_array=raw_signal, sample_rate=sample_rate)
 
     def test_bss_eval_sources_simple(self):
 
@@ -77,7 +76,7 @@ class BSSEvalUnitTests(unittest.TestCase):
         # scores = bss.scores
 
     def test_bss_eval_v4(self):
-        mir1k_dir = "/Users/ethanmanilow/Documents/Github/SourceSeparationPyCharm/demo_files/MIR-1K"
+        mir1k_dir = '/Users/ethanmanilow/Documents/Github/SourceSeparationPyCharm/demo_files/MIR-1K'
         mix, vox, acc = next(nussl.datasets.mir1k(mir1k_dir))
         mix.to_mono(overwrite=True)
 
@@ -85,8 +84,8 @@ class BSSEvalUnitTests(unittest.TestCase):
         r()
         bg, fg = r.make_audio_signals()
 
-        est_dict = {"vocals": fg, "accompaniment": bg}
-        gt_dict = {"vocals": vox, "accompaniment": acc}
+        est_dict = {'vocals': fg, 'accompaniment': bg}
+        gt_dict = {'vocals': vox, 'accompaniment': acc}
         bss = nussl.evaluation.BSSEvalV4(mix, gt_dict, est_dict)
         scores1 = bss.evaluate()
 

@@ -57,32 +57,21 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
             sources.
 
     """
+    SDR = 'SDR'
+    SIR = 'SIR'
+    SAR = 'SAR'
+    ISR = 'ISR'
+    PERMUTATION = 'permutation'
+    RAW_VALUES = 'raw_values'
 
-    SDR = "SDR"
-    SIR = "SIR"
-    SAR = "SAR"
-    ISR = "ISR"
-    PERMUTATION = "permutation"
-    RAW_VALUES = "raw_values"
-
-    def __init__(
-        self,
-        true_sources_list,
-        estimated_sources_list,
-        source_labels=None,
-        algorithm_name=None,
-        do_mono=False,
-        compute_permutation=True,
-    ):
-        super(BSSEvalBase, self).__init__(
-            true_sources_list=true_sources_list,
-            estimated_sources_list=estimated_sources_list,
-            source_labels=source_labels,
-            do_mono=do_mono,
-        )
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
+                 algorithm_name=None, do_mono=False, compute_permutation=True):
+        super(BSSEvalBase, self).__init__(true_sources_list=true_sources_list,
+                                          estimated_sources_list=estimated_sources_list,
+                                          source_labels=source_labels, do_mono=do_mono)
 
         if algorithm_name is None:
-            self._algorithm_name = "Approach"
+            self._algorithm_name = 'Approach'
         else:
             assert type(algorithm_name) == str
             self._algorithm_name = algorithm_name
@@ -112,19 +101,15 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
         """
         # TODO: This might be obsolete
         if self.estimated_sources_list is None:
-            raise BssEvalException("Must set estimated_sources first!")
+            raise BssEvalException('Must set estimated_sources first!')
         estimated_lengths = [x.signal_length for x in self.estimated_sources_list]
         reference_lengths = [x.signal_length for x in self.true_sources_list]
 
         if len(set(estimated_lengths)) > 1:
-            raise BssEvalException(
-                "All AudioSignals in estimated_sources must be the same length!"
-            )
+            raise BssEvalException('All AudioSignals in estimated_sources must be the same length!')
         if len(set(reference_lengths)) > 1:
-            raise BssEvalException(
-                "All AudioSignals in ground_truth must be the same length!"
-            )
-
+            raise BssEvalException('All AudioSignals in ground_truth must be the same length!')
+    
     def _preprocess_sources(self):
         """
         Prepare the :ref:`audio_data` in the sources for ``mir_eval``.
@@ -132,12 +117,10 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
             (:obj:`np.ndarray`, :obj:`np.ndarray`) reference_source_array, estimated_source_array
 
         """
-        estimated_source_array = np.vstack(
-            [np.copy(x.audio_data) for x in self.true_sources_list]
-        )
-        reference_source_array = np.vstack(
-            [np.copy(x.audio_data) for x in self.estimated_sources_list]
-        )
+        estimated_source_array = np.vstack([np.copy(x.audio_data)
+                                            for x in self.true_sources_list])
+        reference_source_array = np.vstack([np.copy(x.audio_data)
+                                            for x in self.estimated_sources_list])
 
         return reference_source_array, estimated_source_array
 
@@ -153,13 +136,11 @@ class BSSEvalBase(evaluation_base.EvaluationBase):
         reference, estimated = self._preprocess_sources()
 
         if self._mir_eval_func is None:
-            raise NotImplementedError(
-                "Cannot call base class! Try calling " "BSSEvalSources or BSSEvalImages"
-            )
+            raise NotImplementedError('Cannot call base class! Try calling '
+                                      'BSSEvalSources or BSSEvalImages')
 
-        bss_output = self._mir_eval_func(
-            reference, estimated, compute_permutation=self.compute_permutation
-        )
+        bss_output = self._mir_eval_func(reference, estimated,
+                                         compute_permutation=self.compute_permutation)
 
         self._populate_scores_dict(bss_output)
 
@@ -180,5 +161,4 @@ class BssEvalException(Exception):
     """
     Exception class for BSS-Eval
     """
-
     pass

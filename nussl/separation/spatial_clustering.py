@@ -24,33 +24,36 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         self,
         input_audio_signal,
         num_sources,
-        mask_type="soft",
+        mask_type='soft',
         use_librosa_stft=False,
         use_cuda=True,
-        clustering_options=None,
+        clustering_options=None
     ):
         super(SpatialClustering, self).__init__(
-            input_audio_signal=input_audio_signal, mask_type=mask_type
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type
         )
         clustering_defaults = {
-            "num_clusters": num_sources,
-            "n_iterations": 10,
-            "covariance_type": "tied:spherical",
-            "covariance_init": 1.0,
+            'num_clusters': num_sources,
+            'n_iterations': 10,
+            'covariance_type': 'tied:spherical',
+            'covariance_init': 1.0
         }
 
         self.clustering_options = {
             **clustering_defaults,
-            **(clustering_options if clustering_options else {}),
+            **(clustering_options if clustering_options else {})
         }
 
         self.num_sources = num_sources
         self.device = torch.device(
-            "cuda" if torch.cuda.is_available() and use_cuda else "cpu"
+            'cuda'
+            if torch.cuda.is_available() and use_cuda
+            else 'cpu'
         )
         self.model, self.metadata = self.load_model(model_path)
-        if self.audio_signal.sample_rate != self.metadata["sample_rate"]:
-            self.audio_signal.resample(self.metadata["sample_rate"])
+        if self.audio_signal.sample_rate != self.metadata['sample_rate']:
+            self.audio_signal.resample(self.metadata['sample_rate'])
         self.use_librosa_stft = use_librosa_stft
         self._compute_spectrograms()
 
@@ -63,37 +66,46 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         Returns:
 
         """
-        model_dict = torch.load(model_path, map_location="cpu")
-        model = SeparationModel(model_dict["config"])
-        model.load_state_dict(model_dict["state_dict"])
+        model_dict = torch.load(model_path, map_location='cpu')
+        model = SeparationModel(model_dict['config'])
+        model.load_state_dict(model_dict['state_dict'])
         model = model.to(self.device).eval()
-        metadata = model_dict["metadata"] if "metadata" in model_dict else {}
+        metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
         return model, metadata
 
     def _compute_spectrograms(self):
-        self.audio_signal.stft_params.window_length = self.metadata["n_fft"]
-        self.audio_signal.stft_params.n_fft_bins = self.metadata["n_fft"]
-        self.audio_signal.stft_params.hop_length = self.metadata["hop_length"]
+        self.audio_signal.stft_params.window_length = self.metadata['n_fft']
+        self.audio_signal.stft_params.n_fft_bins = self.metadata['n_fft']
+        self.audio_signal.stft_params.hop_length = self.metadata['hop_length']
         self.stft = self.audio_signal.stft(
-            overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft
+            overwrite=True,
+            remove_reflection=True,
+            use_librosa=self.use_librosa_stft
         )
-        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft), ref=np.max)
+        self.log_spectrogram = librosa.amplitude_to_db(
+            np.abs(self.stft),
+            ref=np.max
+        )
 
     def _preprocess(self):
         data = {
-            "magnitude_spectrogram": np.abs(self.stft),
-            "log_spectrogram": self.log_spectrogram.copy(),
+            'magnitude_spectrogram': np.abs(self.stft),
+            'log_spectrogram': self.log_spectrogram.copy(),
         }
-        data["log_spectrogram"] -= np.mean(data["log_spectrogram"])
-        data["log_spectrogram"] /= np.std(data["log_spectrogram"]) + 1e-7
+        data['log_spectrogram'] -= np.mean(data['log_spectrogram'])
+        data['log_spectrogram'] /= np.std(data['log_spectrogram']) + 1e-7
 
         for key in data:
-            data[key] = self._format(data[key], self.metadata["format"])
+            data[key] = self._format(data[key], self.metadata['format'])
             data[key] = torch.from_numpy(data[key]).to(self.device).float()
 
         return data
 
-    def _format(self, datum: np.ndarray, format_type: str) -> np.ndarray:
+    def _format(
+        self,
+        datum: np.ndarray,
+        format_type: str,
+    ) -> np.ndarray:
         """Formats data for input to model
 
         Formats produced based on `format_type`:
@@ -111,19 +123,19 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         Returns:
             formatted datum
         """
-        if format_type == "rnn":
+        if format_type == 'rnn':
             datum = np.expand_dims(datum, axis=0)
-            if self.metadata["num_channels"] != self.audio_signal.num_channels:
+            if self.metadata['num_channels'] != self.audio_signal.num_channels:
                 datum = np.swapaxes(datum, 0, 3)
 
             _shape = datum.shape
-            shape = [_shape[0], _shape[1], _shape[2] * _shape[3]]
+            shape = [_shape[0], _shape[1], _shape[2]*_shape[3]]
             datum = np.reshape(datum, shape)
             datum = np.swapaxes(datum, 1, 2)
-        elif format_type == "cnn":
+        elif format_type == 'cnn':
             datum = np.moveaxis(datum, [0, 1, 2, 3], [0, 3, 2, 1])
         else:
-            raise Exception(f"Unexpected format type: {format_type}")
+            raise Exception(f'Unexpected format type: {format_type}')
 
         return datum
 
@@ -137,25 +149,19 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         with torch.no_grad():
             output = self.model(input_data)
 
-            if "embedding" in output:
-                num_channels, sequence_length, num_features, embedding_size = output[
-                    "embedding"
-                ].shape
-                self.embedding = output["embedding"].data.cpu().numpy()
+            if 'embedding' in output:
+                num_channels, sequence_length, num_features, embedding_size = output['embedding'].shape
+                self.embedding = output['embedding'].data.cpu().numpy()
                 self.embedding = self.embedding.reshape(-1, embedding_size)
-                output["embedding"] = output["embedding"].reshape(
-                    1, -1, num_features, embedding_size
+                output['embedding'] = output['embedding'].reshape(1, -1, num_features, embedding_size)
+                clusters = modules.Clusterer(**self.clustering_options)(output['embedding'])
+                clusters['assignments'] = (clusters['assignments']
+                    .reshape(num_channels, sequence_length, num_features, self.num_sources)
                 )
-                clusters = modules.Clusterer(**self.clustering_options)(
-                    output["embedding"]
-                )
-                clusters["assignments"] = clusters["assignments"].reshape(
-                    num_channels, sequence_length, num_features, self.num_sources
-                )
-                clusters["assignments"] = clusters["assignments"].permute(3, 2, 1, 0)
-                _masks = clusters["assignments"].data.cpu().numpy()
-            elif "estimates" in output:
-                _masks = output["estimates"]
+                clusters['assignments'] = clusters['assignments'].permute(3, 2, 1, 0)
+                _masks = clusters['assignments'].data.cpu().numpy()
+            elif 'estimates' in output:
+                _masks = output['estimates']
 
         self.assignments = _masks
         self.masks = []
@@ -167,7 +173,7 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
             elif self.mask_type == self.SOFT_MASK:
                 mask_object = masks.SoftMask(mask)
             else:
-                raise ValueError("Unknown mask type {}!".format(self.mask_type))
+                raise ValueError('Unknown mask type {}!'.format(self.mask_type))
             self.masks.append(mask_object)
 
         return self.masks
@@ -182,9 +188,12 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
 
         """
         transform = PCA(n_components=num_dimensions)
-        _embedding = self.embedding[(self.log_spectrogram >= threshold).flatten()]
+        _embedding = self.embedding[
+            (self.log_spectrogram >= threshold).flatten()
+        ]
         output_transform = transform.fit_transform(_embedding)
         return output_transform
+
 
     def apply_mask(self, mask):
         """
@@ -193,7 +202,10 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         source = copy.deepcopy(self.audio_signal)
         source = source.apply_mask(mask)
         source.stft_params = self.audio_signal.stft_params
-        source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
+        source.istft(
+            overwrite=True,
+            truncate_to_length=self.audio_signal.signal_length
+        )
 
         return source
 
@@ -211,9 +223,9 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         return self.sources
 
     def _repr_html_(self):
-        return "test"
+        return 'test'
 
-    def plot(self, threshold=-25, cmap="Blues"):
+    def plot(self, threshold=-25, cmap='Blues'):
         """Plots relevant information for deep clustering onto the active
         figure, given by matplotlib.pyplot.figure() outside of this function.
         The three plots are:
@@ -233,15 +245,11 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         grid = GridSpec(6, 10)
 
         plt.subplot(grid[:3, 3:])
-        plt.imshow(
-            np.mean(self.log_spectrogram, axis=-1),
-            origin="lower",
-            aspect="auto",
-            cmap="magma",
-        )
+        plt.imshow(np.mean(self.log_spectrogram, axis=-1), origin='lower',
+                   aspect='auto', cmap='magma')
         plt.xticks([])
-        plt.ylabel("Frequency")
-        plt.title("Mixture")
+        plt.ylabel('Frequency')
+        plt.title('Mixture')
 
         plt.subplot(grid[:3, :3])
 
@@ -252,24 +260,39 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         ymax = output_transform[:, 1].max()
 
         plt.hexbin(
-            output_transform[:, 0], output_transform[:, 1], bins=None, gridsize=100
+            output_transform[:, 0],
+            output_transform[:, 1],
+            bins=None,
+            gridsize=100
         )
         plt.axis([xmin, xmax, ymin, ymax])
-        plt.xlabel("PCA dim 1")
-        plt.ylabel("PCA dim 2")
-        plt.title("Embedding visualization (2D)")
+        plt.xlabel('PCA dim 1')
+        plt.ylabel('PCA dim 2')
+        plt.title('Embedding visualization (2D)')
 
-        ax = plt.subplot(grid[3:, :3], projection="3d")
-        output_transform = self.project_embeddings(3, threshold=max(-10, threshold / 4))
-        result = pd.DataFrame(output_transform, columns=["PCA%i" % i for i in range(3)])
-        ax.scatter(result["PCA0"], result["PCA1"], result["PCA2"], cmap="Set2_r", s=10)
+        ax = plt.subplot(grid[3:, :3], projection='3d')
+        output_transform = self.project_embeddings(
+            3,
+            threshold=max(-10, threshold / 4),
+        )
+        result=pd.DataFrame(
+            output_transform,
+            columns=['PCA%i' % i for i in range(3)]
+        )
+        ax.scatter(
+            result['PCA0'],
+            result['PCA1'],
+            result['PCA2'],
+            cmap="Set2_r",
+            s=10
+        )
         # make simple, bare axis lines through space:
-        xAxisLine = ((min(result["PCA0"]), max(result["PCA0"])), (0, 0), (0, 0))
-        ax.plot(xAxisLine[0], xAxisLine[1], xAxisLine[2], "r")
-        yAxisLine = ((0, 0), (min(result["PCA1"]), max(result["PCA1"])), (0, 0))
-        ax.plot(yAxisLine[0], yAxisLine[1], yAxisLine[2], "r")
-        zAxisLine = ((0, 0), (0, 0), (min(result["PCA2"]), max(result["PCA2"])))
-        ax.plot(zAxisLine[0], zAxisLine[1], zAxisLine[2], "r")
+        xAxisLine = ((min(result['PCA0']), max(result['PCA0'])), (0, 0), (0,0))
+        ax.plot(xAxisLine[0], xAxisLine[1], xAxisLine[2], 'r')
+        yAxisLine = ((0, 0), (min(result['PCA1']), max(result['PCA1'])), (0,0))
+        ax.plot(yAxisLine[0], yAxisLine[1], yAxisLine[2], 'r')
+        zAxisLine = ((0, 0), (0,0), (min(result['PCA2']), max(result['PCA2'])))
+        ax.plot(zAxisLine[0], zAxisLine[1], zAxisLine[2], 'r')
         # label the axes
         ax.set_xlabel("PC1")
         ax.set_ylabel("PC2")
@@ -281,17 +304,25 @@ class SpatialClustering(mask_separation_base.MaskSeparationBase):
         silence_mask = np.mean(self.log_spectrogram, axis=-1) > threshold
         assignments *= silence_mask
 
-        plt.imshow(assignments, origin="lower", aspect="auto", cmap=cmap)
-        plt.xlabel("Time (frames)")
-        plt.ylabel("Frequency")
-        plt.title("Source assignments")
 
-        norm = mpl.colors.Normalize(vmin=np.min(assignments), vmax=np.max(assignments))
-        labels = [f"Source {i}" for i in range(1, self.num_sources + 1)]
-        values = list(range(np.min(assignments) + 1, np.max(assignments) + 1))
+        plt.imshow(assignments,
+                   origin='lower', aspect='auto', cmap=cmap)
+        plt.xlabel('Time (frames)')
+        plt.ylabel('Frequency')
+        plt.title('Source assignments')
+
+        norm = mpl.colors.Normalize(
+            vmin=np.min(assignments),
+            vmax=np.max(assignments)
+        )
+        labels = [f'Source {i}' for i in range(1, self.num_sources + 1)]
+        values = list(range(np.min(assignments)+1, np.max(assignments) + 1))
         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-        _legend = [mpl.patches.Patch(color=mapper.to_rgba(0), label="Silence")]
+        _legend = [mpl.patches.Patch(color=mapper.to_rgba(0), label='Silence')]
 
         for value, label in zip(values, labels):
-            _legend.append(mpl.patches.Patch(color=mapper.to_rgba(value), label=label))
+            _legend.append(mpl.patches.Patch(
+                color=mapper.to_rgba(value),
+                label=label
+            ))
         plt.legend(handles=_legend)

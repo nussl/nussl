@@ -7,8 +7,9 @@ import os
 
 
 class TestJson(unittest.TestCase):
+
     def test_audio_signal(self):
-        path = os.path.join("..", "Input", "mix1.wav")
+        path = os.path.join('..', 'Input', 'mix1.wav')
         a = nussl.AudioSignal(path)
         a.stft()
 
@@ -25,7 +26,7 @@ class TestJson(unittest.TestCase):
         return worked
 
     def test_repet(self):
-        path = os.path.join("..", "Input", "mix1.wav")
+        path = os.path.join('..', 'Input', 'mix1.wav')
         a = nussl.AudioSignal(path)
         r = nussl.Repet(a)
         r()
@@ -36,7 +37,7 @@ class TestJson(unittest.TestCase):
         return worked
 
     def test_duet(self):
-        path = os.path.join("..", "Input", "dev1_female3_inst_mix.wav")
+        path = os.path.join('..', 'Input', 'dev1_female3_inst_mix.wav')
         a = nussl.AudioSignal(path)
         d = nussl.Duet(a, 3)
         d()
@@ -47,7 +48,7 @@ class TestJson(unittest.TestCase):
         return worked
 
     def test_repet_sim(self):
-        path = os.path.join("..", "Input", "mix1.wav")
+        path = os.path.join('..', 'Input', 'mix1.wav')
         a = nussl.AudioSignal(path)
         r = nussl.RepetSim(a)
         r()
@@ -57,9 +58,9 @@ class TestJson(unittest.TestCase):
         worked = r == f
         return worked
 
-    @unittest.skip("")
+    @unittest.skip('')
     def test_nmf_mfcc(self):
-        path = os.path.join("..", "Input", "piano_and_synth_arp_chord_mono.wav")
+        path = os.path.join('..', 'Input', 'piano_and_synth_arp_chord_mono.wav')
         a = nussl.AudioSignal(path)
         n = nussl.NMF_MFCC(a, num_sources=2)
         n()
