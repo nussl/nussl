@@ -33,6 +33,6 @@ class MixSourceFolder(BaseDataset):
 
             source_signal = self._load_audio_file(speaker_path)
             source_signal.audio_data = source_signal.audio_data[channel_indices]
-            sources.append(source)
+            sources.append(source_signal)
 
-        return mix, sources, np.eye(self.num_speakers)
+        return mix_signal, sources, np.eye(self.num_speakers)
