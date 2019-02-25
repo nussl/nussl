@@ -289,8 +289,6 @@ class Trainer():
         optimizer_state = torch.load(optimizer_path)
 
         model_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
-        model = model_dict['model']
-        model.load_state_dict(model_dict['state_dict'])
+        self.module.load_state_dict(model_dict['state_dict'])
 
-        self.model = self.load_model(model_path)
         return

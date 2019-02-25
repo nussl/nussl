@@ -40,11 +40,18 @@ def parse():
         type=bool,
         help='Whether to log loss and other metrics to tensorboard file, defaults to True',
     )
+
+    parser.add_argument(
+        '--resume',
+        default=False,
+        type=bool,
+        help="Whether to resume from a previous run.",
+    )
     
     return parser.parse_args()
 
 
-def train(output_folder, model, dataset, train, use_tensorboard=True):
+def train(output_folder, model, dataset, train, use_tensorboard=True, resume=False):
     cpu_count = multiprocessing.cpu_count()
     train['num_workers'] = min(cpu_count, train['num_workers'])
 
@@ -72,6 +79,8 @@ def train(output_folder, model, dataset, train, use_tensorboard=True):
         ),
         use_tensorboard=use_tensorboard,
     )
+    if resume:
+        trainer.resume()
     trainer.fit()
 
 if __name__ == "__main__":
@@ -83,4 +92,5 @@ if __name__ == "__main__":
     }
     jsons['output_folder'] = parsed['output_folder']
     jsons['use_tensorboard'] = parsed['use_tensorboard']
+    jsons['resume'] = parsed['resume']
     train(**jsons)
