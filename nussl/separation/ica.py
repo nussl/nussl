@@ -26,7 +26,7 @@ class ICA(separation_base.SeparationBase):
     """
 
     def __init__(self, observations_list=None, sample_rate=constants.DEFAULT_SAMPLE_RATE,
-                 max_iterations=None, random_seed=None, fast_ica_kwargs=None):
+                 max_iterations=200, random_seed=None, fast_ica_kwargs=None):
         observations_signal = self._validate_observations_list(observations_list, sample_rate)
         super(ICA, self).__init__(input_audio_signal=observations_signal)
 

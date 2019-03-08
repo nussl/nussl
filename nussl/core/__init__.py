@@ -5,4 +5,3 @@ Imports for core nussl components
 """
 
 from .audio_signal import AudioSignal
-

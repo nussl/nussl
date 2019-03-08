@@ -700,6 +700,31 @@ class AudioSignal(object):
         return np.abs(self.stft_data)
 
     @property
+    def log_magnitude_spectrogram_data(self):
+        """
+        PROPERTY
+
+        (:obj:`np.ndarray`): Returns a real valued ``np.array`` with log magnitude spectrogram data.
+        
+        The log magnitude spectrogram is defined as 20*log10(Abs(STFT)). Same shape as :attr:`stft_data`.
+        
+        Raises:
+            AudioSignalException: if :attr:`stft_data` is ``None``. Run :func:`stft` before
+                accessing this.
+            
+        See Also:
+            * :func:`stft` to calculate the STFT before accessing this attribute.
+            * :attr:`stft_data` complex-valued Short-time Fourier Transform data.
+            * :attr:`power_spectrogram_data`
+            * :func:`get_magnitude_spectrogram_channel`
+            
+        """
+        if self.stft_data is None:
+            raise AudioSignalException('Cannot calculate magnitude_spectrogram_data '
+                                       'because self.stft_data is None')
+        return 20 * np.log10(np.abs(self.stft_data) + 1e-4)
+
+    @property
     def has_data(self):
         """
         PROPERTY
@@ -1120,7 +1145,7 @@ class AudioSignal(object):
         if not self.has_stft_data:
             raise AudioSignalException('There is no STFT data to apply a mask to!')
 
-        if mask.shape != self.stft_data.shape:
+        if mask.shape != self.stft_data.shape and mask.shape[-1] != 1:
             raise AudioSignalException(
                 'Input mask and self.stft_data are not the same shape! mask:'
                 f' {mask.shape}, self.stft_data: {self.stft_data.shape}'
@@ -1132,6 +1157,40 @@ class AudioSignal(object):
             self.stft_data = masked_stft
         else:
             return self.make_copy_with_stft_data(masked_stft, verbose=False)
+
+    def ipd_ild_features(self, ch_one=0, ch_two=1):
+        """
+        Computes interphase difference (IPD) and interlevel difference (ILD) for a 
+        stereo spectrogram. If more than two channels, this by default computes IPD/ILD
+        between the first two channels. This can be specified by the arguments ch_one
+        and ch_two. If only one channel, this raises an error.
+        
+        Args:
+            ch_one (int): index of first channel to compute IPD/ILD.
+            ch_two (int): index of second channel to compute IPD/ILD.
+
+        Returns:
+            ipd (np.ndarray): Interphase difference between selected channels
+            ild (np.ndarray): Interlevel difference between selected channels
+
+        """
+        if self.stft_data is None:
+            raise AudioSignalException("Cannot compute ipd/ild features without stft_data!")
+        if self.num_channels == 1:
+            raise AudioSignalException("Cannot compute ipd/ild features on mono input!")
+        
+        stft_ch_one = self.get_stft_channel(ch_one)
+        stft_ch_two = self.get_stft_channel(ch_two)
+
+        ild = np.abs(stft_ch_one) / (np.abs(stft_ch_two) + 1e-4)
+        ild = 20 * np.log10(ild + 1e-8)
+
+        frequencies = self.freq_vector
+        ipd = np.angle(stft_ch_two * np.conj(stft_ch_one))
+        ipd /= (frequencies + 1.0)[:, None]
+        ipd = ipd % np.pi
+
+        return ipd, ild
 
     ##################################################
     #                   Plotting

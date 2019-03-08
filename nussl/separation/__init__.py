@@ -50,47 +50,25 @@ from .rpca import RPCA
 nmf_algorithms = [NMF_MFCC]
 component_analysis_algorithms = [ICA, RPCA]
 
+# Clustering algorithms
+from .clustering import SpatialClustering
+
 # Deep learning algorithms
 if torch_imported:
-    from .deep_separation import DeepSeparation
+    from .deep_mask_estimation import DeepMaskEstimation
+    from .clustering import DeepClustering
 else:
-    class DeepSeparation(ImportErrorClass):
+    class DeepMaskEstimation(ImportErrorClass):
         def __init__(self, *args, **kwargs):
-            super(DeepSeparation, self).__init__('pytorch')
+            super().__init__('pytorch')
+    class DeepClustering(ImportErrorClass):
+        def __init__(self, *args, **kwargs):
+            super().__init__('pytorch')
 
-deep_learning_algorithms = [DeepSeparation]
+deep_learning_algorithms = [DeepClustering, DeepMaskEstimation]
 
 all_separation_algorithms = [median_algorithms, melody_algorithms, spatialization_algorithms,
                              benchmark_algorithms, nmf_algorithms, component_analysis_algorithms,
                              deep_learning_algorithms]
 
 all_separation_algorithms = [val for sublist in all_separation_algorithms for val in sublist]
-
-# TODO why are we grouping things into these lists?
-__all__ = [
-    'SeparationBase', 
-    'MaskSeparationBase',
-    'all_separation_algorithms',
-    'median_algorithms', 
-    'Repet', 
-    'RepetSim', 
-    'HPSS', 
-    'FT2D',
-    'melody_algorithms', 
-    'Melodia',
-    'spatialization_algorithms', 
-    'Duet', 
-    'Projet',
-    'benchmark_algorithms', 
-    'IdealMask', 
-    'HighLowPassFilter',
-    'composite_instruments', 
-    'OverlapAdd',
-    'nmf_algorithms', 
-    'NMF_MFCC',
-    'component_analysis_algorithms', 
-    'ICA', 
-    'RPCA', 
-    'deep_learning_algorithms', 
-    'DeepSeparation',
-]
