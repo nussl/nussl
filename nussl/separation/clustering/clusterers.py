@@ -251,9 +251,6 @@ class SpectralClusteringConfidence():
         self.projection, self.eigenvalues, self.choices = fast_spectral_clustering(
             features, self.max_rank, self.weights, self.n_samples
         )
-        # self.projection, self.eigenvalues_, _ = fast_spectral_clustering(
-        #     features, self.n_components, self.weights, self.n_samples, self.choices
-        # )
         self.clusterer.fit(self.projection)
 
     def confidence(self):

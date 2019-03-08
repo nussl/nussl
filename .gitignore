@@ -7,3 +7,4 @@ Output/
 *.swp
 *.wav
 *.ipynb
+nussl.egg-info/
