@@ -185,7 +185,6 @@ def fast_spectral_clustering(X, rank, weights=None, n_samples=1000, choices=None
 
     # step 10 and 11
     D_hat = ((Q @ S1) @ (Q.T @ np.ones(Q.shape[0]))) ** 2
-    print(Q.shape, S1.shape, D_hat.shape)
     D_hat = 1 / np.sqrt(np.sqrt(D_hat) + 1e-4)
     U = np.multiply(D_hat[:,None], Q)
 
@@ -262,7 +261,6 @@ class SpectralClusteringConfidence():
         lambda_diff = np.abs(np.diff(lambdas))
         sort_lambda = np.sort(lambda_diff)[::-1]
         sort_index = np.argsort(lambda_diff)[::-1]
-        print(sort_lambda, sort_index)
         i = list(sort_index).index(self.n_components)
         sort_lambda_threshold = np.minimum(sort_lambda, 15)
         confidence = sort_lambda[i] / sort_lambda_threshold.sum()

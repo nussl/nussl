@@ -1,0 +1,29 @@
+Metadata-Version: 2.1
+Name: nussl
+Version: 0.1.6
+Summary: A flexible sound source separation library.
+Home-page: https://github.com/interactiveaudiolab/nussl
+Author: E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, B. Pardo
+Author-email: ethanmanilow@u.northwestern.edu
+Maintainer: E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, B. Pardo
+Maintainer-email: ethanmanilow@u.northwestern.edu
+License: MIT
+Description: UNKNOWN
+Keywords: audio,source,separation,music,sound,source separation
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Artistic Software
+Classifier: Topic :: Multimedia
+Classifier: Topic :: Multimedia :: Sound/Audio
+Classifier: Topic :: Multimedia :: Sound/Audio :: Editors
+Classifier: Topic :: Software Development :: Libraries
+Provides-Extra: deep
+Provides-Extra: musdb
+Provides-Extra: melodia
