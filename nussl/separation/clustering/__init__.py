@@ -1,1 +1,1 @@
-from .clustering_algorithms import SpatialClustering, DeepClustering
+from .clustering_algorithms import SpatialClustering, DeepClustering, PrimitiveClustering

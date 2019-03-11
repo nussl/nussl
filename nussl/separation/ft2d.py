@@ -26,7 +26,7 @@ class FT2D(mask_separation_base.MaskSeparationBase):
     def __init__(self, input_audio_signal, high_pass_cutoff=100.0, neighborhood_size=(1, 25),
                  do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
-                 filter_approach='original'):
+                 filter_approach='local_std'):
         super(FT2D, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
         self.high_pass_cutoff = high_pass_cutoff
         self.background = None

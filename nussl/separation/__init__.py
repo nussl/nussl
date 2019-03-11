@@ -29,6 +29,7 @@ melody_algorithms = [Melodia]
 # Spatialization based methods
 from .duet import Duet
 from .projet import Projet
+from .multichannel_wiener_filter import MultichannelWienerFilter
 
 spatialization_algorithms = [Duet, Projet]
 
@@ -51,7 +52,7 @@ nmf_algorithms = [NMF_MFCC]
 component_analysis_algorithms = [ICA, RPCA]
 
 # Clustering algorithms
-from .clustering import SpatialClustering
+from .clustering import SpatialClustering, PrimitiveClustering
 
 # Deep learning algorithms
 if torch_imported:

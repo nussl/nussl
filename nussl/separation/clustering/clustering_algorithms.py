@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import librosa
 from ..deep_mixin import DeepMixin
+from .. import FT2D, Melodia, HPSS, Repet, RepetSim
+from sklearn.decomposition import TruncatedSVD
 
 class SpatialClustering(ClusteringSeparationBase):
     def extract_features(self):
@@ -16,6 +18,77 @@ class SpatialClustering(ClusteringSeparationBase):
         features = np.array(features).transpose(2, 3, 1, 0)   
         features = features.reshape(-1, features.shape[-1])   
 
+        return features
+
+class PrimitiveClustering(ClusteringSeparationBase):
+    def __init__(
+        self, 
+        input_audio_signal,
+        num_cluster_sources=2,
+        num_cascades=1,
+        algorithms=[Melodia, FT2D, HPSS],
+        reduce_noise=True,
+        **kwargs
+    ):
+        super().__init__(
+            input_audio_signal,
+            **kwargs
+        )
+        self.algorithms = algorithms
+        self.num_cascades = num_cascades
+        self.num_cluster_sources = num_cluster_sources
+        self.reduce_noise = reduce_noise
+
+    def noise_reduction(self, features):
+        tr = TruncatedSVD(n_components=self.num_sources)
+
+        threshold = self.project_data(self.threshold)
+        threshold = threshold.astype(bool)
+
+        _features = features[threshold.flatten()]
+        tr.fit(_features)
+        output = tr.fit_transform(features)
+        return output
+
+    def extract_features_from_signal(self, signal):
+        features =  []
+        separations = []
+        for i, algorithm in enumerate(self.algorithms):
+            if hasattr(algorithm, 'cluster_features'):
+                if self.num_cluster_sources > 0:
+                    separator = algorithm(
+                        self.audio_signal, 
+                        num_sources = self.num_cluster_sources,
+                        clustering_type=self.clustering_type,
+                        clustering_options=self.clustering_options
+                    )
+            else:
+                separator = algorithm(self.audio_signal)
+            masks = separator.run()
+            separations += separator.make_audio_signals()
+            _features = []
+            for s, mask in zip(separations, masks):
+                _features.append(mask.mask)        
+            _features = np.array(_features).transpose(1, 2, 3, 0)
+            features.append(_features)
+        return features, separations
+
+    def extract_features(self):
+        features = []
+        current_signals = [self.audio_signal]
+        for i in range(self.num_cascades):
+            print(i, len(current_signals))
+            separations = []
+            for signal in current_signals:
+                _features, _separations = self.extract_features_from_signal(signal)
+                features += [float(1 / (i+1)) * f for f in  _features]
+                separations += _separations
+            current_signals = separations
+
+        features = np.concatenate(features, axis=-1)
+        features = features.reshape(-1, features.shape[-1])
+        if self.reduce_noise:
+            features = self.noise_reduction(features)
         return features
 
 class DeepClustering(ClusteringSeparationBase, DeepMixin):

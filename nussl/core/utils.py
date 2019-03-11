@@ -136,7 +136,6 @@ def _set_array_zero_indices(index, zero_distance, max_len):
     upper = max_len if upper >= max_len else upper
     return int(lower), int(upper)
 
-
 def find_peak_values(input_array, n_peaks, min_dist=None, do_min=False, threshold=0.5):
     """
     Finds the values of the peaks in a 1-D or 2-D numpy array. Used exactly the same as

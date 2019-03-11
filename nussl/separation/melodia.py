@@ -133,7 +133,11 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         melody_signal = [melody_signal for channel in range(self.audio_signal.num_channels)]
         melody_signal = np.asarray(melody_signal)
         melody_signal = melody_signal[:, 0:self.audio_signal.signal_length]
-        melody_signal = AudioSignal(audio_data_array=melody_signal, sample_rate=sample_rate)
+        melody_signal = AudioSignal(
+            audio_data_array=melody_signal, 
+            sample_rate=sample_rate,
+            stft_params=self.audio_signal.stft_params
+        )
 
         self.melody_signal = melody_signal
         return melody_signal

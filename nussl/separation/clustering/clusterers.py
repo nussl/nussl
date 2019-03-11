@@ -2,10 +2,13 @@ from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
 from sklearn.base import BaseEstimator, ClusterMixin
 import numpy as np
-from scipy.special import softmax
 from sklearn import preprocessing
 import scipy
+from scipy.special import logsumexp
 from sklearn.metrics.pairwise import rbf_kernel
+
+def softmax(x, axis=None):
+    return np.exp(x - logsumexp(x, axis=axis, keepdims=True))
 
 def gmm_js(gmm_p, gmm_q, n_samples=10**5):
     """

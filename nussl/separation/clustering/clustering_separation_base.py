@@ -120,6 +120,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.assignments, self.confidence = self.postprocess(
             self.assignments, self.confidence
         )
+        
 
         self.masks = []
         for i in range(self.num_sources):
@@ -253,7 +254,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
 
         threshold = np.percentile(
             self.log_spectrogram, 
-            max(90, self.percentile)
+            max(70, self.percentile)
         )
 
         grid_sizes = (18, 18)
@@ -322,7 +323,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         plt.legend(handles=_legend)
 
         plt.subplot(grid[1*spacing:spacing + spacing, left:])
-        plt.imshow(np.max(self.confidence, axis=-1) * (assignments > 0), origin='lower',
+        plt.imshow(np.max(self.confidence, axis=-1), origin='lower',
                    aspect='auto', cmap='magma')
         plt.xticks([])
         plt.ylabel('Frequency')
