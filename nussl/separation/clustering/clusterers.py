@@ -67,7 +67,7 @@ class KMeansConfidence(KMeans):
         return assignments, confidence
 
 class GaussianMixtureConfidence(GaussianMixture):
-    def __init__(self, n_samples=10**5, alpha=1.0, **kwargs):
+    def __init__(self, n_samples=10**5, alpha=1.0, threshold=None, **kwargs):
         """
         This class extends GaussianMixture from sklearn to include a confidence measure
         as laid out in:
@@ -84,6 +84,7 @@ class GaussianMixtureConfidence(GaussianMixture):
         self.assignments = None
         self.n_samples = n_samples
         self.alpha = alpha
+        self.threshold = threshold
 
     def confidence(self, features):
         if self.assignments is None:
@@ -100,12 +101,13 @@ class GaussianMixtureConfidence(GaussianMixture):
         The first confidence measure computes the JS divergence between a 1-component
         GMM and a multi-component GMM. 
         """
+        _features = features if self.threshold is None else features[self.threshold]
         js_divergence = []
         for k in range(1, self.n_components):
             k_component_gmm = GaussianMixture(
                 n_components=k, 
                 covariance_type=self.covariance_type,
-            ).fit(features)
+            ).fit(_features)
 
             jsd = gmm_js(self, k_component_gmm, self.n_samples)
             js_divergence.append(jsd)
@@ -121,8 +123,11 @@ class GaussianMixtureConfidence(GaussianMixture):
         return (factor*np.abs(np.max(self.assignments, axis=-1) - (1 / factor)))
 
     def likelihood_confidence(self):
-        likelihoods = np.exp(self.log_likelihoods)
+        likelihoods = self.log_likelihoods
+        likelihoods += np.abs(likelihoods.min())
         likelihoods /= (likelihoods.max() + 1e-6)
+        likelihoods = np.exp(likelihoods)
+        likelihoods /= likelihoods.max()
         return likelihoods
 
 

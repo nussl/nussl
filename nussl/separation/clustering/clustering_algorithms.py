@@ -3,8 +3,9 @@ import numpy as np
 import torch
 import librosa
 from ..deep_mixin import DeepMixin
-from .. import FT2D, Melodia, HPSS, Repet, RepetSim
+from .. import FT2D, Melodia, HPSS, Repet, RepetSim, MultichannelWienerFilter
 from sklearn.decomposition import TruncatedSVD
+from sklearn.preprocessing import scale
 
 class SpatialClustering(ClusteringSeparationBase):
     def extract_features(self):
@@ -24,20 +25,21 @@ class PrimitiveClustering(ClusteringSeparationBase):
     def __init__(
         self, 
         input_audio_signal,
-        num_cluster_sources=2,
         num_cascades=1,
         algorithms=[Melodia, FT2D, HPSS],
         reduce_noise=True,
+        use_multichannel_weiner_filter=False,
         **kwargs
     ):
         super().__init__(
             input_audio_signal,
             **kwargs
         )
-        self.algorithms = algorithms
+        self.algorithms = [a[0] for a in algorithms]
+        self.algorithm_parameters = [a[1] for a in algorithms]
         self.num_cascades = num_cascades
-        self.num_cluster_sources = num_cluster_sources
         self.reduce_noise = reduce_noise
+        self.use_multichannel_weiner_filter = use_multichannel_weiner_filter
 
     def noise_reduction(self, features):
         tr = TruncatedSVD(n_components=self.num_sources)
@@ -50,28 +52,28 @@ class PrimitiveClustering(ClusteringSeparationBase):
         output = tr.fit_transform(features)
         return output
 
-    def extract_features_from_signal(self, signal):
-        features =  []
+    def run_algorithm_on_signal(self, mixture, level):
         separations = []
         for i, algorithm in enumerate(self.algorithms):
-            if hasattr(algorithm, 'cluster_features'):
-                if self.num_cluster_sources > 0:
-                    separator = algorithm(
-                        self.audio_signal, 
-                        num_sources = self.num_cluster_sources,
-                        clustering_type=self.clustering_type,
-                        clustering_options=self.clustering_options
-                    )
-            else:
-                separator = algorithm(self.audio_signal)
-            masks = separator.run()
-            separations += separator.make_audio_signals()
-            _features = []
-            for s, mask in zip(separations, masks):
-                _features.append(mask.mask)        
-            _features = np.array(_features).transpose(1, 2, 3, 0)
-            features.append(_features)
-        return features, separations
+            separator = algorithm(mixture, **self.algorithm_parameters[i])
+            separator.run()
+            signals = separator.make_audio_signals()            
+            if self.use_multichannel_weiner_filter and level == self.num_cascades - 1:
+                mwf = MultichannelWienerFilter(mixture, signals)
+                mwf.run()
+                signals = mwf.make_audio_signals()
+            separations += signals
+        return separations
+
+    def extract_features_from_signals(self, signals):
+        features = []
+        for s in signals:
+            s.stft()
+            _feature = s.log_magnitude_spectrogram_data
+            features.append(_feature)     
+        features = np.array(features).transpose(1, 2, 3, 0)
+        print(features.shape)
+        return features        
 
     def extract_features(self):
         features = []
@@ -80,13 +82,25 @@ class PrimitiveClustering(ClusteringSeparationBase):
             print(i, len(current_signals))
             separations = []
             for signal in current_signals:
-                _features, _separations = self.extract_features_from_signal(signal)
-                features += [float(1 / (i+1)) * f for f in  _features]
+                _separations = self.run_algorithm_on_signal(signal, i)
                 separations += _separations
             current_signals = separations
+        print(len(current_signals))
+        self.separations = current_signals
+        features = self.extract_features_from_signals(current_signals)
 
-        features = np.concatenate(features, axis=-1)
+        # tf_map = np.outer(
+        #     np.linspace(0.0, 1.0, self.stft.shape[0]), 
+        #     np.linspace(0.0, 1.0, self.stft.shape[1])
+        # )[..., None, None]
+        
+        # tf_map = np.repeat(tf_map, self.audio_signal.num_channels, axis=2)
+
+        # features = np.concatenate([features, tf_map], axis=-1)
+
+        print(features.shape)
         features = features.reshape(-1, features.shape[-1])
+        features = scale(features, axis=1)
         if self.reduce_noise:
             features = self.noise_reduction(features)
         return features
@@ -107,23 +121,57 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         )
 
         self.model, self.metadata = self.load_model(model_path)
+        
         if input_audio_signal.sample_rate != self.metadata['sample_rate']:
             input_audio_signal.resample(self.metadata['sample_rate'])
 
         input_audio_signal.stft_params.window_length = self.metadata['n_fft']
         input_audio_signal.stft_params.n_fft_bins = self.metadata['n_fft']
         input_audio_signal.stft_params.hop_length = self.metadata['hop_length']
+
+        sample_rate = self.metadata['sample_rate']
+        num_mels = self.model.layers['mel_projection'].num_mels
+        num_frequencies = (self.metadata['n_fft'] // 2) + 1
+        filter_bank = None
+
+        if num_mels > 0:
+            weights = self.model.layers['mel_projection'].transform.weight.data.cpu().numpy()
+            filter_bank = np.linalg.pinv(weights.T)
+
+        self.filter_bank = filter_bank
         
         super().__init__(
             input_audio_signal,
             **kwargs
         )
 
+    def postprocess(self, assignments, confidence):
+        if self.filter_bank is not None:
+            shape = (self.filter_bank.shape[0], -1, self.stft.shape[-1])
+            assignments = assignments.reshape(shape + (self.num_sources,))
+            confidence = confidence.reshape(shape)
+
+            assignments = assignments.transpose()
+            confidence = confidence.transpose()
+
+            assignments = np.dot(assignments, self.filter_bank)
+            confidence =  np.dot(confidence, self.filter_bank)
+            assignments = assignments.transpose()
+            confidence = confidence.transpose()
+
+            assignments = np.clip(assignments.transpose(3, 0, 1, 2), 0.0, 1.0)
+        else:
+            assignments, confidence = super().postprocess(assignments, confidence)
+
+        return assignments, confidence
+
     def project_data(self, data):
         if self.model.layers['mel_projection'].num_mels > 0:
-            data = torch.from_numpy(data).to(self.device).float().unsqueeze(0)
+            data = self._format(data, 'rnn')
+            data = torch.from_numpy(data).to(self.device).float()
             data = self.model.project_data(data, clamp=False)
-            data = (data > 0).squeeze(0).cpu().data.numpy().astype(bool)
+            data = data.squeeze(-1).permute(2, 1, 0)
+            data = (data > 0).cpu().data.numpy().astype(bool)
         return data
 
     def extract_features(self):
@@ -131,12 +179,14 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         with torch.no_grad():
             output = self.model(input_data)
             output = {k: output[k].cpu() for k in output}
-
             if 'embedding' not in output:
                 raise ValueError("This model is not a deep clustering model!")
 
             embedding = output['embedding']
             embedding_size = embedding.shape[-1]
+            print(embedding.shape)
             embedding = embedding.permute(2, 1, 0, 3)
+            print(embedding.shape)
+            print(self.stft.shape)
             embedding = embedding.reshape(-1, embedding_size).data.numpy()
         return embedding

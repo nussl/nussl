@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from tqdm import trange, tqdm
+from tqdm import tqdm
 import multiprocessing
 from torch.utils.data import DataLoader
 import numpy as np
@@ -10,6 +10,7 @@ import os
 import shutil
 from typing import Optional
 from itertools import chain
+import sys
 tqdm.monitor_interval = 0
 
 try:
@@ -42,7 +43,6 @@ class Trainer():
             else 'cuda'
         )
         self.model = self.model.to(self.device)
-        print(self.model)
 
         self.writer = (
             SummaryWriter(log_dir=self.output_folder)
@@ -159,17 +159,21 @@ class Trainer():
         if np.isnan(loss.item()):
             raise ValueError("Loss went to nan - aborting training.")
 
+    def prepare_data(self, data):
+        for key in data:
+            data[key] = data[key].float().to(self.device)
+            if key not in self.loss_keys and self.model.training:
+                data[key] = data[key].requires_grad_()
+        return data
+
     def run_epoch(self, dataloader):
         epoch_loss = 0
-        step = 0
         num_batches = len(dataloader)
-        progress_bar = trange(0, num_batches)
-        for data in dataloader:
-            for key in data:
-                data[key] = data[key].float().to(self.device)
-                if key not in self.loss_keys and self.model.training:
-                    data[key] = data[key].requires_grad_()
+        progress_bar = tqdm(range(0, num_batches), file=sys.stdout)
+        for step, data in enumerate(dataloader):
+            data = self.prepare_data(data)
             output = self.model(data)
+
             loss = self.calculate_loss(output, data)
             loss['total_loss'] = sum(list(loss.values()))
             epoch_loss += loss['total_loss'].item()
@@ -186,6 +190,7 @@ class Trainer():
             progress_bar.update(1)
             progress_bar.set_description(f"Loss: {loss['total_loss']:.4f}")
             step += 1
+
         return {'loss': epoch_loss / float(num_batches)}
 
     def log_to_tensorboard(self, data, step, scope):
@@ -196,7 +201,9 @@ class Trainer():
                 self.writer.add_scalar(label, data[key], step)
 
     def fit(self):
-        progress_bar = trange(self.num_epoch, self.options['num_epochs'])
+        progress_bar = tqdm(
+            range(self.num_epoch, self.options['num_epochs']), file=sys.stdout
+        )
         lowest_validation_loss = np.inf
         for self.num_epoch in progress_bar:
             epoch_loss = self.run_epoch(self.dataloaders['training'])

@@ -52,19 +52,13 @@ class MelProjection(nn.Module):
 
         Returns:
             Mel-spectrogram or time-frequency representation of shape:
-                (batch_size, sequence_length, num_mels or num_frequencies, num_sources). num_sources squeezed if 1.
+                (batch_size, sequence_length, num_mels or num_frequencies, num_sources).
         """
 
         if self.num_mels > 0:
-            if len(data.shape) < 4:
-                data = data.unsqueeze(-1)
-
             data = data.permute(0, 1, 3, 2)
             data = self.transform(data)
             data = data.permute(0, 1, 3, 2)
-
-            if data.shape[-1] == 1:
-                data = data.squeeze(-1)
 
         if self.clamp:
             data = data.clamp(0.0, 1.0)
@@ -74,7 +68,7 @@ class MelProjection(nn.Module):
 class Embedding(nn.Module):
     def __init__(self, num_features, hidden_size, embedding_size, activation):
         """
-        Maps output from an audio representation function (e.g. RecurrentStack, ConvolutionalStack) to an embedding
+        Maps output from an audio representation module (e.g. RecurrentStack, DilatedConvolutionalStack) to an embedding
         space. The output shape is (batch_size, sequence_length, num_features, embedding_size). The embeddings can
         be passed through an activation function. If activation is 'softmax' or 'sigmoid', and embedding_size is equal
         to the number of sources, this module can be used to implement a mask inference network (or a mask inference
@@ -82,13 +76,12 @@ class Embedding(nn.Module):
 
         Args:
             num_features: (int) Number of features being mapped for each frame. Either num_frequencies, or if used with
-                MelProjection, num_mels.
-            hidden_size: (int) Size of output from RecurrentStack (hidden_size) or ConvolutionalStack (num_filters). If
+                MelProjection, num_mels if using RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
+            hidden_size: (int) Size of output from RecurrentStack (hidden_size) or DilatedConvolutionalStack (num_filters). If
                 RecurrentStack is bidirectional, this should be set to 2 * hidden_size.
             embedding_size: (int) Dimensionality of embedding.
-            activation: (str) Activation functions to be applied, separated by ':'. Options are 'sigmoid', 'tanh', 'softmax'.
-                Unit normalization can be applied by adding ':unit_norm' (e.g. 'sigmoid:unit_norm'). Defaults to no
-                activation.
+            activation: (list of str) Activation functions to be applied. Options are 'sigmoid', 'tanh', 'softmax'.
+                Unit normalization can be applied by adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
         """
         super(Embedding, self).__init__()
         self.add_module('linear', nn.Linear(hidden_size, num_features * embedding_size))
@@ -107,14 +100,20 @@ class Embedding(nn.Module):
         """
         data = self.linear(data)
 
+        if len(data.shape) < 4:
+            # Then this is the output of RecurrentStack and needs to be reshaped a bit.
+            # Came in as [num_batch, sequence_length, num_features * embedding_size]
+            # Goes out as [num_batch, sequence_length, num_features, embedding_size]
+            data = data.view(
+                data.shape[0], data.shape[1], self.num_features,  self.embedding_size
+            )
+
         if 'sigmoid' in self.activation:
             data = torch.sigmoid(data)
         elif 'tanh' in self.activation:
             data = torch.tanh(data)
-        elif 'softmax' in self.activation:
-            data = nn.functional.softmax(data, dim=-1)
-
-        data = data.view(data.shape[0], -1, self.num_features, self.embedding_size)
+        elif 'relu' in self.activation:
+            data = torch.relu(data)
 
         if 'unit_norm' in self.activation:
             data = nn.functional.normalize(data, dim=-1, p=2)
@@ -187,18 +186,145 @@ class RecurrentStack(nn.Module):
             Outputs the features after processing of the RNN. Shape is:
                 (num_batch, sequence_length, hidden_size or hidden_size*2 if bidirectional=True)
         """
+        shape = data.shape
+        data = data.view(shape[0], shape[1], -1)
         self.rnn.flatten_parameters()
         data = self.rnn(data)[0]
         return data
 
 
-class ConvolutionalStack(nn.Module):
-    def __init__(self, num_filters, num_layers):
-        super(ConvolutionalStack, self).__init__()
-        raise NotImplementedError("Not implemented yet")
+class DilatedConvolutionalStack(nn.Module):   
+    def __init__(self, in_channels, channels, dilations, filter_shapes, residuals, batch_norm=True):
+        """Implements a stack of dilated convolutional layers for source separation from 
+        the following papers:
+
+            Mobin, Shariq, Brian Cheung, and Bruno Olshausen. "Convolutional vs. recurrent 
+            neural networks for audio source separation." 
+            arXiv preprint arXiv:1803.08629 (2018). https://arxiv.org/pdf/1803.08629.pdf
+
+            Yu, Fisher, Vladlen Koltun, and Thomas Funkhouser. "Dilated residual networks." 
+            Proceedings of the IEEE conference on computer vision and pattern recognition. 
+            2017. https://arxiv.org/abs/1705.09914
+        
+        Arguments:
+            in_channels  {int}  -- Number of channels in input
+            channels {list of int} -- Number of channels for each layer
+            dilations {list of ints or int tuples} -- Dilation rate for each layer. If 
+                int, it is same in both height and width. If tuple, tuple is defined as
+                (height, width). 
+            filter_shapes {list of ints or int tuples} -- Filter shape for each layer. If 
+                int, it is same in both height and width. If tuple, tuple is defined as
+                (height, width). If a single int or tuple, then the same filter shape is used
+                for each layer.
+            residuals {list of bool} -- Whether or not to keep a residual connection at
+                each layer.
+            batch_norm {bool} -- Whether to use BatchNorm or not at each layer (default: True)
+        
+        Raises:
+            NotImplementedError -- [description]
+            ValueError -- All the input lists must be the same length.
+        """
+        for x in [dilations, filter_shapes, residuals]:
+            if len(x) != len(channels):
+                raise ValueError(
+                    f"All lists (channels, dilations, filters, residuals) should have" 
+                    f"the same length!"
+                )
+        super(DilatedConvolutionalStack, self).__init__()
+
+        self.dilations = dilations
+        self.filter_shapes = filter_shapes
+        self.residuals = residuals
+        self.batch_norm = batch_norm
+        self.padding = None
+        self.channels = channels
+        self.in_channels = in_channels
+
+        self.layers = [self._make_layer(i) for i in range(len(channels))]
+        
+    def _compute_padding(self, conv_layer, input_shape):
+        """Since PyTorch doesn't have a SAME padding functionality, this is a function
+        that replicates that. 
+
+        Padding formula:
+            o = [i + 2*p - k - (k-1)*(d-1)]/s + 1
+        Solving for p:
+            p = [s * (o - 1) - i + k + (k-1)*(d-1)] / 2
+        
+        Arguments:
+            input_shape {[type]} -- [description]
+        Returns:
+            A ConstantPad2D layer with 0s such that when passed through the convolution,
+            the input and output shapes stay identical.
+        """
+
+        dilation = conv_layer.dilation
+        stride = conv_layer.stride
+        padding = conv_layer.padding
+        kernel_size = conv_layer.kernel_size
+        input_shape = input_shape[-2:]
+        output_size = input_shape
+
+        computed_padding = []
+        for dim in range(len(kernel_size)):
+            _pad = (
+                stride[dim] * (output_size[dim] - 1) - input_shape[dim] + 
+                kernel_size[dim] + (kernel_size[dim] - 1) * (dilation[dim] - 1)
+            )
+            _pad = int(_pad / 2 + _pad % 2)
+            computed_padding += [_pad, _pad]
+        computed_padding = tuple(computed_padding)
+
+        return nn.ConstantPad2d(computed_padding, 0.0)
+
+    def _make_layer(self, i):
+        convolution = nn.Conv2d(
+            in_channels=self.channels[i-1] if i > 0 else self.in_channels,
+            out_channels=self.channels[i],
+            kernel_size=self.filter_shapes[i],
+            dilation=self.dilations[i]
+        )
+
+        if i == len(self.channels) - 1:
+            layer = convolution
+            self.add_module(f'layer{i}', layer)
+            return layer
+
+        batch_norm = nn.BatchNorm2d(self.channels[i])
+        relu = nn.ReLU()
+
+        layer = nn.Sequential()
+        layer.add_module('conv', convolution)
+        if self.batch_norm:
+            layer.add_module('batch_norm', batch_norm)
+        layer.add_module('relu', relu)
+        self.add_module(f'layer{i}', layer)
+        return layer
 
     def forward(self, data):
-        return
+        """ 
+        Data comes in as: [num_batch, sequence_length, num_frequencies, num_audio_channels]
+        We reshape it in the forward pass so that everything works to:
+            [num_batch, num_audio_channels, sequence_length, num_frequencies]
+        After this input is processed, the shape is then:
+            [num_batch, num_output_channels, sequence_length, num_frequencies]
+        We transpose again to make the shape:
+            [num_batch, sequence_length, num_frequencies, num_output_channels]
+        So it can be passed to an Embedding module.
+        """
+        shape = data.shape
+        data =  data.permute(0, 3, 1, 2)
+        previous_layer = None
+        for i, layer in enumerate(self.layers):
+            conv_layer = layer.conv if hasattr(layer, 'conv') else layer
+            padding = self._compute_padding(conv_layer, data.shape)
+            data = layer(padding(data))
+            if self.residuals[i] and previous_layer is not None:
+                if i > 0:
+                    data += previous_layer
+                previous_layer = data
+        data = data.permute(0, 2, 3, 1)
+        return data
 
 
 class Clusterer(nn.Module):

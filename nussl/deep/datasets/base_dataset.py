@@ -160,13 +160,11 @@ class BaseDataset(Dataset):
         return self.format_output(output)
 
     def format_output(self, output):
-        # [num_batch, sequence_length, num_frequencies*num_channels, ...], while
-        # 'cnn' produces [num_batch, num_channels, num_frequencies,
-        # sequence_length, ...]
+        # [num_batch, sequence_length, num_frequencies*num_channels, ...]
         for key in self.targets:
             if self.options['format'] == 'rnn':
                 _shape = output[key].shape
-                shape = [_shape[0], _shape[1]*_shape[2]]
+                shape = [_shape[0], _shape[1], _shape[2]]
                 if len(_shape) > 3:
                     shape += _shape[3:]
                 output[key] = np.reshape(output[key], shape)

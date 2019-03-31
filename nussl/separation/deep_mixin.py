@@ -52,6 +52,7 @@ class DeepMixin():
         Formats produced based on `format_type`:
             - `rnn`
                 [num_batch, sequence_length, num_frequencies*num_channels, ...]
+                [num_batch, num_channels, sequence_length, num_frequencies, ...]
             - `cnn`
                 [num_batch, num_channels, num_frequencies, sequence_length, ...]
 
@@ -70,7 +71,7 @@ class DeepMixin():
                 datum = np.swapaxes(datum, 0, 3)
 
             _shape = datum.shape
-            shape = [_shape[0], _shape[1], _shape[2]*_shape[3]]
+            shape = [_shape[0], _shape[1], _shape[2], _shape[3]]
             datum = np.reshape(datum, shape)
             datum = np.swapaxes(datum, 1, 2)
         elif format_type == 'cnn':

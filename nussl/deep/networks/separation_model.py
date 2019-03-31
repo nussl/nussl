@@ -138,6 +138,7 @@ class SeparationModel(nn.Module):
         }
         save_dict = {**save_dict, **(metadata if metadata else {})}
         torch.save(save_dict, location)
+        return location
     
     def __repr__(self):
         output = super().__repr__()

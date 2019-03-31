@@ -64,17 +64,17 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         )
 
         threshold = self.log_spectrogram
-        self.threshold = (threshold > np.percentile(threshold, self.percentile))
+        threshold = (threshold > np.percentile(threshold, self.percentile)).astype(float)
+        self.threshold = self.project_data(threshold).astype(bool)
 
     def init_clusterer(self):
         if self.clustering_type == 'kmeans':
             clusterer = KMeansConfidence
         elif self.clustering_type == 'gmm':
             clusterer = GaussianMixtureConfidence
+            self.clustering_options['threshold'] = self.threshold.flatten()
         elif self.clustering_type == 'spectral_clustering':
-            self.clustering_options['weights'] = (
-                np.abs(self.stft.flatten())
-            )
+            self.clustering_options['weights'] = self.threshold.flatten()
             clusterer = SpectralClusteringConfidence
         
         return clusterer(
@@ -89,11 +89,8 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         raise NotImplementedError()
 
     def cluster_features(self, features, clusterer):
-        threshold = self.project_data(self.threshold)
-        threshold = threshold.astype(bool)
-
         if self.clustering_type != 'spectral_clustering':
-            clusterer.fit(features[threshold.flatten()])
+            clusterer.fit(features[self.threshold.flatten()])
         else:
             clusterer.fit(features)
         assignments, confidence = clusterer.predict_and_get_confidence(features)
@@ -170,10 +167,9 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
 
         """
         transform = PCA(n_components=num_dimensions)
-        mask = (self.log_spectrogram >= threshold).astype(float).reshape(
-            self.log_spectrogram.shape[0], -1).T
+        mask = (self.log_spectrogram >= threshold).astype(float)        
         mask = self.project_data(mask)
-        mask = mask.T.reshape(-1) > 0
+        mask = mask.reshape(-1) > 0
         _embedding = self.features[mask]
         output_transform = transform.fit_transform(_embedding)
         return output_transform
@@ -296,7 +292,10 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
 
         plt.subplot(grid[2*spacing:2*spacing + spacing, left:])
         assignments = (np.max(np.argmax(self.assignments, axis=0), axis=-1)) + 1
-        silence_mask = np.mean(self.log_spectrogram, axis=-1) > threshold
+        silence_mask = (
+            np.mean(self.log_spectrogram, axis=-1) > 
+            np.percentile(self.log_spectrogram, min(self.percentile, 50))
+        )
         assignments *= silence_mask
 
 
@@ -323,7 +322,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         plt.legend(handles=_legend)
 
         plt.subplot(grid[1*spacing:spacing + spacing, left:])
-        plt.imshow(np.max(self.confidence, axis=-1), origin='lower',
+        plt.imshow(20*np.log10(np.max(self.confidence, axis=-1) + 1e-4), origin='lower',
                    aspect='auto', cmap='magma')
         plt.xticks([])
         plt.ylabel('Frequency')

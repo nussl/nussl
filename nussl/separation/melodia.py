@@ -10,30 +10,35 @@ from ..core import constants
 from . import mask_separation_base
 from . import masks
 from .. import AudioSignal
+from scipy.ndimage import median_filter
 
 
 class Melodia(mask_separation_base.MaskSeparationBase):
-    """Implements melody extraction using Melodia.
-
-    J. Salamon and E. Gómez, "Melody Extraction from Polyphonic Music Signals using Pitch Contour Characteristics",
-    IEEE Transactions on Audio, Speech and Language Processing, 20(6):1759-1770, Aug. 2012.
-
-    This needs melodia installed as a vamp plugin, as well as having vampy= for Python installed.
-
-    Parameters:
-        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that REPET will be run on.
-        high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
-        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
-                        input AudioSignal object)
-        use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
-
-    """
-
     def __init__(self, input_audio_signal, high_pass_cutoff=None, minimum_frequency=55.0,
-                 maximum_frequency=1760.0, voicing_tolerance=0.5, minimum_peak_salience=0.0,
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
+                 maximum_frequency=1760.0, voicing_tolerance=0.2, minimum_peak_salience=0.0,
+                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT, num_overtones=25,
                  mask_type=constants.SOFT_MASK, mask_threshold=0.5):
+        """
+        Implements melody extraction using Melodia.
+        J. Salamon and E. Gómez, "Melody Extraction from Polyphonic Music Signals using Pitch Contour Characteristics",
+        IEEE Transactions on Audio, Speech and Language Processing, 20(6):1759-1770, Aug. 2012.
+        This needs melodia installed as a vamp plugin, as well as having vampy for Python installed.
+        Parameters:
+            input_audio_signal: (AudioSignal object) The AudioSignal object that has the
+                                audio data that Melodia will be run on.
+            high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
+            minimum_frequency: (float) minimum frequency in Hertz (default 55.0)
+            maximum_frequency: (float) maximum frequency in Hertz (default 1760.0)
+            voicing_tolerance: (float) Greater values will result in more pitch contours included in the final melody.
+                Smaller values will result in less pitch contours included in the final melody (default 0.2).
+            minimum_peak_salience: (float) a hack to avoid silence turning into junk contours when analyzing monophonic
+                recordings (e.g. solo voice with no accompaniment). Generally you want to leave this untouched (default 0.0).
+            do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
+                            input AudioSignal object)
+            use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
+            num_overtones: (Optional) (int) Number of overtones to use when creating melody mask.
+        """
+
 
         super(Melodia, self).__init__(input_audio_signal=input_audio_signal, 
                                       mask_type=mask_type, mask_threshold=mask_threshold)
@@ -51,11 +56,24 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         self.timestamps = None
         self.foreground_mask = None
         self.background_mask = None
+        self.num_overtones = num_overtones
 
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)
 
     def extract_melody(self):
+        """
+        Extracts melody from the audio using the melodia vamp plugin. Uses arguments kept in self:
+            self.minimum_frequency (default: 55 Hz)
+            self.maximum_frequency (default: 1760 Hz)
+            self.voicing_tolerance (default: 0.2)
+            self.minimum_peak_salience (default: 0.0)
+        This function sets two class members used in other parts:
+            self.melody: (numpy array) contains the melody in Hz for every timestep (0 indicates no voice).
+            self.timestamps: (numpy array) contains the timestamps for each melody note
+        :return: None
+        """
+
         params = {}
         params['minfqr'] = self.minimum_frequency
         params['maxfqr'] = self.maximum_frequency
@@ -80,7 +98,15 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         self.timestamps = timestamps
 
     def create_melody_signal(self, num_overtones):
-        # Adapted from Melosynth by Justin Salamon: https://github.com/justinsalamon/melosynth
+        """
+        Adapted from Melosynth by Justin Salamon: https://github.com/justinsalamon/melosynth. To mask the mixture, we
+        need to identify time-frequency bins that belong to the melody. Melodia outputs only the fundamental frequency
+        of the melodic line. To construct the mask we take the fundamental frequency and add all the overtones of it
+        (up to num_overtones) to the mask. The melody is faded in and out at onsets and offsets to make the separation
+        sound more natural (hard-coded by transition_length).
+        :param num_overtones: (int) number of overtones to expand out to build the mask.
+        :return:
+        """
 
         if self.timestamps[0] > 0:
             estimated_hop = np.median(np.diff(self.timestamps))
@@ -90,7 +116,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
         sample_rate = self.audio_signal.sample_rate
         melody_signal = []
-        transition_length = .010 # duration for fade in/out and frequency interpretation
+        transition_length = .001 # duration for fade in/out and frequency interpretation
         phase = np.zeros(num_overtones)
         previous_frequency = 0
         previous_time = 0
@@ -107,13 +133,13 @@ class Melodia(mask_separation_base.MaskSeparationBase):
                                         (frequency - previous_frequency)
                 elif frequency > 0:
                     frequency_series = np.ones(num_samples) * frequency
-
+                
                 samples = np.zeros(num_samples)
                 for overtone in range(num_overtones):
                     overtone_num = overtone + 1
                     phasors = 2 * np.pi * overtone_num * frequency_series / float(sample_rate)
                     phases = phase[overtone] + np.cumsum(phasors)
-                    samples += np.sin(phases) / overtone_num
+                    samples += np.sin(phases)
                     phase[overtone] = phases[-1]
 
                 if previous_frequency == 0 and frequency > 0:
@@ -129,7 +155,8 @@ class Melodia(mask_separation_base.MaskSeparationBase):
             previous_time = time
 
         melody_signal = np.asarray(melody_signal)
-        melody_signal *= 0.8 / float(np.max(melody_signal))
+        melody_signal /= float(np.max(melody_signal))
+        melody_signal *= .8
         melody_signal = [melody_signal for channel in range(self.audio_signal.num_channels)]
         melody_signal = np.asarray(melody_signal)
         melody_signal = melody_signal[:, 0:self.audio_signal.signal_length]
@@ -143,18 +170,27 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         return melody_signal
 
     def create_harmonic_mask(self, melody_signal):
-        normalized_melody_stft = np.abs(melody_signal.stft())
-        normalized_melody_stft /= np.max(normalized_melody_stft)
+        """
+        Creates a harmonic mask from the melody signal. The mask is smoothed to reduce the effects of discontinuities
+        in the melody synthesizer.
+        
+        :param melody_signal (AudioSignal): AudioSignal object containing the melody signal produced by 
+            create_melody_signal
+        :return: 
+        """
+
+        melody_signal.stft()
+        normalized_melody_stft = melody_signal.log_magnitude_spectrogram_data
 
         # Need to threshold the melody stft since the synthesized
         # F0 sequence overtones are at different weights.
-        normalized_melody_stft = normalized_melody_stft > 1e-2
+        normalized_melody_stft = normalized_melody_stft > -5
         normalized_melody_stft = normalized_melody_stft.astype(float)
         mask = np.empty(self.audio_signal.stft().shape)
 
         # Smoothing the mask row-wise using a low-pass filter to
         # get rid of discontuinities in the mask.
-        kernel =  np.full((1, 20), 1/20.)
+        kernel =  np.full((1, 10), 1/10.)
         for channel in range(self.audio_signal.num_channels):
             mask[:, :, channel] = convolve(normalized_melody_stft[:, :, channel], kernel)
         return mask
@@ -179,7 +215,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         # separate the mixture foreground melody by masking
         if self.melody_signal is None:
             self.extract_melody()
-            self.create_melody_signal(100)
+            self.create_melody_signal(self.num_overtones)
 
         foreground_mask = self.create_harmonic_mask(self.melody_signal)
         foreground_mask[0:self.high_pass_cutoff, :] = 0

@@ -1,0 +1,14 @@
+{
+  "num_frequencies": 128,
+  "num_mels": -1,
+  "sample_rate": 8000,
+  "in_channels": 1,
+  "channels": [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
+  "residuals": [false, true, false, true, false, true, false, true, false, true, false, true],
+  "batch_norm": true,
+  "filter_shapes": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+  "dilations": [1, 2, 4, 8, 16, 32, 1, 2, 4, 8, 16, 32],
+  "embedding_size": 20,
+  "embedding_activations": ["sigmoid", "unitnorm"],
+  "projection_trainable": false
+}

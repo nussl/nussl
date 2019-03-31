@@ -1963,6 +1963,8 @@ class AudioSignal(object):
         return not self == other
 
 
+
+
 class AudioSignalException(Exception):
     """
     Exception class for :class:`AudioSignal`.

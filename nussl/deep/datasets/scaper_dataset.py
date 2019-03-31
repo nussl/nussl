@@ -2,7 +2,6 @@ from .base_dataset import BaseDataset
 import librosa
 import jams
 import os
-import scaper
 import numpy as np
 
 class Scaper(BaseDataset):

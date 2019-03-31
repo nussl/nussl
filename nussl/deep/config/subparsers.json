@@ -1,4 +1,9 @@
 {
+  "dpcl_convolutional": {
+    "help": "Construct a Deep Clustering model w/ a Dilated Convolutional Stack",
+    "defaults_path": "defaults/models/dpcl_convolutional.json",
+    "metadata_path": "defaults/models/metadata/dpcl_convolutional.json"
+  },
   "dpcl_recurrent": {
     "help": "Construct a recurrent Deep Clustering model",
     "defaults_path": "defaults/models/dpcl_recurrent.json",

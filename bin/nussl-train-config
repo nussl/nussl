@@ -12,6 +12,7 @@ def build_model(key, options=None):
         'chimera_recurrent': deep.config.build_chimera_config,
         'dpcl_recurrent': deep.config.build_dpcl_config,
         'mask_inference_recurrent': deep.config.build_mask_inference_config,
+        'dpcl_convolutional': deep.config.build_dpcl_conv
     }
     return builders[key](options)
 
