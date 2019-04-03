@@ -14,6 +14,7 @@ nussl/core/audio_signal.py
 nussl/core/constants.py
 nussl/core/datasets.py
 nussl/core/efz_utils.py
+nussl/core/jupyter_utils.py
 nussl/core/stft_utils.py
 nussl/core/utils.py
 nussl/deep/__init__.py
@@ -23,15 +24,18 @@ nussl/deep/config/subparsers.json
 nussl/deep/config/builders/__init__.py
 nussl/deep/config/builders/build_chimera_config.py
 nussl/deep/config/builders/build_dpcl_config.py
+nussl/deep/config/builders/build_dpcl_conv.py
 nussl/deep/config/builders/build_mask_inference_config.py
 nussl/deep/config/defaults/dataset.json
 nussl/deep/config/defaults/train.json
 nussl/deep/config/defaults//models/metadata/chimera_recurrent.json
+nussl/deep/config/defaults//models/metadata/dpcl_convolutional.json
 nussl/deep/config/defaults//models/metadata/dpcl_recurrent.json
 nussl/deep/config/defaults//models/metadata/mask_inference_recurrent.json
 nussl/deep/config/defaults/metadata/dataset.json
 nussl/deep/config/defaults/metadata/train.json
 nussl/deep/config/defaults/models/chimera_recurrent.json
+nussl/deep/config/defaults/models/dpcl_convolutional.json
 nussl/deep/config/defaults/models/dpcl_recurrent.json
 nussl/deep/config/defaults/models/mask_inference_recurrent.json
 nussl/deep/datasets/__init__.py
@@ -60,7 +64,8 @@ nussl/evaluation/precision_recall_fscore.py
 nussl/evaluation/run_and_eval.py
 nussl/separation/KAM.py
 nussl/separation/__init__.py
-nussl/separation/deep_separation.py
+nussl/separation/deep_mask_estimation.py
+nussl/separation/deep_mixin.py
 nussl/separation/duet.py
 nussl/separation/ft2d.py
 nussl/separation/high_low_pass_filter.py
@@ -69,6 +74,7 @@ nussl/separation/ica.py
 nussl/separation/ideal_mask.py
 nussl/separation/mask_separation_base.py
 nussl/separation/melodia.py
+nussl/separation/multichannel_wiener_filter.py
 nussl/separation/nmf_mfcc.py
 nussl/separation/overlap_add.py
 nussl/separation/projet.py
@@ -76,7 +82,10 @@ nussl/separation/repet.py
 nussl/separation/repet_sim.py
 nussl/separation/rpca.py
 nussl/separation/separation_base.py
-nussl/separation/spatial_clustering.py
+nussl/separation/clustering/__init__.py
+nussl/separation/clustering/clusterers.py
+nussl/separation/clustering/clustering_algorithms.py
+nussl/separation/clustering/clustering_separation_base.py
 nussl/separation/masks/__init__.py
 nussl/separation/masks/binary_mask.py
 nussl/separation/masks/mask_base.py

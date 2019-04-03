@@ -18,6 +18,11 @@ try:
 except:
     SummaryWriter = None
 
+try: 
+    from comet_ml import Experiment
+except:
+    Experiment = None
+
 
 OutputTargetMap = {
     'estimates': ['source_spectrograms'],
@@ -33,8 +38,14 @@ class Trainer():
         options,
         validation_data=None,
         use_tensorboard=True,
+        experiment=None
     ):
-        self.use_tensorboard = use_tensorboard
+        self.use_tensorboard = (
+            use_tensorboard if SummaryWriter is not None else False
+        )
+        self.experiment = (
+            experiment if Experiment is not None else False
+        )
         self.prepare_directories(output_folder)
         self.model = self.build_model(model)
         self.device = torch.device(
@@ -46,8 +57,7 @@ class Trainer():
 
         self.writer = (
             SummaryWriter(log_dir=self.output_folder)
-            if use_tensorboard and SummaryWriter is not None
-            else None
+            if use_tensorboard else None
         )
         self.loss_dictionary = {
             target: (LossFunctions[fn.upper()].value(), float(weight))
@@ -199,16 +209,37 @@ class Trainer():
             for key in data:
                 label = os.path.join(prefix, key)
                 self.writer.add_scalar(label, data[key], step)
+        if self.experiment is not None:
+            context = (
+                self.experiment.train 
+                if self.model.training 
+                else self.experiment.validate
+            )
+            with context():
+                for key in data:
+                    self.experiment.log_metric(key, data[key], step)
 
+    def populate_cache(self):
+        for key, dataloader in self.dataloaders.items():
+            num_batches = len(dataloader)
+            progress_bar = tqdm(range(0, num_batches), file=sys.stdout)
+            for data in dataloader:
+                progress_bar.update(1)
+                progress_bar.set_description(f'Populating cache for {key}')
+            dataloader.dataset.switch_to_cache()
+            
     def fit(self):
         progress_bar = tqdm(
             range(self.num_epoch, self.options['num_epochs']), file=sys.stdout
         )
         lowest_validation_loss = np.inf
+
+        self.populate_cache()
+
         for self.num_epoch in progress_bar:
             epoch_loss = self.run_epoch(self.dataloaders['training'])
             self.log_to_tensorboard(epoch_loss, self.num_epoch, 'epoch')
-            validation_loss = self.validate(self.dataloaders.get('validation'))
+            validation_loss = self.validate(self.dataloaders['validation'])
             self.save(validation_loss < lowest_validation_loss)
             lowest_validation_loss = (
                 validation_loss 

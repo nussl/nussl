@@ -11,11 +11,14 @@ class MixSourceFolder(BaseDataset):
         self.channels_in_mix = mix.num_channels
 
     def get_files(self, folder):
-        files = [x for x in os.listdir(os.path.join(folder, 'mix')) if '.wav' in x]
         files = sorted([x for x in os.listdir(os.path.join(folder, 'mix')) if '.wav' in x])
 
-        self.speaker_folders = sorted([x for x in os.listdir(folder) if 's' in x and x != 'scaling.mat'])
-        self.num_speakers = len(self.speaker_folders)
+        self.source_folders = sorted([
+            x for x in os.listdir(folder) 
+            if os.path.isdir(os.path.join(folder, x)) 
+            and 'mix' not in x and 'cache' not in x
+        ])
+        self.num_sources = len(self.source_folders)
         return files
 
     def load_audio_files(self, wav_file):
@@ -28,11 +31,11 @@ class MixSourceFolder(BaseDataset):
         mix_signal = self._load_audio_file(mix_path)
         mix_signal.audio_data = mix_signal.audio_data[channel_indices]
 
-        for speaker in self.speaker_folders:
-            speaker_path = os.path.join(self.folder, speaker, wav_file)
+        for source in self.source_folders:
+            source_path = os.path.join(self.folder, source, wav_file)
+            if os.path.isfile(source_path):
+                source_signal = self._load_audio_file(source_path)
+                source_signal.audio_data = source_signal.audio_data[channel_indices]
+                sources.append(source_signal)
 
-            source_signal = self._load_audio_file(speaker_path)
-            source_signal.audio_data = source_signal.audio_data[channel_indices]
-            sources.append(source_signal)
-
-        return mix_signal, sources, np.eye(self.num_speakers)
+        return mix_signal, sources, np.eye(self.num_sources)

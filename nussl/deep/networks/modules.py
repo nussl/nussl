@@ -3,6 +3,7 @@ import torch.nn as nn
 import librosa
 import numpy as np
 from .clustering import GMM
+from torch.utils.checkpoint import checkpoint
 
 
 class MelProjection(nn.Module):
@@ -56,9 +57,9 @@ class MelProjection(nn.Module):
         """
 
         if self.num_mels > 0:
-            data = data.permute(0, 1, 3, 2)
+            data = data.transpose(2, -1)
             data = self.transform(data)
-            data = data.permute(0, 1, 3, 2)
+            data = data.transpose(2, -1)
 
         if self.clamp:
             data = data.clamp(0.0, 1.0)
@@ -194,7 +195,8 @@ class RecurrentStack(nn.Module):
 
 
 class DilatedConvolutionalStack(nn.Module):   
-    def __init__(self, in_channels, channels, dilations, filter_shapes, residuals, batch_norm=True):
+    def __init__(self, in_channels, channels, dilations, filter_shapes, residuals, 
+        batch_norm=True, use_checkpointing=False):
         """Implements a stack of dilated convolutional layers for source separation from 
         the following papers:
 
@@ -219,6 +221,8 @@ class DilatedConvolutionalStack(nn.Module):
             residuals {list of bool} -- Whether or not to keep a residual connection at
                 each layer.
             batch_norm {bool} -- Whether to use BatchNorm or not at each layer (default: True)
+            use_checkpointing {bool} -- Whether to use torch's checkpointing functionality 
+                to reduce memory usage.
         
         Raises:
             NotImplementedError -- [description]
@@ -239,6 +243,7 @@ class DilatedConvolutionalStack(nn.Module):
         self.padding = None
         self.channels = channels
         self.in_channels = in_channels
+        self.use_checkpointing = use_checkpointing
 
         self.layers = [self._make_layer(i) for i in range(len(channels))]
         
@@ -301,6 +306,22 @@ class DilatedConvolutionalStack(nn.Module):
         self.add_module(f'layer{i}', layer)
         return layer
 
+    def layer_function(self, data, layer, previous_layer, i):
+        conv_layer = layer.conv if hasattr(layer, 'conv') else layer
+        padding = self._compute_padding(conv_layer, data.shape)
+        if self.use_checkpointing:
+            data = checkpoint(
+                layer,
+                (padding(data))
+            )
+        else:
+            data = layer(padding(data))
+        if self.residuals[i] and previous_layer is not None:
+            if i > 0:
+                data += previous_layer
+            previous_layer = data
+        return data, previous_layer
+
     def forward(self, data):
         """ 
         Data comes in as: [num_batch, sequence_length, num_frequencies, num_audio_channels]
@@ -316,13 +337,9 @@ class DilatedConvolutionalStack(nn.Module):
         data =  data.permute(0, 3, 1, 2)
         previous_layer = None
         for i, layer in enumerate(self.layers):
-            conv_layer = layer.conv if hasattr(layer, 'conv') else layer
-            padding = self._compute_padding(conv_layer, data.shape)
-            data = layer(padding(data))
-            if self.residuals[i] and previous_layer is not None:
-                if i > 0:
-                    data += previous_layer
-                previous_layer = data
+            data, previous_layer = self.layer_function(
+                data, layer, previous_layer, i
+            )
         data = data.permute(0, 2, 3, 1)
         return data
 

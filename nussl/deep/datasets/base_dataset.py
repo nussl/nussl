@@ -4,8 +4,8 @@ import librosa
 import numpy as np
 import os
 import shutil
-from random import shuffle
-from typing import Dict, Any, Optional, Tuple
+import random
+from typing import Dict, Any, Optional, Tuple, List
 from ...core import AudioSignal
 
 class BaseDataset(Dataset):
@@ -24,6 +24,7 @@ class BaseDataset(Dataset):
 
         self.folder = folder
         self.files = self.get_files(self.folder)
+        self.cached_files = []
         self.options = options
         self.targets = [
             'log_spectrogram',
@@ -47,14 +48,14 @@ class BaseDataset(Dataset):
                 '_'.join(self.options['weight_type'])
             )
             print(f'Caching to: {self.cache}')
-            shutil.rmtree(self.cache, ignore_errors=True)
+            #shutil.rmtree(self.cache, ignore_errors=True)
             os.makedirs(self.cache, exist_ok=True)
 
         if self.options['fraction_of_dataset'] < 1.0:
             num_files = int(
                 len(self.files) * self.options['fraction_of_dataset']
             )
-            shuffle(self.files)
+            random.shuffle(self.files)
             self.files = self.files[:num_files]
 
     def get_files(self, folder):
@@ -93,6 +94,23 @@ class BaseDataset(Dataset):
             one example)
         """
         return self._get_item_helper(self.files[i], self.cache, i)
+    
+    def populate_cache(self, filename, i):
+        output = self._generate_example(filename)
+        if self.data_keys_for_training:
+            output = [
+                {k: o[k] for k in o if k in self.data_keys_for_training}
+                for o in output
+            ]
+        for j, o in enumerate(output):
+            _filepart = f'{i:08d}.pth.part{j}'
+            self.write_to_cache(o, _filepart)
+        return random.choice(output)
+
+    def switch_to_cache(self):
+        self.original_files = self.files
+        self.files = [x for x in os.listdir(self.cache) if '.part' in x]
+        random.shuffle(self.files)
 
     def _get_item_helper(
         self,
@@ -120,21 +138,13 @@ class BaseDataset(Dataset):
         """
         if self.cache:
             try:
-                return self.load_from_cache(f'{i:08d}.pth')
+                return self.load_from_cache(filename)
             except:
-                output = self._generate_example(filename)
-                if self.data_keys_for_training:
-                    output = {
-                        k: output[k] 
-                        for k in output 
-                        if k in self.data_keys_for_training
-                    }
-                self.write_to_cache(output, f'{i:08d}.pth')
-                return output
+                return self.populate_cache(filename, i)
         else:
-            return self._generate_example(filename)
+            return random.choice(self._generate_example(filename))
 
-    def _generate_example(self, filename: str) -> Dict[str, Any]:
+    def _generate_example(self, filename: str) -> List[Dict[str, Any]]:
         """Generates one example (training|validation) from given filename
 
         Args:
@@ -157,7 +167,7 @@ class BaseDataset(Dataset):
             self.options['length']
         )
 
-        return self.format_output(output)
+        return [self.format_output(o) for o in output]
 
     def format_output(self, output):
         # [num_batch, sequence_length, num_frequencies*num_channels, ...]
@@ -240,27 +250,30 @@ class BaseDataset(Dataset):
     def get_target_length_and_transpose(self, data_dict, target_length):
         length = data_dict['log_spectrogram'].shape[1]
 
-        if target_length == 'full':
-            target_length = length
-        if length > target_length:
-            offset = np.random.randint(0, length - target_length)
-        else:
-            offset = 0
-
+        # Break up data into sequences of target length.  Return a list.
+        offsets = np.arange(0, length,  target_length)
+        offsets[-1] = max(0, length - target_length)
+        output_data_dicts = []
+    
         for i, target in enumerate(self.targets):
             data = data_dict[target]
             pad_length = max(target_length - length, 0)
             pad_tuple = [(0, 0) for k in range(len(data.shape))]
             pad_tuple[1] = (0, pad_length)
             data_dict[target] = np.pad(data, pad_tuple, mode='constant')
-            data_dict[target] = data_dict[target][
-                :,
-                offset:offset + target_length,
-                :self.options['num_channels']
-            ]
-            data_dict[target] = np.swapaxes(data_dict[target], 0, 1)
 
-        return data_dict
+        for offset in offsets:
+            _data_dict = data_dict.copy()
+            for target in self.targets:
+                _data_dict[target] = _data_dict[target][
+                    :,
+                    offset:offset + target_length,
+                    :self.options['num_channels']
+                ]
+                _data_dict[target] = np.swapaxes(_data_dict[target], 0, 1)
+            output_data_dicts.append(_data_dict)
+
+        return output_data_dicts
 
     @staticmethod
     def transform(audio_signal):
@@ -321,52 +334,3 @@ class BaseDataset(Dataset):
         audio_signal.stft_params.window_length = self.options['n_fft']
         audio_signal.stft_params.hop_length = self.options['hop_length']
         return audio_signal
-
-    def inspect(self, i):
-        import matplotlib.pyplot as plt
-        from audio_embed import utilities
-
-        input_data, mix_magnitude, output_data, _, _ = self[i]
-
-        plt.style.use('dark_background')
-        plt.figure(figsize=(20, 5))
-        plt.imshow(input_data.T, aspect='auto', origin='lower')
-        plt.show()
-
-        mix, sources, one_hots = self.load_audio_files(self.files[i])
-        print('Mixture')
-        utilities.audio(mix, self.sr, ext='.wav')
-        for j, source in enumerate(sources):
-            print('Source %d' % j)
-            utilities.audio(source, self.sr, ext='.wav')
-
-        def mask_mixture(mask, mix):
-            n = len(mix)
-            mix = librosa.util.fix_length(mix, n + self.n_fft // 2)
-            mix_stft = librosa.stft(
-                mix,
-                n_fft=self.n_fft,
-                hop_length=self.hop_length
-            )
-            masked_mix = mix_stft * mask
-            source = librosa.istft(
-                masked_mix,
-                hop_length=self.hop_length,
-                length=n
-            )
-            return source
-
-        for j in range(len(sources)):
-            mask = (output_data[:, :, j] / (mix_magnitude + 1e-7)).T
-            plt.figure(figsize=(20, 5))
-            plt.subplot(121)
-            plt.imshow(mask, aspect='auto', origin='lower')
-            plt.subplot(122)
-            log_output = librosa.amplitude_to_db(
-                np.abs(output_data[:, :, j].T),
-                ref=np.max
-            )
-            plt.imshow(log_output, aspect='auto', origin='lower')
-            plt.show()
-            isolated = mask_mixture(mask, mix)
-            utilities.audio(isolated, self.sr, ext='.wav')

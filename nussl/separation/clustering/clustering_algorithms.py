@@ -184,9 +184,6 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
 
             embedding = output['embedding']
             embedding_size = embedding.shape[-1]
-            print(embedding.shape)
             embedding = embedding.permute(2, 1, 0, 3)
-            print(embedding.shape)
-            print(self.stft.shape)
             embedding = embedding.reshape(-1, embedding_size).data.numpy()
         return embedding
