@@ -48,7 +48,6 @@ class BaseDataset(Dataset):
                 '_'.join(self.options['weight_type'])
             )
             print(f'Caching to: {self.cache}')
-            #shutil.rmtree(self.cache, ignore_errors=True)
             os.makedirs(self.cache, exist_ok=True)
 
         if self.options['fraction_of_dataset'] < 1.0:
@@ -94,6 +93,10 @@ class BaseDataset(Dataset):
             one example)
         """
         return self._get_item_helper(self.files[i], self.cache, i)
+
+    def clear_cache(self):
+        print(f'Clearing cache: {self.cache}')
+        shutil.rmtree(self.cache, ignore_errors=True)
     
     def populate_cache(self, filename, i):
         output = self._generate_example(filename)

@@ -38,7 +38,8 @@ class Trainer():
         options,
         validation_data=None,
         use_tensorboard=True,
-        experiment=None
+        experiment=None,
+        cache_populated=False
     ):
         self.use_tensorboard = (
             use_tensorboard if SummaryWriter is not None else False
@@ -85,6 +86,7 @@ class Trainer():
             self.dataloaders['validation'] = self.create_dataloader(
                 validation_data
             )
+        self.cache_populated = cache_populated
 
     @staticmethod
     def build_model(model):
@@ -219,6 +221,10 @@ class Trainer():
                 for key in data:
                     self.experiment.log_metric(key, data[key], step)
 
+    def clear_cache(self):
+        for key, dataloader in self.dataloaders.items():
+            dataloader.dataset.clear_cache()
+
     def populate_cache(self):
         for key, dataloader in self.dataloaders.items():
             num_batches = len(dataloader)
@@ -226,6 +232,9 @@ class Trainer():
             for data in dataloader:
                 progress_bar.update(1)
                 progress_bar.set_description(f'Populating cache for {key}')
+
+    def switch_to_cache(self):
+        for key, dataloader in self.dataloaders.items():
             dataloader.dataset.switch_to_cache()
             
     def fit(self):
@@ -234,7 +243,9 @@ class Trainer():
         )
         lowest_validation_loss = np.inf
 
-        self.populate_cache()
+        if not self.cache_populated:
+            self.populate_cache()
+        self.switch_to_cache()
 
         for self.num_epoch in progress_bar:
             epoch_loss = self.run_epoch(self.dataloaders['training'])
