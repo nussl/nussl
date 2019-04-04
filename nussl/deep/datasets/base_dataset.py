@@ -333,7 +333,7 @@ class BaseDataset(Dataset):
         Returns:
             tuple of loaded audio w/ shape ? and sample rate
         """
-        audio_signal = AudioSignal(file_path)
+        audio_signal = AudioSignal(file_path, sample_rate=self.options['sample_rate'])
         audio_signal.stft_params.window_length = self.options['n_fft']
         audio_signal.stft_params.hop_length = self.options['hop_length']
         return audio_signal
