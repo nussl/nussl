@@ -34,21 +34,13 @@ class BaseDataset(Dataset):
             'weights'
         ]
         self.data_keys_for_training = []
-        self.cache = (
+        self.cache_input = (
             self.options['cache']
             if self.options['cache']
             else None
         )
 
-        if self.cache:
-            self.cache = os.path.join(
-                os.path.expanduser(self.cache),
-                '_'.join(self.folder.split('/')),
-                self.options['output_type'],
-                '_'.join(self.options['weight_type'])
-            )
-            print(f'Caching to: {self.cache}')
-            os.makedirs(self.cache, exist_ok=True)
+        self.create_cache_folder()
 
         if self.options['fraction_of_dataset'] < 1.0:
             num_files = int(
@@ -56,6 +48,18 @@ class BaseDataset(Dataset):
             )
             random.shuffle(self.files)
             self.files = self.files[:num_files]
+
+    def create_cache_folder(self):
+        if self.options['cache']:
+            self.cache = os.path.join(
+                os.path.expanduser(self.options['cache']),
+                '_'.join(self.folder.split('/')),
+                self.options['output_type'],
+                '_'.join(self.options['weight_type'])
+            )
+            print(f'Caching to: {self.cache}')
+            os.makedirs(self.cache, exist_ok=True)
+
 
     def get_files(self, folder):
         raise NotImplementedError()
@@ -256,6 +260,9 @@ class BaseDataset(Dataset):
         # Break up data into sequences of target length.  Return a list.
         offsets = np.arange(0, length,  target_length)
         offsets[-1] = max(0, length - target_length)
+
+        # Select random offset, return that.
+        offsets = [np.random.randint(0, max(0, length - target_length))]
         output_data_dicts = []
     
         for i, target in enumerate(self.targets):
@@ -313,7 +320,7 @@ class BaseDataset(Dataset):
 
     @staticmethod
     def magnitude_weights(magnitude_spectrogram):
-        weights = magnitude_spectrogram / (np.sum(magnitude_spectrogram))
+        weights = magnitude_spectrogram / (np.sum(magnitude_spectrogram) + 1e-6)
         weights *= (
             magnitude_spectrogram.shape[0] * magnitude_spectrogram.shape[1]
         )

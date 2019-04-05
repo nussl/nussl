@@ -11,7 +11,6 @@ import shutil
 from typing import Optional
 from itertools import chain
 import sys
-tqdm.monitor_interval = 0
 
 try:
     from tensorboardX import SummaryWriter
@@ -224,14 +223,17 @@ class Trainer():
     def clear_cache(self):
         for key, dataloader in self.dataloaders.items():
             dataloader.dataset.clear_cache()
+            dataloader.dataset.create_cache_folder()
 
     def populate_cache(self):
         for key, dataloader in self.dataloaders.items():
             num_batches = len(dataloader)
             progress_bar = tqdm(range(0, num_batches), file=sys.stdout)
-            for data in dataloader:
+            for i, data in enumerate(dataloader):
                 progress_bar.update(1)
                 progress_bar.set_description(f'Populating cache for {key}')
+        self.cache_populated = True
+
 
     def switch_to_cache(self):
         for key, dataloader in self.dataloaders.items():
@@ -244,6 +246,7 @@ class Trainer():
         lowest_validation_loss = np.inf
 
         if not self.cache_populated:
+            self.clear_cache()
             self.populate_cache()
         self.switch_to_cache()
 

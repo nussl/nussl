@@ -12,32 +12,36 @@ class Scaper(BaseDataset):
         jam_file = self.files[0]
         jam = jams.load(jam_file)
         
-        if len(self.options['source_labels']) == 0:
-            all_classes = jam.annotations[0]['sandbox']['scaper']['fg_labels']
-            classes = jam.annotations[0]['sandbox']['scaper']['fg_spec'][0][0][1]
-            if len(classes) <= 1:
-                classes = all_classes
-            self.options['source_labels'] = classes
+        if not self.options['source_labels']:
+            self.options['source_labels'] = jam.annotations[0]['sandbox']['scaper']['fg_labels']
         
         for i in range(len(self.options['group_sources'])):
             self.options['source_labels'].append(f'group{i}')
 
     def get_files(self, folder):
-        files = sorted([os.path.join(folder, x) for x in os.listdir(folder) if '.json' in x])
-        return files        
+        files = sorted([os.path.join(folder, x) for x in os.listdir(folder) if '.jams' in x])
+        return files
 
     def load_audio_files(self, file_name):
-        mix = self._load_audio_file(file_name[:-4] + 'wav')
+        mix = self._load_audio_file(file_name.replace('.jams', '.wav'))
+        source_folder = file_name.replace('.jams', '_sources')
         jam = jams.load(file_name)
-        data = jam.annotations[0]['data']['value']           
+        data = jam.annotations[0]['data']      
         classes = self.options['source_labels']
         source_dict = {}
+        lengths = []
 
-        for d in data:
+        for datum in data:
+            d = datum.value
             if d['role'] == 'foreground':
-                source_path = d['saved_source_file']
-                source_path = os.path.join(self.folder, source_path.split('/')[-1])
+                source_path = os.path.join(source_folder, d['audio_path'] + '.wav')
                 source_dict[d['label']] = self._load_audio_file(source_path)
+                lengths.append(source_dict[d['label']].signal_length)
+
+        min_length = min(lengths)
+        mix.audio_data = mix.audio_data[:, :min_length]
+        for key in source_dict:
+            source_dict[key].audio_data = source_dict[key].audio_data[:, :min_length]
 
         for i, group in enumerate(self.options['group_sources']):
             combined = []
