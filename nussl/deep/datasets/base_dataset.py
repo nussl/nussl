@@ -49,7 +49,7 @@ class BaseDataset(Dataset):
             num_files = int(
                 len(self.files) * self.options['fraction_of_dataset']
             )
-            random.shuffle(self.files)
+            #random.shuffle(self.file)
             self.files = self.files[:num_files]
 
     def create_cache_folder(self):
@@ -120,7 +120,6 @@ class BaseDataset(Dataset):
     def switch_to_cache(self):
         self.original_files = self.files
         self.files = [x for x in os.listdir(self.cache) if '.part' in x]
-        random.shuffle(self.files)
 
     def _get_item_helper(
         self,
