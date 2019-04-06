@@ -95,24 +95,13 @@ class SeparationModel(nn.Module):
         if not all(name in list(data) for name in list(self.input)):
             raise ValueError(f'Not all keys present in data! Needs {", ".join(self.input)}')
         output = {}
-        all_connections = [[connection[0]] + connection[1] for connection in self.connections]
-        all_connections = list(chain.from_iterable(all_connections))
-        marked_for_deletion = []
 
         for connection in self.connections:
             layer = self.layers[connection[0]]
             input_data = []
             for c in connection[1]:
                 input_data.append(output[c] if c in output else data[c])
-                all_connections.remove(c)
-                if c not in all_connections:
-                    marked_for_deletion.append(c)
             output[connection[0]] = layer(*input_data)
-
-            for c in marked_for_deletion:
-                if c in output:
-                    output.pop(c)
-
         return {o: output[o] for o in self.output_keys}
 
     def project_data(self, data, clamp=False):

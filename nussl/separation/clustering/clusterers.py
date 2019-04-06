@@ -93,7 +93,7 @@ class GaussianMixtureConfidence(GaussianMixture):
         c1 = self.js_confidence(features)
         c2 = self.posterior_confidence()
         c3 = self.likelihood_confidence()
-        c = (c1 * c2 * c3) ** self.alpha
+        c = (c1 * c2) ** self.alpha
         return c
         
     def js_confidence(self, features):

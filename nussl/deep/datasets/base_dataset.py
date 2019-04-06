@@ -7,6 +7,8 @@ import shutil
 import random
 from typing import Dict, Any, Optional, Tuple, List
 from ...core import AudioSignal
+from scipy.io import wavfile
+import sox
 
 class BaseDataset(Dataset):
     def __init__(self, folder: str, options: Dict[str, Any]):
@@ -24,8 +26,9 @@ class BaseDataset(Dataset):
 
         self.folder = folder
         self.files = self.get_files(self.folder)
+        random.shuffle(self.files)
         self.cached_files = []
-        self.options = options
+        self.options = options.copy()
         self.targets = [
             'log_spectrogram',
             'magnitude_spectrogram',
@@ -33,7 +36,7 @@ class BaseDataset(Dataset):
             'source_spectrograms',
             'weights'
         ]
-        self.data_keys_for_training = []
+        self.data_keys_for_training = self.options.pop('data_keys_for_training', [])
         self.cache_input = (
             self.options['cache']
             if self.options['cache']
@@ -173,21 +176,22 @@ class BaseDataset(Dataset):
             output,
             self.options['length']
         )
-
+        
         return [self.format_output(o) for o in output]
 
     def format_output(self, output):
         # [num_batch, sequence_length, num_frequencies*num_channels, ...]
         for key in self.targets:
-            if self.options['format'] == 'rnn':
-                _shape = output[key].shape
-                shape = [_shape[0], _shape[1], _shape[2]]
-                if len(_shape) > 3:
-                    shape += _shape[3:]
-                output[key] = np.reshape(output[key], shape)
-            elif self.options['format'] == 'cnn':
-                axes_loc = [0, 3, 2, 1]
-                output[key] = np.moveaxis(output[key], [0, 1, 2, 3], axes_loc)
+            if key in output:
+                if self.options['format'] == 'rnn':
+                    _shape = output[key].shape
+                    shape = [_shape[0], _shape[1], _shape[2]]
+                    if len(_shape) > 3:
+                        shape += _shape[3:]
+                    output[key] = np.reshape(output[key], shape)
+                elif self.options['format'] == 'cnn':
+                    axes_loc = [0, 3, 2, 1]
+                    output[key] = np.moveaxis(output[key], [0, 1, 2, 3], axes_loc)
 
         return output
 
@@ -209,10 +213,9 @@ class BaseDataset(Dataset):
         log_spectrogram, mix_stft = self.transform(mix)
         mix_magnitude, mix_phase = np.abs(mix_stft), np.angle(mix_stft)
         source_magnitudes = []
-        source_log_magnitudes = []
 
         for source in sources:
-            source_log_magnitude, source_stft = self.transform(source)
+            _, source_stft = self.transform(source)
             source_magnitude, source_phase = (
                 np.abs(source_stft),
                 np.angle(source_stft)
@@ -228,21 +231,14 @@ class BaseDataset(Dataset):
                     )
                 )
             source_magnitudes.append(source_magnitude)
-            source_log_magnitudes.append(source_log_magnitude)
 
         source_magnitudes = np.stack(source_magnitudes, axis=-1)
-        source_log_magnitudes = np.stack(source_log_magnitudes, axis=-1)
 
         shape = source_magnitudes.shape
-        source_log_magnitudes = source_log_magnitudes.reshape(
-            np.prod(shape[0:-1]),
-            shape[-1],
-        )
 
-        assignments = np.zeros(source_log_magnitudes.shape)
-        source_argmax = np.argmax(source_log_magnitudes, axis=-1)
-        assignments[np.arange(assignments.shape[0]), source_argmax] = 1.0
-        assignments = assignments.reshape(shape)
+        assignments = (
+            source_magnitudes == np.amax(source_magnitudes, axis=-1, keepdims=True)
+        ).astype(float)
 
         output = {
             'log_spectrogram': log_spectrogram,
@@ -275,12 +271,15 @@ class BaseDataset(Dataset):
         for offset in offsets:
             _data_dict = data_dict.copy()
             for target in self.targets:
-                _data_dict[target] = _data_dict[target][
-                    :,
-                    offset:offset + target_length,
-                    :self.options['num_channels']
-                ]
-                _data_dict[target] = np.swapaxes(_data_dict[target], 0, 1)
+                if self.data_keys_for_training and target not in self.data_keys_for_training:
+                    _data_dict.pop(target)
+                else:
+                    _data_dict[target] = _data_dict[target][
+                        :,
+                        offset:offset + target_length,
+                        :self.options['num_channels']
+                    ]
+                    _data_dict[target] = np.swapaxes(_data_dict[target], 0, 1)
             output_data_dicts.append(_data_dict)
 
         return output_data_dicts
@@ -297,7 +296,7 @@ class BaseDataset(Dataset):
             log_spectrogram, stft contains the complex spectrogram, and n is the
         """
         stft = (
-            audio_signal.stft() 
+            audio_signal.stft(use_librosa=True) 
             if audio_signal.stft_data is None 
             else audio_signal.stft_data
         )
@@ -316,6 +315,24 @@ class BaseDataset(Dataset):
                 data_dict['log_spectrogram'],
                 self.options['weight_threshold']
             )
+        if ('class' in weight_type):
+            weights *= self.class_weights(
+                data_dict['assignments'],
+            )
+        return weights
+
+    @staticmethod
+    def class_weights(assignments):
+        _shape = assignments.shape 
+        assignments = assignments.reshape(-1, _shape[-1])
+
+        class_weights = assignments.sum(axis=0)
+        class_weights /= class_weights.sum()
+
+        weights = assignments @ class_weights 
+        weights = 1 / (weights + 1e-8)
+        weights = weights.reshape(_shape[:-1])
+        assignments.reshape(_shape)
         return weights
 
     @staticmethod
@@ -331,6 +348,7 @@ class BaseDataset(Dataset):
         return (
             (log_spectrogram - np.max(log_spectrogram)) > threshold
         ).astype(np.float32)
+
 
     def _load_audio_file(self, file_path: str) -> AudioSignal:
         """Loads audio file at given path. Uses 

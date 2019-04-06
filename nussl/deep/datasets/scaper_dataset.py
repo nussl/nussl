@@ -19,7 +19,10 @@ class Scaper(BaseDataset):
             self.options['source_labels'].append(f'group{i}')
 
     def get_files(self, folder):
-        files = sorted([os.path.join(folder, x) for x in os.listdir(folder) if '.jams' in x])
+        files = sorted(
+            [os.path.join(folder, x.replace('.wav', '.jams')) for x in os.listdir(folder) 
+            if '.wav' in x
+        ])
         return files
 
     def load_audio_files(self, file_name):
@@ -29,7 +32,7 @@ class Scaper(BaseDataset):
         data = jam.annotations[0]['data']      
         classes = self.options['source_labels']
         source_dict = {}
-        lengths = []
+        lengths = [mix.signal_length]
 
         for datum in data:
             d = datum.value
