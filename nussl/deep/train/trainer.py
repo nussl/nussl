@@ -190,11 +190,6 @@ class Trainer():
             epoch_loss += loss['total_loss'].item()
 
             if self.model.training:
-                self.log_to_tensorboard(
-                    {k: loss[k].item() for k in loss},
-                    step + self.num_epoch * num_batches,
-                    'iter'
-                )
                 self.optimizer.zero_grad()
                 loss['total_loss'].backward()
                 self.optimizer.step()
