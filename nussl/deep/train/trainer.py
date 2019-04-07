@@ -150,6 +150,7 @@ class Trainer():
                     targets['assignments'],
                     clamp=True
                 )
+                targets['assignments'] = (targets['assignments'] > .5).float()
             if 'weights' in targets:
                 targets['weights'] = self.module.project_data(
                     targets['weights'],
