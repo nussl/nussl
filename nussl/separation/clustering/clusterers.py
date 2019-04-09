@@ -50,11 +50,10 @@ class KMeansConfidence(KMeans):
         Confidence for KMeans is: 
             x = (distance to centroids raised to power alpha)
             y = (average distance between centroids)
-            confidence = y * softmax(x)
         """
         distances = super().transform(features) ** self.alpha
         distances /= distances.max()
-        return distances
+        return 1 - distances
 
     def predict_and_get_confidence(self, features):
         """
