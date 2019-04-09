@@ -11,16 +11,13 @@ import shutil
 from typing import Optional
 from itertools import chain
 import sys
+import time
+tqdm.monitor_interval = 0
 
 try:
     from tensorboardX import SummaryWriter
 except:
     SummaryWriter = None
-
-try: 
-    from comet_ml import Experiment
-except:
-    Experiment = None
 
 
 OutputTargetMap = {
@@ -43,9 +40,7 @@ class Trainer():
         self.use_tensorboard = (
             use_tensorboard if SummaryWriter is not None else False
         )
-        self.experiment = (
-            experiment if Experiment is not None else False
-        )
+        self.experiment = experiment
         self.prepare_directories(output_folder)
         self.model = self.build_model(model)
         self.device = torch.device(
@@ -150,12 +145,14 @@ class Trainer():
                     targets['assignments'],
                     clamp=True
                 )
-                targets['assignments'] = (targets['assignments'] > .5).float()
+                targets['assignments'] = (targets['assignments'] > 0).float()
             if 'weights' in targets:
                 targets['weights'] = self.module.project_data(
                     targets['weights'],
                     clamp=False
                 )
+                if 'threshold' in self.dataloaders['training'].dataset.options['weight_type']:
+                    targets['weights'] = (targets['weights'] > 0).float()
         loss = {}
         for key in self.loss_keys:
             loss_function = self.loss_dictionary[key][0]
@@ -178,11 +175,11 @@ class Trainer():
                 data[key] = data[key].requires_grad_()
         return data
 
-    def run_epoch(self, dataloader):
+    def run_epoch(self, key):
         epoch_loss = 0
-        num_batches = len(dataloader)
-        progress_bar = tqdm(range(0, num_batches), file=sys.stdout)
-        for step, data in enumerate(dataloader):
+        num_batches = len(self.dataloaders[key])
+        progress_bar = tqdm(range(0, num_batches))
+        for step, data in enumerate(self.dataloaders[key]):
             data = self.prepare_data(data)
             output = self.model(data)
 
@@ -224,7 +221,7 @@ class Trainer():
     def populate_cache(self):
         for key, dataloader in self.dataloaders.items():
             num_batches = len(dataloader)
-            progress_bar = tqdm(range(0, num_batches), file=sys.stdout)
+            progress_bar = tqdm(range(0, num_batches))
             for i, data in enumerate(dataloader):
                 progress_bar.update(1)
                 progress_bar.set_description(f'Populating cache for {key}')
@@ -236,9 +233,7 @@ class Trainer():
             dataloader.dataset.switch_to_cache()
             
     def fit(self):
-        progress_bar = tqdm(
-            range(self.num_epoch, self.options['num_epochs']), file=sys.stdout
-        )
+        progress_bar = tqdm(range(self.num_epoch, self.options['num_epochs']))
         lowest_validation_loss = np.inf
 
         if not self.cache_populated:
@@ -246,10 +241,10 @@ class Trainer():
             self.populate_cache()
         self.switch_to_cache()
 
-        for self.num_epoch in progress_bar:
-            epoch_loss = self.run_epoch(self.dataloaders['training'])
+        for self.num_epoch in range(self.options['num_epochs']):
+            epoch_loss = self.run_epoch('training')
             self.log_to_tensorboard(epoch_loss, self.num_epoch, 'epoch')
-            validation_loss = self.validate(self.dataloaders['validation'])
+            validation_loss = self.validate('validation')
             self.save(validation_loss < lowest_validation_loss)
             lowest_validation_loss = (
                 validation_loss 
@@ -260,7 +255,8 @@ class Trainer():
             progress_bar.update(1)
             progress_bar.set_description(f'Loss: {epoch_loss["loss"]:.4f}')
 
-    def validate(self, dataloader: Optional[DataLoader]) -> float:
+
+    def validate(self, key) -> float:
         """Calculate loss on validation set
 
         Args:
@@ -271,12 +267,12 @@ class Trainer():
             `np.inf` if there is no validation dataset (`dataloader` is `None`)
             else the loss over the given validation data
         """
-        if not dataloader:
+        if key not in self.dataloaders:
             return np.inf
 
         self.model.eval()
         with torch.no_grad():
-            validation_loss = self.run_epoch(dataloader)
+            validation_loss = self.run_epoch(key)
         self.log_to_tensorboard(validation_loss, self.num_epoch, 'epoch')
         self.model.train()
         self.scheduler.step(validation_loss['loss'])

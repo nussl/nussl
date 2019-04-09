@@ -54,7 +54,7 @@ class KMeansConfidence(KMeans):
         """
         distances = super().transform(features) ** self.alpha
         distances /= distances.max()
-        return softmax(distances, axis=-1)
+        return distances
 
     def predict_and_get_confidence(self, features):
         """

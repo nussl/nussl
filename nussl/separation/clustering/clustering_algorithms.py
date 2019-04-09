@@ -36,7 +36,8 @@ class PrimitiveClustering(ClusteringSeparationBase):
             **kwargs
         )
         self.algorithms = [a[0] for a in algorithms]
-        self.algorithm_parameters = [a[1] for a in algorithms]
+        self.algorithm_parameters = [a[1] if len(a) > 1 else {} for a in algorithms]
+        self.algorithm_returns = [a[2] if len(a) > 2 else [] for a in algorithms]
         self.num_cascades = num_cascades
         self.reduce_noise = reduce_noise
         self.use_multichannel_weiner_filter = use_multichannel_weiner_filter
@@ -62,6 +63,8 @@ class PrimitiveClustering(ClusteringSeparationBase):
                 mwf = MultichannelWienerFilter(mixture, signals)
                 mwf.run()
                 signals = mwf.make_audio_signals()
+            if self.algorithm_returns[i]:
+                signals = [signals[j] for j in self.algorithm_returns[i]]
             separations += signals
         return separations
 
@@ -69,36 +72,25 @@ class PrimitiveClustering(ClusteringSeparationBase):
         features = []
         for s in signals:
             s.stft()
-            _feature = s.log_magnitude_spectrogram_data
+            _feature = (
+                s.log_magnitude_spectrogram_data / self.audio_signal.log_magnitude_spectrogram_data
+            )
             features.append(_feature)     
         features = np.array(features).transpose(1, 2, 3, 0)
-        print(features.shape)
         return features        
 
     def extract_features(self):
         features = []
         current_signals = [self.audio_signal]
         for i in range(self.num_cascades):
-            print(i, len(current_signals))
             separations = []
             for signal in current_signals:
                 _separations = self.run_algorithm_on_signal(signal, i)
                 separations += _separations
             current_signals = separations
-        print(len(current_signals))
         self.separations = current_signals
         features = self.extract_features_from_signals(current_signals)
 
-        # tf_map = np.outer(
-        #     np.linspace(0.0, 1.0, self.stft.shape[0]), 
-        #     np.linspace(0.0, 1.0, self.stft.shape[1])
-        # )[..., None, None]
-        
-        # tf_map = np.repeat(tf_map, self.audio_signal.num_channels, axis=2)
-
-        # features = np.concatenate([features, tf_map], axis=-1)
-
-        print(features.shape)
         features = features.reshape(-1, features.shape[-1])
         features = scale(features, axis=1)
         if self.reduce_noise:

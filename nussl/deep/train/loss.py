@@ -25,9 +25,12 @@ class DeepClusteringLoss(nn.Module):
         embedding = embedding.view(batch_size, -1, embedding_size)
         assignments = assignments.view(batch_size, -1, num_sources)
 
+        norm = 1. / ((((weights) ** 2)).sum(dim=1) ** 2).sum()
+
         assignments = weights.expand_as(assignments) * assignments
         embedding = weights.expand_as(embedding) * embedding
-        norm = ((((weights) ** 2)).sum(dim=1) ** 2).sum()
+        #norm = ((((weights) ** 2)).sum(dim=1) ** 2).sum()
+        
 
         #norm = (((embedding_size ** 2) * (num_weights ** 2)) -
         #       2 * (embedding_size * (num_weights ** 2)) + (
@@ -36,8 +39,8 @@ class DeepClusteringLoss(nn.Module):
         vTv = ((embedding.transpose(2, 1) @ embedding) ** 2).sum()
         vTy = ((embedding.transpose(2, 1) @ assignments) ** 2).sum()
         yTy = ((assignments.transpose(2, 1) @ assignments) ** 2).sum()
-        loss = (vTv - 2 * vTy + yTy) / norm.detach()
-        return loss
+        loss = (vTv - 2 * vTy + yTy)
+        return loss * norm
 
 class PermutationInvariantLoss(nn.Module):
     def __init__(self, loss_function):

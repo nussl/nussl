@@ -26,7 +26,6 @@ class BaseDataset(Dataset):
 
         self.folder = folder
         self.files = self.get_files(self.folder)
-        random.shuffle(self.files)
         self.cached_files = []
         self.options = options.copy()
         self.targets = [
@@ -49,7 +48,6 @@ class BaseDataset(Dataset):
             num_files = int(
                 len(self.files) * self.options['fraction_of_dataset']
             )
-            #random.shuffle(self.file)
             self.files = self.files[:num_files]
 
     def create_cache_folder(self):
@@ -256,8 +254,15 @@ class BaseDataset(Dataset):
         offsets = np.arange(0, length,  target_length)
         offsets[-1] = max(0, length - target_length)
 
-        # Select random offset, return that.
-        offsets = [np.random.randint(0, max(0, length - target_length))]
+        # Select offset randomly from where sources are balanced, return that.
+        if 'assignments' in data_dict:
+            _balance = data_dict['assignments'].mean(axis=-2).mean(axis=0).prod(axis=-1)
+            indices = np.argwhere(_balance > np.percentile(_balance, 90))[:, 0]
+            indices[indices > indices[-1] - target_length] = max(0, indices[-1] - target_length)
+            indices = np.unique(indices)
+            offsets = list(np.random.choice(indices, 1))
+        else:
+            offsets = [np.random.randint(0, max(1, length - target_length))]
         output_data_dicts = []
     
         for i, target in enumerate(self.targets):
@@ -327,9 +332,9 @@ class BaseDataset(Dataset):
 
         class_weights = assignments.sum(axis=0)
         class_weights /= class_weights.sum()
+        class_weights = 1 / np.sqrt(class_weights + 1e-4)
 
         weights = assignments @ class_weights 
-        weights = 1 / (weights + 1e-8)
         weights = weights.reshape(_shape[:-1])
         assignments.reshape(_shape)
         return weights

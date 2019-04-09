@@ -90,6 +90,13 @@ class Embedding(nn.Module):
         self.activation = activation
         self.embedding_size = embedding_size
 
+        for name, param in self.linear.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
+
+
     def forward(self, data):
         """
         Args:
