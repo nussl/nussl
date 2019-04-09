@@ -72,9 +72,7 @@ class PrimitiveClustering(ClusteringSeparationBase):
         features = []
         for s in signals:
             s.stft()
-            _feature = (
-                s.log_magnitude_spectrogram_data / self.audio_signal.log_magnitude_spectrogram_data
-            )
+            _feature = s.log_magnitude_spectrogram_data
             features.append(_feature)     
         features = np.array(features).transpose(1, 2, 3, 0)
         return features        
