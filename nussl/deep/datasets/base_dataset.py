@@ -257,7 +257,7 @@ class BaseDataset(Dataset):
         # Select offset randomly from where sources are balanced, return that.
         if 'assignments' in data_dict:
             _balance = data_dict['assignments'].mean(axis=-2).mean(axis=0).prod(axis=-1)
-            indices = np.argwhere(_balance > np.percentile(_balance, 90))[:, 0]
+            indices = np.argwhere(_balance >= np.percentile(_balance, 90))[:, 0]
             indices[indices > indices[-1] - target_length] = max(0, indices[-1] - target_length)
             indices = np.unique(indices)
             offsets = list(np.random.choice(indices, 1))
