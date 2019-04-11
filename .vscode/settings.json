@@ -17,7 +17,7 @@
         ".ipynb_checkpoints/",
         "*.pth"
     ],
-    "sync-rsync.remote": "cortex:/home/prem/research/nussl",
+    "sync-rsync.remote": "cortex:/home/prem/research/waspaa19/nussl",
     "sync-rsync.onSave": true,
     "sync-rsync.delete": true,
     "python.pythonPath": "/Users/prem/miniconda3/envs/nussl/bin/python"

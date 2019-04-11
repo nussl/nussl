@@ -8,9 +8,20 @@ implementation of BSS-Eval version 4.
 """
 import museval
 import json
+import numpy as np
 
 from . import bss_eval_base
 from ..core import constants, utils
+
+
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Wrapper class for ``museval`` implementation of the BSS-Eval metrics (SDR, SIR, SAR).
+Contains logic for loading ground truth AudioSignals and estimated
+AudioSignals to compute BSS-Eval metrics. The ``mir_eval`` module contains an
+implementation of BSS-Eval version 4.
+"""
 
 
 class BSSEvalV4(bss_eval_base.BSSEvalBase):
@@ -91,25 +102,11 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
     """
     SDR_MEANS = 'sdr_means'
 
-    def __init__(self, mixture, true_sources, estimated_sources,
-                 target_dict=constants.VOX_ACC_DICT,
-                 mode='v4', output_dir=None, win=1.0, hop=1.0):
-        # try:
-        #     super(BSSEvalV4, self).__init__(true_sources_list=true_sources_list,
-        #                                     estimated_sources_list=estimated_sources_list,
-        #                                     source_labels=source_labels, do_mono=do_mono)
-        # except evaluation_base.AudioSignalListMismatchError:
-        #     pass
+    def __init__(self, true_sources, estimated_sources,
+                 mode='v4', output_dir=None, win=2.0, hop=1.5,
+                 source_labels = None,
+                 compute_permutation=False):
 
-        # if vox_acc and target_dict == constants.VOX_ACC_DICT:
-        #     self.source_labels = ['accompaniment', 'vocals']
-        #
-        # if target_dict == constants.STEM_TARGET_DICT:
-        #     self.source_labels = ['drums', 'bass', 'other', 'vocals']
-        #
-        # self.true_sources = {l: self.true_sources_list[i] for i, l in enumerate(self.source_labels)}
-        # self.estimates = {l: self.estimated_sources_list[i].audio_data.T
-        #                        for i, l in enumerate(self.source_labels)}
         if type(true_sources) is not type(estimated_sources):
             raise bss_eval_base.BssEvalException('true_sources and estimated_sources must both be '
                                                  'lists or both be dicts!')
@@ -117,35 +114,24 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
         have_list = type(true_sources) is list
 
         self._scores = {}
-        self.target_dict = target_dict
-        self.is_vox_acc = target_dict == constants.VOX_ACC_DICT
-        self.is_stem = target_dict == constants.STEM_TARGET_DICT
-        self.mixture = mixture
         self.mode = mode
         self.output_dir = output_dir
         self.win = win
         self.hop = hop
+        self.compute_permutation = compute_permutation
 
         # Set up the dictionaries for museval
         # self.true_sources is filled with AudioSignals (b/c nussl converts it to a Track)
         # & self.estimates is raw numpy arrays
-        if self.is_vox_acc:
-            if have_list:
-                self.estimates = {'vocals': estimated_sources[0].audio_data.T,
-                                  'accompaniment': estimated_sources[1].audio_data.T}
-                self.true_sources = {'vocals': true_sources[0],
-                                     'accompaniment': true_sources[1]}
-            else:
-                self.estimates = {'vocals': estimated_sources['vocals'].audio_data.T,
-                                  'accompaniment': estimated_sources['accompaniment'].audio_data.T}
-                self.true_sources = {'vocals': true_sources['vocals'],
-                                     'accompaniment': true_sources['accompaniment']}
-        else:
-            # Assume they know what they're doing...
-            self.true_sources = true_sources
-            self.estimates = estimated_sources
+        # Assume they know what they're doing...
+        self.true_sources_list = true_sources
+        self.estimated_sources_list = estimated_sources
+        self.sample_rate = self.true_sources_list[0].sample_rate
+        self.num_channels = self.true_sources_list[0].num_channels
+        self.source_labels = source_labels
+        if self.source_labels is None:
+            self.source_labels = [x.path_to_input_file.split('/')[-1] for x in self.true_sources_list]
 
-            # TODO: STEM_TARGET_DICT logic
 
     def _get_scores(self, scores):
         s = scores.split()
@@ -163,19 +149,51 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
     def _get_mean_scores(self, scores):
         return self._get_scores(repr(scores))
 
-    def evaluate(self):
-        track = utils.audio_signals_to_musdb_track(self.mixture, self.true_sources,
-                                                   self.target_dict)
+    def _preprocess_sources(self):
+        """
+        Prepare the :ref:`audio_data` in the sources for ``mir_eval``.
+        Returns:
+            (:obj:`np.ndarray`, :obj:`np.ndarray`) reference_source_array, estimated_source_array
 
-        bss_output = museval.eval_mus_track(track, self.estimates,
-                                            output_dir=self.output_dir, mode=self.mode,
-                                            win=self.win, hop=self.hop)
+        """
+        estimated_source_array = np.stack([np.copy(x.audio_data.T)
+                                            for x in self.true_sources_list], axis=0)
+        reference_source_array = np.stack([np.copy(x.audio_data.T)
+                                            for x in self.estimated_sources_list], axis=0)
+
+        return reference_source_array, estimated_source_array
+
+    def evaluate(self):
+        self.validate()
+        reference, estimated = self._preprocess_sources()
+        if len(reference.shape) < 3:
+            reference = np.expand_dims(reference, axis=-1)
+            estimated = np.expand_dims(estimated, axis=-1)
+            
+        bss_output = museval.metrics.bss_eval(
+            reference, estimated, window=int(self.sample_rate * self.win), 
+            hop=int(self.sample_rate * self.hop), 
+            compute_permutation = self.compute_permutation
+        )        
 
         self._populate_scores_dict(bss_output)
 
         return self.scores
 
     def _populate_scores_dict(self, bss_output):
+        
+        sdr_list, isr_list, sir_list, sar_list, perm = bss_output  # Unpack
+        self.scores[self.RAW_VALUES] = {self.SDR: sdr_list, self.ISR: isr_list, self.SIR: sir_list,
+                                        self.SAR: sar_list, self.PERMUTATION: perm}
 
-        self.scores[self.RAW_VALUES] = json.loads(bss_output.json)  # Hack to format dict correctly
-        self.scores[self.SDR_MEANS] = self._get_mean_scores(repr(bss_output))
+        idx = 0
+        for i, label in enumerate(self.source_labels):
+            self.scores[label] = {}
+
+            self.scores[label][self.SDR] = sdr_list[perm[idx]]
+            self.scores[label][self.ISR] = isr_list[perm[idx]]
+            self.scores[label][self.SIR] = sir_list[perm[idx]]
+            self.scores[label][self.SAR] = sar_list[perm[idx]]
+            idx += 1
+
+        self.scores[self.PERMUTATION] = perm

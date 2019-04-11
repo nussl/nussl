@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional, Tuple, List
 from ...core import AudioSignal
 from scipy.io import wavfile
 import sox
+import gc
 
 class BaseDataset(Dataset):
     def __init__(self, folder: str, options: Dict[str, Any]):
@@ -36,12 +37,6 @@ class BaseDataset(Dataset):
             'weights'
         ]
         self.data_keys_for_training = self.options.pop('data_keys_for_training', [])
-        self.cache_input = (
-            self.options['cache']
-            if self.options['cache']
-            else None
-        )
-
         self.create_cache_folder()
 
         if self.options['fraction_of_dataset'] < 1.0:

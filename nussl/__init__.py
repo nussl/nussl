@@ -3,7 +3,6 @@
 """
 Init for ``nussl``, the Northwestern University Source Separation Library.
 """
-
 try:
     import torch
     torch_imported = True
