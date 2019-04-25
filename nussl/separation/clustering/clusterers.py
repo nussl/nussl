@@ -51,19 +51,20 @@ class KMeansConfidence(KMeans):
             x = (distance to centroids raised to power alpha)
             y = (average distance between centroids)
         """
-        distances = super().transform(features) ** self.alpha
-        distances /= distances.max()
-        return 1 - distances
+        distances = super().transform(features)
+        confidence = softmax(-distances, axis=-1)
+        posteriors = softmax(-10.0 * distances, axis=-1)
+        confidence = (2 * np.max(confidence, axis=-1) - 1) ** self.alpha
+        return confidence, posteriors
 
     def predict_and_get_confidence(self, features):
         """
         Just wraps GaussianMixture.predict_proba, but saves the assignments so that
         confidence can be computed.
         """
-        confidence = self.confidence(features)
-        assignments = (confidence == confidence.max(axis=-1, keepdims=True)).astype(float)
-        confidence = np.max(confidence, axis=-1)
-        return assignments, confidence
+        confidence, posteriors = self.confidence(features)
+
+        return posteriors, confidence
 
 class GaussianMixtureConfidence(GaussianMixture):
     def __init__(self, n_samples=10**5, alpha=1.0, threshold=None, **kwargs):
