@@ -119,7 +119,7 @@ class Trainer():
             sampler=Samplers[
                 self.options['sample_strategy'].upper()
             ].value(dataset),
-            pin_memory=True,
+            pin_memory=False,
         )
 
     def create_optimizer_and_scheduler(self, model, options):

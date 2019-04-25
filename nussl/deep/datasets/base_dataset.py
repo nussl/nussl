@@ -8,8 +8,6 @@ import random
 from typing import Dict, Any, Optional, Tuple, List
 from ...core import AudioSignal
 from scipy.io import wavfile
-import sox
-import gc
 
 class BaseDataset(Dataset):
     def __init__(self, folder: str, options: Dict[str, Any]):
@@ -28,6 +26,7 @@ class BaseDataset(Dataset):
         self.folder = folder
         self.files = self.get_files(self.folder)
         self.cached_files = []
+        self.use_librosa = options.pop('use_librosa_stft', True)
         self.options = options.copy()
         self.targets = [
             'log_spectrogram',
@@ -38,6 +37,7 @@ class BaseDataset(Dataset):
         ]
         self.data_keys_for_training = self.options.pop('data_keys_for_training', [])
         self.create_cache_folder()
+        self.cache_populated = False
 
         if self.options['fraction_of_dataset'] < 1.0:
             num_files = int(
@@ -108,11 +108,12 @@ class BaseDataset(Dataset):
         for j, o in enumerate(output):
             _filepart = f'{i:08d}.pth.part{j}'
             self.write_to_cache(o, _filepart)
-        return random.choice(output)
+        return output[0]
 
     def switch_to_cache(self):
         self.original_files = self.files
         self.files = [x for x in os.listdir(self.cache) if '.part' in x]
+        self.cache_populated = True
 
     def _get_item_helper(
         self,
@@ -139,12 +140,12 @@ class BaseDataset(Dataset):
             one example)
         """
         if self.cache:
-            try:
+            if self.cache_populated:
                 return self.load_from_cache(filename)
-            except:
+            else:
                 return self.populate_cache(filename, i)
         else:
-            return random.choice(self._generate_example(filename))
+            return self._generate_example(filename)[0]
 
     def _generate_example(self, filename: str) -> List[Dict[str, Any]]:
         """Generates one example (training|validation) from given filename
@@ -169,22 +170,6 @@ class BaseDataset(Dataset):
             self.options['length']
         )
         
-        return [self.format_output(o) for o in output]
-
-    def format_output(self, output):
-        # [num_batch, sequence_length, num_frequencies*num_channels, ...]
-        for key in self.targets:
-            if key in output:
-                if self.options['format'] == 'rnn':
-                    _shape = output[key].shape
-                    shape = [_shape[0], _shape[1], _shape[2]]
-                    if len(_shape) > 3:
-                        shape += _shape[3:]
-                    output[key] = np.reshape(output[key], shape)
-                elif self.options['format'] == 'cnn':
-                    axes_loc = [0, 3, 2, 1]
-                    output[key] = np.moveaxis(output[key], [0, 1, 2, 3], axes_loc)
-
         return output
 
     def write_to_cache(self, data_dict, filename):
@@ -203,18 +188,18 @@ class BaseDataset(Dataset):
 
     def construct_input_output(self, mix, sources):
         log_spectrogram, mix_stft = self.transform(mix)
-        mix_magnitude, mix_phase = np.abs(mix_stft), np.angle(mix_stft)
+        mix_magnitude = np.abs(mix_stft)
         source_magnitudes = []
 
         for source in sources:
             _, source_stft = self.transform(source)
-            source_magnitude, source_phase = (
-                np.abs(source_stft),
-                np.angle(source_stft)
-            )
+            source_magnitude = np.abs(source_stft)
+
             if self.options['output_type'] == 'msa':
                 source_magnitude = np.minimum(mix_magnitude, source_magnitude)
             elif self.options['output_type'] == 'psa':
+                mix_phase = np.angle(mix_stft)
+                source_phase = np.angle(source_stft)
                 source_magnitude = np.maximum(
                     0.0,
                     np.minimum(
@@ -283,8 +268,7 @@ class BaseDataset(Dataset):
 
         return output_data_dicts
 
-    @staticmethod
-    def transform(audio_signal):
+    def transform(self, audio_signal):
         """Uses nussl STFT to transform.
 
         Arguments:
@@ -295,7 +279,7 @@ class BaseDataset(Dataset):
             log_spectrogram, stft contains the complex spectrogram, and n is the
         """
         stft = (
-            audio_signal.stft(use_librosa=True) 
+            audio_signal.stft(use_librosa=self.use_librosa)
             if audio_signal.stft_data is None 
             else audio_signal.stft_data
         )
@@ -318,6 +302,8 @@ class BaseDataset(Dataset):
             weights *= self.class_weights(
                 data_dict['assignments'],
             )
+        if ('log' in weight_type):
+            weights = np.log10(weights + 1)
         return weights
 
     @staticmethod

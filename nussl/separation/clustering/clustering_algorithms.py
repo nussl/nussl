@@ -25,9 +25,9 @@ class PrimitiveClustering(ClusteringSeparationBase):
     def __init__(
         self, 
         input_audio_signal,
+        algorithms,
         num_cascades=1,
-        algorithms=[Melodia, FT2D, HPSS],
-        reduce_noise=True,
+        reduce_noise=False,
         use_multichannel_weiner_filter=False,
         **kwargs
     ):
@@ -55,18 +55,20 @@ class PrimitiveClustering(ClusteringSeparationBase):
 
     def run_algorithm_on_signal(self, mixture, level):
         separations = []
+        separators = []
         for i, algorithm in enumerate(self.algorithms):
-            separator = algorithm(mixture, **self.algorithm_parameters[i])
+            separator = algorithm(
+                mixture, 
+                use_librosa_stft=self.use_librosa_stft, 
+                **self.algorithm_parameters[i]
+            )
             separator.run()
-            signals = separator.make_audio_signals()            
-            if self.use_multichannel_weiner_filter and level == self.num_cascades - 1:
-                mwf = MultichannelWienerFilter(mixture, signals)
-                mwf.run()
-                signals = mwf.make_audio_signals()
+            signals = separator.make_audio_signals()
             if self.algorithm_returns[i]:
                 signals = [signals[j] for j in self.algorithm_returns[i]]
             separations += signals
-        return separations
+            separators.append(separator)
+        return separations, separators
 
     def extract_features_from_signals(self, signals):
         features = []
@@ -75,20 +77,30 @@ class PrimitiveClustering(ClusteringSeparationBase):
             _feature = s.log_magnitude_spectrogram_data
             features.append(_feature)     
         features = np.array(features).transpose(1, 2, 3, 0)
-        return features        
+        return features  
+
+    def extract_features_from_separators(self, separators):
+        features = []
+        for s in separators:
+            masks = [m.mask for m in s.result_masks]
+            features += masks
+        features = np.array(features).transpose(1, 2, 3, 0)
+        return features
 
     def extract_features(self):
         features = []
         current_signals = [self.audio_signal]
+        separators = []
         for i in range(self.num_cascades):
             separations = []
             for signal in current_signals:
-                _separations = self.run_algorithm_on_signal(signal, i)
+                _separations, _separator = self.run_algorithm_on_signal(signal, i)
                 separations += _separations
+                separators += _separator
             current_signals = separations
         self.separations = current_signals
-        features = self.extract_features_from_signals(current_signals)
 
+        features = self.extract_features_from_separators(separators)
         features = features.reshape(-1, features.shape[-1])
         features = scale(features, axis=1)
         if self.reduce_noise:
@@ -111,6 +123,8 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         )
 
         self.model, self.metadata = self.load_model(model_path)
+        self.original_length = input_audio_signal.signal_length
+        self.original_sample_rate = input_audio_signal.sample_rate
         
         if input_audio_signal.sample_rate != self.metadata['sample_rate']:
             input_audio_signal.resample(self.metadata['sample_rate'])
@@ -178,3 +192,10 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             embedding = embedding.permute(2, 1, 0, 3)
             embedding = embedding.reshape(-1, embedding_size).data.numpy()
         return embedding
+
+    def make_audio_signals(self):
+        signals = super().make_audio_signals()
+        for signal in signals:
+            signal.resample(self.original_sample_rate)
+            signal.truncate_samples(self.original_length)
+        return signals
