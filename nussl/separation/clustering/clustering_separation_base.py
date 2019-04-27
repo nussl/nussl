@@ -38,6 +38,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.clustering_options = (
             {} if clustering_options is None else clustering_options 
         )
+        self.alpha = alpha
         self.use_librosa_stft = use_librosa_stft
         
         allowed_clustering_types = ['kmeans', 'gmm', 'spectral_clustering']
@@ -79,6 +80,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         
         return clusterer(
             n_components=self.num_sources,
+            alpha=self.alpha,
             **self.clustering_options
         )
 

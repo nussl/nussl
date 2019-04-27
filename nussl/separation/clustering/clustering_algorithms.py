@@ -157,14 +157,14 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
 
             assignments = assignments.transpose()
             confidence = confidence.transpose()
-
-            assignments = np.dot(assignments, self.filter_bank)
-            #confidence =  np.dot(confidence, self.filter_bank)
-
+                        
+            assignments = np.dot(assignments, self.filter_bank) + 1e-6
+            assignments = np.clip(assignments, 0.0, 1.0) 
+            assignments /= np.sum(assignments, axis=0)
+            
             assignments = assignments.transpose()
             confidence = confidence.transpose()
-
-            assignments = np.clip(assignments.transpose(3, 0, 1, 2), 0.0, 1.0)
+            assignments = assignments.transpose(3, 0, 1, 2)
         else:
             assignments, confidence = super().postprocess(assignments, confidence)
 
