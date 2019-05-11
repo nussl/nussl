@@ -293,6 +293,10 @@ class BaseDataset(Dataset):
             weights *= self.magnitude_weights(
                 data_dict['magnitude_spectrogram']
             )
+        elif ('source_magnitude' in weight_type):
+            weights *= self.source_magnitude_Weights(
+                data_dict['source_spectrograms']
+            )
         if ('threshold' in weight_type):
             weights *= self.threshold_weights(
                 data_dict['log_spectrogram'],
@@ -332,8 +336,17 @@ class BaseDataset(Dataset):
     def threshold_weights(log_spectrogram, threshold=-40):
         return (
             (log_spectrogram - np.max(log_spectrogram)) > threshold
-        ).astype(np.float32)
+        ).astype(float)
 
+    @staticmethod
+    def source_magnitude_weights(source_spectrograms):
+        weights = [
+            self.magnitude_weights(source_spectrograms[..., i])
+            for i in range(source_spectrograms.shape[-1])
+        ]
+        weights = np.stack(source_weights, axis=-1)
+        weights = source_weights.max(axis=-1)
+        return weights
 
     def _load_audio_file(self, file_path: str) -> AudioSignal:
         """Loads audio file at given path. Uses 

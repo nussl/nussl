@@ -156,9 +156,9 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
             (:obj:`np.ndarray`, :obj:`np.ndarray`) reference_source_array, estimated_source_array
 
         """
-        estimated_source_array = np.stack([np.copy(x.audio_data.T)
-                                            for x in self.true_sources_list], axis=0)
         reference_source_array = np.stack([np.copy(x.audio_data.T)
+                                            for x in self.true_sources_list], axis=0)
+        estimated_source_array = np.stack([np.copy(x.audio_data.T)
                                             for x in self.estimated_sources_list], axis=0)
 
         return reference_source_array, estimated_source_array
@@ -174,7 +174,7 @@ class BSSEvalV4(bss_eval_base.BSSEvalBase):
             reference, estimated, window=int(self.sample_rate * self.win), 
             hop=int(self.sample_rate * self.hop), 
             compute_permutation = self.compute_permutation
-        )        
+        )
 
         self._populate_scores_dict(bss_output)
 

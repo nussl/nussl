@@ -126,9 +126,9 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             mask = self.assignments[i, :, :, :]
             mask = masks.SoftMask(mask)
             if self.mask_type == self.BINARY_MASK:
-                mask = mask.mask_to_binary(1 / len(self.num_sources))
+                mask = mask.mask_to_binary(1 / self.num_sources)
             self.masks.append(mask)
-
+        self.result_masks = self.masks
         return self.masks
 
     def apply_mask(self, mask):

@@ -174,4 +174,5 @@ class FT2D(mask_separation_base.MaskSeparationBase):
             )
             sources.append(source)
             residual -= source
+        sources[0] += residual
         return sources

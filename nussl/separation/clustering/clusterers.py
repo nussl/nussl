@@ -43,7 +43,14 @@ class KMeansConfidence(KMeans):
     def __init__(self, n_components, alpha=1.0, **kwargs):
         kwargs['n_clusters'] = n_components
         self.alpha = alpha
+        self.no_iter = kwargs.pop('no_iter', False)
         super().__init__(**kwargs)
+
+    def fit(self, features):
+        if not self.no_iter:
+            super().fit(features)
+        else:
+            self.cluster_centers_ = self.init
 
     def confidence(self, features):
         """
@@ -53,7 +60,7 @@ class KMeansConfidence(KMeans):
         """
         distances = super().transform(features)
         confidence = softmax(-distances, axis=-1)
-        posteriors = softmax(-10.0 * distances, axis=-1)
+        posteriors = softmax(-5.0 * distances, axis=-1)
         confidence = (2 * np.max(confidence, axis=-1) - 1) ** self.alpha
         return confidence, posteriors
 

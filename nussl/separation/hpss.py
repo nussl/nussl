@@ -85,6 +85,7 @@ class HPSS(mask_separation_base.MaskSeparationBase):
             else:
                 raise ValueError('Unknown mask type {self.mask_type}!')
             self.masks.append(mask_object)
+        self.result_masks = self.masks
         return self.masks
     
     def _compute_spectrograms(self):

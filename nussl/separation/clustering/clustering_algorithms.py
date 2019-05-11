@@ -6,6 +6,7 @@ from ..deep_mixin import DeepMixin
 from .. import FT2D, Melodia, HPSS, Repet, RepetSim, MultichannelWienerFilter
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import scale
+from copy import deepcopy
 
 class SpatialClustering(ClusteringSeparationBase):
     def extract_features(self):
@@ -81,8 +82,10 @@ class PrimitiveClustering(ClusteringSeparationBase):
 
     def extract_features_from_separators(self, separators):
         features = []
-        for s in separators:
+        for i, s in enumerate(separators):
             masks = [m.mask for m in s.result_masks]
+            if self.algorithm_returns[i]:
+                masks = [masks[j] for j in self.algorithm_returns[i]]
             features += masks
         features = np.array(features).transpose(1, 2, 3, 0)
         return features
@@ -102,7 +105,7 @@ class PrimitiveClustering(ClusteringSeparationBase):
 
         features = self.extract_features_from_separators(separators)
         features = features.reshape(-1, features.shape[-1])
-        features = scale(features, axis=1)
+        #features = scale(features, axis=0)
         if self.reduce_noise:
             features = self.noise_reduction(features)
         return features
@@ -121,6 +124,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             if torch.cuda.is_available() and use_cuda
             else 'cpu'
         )
+        input_audio_signal = deepcopy(input_audio_signal)
 
         self.model, self.metadata = self.load_model(model_path)
         self.original_length = input_audio_signal.signal_length
@@ -195,7 +199,9 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
 
     def make_audio_signals(self):
         signals = super().make_audio_signals()
+        residual = (self.audio_signal - sum(signals)).audio_data * (1 / len(signals))
         for signal in signals:
+            signal.audio_data += residual
             signal.resample(self.original_sample_rate)
             signal.truncate_samples(self.original_length)
         return signals

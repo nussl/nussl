@@ -180,11 +180,13 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         """
 
         melody_signal.stft()
-        normalized_melody_stft = melody_signal.log_magnitude_spectrogram_data
+        log_magnitude = melody_signal.log_magnitude_spectrogram_data
+        normalized_melody_stft = melody_signal.stft_data
 
         # Need to threshold the melody stft since the synthesized
         # F0 sequence overtones are at different weights.
-        normalized_melody_stft = normalized_melody_stft > -5
+        normalized_melody_stft = log_magnitude > -5
+        normalized_melody_stft = normalized_melody_stft / normalized_melody_stft.max()
         normalized_melody_stft = normalized_melody_stft.astype(float)
         mask = np.empty(self.audio_signal.stft().shape)
 
@@ -233,7 +235,8 @@ class Melodia(mask_separation_base.MaskSeparationBase):
                               overwrite=True, use_librosa=self.use_librosa_stft,
                               truncate_to_length=self.audio_signal.signal_length)
 
-        return [self.background_mask, self.foreground_mask]
+        self.result_masks = [self.background_mask, self.foreground_mask]
+        return self.result_masks
 
     def _compute_spectrum(self):
         self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
