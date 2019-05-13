@@ -23,7 +23,9 @@ REQUIREMENTS = [
     'audioread >= 2.1.2',
     'librosa >= 0.4.1',
     'mir_eval >= 0.4.0',
-    'sklearn'
+    'sklearn',
+    'museval',
+    'musdb',
 ]
 
 EXTRAS = {
