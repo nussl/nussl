@@ -133,7 +133,7 @@ class Mask(nn.Module):
         super(Mask, self).__init__()
 
     def forward(self, mask, magnitude_spectrogram):
-        return mask * magnitude_spectrogram.unsqueeze(-1)
+        return mask * magnitude_spectrogram
 
 class RecurrentStack(nn.Module):
     def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout, rnn_type='lstm'):
