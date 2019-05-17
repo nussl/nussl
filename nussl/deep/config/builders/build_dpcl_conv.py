@@ -37,6 +37,7 @@ def build_dpcl_conv(options):
                 'class': 'Embedding',
                 'args': {
                     'num_features': 1,
+                    'num_channels': options['num_channels'],
                     'hidden_size': options['channels'][-1],
                     'embedding_size': options['embedding_size'],
                     'activation': options['embedding_activations']

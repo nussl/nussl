@@ -41,6 +41,7 @@ def build_mask_inference_config(options=None):
                 'class': 'Embedding',
                 'args': {
                     'num_features': options['num_features'],
+                    'num_channels': options['num_channels'],
                     'hidden_size': (
                         2 * options['hidden_size']
                         if options['bidirectional']
