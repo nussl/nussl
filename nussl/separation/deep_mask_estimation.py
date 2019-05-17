@@ -69,17 +69,20 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
         input_data = self._preprocess()
         with torch.no_grad():
             output = self.model(input_data)
-            output = {k: output[k].cpu() for k in output}
+            output = {k: output[k] for k in output}
 
             if 'estimates' not in output:
                 raise ValueError("This model is not a mask estimation model!")
 
-            _masks = output['estimates'].cpu()
+            _masks = (output['estimates'] / input_data['magnitude_spectrogram'].unsqueeze(-1)).squeeze(0)
+            _masks = _masks.permute(3, 1, 0, 2)
+            _masks = _masks.cpu().data.numpy()
+        
 
         self.assignments = _masks
         self.num_sources = self.assignments.shape[0]
         self.masks = []
-        for i in range(self.num_sources):
+        for i in range(self.assignments.shape[-1]):
             mask = self.assignments[i, :, :, :]
             mask = masks.SoftMask(mask)
             if self.mask_type == self.BINARY_MASK:
