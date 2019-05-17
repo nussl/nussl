@@ -1,6 +1,7 @@
 {
   "num_frequencies": 128,
   "num_mels": -1,
+  "num_channels": 1,
   "sample_rate": 8000,
   "in_channels": 1,
   "channels": [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],

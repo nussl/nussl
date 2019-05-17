@@ -5,6 +5,7 @@ def build_dpcl_config(options):
         if options['num_mels'] > 0
         else options['num_frequencies']
     )
+    options['num_features'] *= options['num_channels']
 
     return {
         'modules': {

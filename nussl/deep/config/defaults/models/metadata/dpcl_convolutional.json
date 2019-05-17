@@ -7,6 +7,10 @@
     "type": "int",
     "help": "Specifies the number of mel frequency steps for projection (-1 avoids projection but still performs clamping)"
   },
+  "num_channels": {
+    "type": "int",
+    "help":"Specify the number of audio channels for input representations"
+  },
   "sample_rate": {
     "type": "int",
     "help": "Audio sample rate in Hz"
