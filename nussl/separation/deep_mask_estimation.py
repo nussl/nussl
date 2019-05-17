@@ -26,6 +26,12 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
         use_librosa_stft=False,
         use_cuda=True,
     ):
+
+        super(DeepMaskEstimation, self).__init__(
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type
+        )
+
         self.device = torch.device(
             'cuda'
             if torch.cuda.is_available() and use_cuda
@@ -42,11 +48,6 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
 
         self.use_librosa_stft = use_librosa_stft
         self._compute_spectrograms()
-
-        super(DeepMaskEstimation, self).__init__(
-            input_audio_signal=input_audio_signal,
-            mask_type=mask_type
-        )
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(
