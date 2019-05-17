@@ -63,7 +63,7 @@ class MelProjection(nn.Module):
 
         if self.clamp:
             data = data.clamp(0.0, 1.0)
-        return data
+        return data.contiguous()
 
 
 class Embedding(nn.Module):
