@@ -116,7 +116,7 @@ class Embedding(nn.Module):
             data = data.view(
                 data.shape[0], 
                 data.shape[1], 
-                self.num_features,  
+                -1,  
                 self.num_channels, 
                 self.embedding_size
             )
