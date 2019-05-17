@@ -127,6 +127,8 @@ class Embedding(nn.Module):
             data = torch.tanh(data)
         elif 'relu' in self.activation:
             data = torch.relu(data)
+        elif 'softmax' in self.activation:
+            data = torch.softmax(data, dim=-1)
 
         if 'unit_norm' in self.activation:
             data = nn.functional.normalize(data, dim=-1, p=2)
