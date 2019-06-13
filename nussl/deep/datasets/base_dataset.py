@@ -24,10 +24,10 @@ class BaseDataset(Dataset):
         """
 
         self.folder = folder
-        self.files = self.get_files(self.folder)
-        self.cached_files = []
         self.use_librosa = options.pop('use_librosa_stft', True)
         self.options = options.copy()
+        self.files = self.get_files(self.folder)
+        self.cached_files = []
         self.targets = [
             'log_spectrogram',
             'magnitude_spectrogram',
@@ -356,7 +356,10 @@ class BaseDataset(Dataset):
         Returns:
             tuple of loaded audio w/ shape ? and sample rate
         """
-        audio_signal = AudioSignal(file_path, sample_rate=self.options['sample_rate'])
+        rate, audio = wavfile.read(file_path)
+        audio = audio.astype(np.float32, order='C') / 32768.0
+        audio_signal = AudioSignal(audio_data_array=audio, sample_rate=self.options['sample_rate'])
+        audio_signal.path_to_input_file = file_path
         audio_signal.stft_params.window_length = self.options['n_fft']
         audio_signal.stft_params.hop_length = self.options['hop_length']
         return audio_signal

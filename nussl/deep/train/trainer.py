@@ -1,7 +1,7 @@
 import torch
 from torch import nn
-from tqdm import tqdm
-import multiprocessing
+import tqdm
+from tqdm import trange
 from torch.utils.data import DataLoader
 import numpy as np
 from .. import networks
@@ -12,7 +12,6 @@ from typing import Optional
 from itertools import chain
 import sys
 import time
-tqdm.monitor_interval = 0
 
 try:
     from tensorboardX import SummaryWriter
@@ -35,7 +34,8 @@ class Trainer():
         validation_data=None,
         use_tensorboard=True,
         experiment=None,
-        cache_populated=False
+        cache_populated=False,
+        resume=False
     ):
         self.use_tensorboard = (
             use_tensorboard if SummaryWriter is not None else False
@@ -43,6 +43,7 @@ class Trainer():
         self.experiment = experiment
         self.prepare_directories(output_folder)
         self.model = self.build_model(model)
+        
         self.device = torch.device(
             'cpu'
             if options['device'] == 'cpu' or not torch.cuda.is_available()
@@ -67,9 +68,12 @@ class Trainer():
             self.model,
             self.options
         )
+
         self.module = self.model
+        if resume:
+            self.resume()
         if options['data_parallel'] and options['device'] == 'cuda':
-            self.model = nn.DataParallel(self.model)
+            self.model = nn.DataParallel(self.module)
             self.module = self.model.module
         self.model.train()
 
@@ -119,7 +123,7 @@ class Trainer():
             sampler=Samplers[
                 self.options['sample_strategy'].upper()
             ].value(dataset),
-            pin_memory=False,
+            pin_memory=True,
         )
 
     def create_optimizer_and_scheduler(self, model, options):
@@ -174,15 +178,20 @@ class Trainer():
             if key not in self.loss_keys and self.model.training:
                 data[key] = data[key].requires_grad_()
         return data
+    
+    def forward(self, data):
+        if self.model.training:
+            output = self.model(data)
+        else:
+            output = self.module(data)
+        return output
 
     def run_epoch(self, key):
         epoch_loss = 0
         num_batches = len(self.dataloaders[key])
-        progress_bar = tqdm(range(0, num_batches))
         for step, data in enumerate(self.dataloaders[key]):
             data = self.prepare_data(data)
-            output = self.model(data)
-
+            output = self.forward(data)
             loss = self.calculate_loss(output, data)
             loss['total_loss'] = sum(list(loss.values()))
             epoch_loss += loss['total_loss'].item()
@@ -191,8 +200,6 @@ class Trainer():
                 self.optimizer.zero_grad()
                 loss['total_loss'].backward()
                 self.optimizer.step()
-            progress_bar.update(1)
-            progress_bar.set_description(f"Loss: {loss['total_loss']:.4f}")
             step += 1
 
         return {'loss': epoch_loss / float(num_batches)}
@@ -221,7 +228,7 @@ class Trainer():
     def populate_cache(self):
         for key, dataloader in self.dataloaders.items():
             num_batches = len(dataloader)
-            progress_bar = tqdm(range(0, num_batches))
+            progress_bar = trange(num_batches)
             for i, data in enumerate(dataloader):
                 progress_bar.update(1)
                 progress_bar.set_description(f'Populating cache for {key}')
@@ -233,7 +240,7 @@ class Trainer():
             dataloader.dataset.switch_to_cache()
             
     def fit(self):
-        progress_bar = tqdm(range(self.num_epoch, self.options['num_epochs']))
+        self.progress_bar = trange(self.num_epoch, self.options['num_epochs'])
         lowest_validation_loss = np.inf
 
         if not self.cache_populated:
@@ -241,7 +248,7 @@ class Trainer():
             self.populate_cache()
         self.switch_to_cache()
 
-        for self.num_epoch in range(self.options['num_epochs']):
+        for self.num_epoch in self.progress_bar:
             epoch_loss = self.run_epoch('training')
             self.log_to_tensorboard(epoch_loss, self.num_epoch, 'epoch')
             validation_loss = self.validate('validation')
@@ -252,8 +259,8 @@ class Trainer():
                 else lowest_validation_loss
             )
 
-            progress_bar.update(1)
-            progress_bar.set_description(f'Loss: {epoch_loss["loss"]:.4f}')
+            self.progress_bar.update(1)
+            self.progress_bar.set_description(f'Loss: {epoch_loss["loss"]:.4f}')
 
 
     def validate(self, key) -> float:
@@ -276,6 +283,10 @@ class Trainer():
         self.log_to_tensorboard(validation_loss, self.num_epoch, 'epoch')
         self.model.train()
         self.scheduler.step(validation_loss['loss'])
+        if self.scheduler.in_cooldown:
+            self.resume(load_only_model=True, prefixes=('best'))
+            tqdm.write('Exceeded patience, adjusting learning rate.')
+            
         return validation_loss['loss']
 
     def save(self, is_best: bool, path: str = '') -> str:
@@ -326,15 +337,18 @@ class Trainer():
         self.module.save(model_path, {'metadata': metadata})
         return model_path
 
-    def resume(self, prefix='best'):
-        optimizer_path = os.path.join(self.checkpoint_folder, f'{prefix}.opt.pth')
-        model_path = os.path.join(self.checkpoint_folder, f'{prefix}.model.pth')
+    def resume(self, load_only_model=False, prefixes=('latest', 'best')):
+        for prefix in prefixes:
+            optimizer_path = os.path.join(self.checkpoint_folder, f'{prefix}.opt.pth')
+            model_path = os.path.join(self.checkpoint_folder, f'{prefix}.model.pth')
 
-        optimizer_state = torch.load(optimizer_path)
-
-        model_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
-        model = model_dict['model']
-        model.load_state_dict(model_dict['state_dict'])
-
-        self.model = self.load_model(model_path)
-        return
+            if os.path.exists(model_path) and os.path.exists(optimizer_path):
+                optimizer_state = torch.load(optimizer_path, map_location=lambda storage, loc: storage)
+                model_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
+                self.module.load_state_dict(model_dict['state_dict'])
+                if not load_only_model:
+                    self.optimizer.load_state_dict(optimizer_state['optimizer'])
+                    self.num_epoch = optimizer_state['num_epoch']
+            else:
+                model_path = None
+        return model_path

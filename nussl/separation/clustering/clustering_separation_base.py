@@ -59,13 +59,11 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             remove_reflection=True,
             use_librosa=self.use_librosa_stft
         )
-        self.log_spectrogram = librosa.amplitude_to_db(
-            np.abs(self.stft),
-            ref=np.max
-        )
+        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft))
 
         threshold = self.log_spectrogram
         threshold = (threshold > np.percentile(threshold, self.percentile)).astype(float)
+        self.sample_weight = self.project_data(np.abs(self.stft))
         self.threshold = self.project_data(threshold).astype(bool)
 
     def init_clusterer(self):
@@ -91,7 +89,9 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         raise NotImplementedError()
 
     def cluster_features(self, features, clusterer):
-        if self.clustering_type != 'spectral_clustering':
+        if self.clustering_type == 'kmeans':
+            clusterer.fit(features, sample_weight=self.sample_weight.flatten())
+        elif self.clustering_type != 'spectral_clustering':
             clusterer.fit(features[self.threshold.flatten()])
         else:
             clusterer.fit(features)
@@ -174,19 +174,26 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         mask = mask.reshape(-1) > 0
         _embedding = self.features[mask]
         output_transform = transform.fit_transform(_embedding)
-        return output_transform
+        return output_transform, transform
 
     def plot_features_1d(self, threshold, bins=150):
         import matplotlib.pyplot as plt
-        output_transform = self.project_embeddings(1, threshold=threshold)
+        output_transform, transform = self.project_embeddings(1, threshold=threshold)
         plt.hist(output_transform, bins=bins)
         plt.xlabel('PCA dim 1')
         plt.ylabel('Count')
-        plt.title('Embedding visualization (2D)')
+        plt.title('Embedding visualization (1D)')
+
+        if hasattr(self.clusterer, 'cluster_centers_'):
+            means = transform.transform(self.clusterer.cluster_centers_)
+            for i in range(means.shape[0]):
+                plt.axvline(means[i], color='r')
+
+
 
     def plot_features_2d(self, threshold):
         import matplotlib.pyplot as plt
-        output_transform = self.project_embeddings(2, threshold=threshold)
+        output_transform, transform = self.project_embeddings(2, threshold=threshold)
         xmin = output_transform[:, 0].min()
         xmax = output_transform[:, 0].max()
         ymin = output_transform[:, 1].min()
@@ -205,7 +212,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
 
     def plot_features_3d(self, threshold, ax):
         import pandas as pd
-        output_transform = self.project_embeddings(
+        output_transform, transform = self.project_embeddings(
             3,
             threshold=threshold / 4,
         )
@@ -328,11 +335,4 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
                    aspect='auto', cmap='magma')
         plt.xticks([])
         plt.ylabel('Frequency')
-        plt.title('Confidence')  
-
-        
-          
-
-
-
-    
+        plt.title('Confidence')

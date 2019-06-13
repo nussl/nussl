@@ -46,9 +46,9 @@ class KMeansConfidence(KMeans):
         self.no_iter = kwargs.pop('no_iter', False)
         super().__init__(**kwargs)
 
-    def fit(self, features):
+    def fit(self, features, sample_weight=None):
         if not self.no_iter:
-            super().fit(features)
+            super().fit(features, sample_weight=sample_weight)
         else:
             self.cluster_centers_ = self.init
 

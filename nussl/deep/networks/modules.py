@@ -109,17 +109,16 @@ class Embedding(nn.Module):
         """
         data = self.linear(data)
 
-        if len(data.shape) < 4:
             # Then this is the output of RecurrentStack and needs to be reshaped a bit.
             # Came in as [num_batch, sequence_length, num_features * embedding_size]
             # Goes out as [num_batch, sequence_length, num_features, embedding_size]
-            data = data.view(
-                data.shape[0], 
-                data.shape[1], 
-                -1,  
-                self.num_channels, 
-                self.embedding_size
-            )
+        data = data.view(
+            data.shape[0], 
+            data.shape[1], 
+            -1,  
+            self.num_channels, 
+            self.embedding_size
+        )
 
         if 'sigmoid' in self.activation:
             data = torch.sigmoid(data)
@@ -258,50 +257,19 @@ class DilatedConvolutionalStack(nn.Module):
         self.channels = channels
         self.in_channels = in_channels
         self.use_checkpointing = use_checkpointing
+        self.num_layers = len(channels)
+        self.layers = nn.ModuleList()
 
-        self.layers = [self._make_layer(i) for i in range(len(channels))]
-        
-    def _compute_padding(self, conv_layer, input_shape):
-        """Since PyTorch doesn't have a SAME padding functionality, this is a function
-        that replicates that. 
-
-        Padding formula:
-            o = [i + 2*p - k - (k-1)*(d-1)]/s + 1
-        Solving for p:
-            p = [s * (o - 1) - i + k + (k-1)*(d-1)] / 2
-        
-        Arguments:
-            input_shape {[type]} -- [description]
-        Returns:
-            A ConstantPad2D layer with 0s such that when passed through the convolution,
-            the input and output shapes stay identical.
-        """
-
-        dilation = conv_layer.dilation
-        stride = conv_layer.stride
-        padding = conv_layer.padding
-        kernel_size = conv_layer.kernel_size
-        input_shape = input_shape[-2:]
-        output_size = input_shape
-
-        computed_padding = []
-        for dim in range(len(kernel_size)):
-            _pad = (
-                stride[dim] * (output_size[dim] - 1) - input_shape[dim] + 
-                kernel_size[dim] + (kernel_size[dim] - 1) * (dilation[dim] - 1)
-            )
-            _pad = int(_pad / 2 + _pad % 2)
-            computed_padding += [_pad, _pad]
-        computed_padding = tuple(computed_padding)
-
-        return nn.ConstantPad2d(computed_padding, 0.0)
+        for i in range(len(channels)):
+            self.layers.append(self._make_layer(i))
 
     def _make_layer(self, i):
         convolution = nn.Conv2d(
             in_channels=self.channels[i-1] if i > 0 else self.in_channels,
             out_channels=self.channels[i],
             kernel_size=self.filter_shapes[i],
-            dilation=self.dilations[i]
+            dilation=self.dilations[i],
+            padding=self.dilations[i]
         )
 
         if i == len(self.channels) - 1:
@@ -317,19 +285,14 @@ class DilatedConvolutionalStack(nn.Module):
         if self.batch_norm:
             layer.add_module('batch_norm', batch_norm)
         layer.add_module('relu', relu)
-        self.add_module(f'layer{i}', layer)
         return layer
 
     def layer_function(self, data, layer, previous_layer, i):
         conv_layer = layer.conv if hasattr(layer, 'conv') else layer
-        padding = self._compute_padding(conv_layer, data.shape)
         if self.use_checkpointing:
-            data = checkpoint(
-                layer,
-                (padding(data))
-            )
+            data = checkpoint(layer, (data))
         else:
-            data = layer(padding(data))
+            data = layer(data)
         if self.residuals[i] and previous_layer is not None:
             if i > 0:
                 data += previous_layer
@@ -350,9 +313,9 @@ class DilatedConvolutionalStack(nn.Module):
         shape = data.shape
         data =  data.permute(0, 3, 1, 2)
         previous_layer = None
-        for i, layer in enumerate(self.layers):
+        for i in range(self.num_layers):
             data, previous_layer = self.layer_function(
-                data, layer, previous_layer, i
+                data, self.layers[i], previous_layer, i
             )
         data = data.permute(0, 2, 3, 1)
         return data

@@ -114,7 +114,9 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
     def __init__(
         self, 
         input_audio_signal,
-        model_path, 
+        model_path,
+        model=None,
+        metadata=None,
         use_cuda=True,
         **kwargs
     ):
@@ -124,18 +126,12 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             if torch.cuda.is_available() and use_cuda
             else 'cpu'
         )
-        input_audio_signal = deepcopy(input_audio_signal)
-
-        self.model, self.metadata = self.load_model(model_path)
-        self.original_length = input_audio_signal.signal_length
-        self.original_sample_rate = input_audio_signal.sample_rate
         
-        if input_audio_signal.sample_rate != self.metadata['sample_rate']:
-            input_audio_signal.resample(self.metadata['sample_rate'])
+        self.model = model
+        self.metadata = metadata
+        self.model, self.metadata = self.load_model(model_path)
 
-        input_audio_signal.stft_params.window_length = self.metadata['n_fft']
-        input_audio_signal.stft_params.n_fft_bins = self.metadata['n_fft']
-        input_audio_signal.stft_params.hop_length = self.metadata['hop_length']
+        input_audio_signal = self.set_audio_signal(input_audio_signal)
 
         sample_rate = self.metadata['sample_rate']
         num_mels = self.model.layers['mel_projection'].num_mels
@@ -147,11 +143,21 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             filter_bank = np.linalg.pinv(weights.T)
 
         self.filter_bank = filter_bank
+        super().__init__(input_audio_signal, **kwargs)
         
-        super().__init__(
-            input_audio_signal,
-            **kwargs
-        )
+    def set_audio_signal(self, new_audio_signal):
+        input_audio_signal = deepcopy(new_audio_signal)
+        if input_audio_signal.sample_rate != self.metadata['sample_rate']:
+            input_audio_signal.resample(self.metadata['sample_rate'])
+        input_audio_signal.stft_params.window_length = self.metadata['n_fft']
+        input_audio_signal.stft_params.n_fft_bins = self.metadata['n_fft']
+        input_audio_signal.stft_params.hop_length = self.metadata['hop_length']
+
+        self.audio_signal = input_audio_signal
+        self.original_length = input_audio_signal.signal_length
+        self.original_sample_rate = input_audio_signal.sample_rate
+        self.clusterer = None
+        return input_audio_signal
 
     def postprocess(self, assignments, confidence):
         if self.filter_bank is not None:
@@ -184,6 +190,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         return data
 
     def extract_features(self):
+        self._compute_spectrograms()
         input_data = self._preprocess()
         with torch.no_grad():
             output = self.model(input_data)
@@ -192,6 +199,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
                 raise ValueError("This model is not a deep clustering model!")
 
             embedding = output['embedding']
+            embedding = embedding.squeeze(0)
             embedding_size = embedding.shape[-1]
             embedding = embedding.permute(2, 1, 0, 3)
             embedding = embedding.reshape(-1, embedding_size).data.numpy()
@@ -202,6 +210,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         residual = (self.audio_signal - sum(signals)).audio_data * (1 / len(signals))
         for signal in signals:
             signal.audio_data += residual
-            signal.resample(self.original_sample_rate)
+            if signal.sample_rate != self.original_sample_rate:
+                signal.resample(self.original_sample_rate)
             signal.truncate_samples(self.original_length)
         return signals
