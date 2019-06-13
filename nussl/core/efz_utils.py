@@ -93,10 +93,10 @@ def print_available_audio_files():
     file_metadata = get_available_audio_files()
 
     print(f'{"File Name":40} {"Duration (sec)":15} {"Size":10} {"Description":50}')
-    for f in file_metadata:
+    for info in file_metadata:
         print(
-            f'{f["file_name"]:40} {f["file_length_seconds"]:<15.1f} {f["file_size"]:10}'
-            f' {f["file_description"]:50}'
+            f'{info["file_name"]:40} {info["file_length_seconds"]:15} {info["file_size"]:10}'
+            f' {info["file_description"]:50}'
         )
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_audio_file(), like so: \n'
@@ -181,10 +181,10 @@ def print_available_trained_models():
 
 
     print(f'{"File Name":40} {"For Class":15} {"Size":10} {"Description":50}')
-    for f in file_metadata:
+    for info in file_metadata:
         print(
-            f'{f["file_name"]:40} {f["for_class"]:<15.1f} {f["file_size"]:10}'
-            f' {f["file_description"]:50}'
+            f'{info["file_name"]:40} {info["for_class"]:15} {info["file_size"]:10}'
+            f' {info["file_description"]:50}'
         )
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_trained_model, like so: \n'
@@ -262,10 +262,10 @@ def print_available_benchmark_files():
     file_metadata = get_available_benchmark_files()
 
     print(f'{"File Name":40} {"For Class":15} {"Size":10} {"Description":50}')
-    for f in file_metadata:
+    for info in file_metadata:
         print(
-            f'{f["file_name"]:40} {f["for_class"]:<15.1f} {f["file_size"]:10}'
-            f' {f["file_description"]:50}'
+            f'{info["file_name"]:40} {info["for_class"]:15} {info["file_size"]:10}'
+            f' {info["file_description"]:50}'
         )
     print('To download one of these files insert the file name '
           'as the first parameter to nussl.download_benchmark_file, like so: \n'

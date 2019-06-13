@@ -7,18 +7,15 @@
     "python.linting.mypyEnabled": true,
     "python.linting.enabled": false,
     "python.linting.pydocstylePath": "pydocstyle",
-    "sync-rsync.exclude": [
-        ".vscode",
-        "data",
-        "popper",
-        "runs",
-        "__pycache__",
-        "*.pyc",
-        ".ipynb_checkpoints/",
-        "*.pth"
-    ],
-    "sync-rsync.remote": "cortex:/home/prem/research/waspaa19/nussl",
-    "sync-rsync.onSave": true,
-    "sync-rsync.delete": true,
-    "python.pythonPath": "/Users/prem/miniconda3/envs/nussl/bin/python"
+    "python.pythonPath": "/Users/prem/miniconda3/envs/nussl/bin/python",
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": ".*",
+                "shell": "/bin/bash",
+                "isAsync": true,
+                "cmd": "rsync -r ~/drive/research/thesis/nussl power:/home/pseetharaman && ssh -t -T power rsync -r /home/pseetharaman/nussl power:/home/pseetharaman/research/thesis/"
+            }
+        ]
+    }
 }
