@@ -283,9 +283,9 @@ class Trainer():
         self.log_to_tensorboard(validation_loss, self.num_epoch, 'epoch')
         self.model.train()
         self.scheduler.step(validation_loss['loss'])
-        if self.scheduler.in_cooldown:
-            self.resume(load_only_model=True, prefixes=('best'))
-            tqdm.write('Exceeded patience, adjusting learning rate.')
+        # if self.scheduler.in_cooldown:
+        #     self.resume(load_only_model=True, prefixes=('best'))
+        #     tqdm.write('Exceeded patience, adjusting learning rate.')
             
         return validation_loss['loss']
 
