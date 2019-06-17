@@ -29,12 +29,6 @@ class DeepClusteringLoss(nn.Module):
 
         assignments = weights.expand_as(assignments) * assignments
         embedding = weights.expand_as(embedding) * embedding
-        #norm = ((((weights) ** 2)).sum(dim=1) ** 2).sum()
-        
-
-        #norm = (((embedding_size ** 2) * (num_weights ** 2)) -
-        #       2 * (embedding_size * (num_weights ** 2)) + (
-        #            num_weights ** 2))
 
         vTv = ((embedding.transpose(2, 1) @ embedding) ** 2).sum()
         vTy = ((embedding.transpose(2, 1) @ assignments) ** 2).sum()

@@ -10,5 +10,6 @@
   "dropout": 0.3,
   "embedding_activations": ["tanh"],
   "projection_trainable": false,
-  "rnn_type": "lstm"
+  "rnn_type": "lstm",
+  "batch_norm": false
 }

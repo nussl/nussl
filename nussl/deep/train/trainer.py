@@ -1,7 +1,5 @@
 import torch
 from torch import nn
-import tqdm
-from tqdm import trange
 from torch.utils.data import DataLoader
 import numpy as np
 from .. import networks
@@ -12,6 +10,8 @@ from typing import Optional
 from itertools import chain
 import sys
 import time
+import time
+import logging
 
 try:
     from tensorboardX import SummaryWriter
@@ -189,11 +189,14 @@ class Trainer():
     def run_epoch(self, key):
         epoch_loss = 0
         num_batches = len(self.dataloaders[key])
+        logging.info(f"Starting {key} epoch")
         for step, data in enumerate(self.dataloaders[key]):
             data = self.prepare_data(data)
             output = self.forward(data)
             loss = self.calculate_loss(output, data)
             loss['total_loss'] = sum(list(loss.values()))
+            if step % 100 == 0:
+                logging.info(f"Step {step}/{num_batches}, loss: {loss['total_loss']}")
             epoch_loss += loss['total_loss'].item()
 
             if self.model.training:
@@ -228,10 +231,10 @@ class Trainer():
     def populate_cache(self):
         for key, dataloader in self.dataloaders.items():
             num_batches = len(dataloader)
-            progress_bar = trange(num_batches)
+            logging.info(f'Populating cache for {key} w/ {num_batches} batches')
             for i, data in enumerate(dataloader):
-                progress_bar.update(1)
-                progress_bar.set_description(f'Populating cache for {key}')
+                continue
+            logging.info(f'Done populating cache for {key}')
         self.cache_populated = True
 
 
@@ -240,7 +243,6 @@ class Trainer():
             dataloader.dataset.switch_to_cache()
             
     def fit(self):
-        self.progress_bar = trange(self.num_epoch, self.options['num_epochs'])
         lowest_validation_loss = np.inf
 
         if not self.cache_populated:
@@ -248,19 +250,33 @@ class Trainer():
             self.populate_cache()
         self.switch_to_cache()
 
-        for self.num_epoch in self.progress_bar:
+        logging.info(f"Training data for {self.options['num_epochs'] - self.num_epoch} epochs")
+        fit_start_time = time.time()
+
+        for self.num_epoch in range(self.num_epoch, self.options['num_epochs']):
+            start_time = time.time()
             epoch_loss = self.run_epoch('training')
             self.log_to_tensorboard(epoch_loss, self.num_epoch, 'epoch')
             validation_loss = self.validate('validation')
-            self.save(validation_loss < lowest_validation_loss)
+            self.save(validation_loss['loss'] < lowest_validation_loss)
             lowest_validation_loss = (
-                validation_loss 
-                if validation_loss < lowest_validation_loss
+                validation_loss['loss'] 
+                if validation_loss['loss'] < lowest_validation_loss
                 else lowest_validation_loss
             )
 
-            self.progress_bar.update(1)
-            self.progress_bar.set_description(f'Loss: {epoch_loss["loss"]:.4f}')
+            epoch_elapsed_time = time.time() - start_time
+            epoch_elapsed_time = time.strftime("%H:%M:%S", time.gmtime(epoch_elapsed_time))
+            full_elapsed_time = time.time() - fit_start_time
+            full_elapsed_time = time.strftime("%H:%M:%S", time.gmtime(full_elapsed_time))
+
+            logging.info(
+                f"Epoch summary: {self.num_epoch}\t"
+                f"Training loss: {epoch_loss['loss']}\t"
+                f"Validation loss: {validation_loss['loss']}\t"
+                f"Epoch took: {epoch_elapsed_time}\t"
+                f"Time since start: {full_elapsed_time}"
+            )
 
 
     def validate(self, key) -> float:
@@ -283,11 +299,12 @@ class Trainer():
         self.log_to_tensorboard(validation_loss, self.num_epoch, 'epoch')
         self.model.train()
         self.scheduler.step(validation_loss['loss'])
-        # if self.scheduler.in_cooldown:
+        if self.scheduler.in_cooldown:
+            logging.info('Exceeded patience, adjusting learning rate')
         #     self.resume(load_only_model=True, prefixes=('best'))
-        #     tqdm.write('Exceeded patience, adjusting learning rate.')
+        
             
-        return validation_loss['loss']
+        return validation_loss
 
     def save(self, is_best: bool, path: str = '') -> str:
         """Saves the model being trained with either `latest` or `best` prefix

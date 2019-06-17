@@ -5,9 +5,24 @@ import numpy as np
 from .clustering import GMM
 from torch.utils.checkpoint import checkpoint
 
+class BatchNorm(nn.Module):
+    def __init__(self, use_batch_norm=True):
+        super(BatchNorm, self).__init__()
+        self.use_batch_norm = use_batch_norm
+        if self.use_batch_norm:
+            self.add_module('batch_norm', nn.BatchNorm2d(1))
+    
+    def forward(self, data):
+        if self.use_batch_norm:
+            shape = data.shape
+            data = data.view(shape[0], 1, shape[1], -1)
+            data = self.batch_norm(data)
+            data = data.view(shape)
+        return data
 
 class MelProjection(nn.Module):
-    def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward', clamp=False, trainable=False):
+    def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward', 
+                clamp=False, trainable=False):
         """
         MelProjection takes as input a time-frequency representation (e.g. a spectrogram, or a mask) and outputs a mel
         project that can be learned or fixed. The initialization uses librosa to get a mel filterbank. Direction

@@ -12,5 +12,6 @@
   "source_labels": [],
   "ignore_sources": [],
   "format": "rnn",
-  "sample_rate": 8000
+  "sample_rate": 8000,
+  "excerpt_selection_strategy": "single_random"
 }

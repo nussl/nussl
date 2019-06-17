@@ -13,5 +13,6 @@
   "mask_activation": ["softmax"],
   "projection_trainable": false,
   "rnn_type": "lstm",
-  "trainable": false
+  "trainable": false,
+  "batch_norm": false
 }

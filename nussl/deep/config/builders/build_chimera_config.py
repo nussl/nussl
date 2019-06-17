@@ -12,6 +12,12 @@ def build_chimera_config(options):
             'log_spectrogram': {
                 'input_shape': (-1, -1, options['num_frequencies'])
             },
+            'batch_norm': {
+                'class': 'BatchNorm',
+                'args': {
+                    'use_batch_norm': options['batch_norm']
+                }
+            },
             'magnitude_spectrogram': {
                 'input_shape': (-1, -1, options['num_frequencies'])
             },
@@ -81,7 +87,8 @@ def build_chimera_config(options):
         },
         'connections': [
             ('mel_projection', ['log_spectrogram']),
-            ('recurrent_stack', ['mel_projection']),
+            ('batch_norm', ['mel_projection']),
+            ('recurrent_stack', ['batch_norm']),
             ('embedding', ['recurrent_stack']),
             ('masks', ['recurrent_stack']),
             ('inv_projection', ['masks']),

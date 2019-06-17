@@ -8,6 +8,8 @@ import random
 from typing import Dict, Any, Optional, Tuple, List
 from ...core import AudioSignal
 from scipy.io import wavfile
+import logging
+import copy
 
 class BaseDataset(Dataset):
     def __init__(self, folder: str, options: Dict[str, Any]):
@@ -24,8 +26,10 @@ class BaseDataset(Dataset):
         """
 
         self.folder = folder
-        self.use_librosa = options.pop('use_librosa_stft', True)
-        self.options = options.copy()
+        self.options = copy.deepcopy(options)
+        self.use_librosa = self.options.pop('use_librosa_stft', True)
+        self.excerpt_selection_strategy = self.options.pop('excerpt_selection_strategy', 'single_random')
+
         self.files = self.get_files(self.folder)
         self.cached_files = []
         self.targets = [
@@ -51,9 +55,10 @@ class BaseDataset(Dataset):
                 os.path.expanduser(self.options['cache']),
                 '_'.join(self.folder.split('/')),
                 self.options['output_type'],
-                '_'.join(self.options['weight_type'])
+                '_'.join(self.options['weight_type']),
+                self.excerpt_selection_strategy
             )
-            print(f'Caching to: {self.cache}')
+            logging.info(f'Caching to: {self.cache}')
             os.makedirs(self.cache, exist_ok=True)
 
 
@@ -95,7 +100,7 @@ class BaseDataset(Dataset):
         return self._get_item_helper(self.files[i], self.cache, i)
 
     def clear_cache(self):
-        print(f'Clearing cache: {self.cache}')
+        logging.info(f'Clearing cache: {self.cache}')
         shutil.rmtree(self.cache, ignore_errors=True)
     
     def populate_cache(self, filename, i):
@@ -113,6 +118,7 @@ class BaseDataset(Dataset):
     def switch_to_cache(self):
         self.original_files = self.files
         self.files = [x for x in os.listdir(self.cache) if '.part' in x]
+        random.shuffle(self.files)
         self.cache_populated = True
 
     def _get_item_helper(
@@ -145,7 +151,8 @@ class BaseDataset(Dataset):
             else:
                 return self.populate_cache(filename, i)
         else:
-            return self._generate_example(filename)[0]
+            output = self._generate_example(filename)[0]
+            return output
 
     def _generate_example(self, filename: str) -> List[Dict[str, Any]]:
         """Generates one example (training|validation) from given filename
@@ -169,7 +176,6 @@ class BaseDataset(Dataset):
             output,
             self.options['length']
         )
-        
         return output
 
     def write_to_cache(self, data_dict, filename):
@@ -182,8 +188,6 @@ class BaseDataset(Dataset):
         return data
 
     def whiten(self, data):
-        data -= data.mean()
-        data /= (data.std() + 1e-7)
         return data
 
     def construct_input_output(self, mix, sources):
@@ -230,19 +234,20 @@ class BaseDataset(Dataset):
     def get_target_length_and_transpose(self, data_dict, target_length):
         length = data_dict['log_spectrogram'].shape[1]
 
-        # Break up data into sequences of target length.  Return a list.
-        offsets = np.arange(0, length,  target_length)
-        offsets[-1] = max(0, length - target_length)
-
-        # Select offset randomly from where sources are balanced, return that.
-        if 'assignments' in data_dict:
-            _balance = data_dict['assignments'].mean(axis=-2).mean(axis=0).prod(axis=-1)
-            indices = np.argwhere(_balance >= np.percentile(_balance, 90))[:, 0]
-            indices[indices > indices[-1] - target_length] = max(0, indices[-1] - target_length)
-            indices = np.unique(indices)
-            offsets = list(np.random.choice(indices, 1))
-        else:
-            offsets = [np.random.randint(0, max(1, length - target_length))]
+        if self.excerpt_selection_strategy == 'all':
+            # Break up data into sequences of target length.  Return a list.
+            offsets = np.arange(0, length,  target_length)
+            offsets[-1] = max(0, length - target_length)
+        elif self.excerpt_selection_strategy == 'single_random':
+            # Select offset randomly from where sources are balanced, return that.
+            if 'assignments' in data_dict:
+                _balance = data_dict['assignments'].mean(axis=-2).mean(axis=0).prod(axis=-1)
+                indices = np.argwhere(_balance >= np.percentile(_balance, 90))[:, 0]
+                indices[indices > indices[-1] - target_length] = max(0, indices[-1] - target_length)
+                indices = np.unique(indices)
+                offsets = list(np.random.choice(indices, 1))
+            else:
+                offsets = [np.random.randint(0, max(1, length - target_length))]
         output_data_dicts = []
     
         for i, target in enumerate(self.targets):
@@ -308,7 +313,7 @@ class BaseDataset(Dataset):
             )
         if ('log' in weight_type):
             weights = np.log10(weights + 1)
-        return weights
+        return np.sqrt(weights)
 
     @staticmethod
     def class_weights(assignments):

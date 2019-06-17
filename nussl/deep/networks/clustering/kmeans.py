@@ -55,7 +55,7 @@ class KMeans(nn.Module):
     def forward(self, data, parameters=None):
         if parameters is None:
             means = None
-        if parameters['means'] is None:
+        elif parameters['means'] is None:
             means = self.initialize_means(data)
         if means.shape[0] != data.shape[0]:
             means = means.expand(data.shape[0], -1, -1)

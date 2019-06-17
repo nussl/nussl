@@ -12,6 +12,12 @@ def build_dpcl_config(options):
             'log_spectrogram': {
                 'input_shape': (-1, -1, options['num_frequencies'])
             },
+            'batch_norm': {
+                'class': 'BatchNorm',
+                'args': {
+                    'use_batch_norm': options['batch_norm']
+                }
+            },
             'mel_projection': {
                 'class': 'MelProjection',
                 'args': {
@@ -48,7 +54,8 @@ def build_dpcl_config(options):
         },
         'connections': [
             ('mel_projection', ['log_spectrogram']),
-            ('recurrent_stack', ['mel_projection']),
+            ('batch_norm', ['mel_projection']),
+            ('recurrent_stack', ['batch_norm']),
             ('embedding', ['recurrent_stack'])
         ],
         'output': ['embedding']

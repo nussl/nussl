@@ -60,7 +60,7 @@ class KMeansConfidence(KMeans):
         """
         distances = super().transform(features)
         confidence = softmax(-distances, axis=-1)
-        posteriors = softmax(-10.0 * distances, axis=-1)
+        posteriors = softmax(-5.0 * distances, axis=-1)
         confidence = (2 * np.max(confidence, axis=-1) - 1) ** self.alpha
         return confidence, posteriors
 

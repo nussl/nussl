@@ -14,7 +14,7 @@
                 "match": ".*",
                 "shell": "/bin/bash",
                 "isAsync": true,
-                "cmd": "rsync -r ~/drive/research/thesis/nussl power:/home/pseetharaman && ssh -t -T power rsync -r /home/pseetharaman/nussl power:/home/pseetharaman/research/thesis/"
+                "cmd": "rsync -r ~/drive/research/thesis/nussl power:/exports/home/pseetharaman && ssh -t -T power rsync -r /exports/home/pseetharaman/nussl power:/home/pseetharaman/research/thesis/"
             }
         ]
     }

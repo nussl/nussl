@@ -1,4 +1,4 @@
-def build_mask_inference_config(options=None):
+def build_mask_inference_config(options):
     options['num_frequencies'] += 1
     options['num_features'] = (
         options['num_mels']
@@ -11,6 +11,12 @@ def build_mask_inference_config(options=None):
         'modules': {
             'log_spectrogram': {
                 'input_shape': (-1, -1, options['num_frequencies'])
+            },
+            'batch_norm': {
+                'class': 'BatchNorm',
+                'args': {
+                    'use_batch_norm': options['batch_norm']
+                }
             },
             'magnitude_spectrogram': {
                 'input_shape': (-1, -1, options['num_frequencies'])
@@ -68,7 +74,8 @@ def build_mask_inference_config(options=None):
         },
         'connections': [
             ('mel_projection', ['log_spectrogram']),
-            ('recurrent_stack', ['mel_projection']),
+            ('batch_norm', ['mel_projection']),
+            ('recurrent_stack', ['batch_norm']),
             ('masks', ['recurrent_stack']),
             ('inv_projection', ['masks']),
             ('estimates', ['inv_projection', 'magnitude_spectrogram'])
