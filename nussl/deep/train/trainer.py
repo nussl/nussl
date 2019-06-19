@@ -35,7 +35,6 @@ class Trainer():
         use_tensorboard=True,
         experiment=None,
         cache_populated=False,
-        resume=False
     ):
         self.use_tensorboard = (
             use_tensorboard if SummaryWriter is not None else False
@@ -61,7 +60,8 @@ class Trainer():
             in options['loss_function']
         }
         self.loss_keys = sorted(list(self.loss_dictionary))
-        self.options = options
+        self.options = options.copy()
+        self.model_tag = self.options.pop('model_tag', None)
         self.num_epoch = 0
 
         self.optimizer, self.scheduler = self.create_optimizer_and_scheduler(
@@ -70,6 +70,7 @@ class Trainer():
         )
 
         self.module = self.model
+        resume = self.options.pop('resume', False)
         if resume:
             self.resume()
         if options['data_parallel'] and options['device'] == 'cuda':
@@ -324,10 +325,9 @@ class Trainer():
             os.makedirs(path, exist_ok=True)
 
         prefix = 'best' if is_best else 'latest'
-        optimizer_path = os.path.join(
-            self.checkpoint_folder,
-            f'{prefix}.opt.pth'
-        )
+        if self.model_tag is not None:
+            prefix = f'{prefix}.{self.model_tag}'
+        optimizer_path = os.path.join(self.checkpoint_folder, f'{prefix}.opt.pth')
         model_path = os.path.join(
              path if path else self.checkpoint_folder,
             f'{prefix}.model.pth'
@@ -354,10 +354,11 @@ class Trainer():
         self.module.save(model_path, {'metadata': metadata})
         return model_path
 
-    def resume(self, load_only_model=False, prefixes=('latest', 'best')):
+    def resume(self, load_only_model=False, prefixes=('best', 'latest')):
         for prefix in prefixes:
             optimizer_path = os.path.join(self.checkpoint_folder, f'{prefix}.opt.pth')
             model_path = os.path.join(self.checkpoint_folder, f'{prefix}.model.pth')
+            logging.info(f'Looking for {model_path}')
 
             if os.path.exists(model_path) and os.path.exists(optimizer_path):
                 optimizer_state = torch.load(optimizer_path, map_location=lambda storage, loc: storage)
@@ -366,6 +367,9 @@ class Trainer():
                 if not load_only_model:
                     self.optimizer.load_state_dict(optimizer_state['optimizer'])
                     self.num_epoch = optimizer_state['num_epoch']
+                logging.info(f'Resuming from {model_path}')
+                return model_path
             else:
                 model_path = None
-        return model_path
+        logging.info('No model found! Training a new model from scratch.')
+        return None
