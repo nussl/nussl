@@ -36,12 +36,16 @@ class Trainer():
         experiment=None,
         cache_populated=False,
     ):
+        self.options = options.copy()
         self.use_tensorboard = (
             use_tensorboard if SummaryWriter is not None else False
         )
         self.experiment = experiment
         self.prepare_directories(output_folder)
         self.model = self.build_model(model)
+
+        freeze_layers = self.options.pop('freeze_layers', [])
+        self.freeze_layers(freeze_layers)
         
         self.device = torch.device(
             'cpu'
@@ -60,7 +64,7 @@ class Trainer():
             in options['loss_function']
         }
         self.loss_keys = sorted(list(self.loss_dictionary))
-        self.options = options.copy()
+        
         self.model_tag = self.options.pop('model_tag', None)
         self.num_epoch = 0
 
@@ -71,8 +75,10 @@ class Trainer():
 
         self.module = self.model
         resume = self.options.pop('resume', False)
+        resume_location = self.options.pop('resume_location', None)
+        load_only_model = self.options.pop('load_only_model', True)
         if resume:
-            self.resume()
+            self.resume(resume_location, load_only_model=load_only_model)
         if options['data_parallel'] and options['device'] == 'cuda':
             self.model = nn.DataParallel(self.module)
             self.module = self.model.module
@@ -94,6 +100,12 @@ class Trainer():
             if (type(model) is str and '.json' in model) or type(model) is dict
             else model
         )
+
+    def freeze_layers(self, freeze_layers):
+        for name, parameter in self.model.named_parameters():
+            if name in freeze_layers:
+                logging.info(f'Freezing {name} layer in model.')
+                parameter.requires_grad = False
 
     def prepare_directories(self, output_folder):
         self.output_folder = output_folder
@@ -292,7 +304,7 @@ class Trainer():
             else the loss over the given validation data
         """
         if key not in self.dataloaders:
-            return np.inf
+            return {'loss': np.inf}
 
         self.model.eval()
         with torch.no_grad():
@@ -354,10 +366,14 @@ class Trainer():
         self.module.save(model_path, {'metadata': metadata})
         return model_path
 
-    def resume(self, load_only_model=False, prefixes=('best', 'latest')):
+    def resume(self, resume_location, load_only_model=True, prefixes=('best', 'latest')):
         for prefix in prefixes:
-            optimizer_path = os.path.join(self.checkpoint_folder, f'{prefix}.opt.pth')
-            model_path = os.path.join(self.checkpoint_folder, f'{prefix}.model.pth')
+            checkpoint_folder = self.checkpoint_folder
+            if resume_location is not None:
+                checkpoint_folder = resume_location
+            
+            optimizer_path = os.path.join(checkpoint_folder, f'{prefix}.opt.pth')
+            model_path = os.path.join(checkpoint_folder, f'{prefix}.model.pth')
             logging.info(f'Looking for {model_path}')
 
             if os.path.exists(model_path) and os.path.exists(optimizer_path):
@@ -372,4 +388,4 @@ class Trainer():
             else:
                 model_path = None
         logging.info('No model found! Training a new model from scratch.')
-        return None
+        return model_path

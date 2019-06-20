@@ -51,7 +51,6 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.clustering_type = clustering_type
         self.clusterer = None
         self.percentile = percentile
-        self._compute_spectrograms()
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(
@@ -110,6 +109,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         Returns:
 
         """
+        self._compute_spectrograms()
         if self.clusterer is None:
             self.clusterer = self.init_clusterer()
         self.features = self.extract_features()
@@ -157,6 +157,14 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             self.sources.append(self.apply_mask(mask))
 
         return self.sources
+
+    def set_audio_signal(self, new_audio_signal):
+        input_audio_signal = deepcopy(new_audio_signal)
+        self.audio_signal = input_audio_signal
+        self.original_length = input_audio_signal.signal_length
+        self.original_sample_rate = input_audio_signal.sample_rate
+        self.clusterer = None
+        return input_audio_signal
 
     def project_embeddings(self, num_dimensions, threshold=-80):
         """
@@ -330,9 +338,13 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             ))
         plt.legend(handles=_legend)
 
+        confidence = np.max(self.confidence, axis=-1)
+        if confidence.shape == silence_mask.shape:
+            confidence *= silence_mask
+
         plt.subplot(grid[1*spacing:spacing + spacing, left:])
-        plt.imshow(20*np.log10(np.max(self.confidence, axis=-1) + 1e-4), origin='lower',
-                   aspect='auto', cmap='magma')
+        plt.imshow(confidence, origin='lower',
+                   aspect='auto', cmap='magma', vmin=0.0, vmax=1.0)
         plt.xticks([])
         plt.ylabel('Frequency')
         plt.title('Confidence')

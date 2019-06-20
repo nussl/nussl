@@ -27,7 +27,8 @@ class BaseDataset(Dataset):
 
         self.folder = folder
         self.options = copy.deepcopy(options)
-        self.use_librosa = self.options.pop('use_librosa_stft', True)
+        self.use_librosa = self.options.pop('use_librosa_stft', False)
+        self.dataset_tag = self.options.pop('dataset_tag', 'default')
         self.excerpt_selection_strategy = self.options.pop('excerpt_selection_strategy', 'single_random')
 
         self.files = self.get_files(self.folder)
@@ -56,7 +57,8 @@ class BaseDataset(Dataset):
                 '_'.join(self.folder.split('/')),
                 self.options['output_type'],
                 '_'.join(self.options['weight_type']),
-                self.excerpt_selection_strategy
+                self.excerpt_selection_strategy,
+                self.dataset_tag
             )
             logging.info(f'Caching to: {self.cache}')
             os.makedirs(self.cache, exist_ok=True)

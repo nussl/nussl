@@ -190,7 +190,6 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         return data
 
     def extract_features(self):
-        self._compute_spectrograms()
         input_data = self._preprocess()
         with torch.no_grad():
             output = self.model(input_data)
