@@ -29,7 +29,7 @@ class BaseDataset(Dataset):
         self.options = copy.deepcopy(options)
         self.use_librosa = self.options.pop('use_librosa_stft', False)
         self.dataset_tag = self.options.pop('dataset_tag', 'default')
-        self.excerpt_selection_strategy = self.options.pop('excerpt_selection_strategy', 'single_random')
+        self.current_length = self.options.pop('min_length', self.options['length'])
 
         self.files = self.get_files(self.folder)
         self.cached_files = []
@@ -57,7 +57,6 @@ class BaseDataset(Dataset):
                 '_'.join(self.folder.split('/')),
                 self.options['output_type'],
                 '_'.join(self.options['weight_type']),
-                self.excerpt_selection_strategy,
                 self.dataset_tag
             )
             logging.info(f'Caching to: {self.cache}')
@@ -108,18 +107,17 @@ class BaseDataset(Dataset):
     def populate_cache(self, filename, i):
         output = self._generate_example(filename)
         if self.data_keys_for_training:
-            output = [
-                {k: o[k] for k in o if k in self.data_keys_for_training}
-                for o in output
-            ]
-        for j, o in enumerate(output):
-            _filepart = f'{i:08d}.pth.part{j}'
-            self.write_to_cache(o, _filepart)
-        return output[0]
+            output = {
+                k: output[k] for k in output 
+                if k in self.data_keys_for_training
+            }
+        _filename = f'{filename}.cache'
+        self.write_to_cache(output, _filename)
+        return self.get_target_length(output, self.current_length)
 
     def switch_to_cache(self):
         self.original_files = self.files
-        self.files = [x for x in os.listdir(self.cache) if '.part' in x]
+        self.files = [x for x in os.listdir(self.cache) if '.cache' in x]
         random.shuffle(self.files)
         self.cache_populated = True
 
@@ -153,8 +151,8 @@ class BaseDataset(Dataset):
             else:
                 return self.populate_cache(filename, i)
         else:
-            output = self._generate_example(filename)[0]
-            return output
+            output = self._generate_example(filename)
+            return self.get_target_length(output, self.current_length)
 
     def _generate_example(self, filename: str) -> List[Dict[str, Any]]:
         """Generates one example (training|validation) from given filename
@@ -174,7 +172,7 @@ class BaseDataset(Dataset):
         )
         output['log_spectrogram'] = self.whiten(output['log_spectrogram'])
         output['classes'] = classes
-        output = self.get_target_length_and_transpose(
+        output = self.transpose_pad_and_filter(
             output,
             self.options['length']
         )
@@ -187,7 +185,7 @@ class BaseDataset(Dataset):
     def load_from_cache(self, filename: str):
         with open(os.path.join(self.cache, filename), 'rb') as f:
             data = pickle.load(f)
-        return data
+        return self.get_target_length(data, self.current_length)
 
     def whiten(self, data):
         return data
@@ -216,9 +214,7 @@ class BaseDataset(Dataset):
             source_magnitudes.append(source_magnitude)
 
         source_magnitudes = np.stack(source_magnitudes, axis=-1)
-
         shape = source_magnitudes.shape
-
         assignments = (
             source_magnitudes == np.amax(source_magnitudes, axis=-1, keepdims=True)
         ).astype(float)
@@ -231,49 +227,46 @@ class BaseDataset(Dataset):
         }
 
         return output
-
-
-    def get_target_length_and_transpose(self, data_dict, target_length):
+        
+    def transpose_pad_and_filter(self, data_dict, max_length):
         length = data_dict['log_spectrogram'].shape[1]
-
-        if self.excerpt_selection_strategy == 'all':
-            # Break up data into sequences of target length.  Return a list.
-            offsets = np.arange(0, length,  target_length)
-            offsets[-1] = max(0, length - target_length)
-        elif self.excerpt_selection_strategy == 'single_random':
-            # Select offset randomly from where sources are balanced, return that.
-            if 'assignments' in data_dict:
-                _balance = data_dict['assignments'].mean(axis=-2).mean(axis=0).prod(axis=-1)
-                indices = np.argwhere(_balance >= np.percentile(_balance, 90))[:, 0]
-                indices[indices > indices[-1] - target_length] = max(0, indices[-1] - target_length)
-                indices = np.unique(indices)
-                offsets = list(np.random.choice(indices, 1))
-            else:
-                offsets = [np.random.randint(0, max(1, length - target_length))]
-        output_data_dicts = []
     
         for i, target in enumerate(self.targets):
             data = data_dict[target]
-            pad_length = max(target_length - length, 0)
+            pad_length = max(max_length - length, 0)
             pad_tuple = [(0, 0) for k in range(len(data.shape))]
             pad_tuple[1] = (0, pad_length)
             data_dict[target] = np.pad(data, pad_tuple, mode='constant')
 
-        for offset in offsets:
-            _data_dict = data_dict.copy()
-            for target in self.targets:
-                if self.data_keys_for_training and target not in self.data_keys_for_training:
-                    _data_dict.pop(target)
-                else:
-                    _data_dict[target] = _data_dict[target][
-                        :,
-                        offset:offset + target_length,
-                        :self.options['num_channels']
-                    ]
-                    _data_dict[target] = np.swapaxes(_data_dict[target], 0, 1)
-            output_data_dicts.append(_data_dict)
+        for target in self.targets:
+            if self.data_keys_for_training and target not in self.data_keys_for_training:
+                data_dict.pop(target)
+            else:
+                data_dict[target] = np.swapaxes(data_dict[target], 0, 1)
+        
+        return data_dict
+    
+    def set_current_length(self, current_length):
+        if current_length > self.options['length']:
+            logging.warning(
+                f"current_length={current_length} exceeds original "
+                f"set max length {self.options['length']}. "
+                f"Setting current_length to {self.options['length']}")
+            current_length = self.options['length']
+        self.current_length = current_length
 
-        return output_data_dicts
+    def get_target_length(self, data_dict, target_length):
+        length = data_dict['log_spectrogram'].shape[0]
+        offset = np.random.randint(0, max(1, length - target_length))
+        
+        for target in data_dict:
+            if target != 'classes':
+                data_dict[target] = data_dict[target][
+                    offset:offset + target_length,
+                    :,
+                    :self.options['num_channels']
+                ]
+        return data_dict
 
     def transform(self, audio_signal):
         """Uses nussl STFT to transform.

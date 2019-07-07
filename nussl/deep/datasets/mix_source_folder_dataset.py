@@ -22,8 +22,9 @@ class MixSourceFolder(BaseDataset):
         if not self.options['source_labels']:
             self.options['source_labels'] = self.source_folders
 
-        for i in range(len(self.options['group_sources'])):
-            self.options['source_labels'].append(f'group{i}')
+        for group in self.options['group_sources']:
+            group_name = '+'.join(group)
+            self.options['source_labels'].append(group_name)
 
         self.num_sources = len(self.source_folders)
         if os.path.exists(os.path.join(folder, 'mix')):
@@ -60,12 +61,13 @@ class MixSourceFolder(BaseDataset):
             for label in group:
                 combined.append(source_dict[label])
                 source_dict.pop(label)
-            source_dict[f'group{i}'] = sum(combined)
+            group_name = '+'.join(group)
+            source_dict[group_name] = sum(combined)
 
         sources = []
         one_hots = []
 
-        for i, label in enumerate(self.source_folders):
+        for i, label in enumerate(self.options['source_labels']):
             if label in source_dict:
                 sources.append(source_dict[label])
                 one_hot = np.zeros(len(classes))

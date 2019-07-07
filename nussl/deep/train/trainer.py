@@ -209,7 +209,7 @@ class Trainer():
             loss = self.calculate_loss(output, data)
             loss['total_loss'] = sum(list(loss.values()))
             if step % 100 == 0:
-                logging.info(f"Step {step}/{num_batches}, loss: {loss['total_loss']}")
+                logging.info(f"Step {step}/{num_batches}, loss: {epoch_loss/(step + 1)}")
             epoch_loss += loss['total_loss'].item()
 
             if self.model.training:
@@ -219,6 +219,24 @@ class Trainer():
             step += 1
 
         return {'loss': epoch_loss / float(num_batches)}
+
+    def before_epoch(self):
+        """
+        Do whatever needs to be done before each epoch (e.g. lengthen sequences).
+        Can use this to implement curriculum learning.
+        """
+        if self.options['curriculum_learning']:
+            settings = self.options['curriculum_learning']
+            for setting in settings:
+                if setting['num_epoch'] == self.num_epoch:
+                    logging.info(
+                        f"Curriculum learning - running @ epoch: {setting['num_epoch']}, "
+                        f"command: {setting['command']}, "
+                        f"args: {setting['args']}"
+                    )
+                    if setting['command'] == 'set_current_length':
+                        for key, dataloader in self.dataloaders.items():
+                            dataloader.dataset.set_current_length(*setting['args'])
 
     def log_to_tensorboard(self, data, step, scope):
         if self.use_tensorboard:
@@ -246,6 +264,8 @@ class Trainer():
             num_batches = len(dataloader)
             logging.info(f'Populating cache for {key} w/ {num_batches} batches')
             for i, data in enumerate(dataloader):
+                if i % 100 == 0:
+                    logging.info(f'{i}/{num_batches} batches completed')
                 continue
             logging.info(f'Done populating cache for {key}')
         self.cache_populated = True
@@ -267,6 +287,7 @@ class Trainer():
         fit_start_time = time.time()
 
         for self.num_epoch in range(self.num_epoch, self.options['num_epochs']):
+            self.before_epoch()
             start_time = time.time()
             epoch_loss = self.run_epoch('training')
             self.log_to_tensorboard(epoch_loss, self.num_epoch, 'epoch')
@@ -291,7 +312,6 @@ class Trainer():
                 f"Time since start: {full_elapsed_time}"
             )
 
-
     def validate(self, key) -> float:
         """Calculate loss on validation set
 
@@ -312,10 +332,8 @@ class Trainer():
         self.log_to_tensorboard(validation_loss, self.num_epoch, 'epoch')
         self.model.train()
         self.scheduler.step(validation_loss['loss'])
-        if self.scheduler.in_cooldown:
-            logging.info('Exceeded patience, adjusting learning rate')
-        #     self.resume(load_only_model=True, prefixes=('best'))
-        
+        if self.scheduler.num_bad_epochs + 1 == self.options['patience']:
+            logging.info(f'Exceeded patience at epoch {self.num_epoch} - adjusting learning rate')   
             
         return validation_loss
 

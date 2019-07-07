@@ -127,7 +127,7 @@ class BinaryMask(mask_base.MaskBase):
         return BinaryMask(np.logical_not(self.mask))
 
     @staticmethod
-    def mask_to_binary(mask_, threshold):
+    def mask_to_binary(mask_, threshold=None):
         """
         Makes a binary mask from a soft mask with a True/False threshold.
         

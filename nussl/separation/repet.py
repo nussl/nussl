@@ -138,7 +138,6 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
         self._compute_spectrograms()
         self.repeating_period = self._calculate_repeating_period()
-
         # separate the mixture background by masking
         background_stft = []
         background_mask = []
@@ -224,6 +223,7 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
         return self.repeating_period
 
+
     @staticmethod
     def compute_beat_spectrum(power_spectrogram):
         """ Computes the beat spectrum averages (over freq's) the autocorrelation matrix of a one-sided spectrogram.
@@ -248,6 +248,10 @@ class Repet(mask_separation_base.MaskSeparationBase):
 
         # row-wise autocorrelation according to the Wiener-Khinchin theorem
         power_spectrogram = np.vstack([power_spectrogram, np.zeros_like(power_spectrogram)])
+
+        nearest_power_of_two = 2 ** np.ceil(np.log(power_spectrogram.shape[0]) / np.log(2))
+        pad_amount = int(nearest_power_of_two - power_spectrogram.shape[0])
+        power_spectrogram = np.pad(power_spectrogram, ((0, pad_amount), (0, 0)), 'constant')
         fft_power_spec = scifft.fft(power_spectrogram, axis=0)
         abs_fft = np.abs(fft_power_spec) ** 2
         autocorrelation_rows = np.real(scifft.ifft(abs_fft, axis=0)[:freq_bins, :])  # ifft over columns

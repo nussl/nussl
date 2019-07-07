@@ -165,7 +165,6 @@ class FT2D(mask_separation_base.MaskSeparationBase):
              ::
         """
         sources = []
-        residual = copy.deepcopy(self.audio_signal)
         for mask in self.result_masks:
             source = self.audio_signal.apply_mask(mask)
             source.istft(
@@ -173,6 +172,4 @@ class FT2D(mask_separation_base.MaskSeparationBase):
                 truncate_to_length=self.audio_signal.signal_length
             )
             sources.append(source)
-            residual -= source
-        sources[0] += residual
         return sources

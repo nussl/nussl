@@ -119,14 +119,15 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.assignments, self.confidence = self.postprocess(
             self.assignments, self.confidence
         )
-        
 
+        if self.mask_type == self.BINARY_MASK:
+            self.assignments = (self.assignments == self.assignments.max(axis=0, keepdims=True)).astype(float)
+        
         self.masks = []
+        
         for i in range(self.num_sources):
             mask = self.assignments[i, :, :, :]
             mask = masks.SoftMask(mask)
-            if self.mask_type == self.BINARY_MASK:
-                mask = mask.mask_to_binary(1 / self.num_sources)
             self.masks.append(mask)
         self.result_masks = self.masks
         return self.masks
@@ -155,7 +156,6 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.sources = []
         for mask in self.masks:
             self.sources.append(self.apply_mask(mask))
-
         return self.sources
 
     def set_audio_signal(self, new_audio_signal):

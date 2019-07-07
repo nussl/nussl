@@ -45,10 +45,10 @@ class ScaleInvariantSDR(EvaluationBase):
         results = results[best_permutation_by_sdr]
         best_permutation = orderings[best_permutation_by_sdr]
         scores = {'permutation': list(best_permutation)}
-        for j in best_permutation:
+        for i, j in enumerate(best_permutation):
             label = self.source_labels[j]
             scores[label] = {
-                metric: results[:, j, m].tolist()
+                metric: results[:, i, m].tolist()
                 for m, metric in enumerate(['SDR', 'SIR', 'SAR'])
             }
         return scores

@@ -15,8 +15,9 @@ class Scaper(BaseDataset):
         if not self.options['source_labels']:
             self.options['source_labels'] = jam.annotations[0]['sandbox']['scaper']['fg_labels']
         
-        for i in range(len(self.options['group_sources'])):
-            self.options['source_labels'].append(f'group{i}')
+        for group in self.options['group_sources']:
+            group_name = '+'.join(group)
+            self.options['source_labels'].append(group_name)
 
     def get_files(self, folder):
         files = sorted(
@@ -51,7 +52,8 @@ class Scaper(BaseDataset):
             for label in group:
                 combined.append(source_dict[label])
                 source_dict.pop(label)
-            source_dict[f'group{i}'] = sum(combined)
+            group_name = '+'.join(group)
+            source_dict[group_name] = sum(combined)
 
         sources = []
         one_hots = []

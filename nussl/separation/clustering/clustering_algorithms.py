@@ -7,6 +7,7 @@ from .. import FT2D, Melodia, HPSS, Repet, RepetSim, MultichannelWienerFilter
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import scale
 from copy import deepcopy
+from scipy.special import softmax
 
 class SpatialClustering(ClusteringSeparationBase):
     def extract_features(self):
@@ -28,36 +29,27 @@ class PrimitiveClustering(ClusteringSeparationBase):
         input_audio_signal,
         algorithms,
         num_cascades=1,
-        reduce_noise=False,
-        use_multichannel_weiner_filter=False,
         **kwargs
     ):
         super().__init__(
             input_audio_signal,
             **kwargs
         )
+        self.original_stft_params = deepcopy(self.audio_signal.stft_params)
         self.algorithms = [a[0] for a in algorithms]
         self.algorithm_parameters = [a[1] if len(a) > 1 else {} for a in algorithms]
         self.algorithm_returns = [a[2] if len(a) > 2 else [] for a in algorithms]
         self.num_cascades = num_cascades
-        self.reduce_noise = reduce_noise
-        self.use_multichannel_weiner_filter = use_multichannel_weiner_filter
-
-    def noise_reduction(self, features):
-        tr = TruncatedSVD(n_components=self.num_sources)
-
-        threshold = self.project_data(self.threshold)
-        threshold = threshold.astype(bool)
-
-        _features = features[threshold.flatten()]
-        tr.fit(_features)
-        output = tr.fit_transform(features)
-        return output
 
     def run_algorithm_on_signal(self, mixture, level):
         separations = []
         separators = []
         for i, algorithm in enumerate(self.algorithms):
+            stft_params = self.algorithm_parameters[i].pop('stft_params', None)
+            if stft_params is not None:
+                mixture.stft_data = None
+                mixture.stft_params = stft_params
+                
             separator = algorithm(
                 mixture, 
                 use_librosa_stft=self.use_librosa_stft, 
@@ -69,16 +61,23 @@ class PrimitiveClustering(ClusteringSeparationBase):
                 signals = [signals[j] for j in self.algorithm_returns[i]]
             separations += signals
             separators.append(separator)
+            mixture.stft_params = self.original_stft_params
+            
         return separations, separators
 
     def extract_features_from_signals(self, signals):
         features = []
+        self.audio_signal.stft_data = None
+        self.audio_signal.stft_params = self.original_stft_params
+        mix_stft = np.abs(self.audio_signal.stft())
         for s in signals:
-            s.stft()
-            _feature = s.log_magnitude_spectrogram_data
-            features.append(_feature)     
+            s.stft_data = None
+            s.stft_params = self.original_stft_params
+            _stft = np.abs(s.stft())
+            _feature = _stft / np.maximum(_stft, mix_stft + 1e-7)
+            features.append(_feature)
         features = np.array(features).transpose(1, 2, 3, 0)
-        return features  
+        return features
 
     def extract_features_from_separators(self, separators):
         features = []
@@ -94,20 +93,21 @@ class PrimitiveClustering(ClusteringSeparationBase):
         features = []
         current_signals = [self.audio_signal]
         separators = []
+        separations = []
         for i in range(self.num_cascades):
-            separations = []
             for signal in current_signals:
                 _separations, _separator = self.run_algorithm_on_signal(signal, i)
                 separations += _separations
                 separators += _separator
             current_signals = separations
-        self.separations = current_signals
-
-        features = self.extract_features_from_separators(separators)
+        self.separations = separations
+        print('Got separations')
+        features = self.extract_features_from_signals(self.separations)
+        print('Got features')
+        self._compute_spectrograms()
         features = features.reshape(-1, features.shape[-1])
-        #features = scale(features, axis=0)
-        if self.reduce_noise:
-            features = self.noise_reduction(features)
+        features = scale(features, axis=0)
+        print('Scaled features of shape', features.shape)
         return features
 
 class DeepClustering(ClusteringSeparationBase, DeepMixin):

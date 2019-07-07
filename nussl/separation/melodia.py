@@ -17,6 +17,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
     def __init__(self, input_audio_signal, high_pass_cutoff=None, minimum_frequency=55.0,
                  maximum_frequency=1760.0, voicing_tolerance=0.2, minimum_peak_salience=0.0,
                  do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT, num_overtones=25,
+                 smooth_length=5,
                  mask_type=constants.SOFT_MASK, mask_threshold=0.5):
         """
         Implements melody extraction using Melodia.
@@ -57,6 +58,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         self.foreground_mask = None
         self.background_mask = None
         self.num_overtones = num_overtones
+        self.smooth_length = smooth_length
 
         if do_mono:
             self.audio_signal.to_mono(overwrite=True)
@@ -185,14 +187,14 @@ class Melodia(mask_separation_base.MaskSeparationBase):
 
         # Need to threshold the melody stft since the synthesized
         # F0 sequence overtones are at different weights.
-        normalized_melody_stft = log_magnitude > -5
+        normalized_melody_stft = log_magnitude > -20
         normalized_melody_stft = normalized_melody_stft / normalized_melody_stft.max()
         normalized_melody_stft = normalized_melody_stft.astype(float)
         mask = np.empty(self.audio_signal.stft().shape)
 
         # Smoothing the mask row-wise using a low-pass filter to
         # get rid of discontuinities in the mask.
-        kernel =  np.full((1, 10), 1/10.)
+        kernel =  np.full((1, self.smooth_length), 1/self.smooth_length)
         for channel in range(self.audio_signal.num_channels):
             mask[:, :, channel] = convolve(normalized_melody_stft[:, :, channel], kernel)
         return mask

@@ -1374,10 +1374,8 @@ class AudioSignal(object):
         """
         if not self.active_region_is_default:
             raise AudioSignalException('Cannot zero-pad while active region is not set as default!')
-
-        for ch in range(self.num_channels):
-            self.audio_data = np.lib.pad(self.get_channel(ch), (before, after), 'constant',
-                                         constant_values=(0, 0))
+        
+        self.audio_data = np.pad(self.audio_data, ((0, 0), (before, after)), 'constant')
 
     def peak_normalize(self, overwrite=True):
         """ Normalizes ``abs(self.audio_data)`` to 1.0.

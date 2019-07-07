@@ -49,7 +49,7 @@ class OverlapAdd(separation_base.SeparationBase):
          ola.run()
          
     """
-    def __init__(self, input_audio_signal, separation_method,
+    def __init__(self, input_audio_signal, separation_method, separation_args=None,
                  overlap_window_size=24, overlap_hop_size=12, overlap_window_type=constants.WINDOW_TRIANGULAR,
                  do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT):
         super(OverlapAdd, self).__init__(input_audio_signal=input_audio_signal)
@@ -67,6 +67,7 @@ class OverlapAdd(separation_base.SeparationBase):
 
         # Set the separation method
         self._separation_method = None
+        self._separation_args = separation_args if separation_args else {}
         self._separation_instance = None
 
         self.separation_method = separation_method
@@ -194,7 +195,9 @@ class OverlapAdd(separation_base.SeparationBase):
         if self.separation_method is None:
             raise Exception('Cannot separate before separation_method is set!')
 
-        self._separation_instance = self.separation_method(self.audio_signal, use_librosa_stft=self.use_librosa_stft)
+        self._separation_instance = self.separation_method(
+            self.audio_signal, use_librosa_stft=self.use_librosa_stft, **self._separation_args
+        )
 
     def __str__(self):
         name = super(OverlapAdd, self).__str__()
@@ -212,9 +215,6 @@ class OverlapAdd(separation_base.SeparationBase):
              ::
 
         """
-        if self._separation_instance is None:
-            self._setup_instance()
-
         # if our window is larger than the total number of samples in the file,
         # just run the algorithm like normal
         if self.audio_signal.signal_length < self.window_samples + self.hop_samples:
@@ -222,60 +222,55 @@ class OverlapAdd(separation_base.SeparationBase):
                 'input_audio_signal length is less than one window.'
                 f' Running {self.separation_method_name} normally...'
             )
-
+            self._setup_instance()
             self._separation_instance.run()
             self.background, _ = self._separation_instance.make_audio_signals()
             return self.background
 
+        nearest_hop = (int(self.audio_signal.signal_length / self.hop_samples) - 1) * self.hop_samples
+        pad_amount = (nearest_hop + self.window_samples) - self.audio_signal.signal_length
+        if self.audio_signal.signal_length % self.window_samples == 0:
+            pad_amount = 0
+        self.audio_signal.zero_pad(0, pad_amount)
+        self._setup_instance()
+        
         background_array = np.zeros_like(self.audio_signal.audio_data)
+        #background_array = np.pad(background_array, ((0, 0), (pad_amount, pad_amount)), 'constant')
+        
 
         # Make the window for multiple channels
-        window = stft_utils.make_window(self.overlap_window_type, 2 * self.overlap_samples)
+        window = stft_utils.make_window(self.overlap_window_type, self.window_samples)
+        window *= 2*(self.hop_samples/self.window_samples)
         window = np.vstack([window for _ in range(self.audio_signal.num_channels)])
+        start = 0
+        end = self.window_samples
+        starts = np.arange(0, self.audio_signal.signal_length, self.hop_samples)
+        starts = starts[:-1]
 
         # Main overlap-add loop
-        for start, end in self._next_window():
+        for segment, start in enumerate(starts):
+            end = start + self.window_samples
+            end = min(end, self.audio_signal.signal_length)
 
-            if start == 0:
-                # First window is a partial window
-                first_window = window[:, -self.hop_samples:]
-                unwindowed = self._set_active_region_and_run(start, self.hop_samples)
-                background_array[:, :self.hop_samples] = np.multiply(unwindowed.audio_data, first_window)
-
-            elif end >= self.audio_signal.signal_length:
-                # Last window is a partial window
-                remaining = self.audio_signal.signal_length - start
-                last_window = window[:, remaining:] if remaining != window.shape[-1] else window
-                last_window[:, self.overlap_samples:] = 1  # only do part of the window
-
-                unwindowed = self._set_active_region_and_run(start, self.audio_signal.signal_length)
-                background_array[:, start:] += np.multiply(unwindowed.audio_data, last_window)
-
-            else:
-                # middle cases are straight forward
-                unwindowed = self._set_active_region_and_run(start, end)
-                background_array[:, start:end] += np.multiply(unwindowed.audio_data, window)
+            # middle cases are straight forward
+            this_window = window.copy()
+            
+            if segment == 0:
+                this_window[:, :self.hop_samples] = 1
+            elif segment == len(starts) - 1:
+                this_window[:, self.hop_samples:] = 1
+                        
+            
+            unwindowed = self._set_active_region_and_run(start, end)
+            windowed = np.multiply(unwindowed.audio_data, this_window[:, :unwindowed.signal_length])
+            background_array[:, start:end] += windowed
+        
 
         self.audio_signal.set_active_region_to_default()
         self.background = self.audio_signal.make_copy_with_audio_data(background_array, verbose=False)
+        self.background.crop_signal(0, pad_amount)
+        self.audio_signal.crop_signal(0, pad_amount)
         return self.background
-
-    def _next_window(self):
-        """
-        Generator that calculates the start and end sample indices for the next window.
-        Yields:
-
-        """
-        n_segments = 1 + int((self.audio_signal.signal_length-self.window_samples) / self.hop_samples)
-
-        # We went to return values larger than the signal length so we know when the last
-        # n_segments = 1 + int( self.audio_signal.signal_length / self.hop_samples)
-
-        for segment in range(n_segments):
-            start = segment * self.hop_samples
-            end = start + self.window_samples
-
-            yield start, end
 
     def _set_active_region_and_run(self, start, end):
         self._separation_instance.audio_signal.set_active_region(start, end)

@@ -7,7 +7,7 @@
   "num_workers": 10,
   "loss_function": [],
   "optimizer": "adam",
-  "curriculum_learning": false,
+  "curriculum_learning": [],
   "initial_length": 400,
   "weight_decay": 0.0,
   "device": "cuda",
