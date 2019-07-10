@@ -1,5 +1,5 @@
 from sklearn.mixture import GaussianMixture
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.base import BaseEstimator, ClusterMixin
 import numpy as np
 from sklearn import preprocessing
@@ -45,6 +45,8 @@ class KMeansConfidence(KMeans):
         self.alpha = alpha
         self.posterior_alpha = posterior_alpha
         self.no_iter = kwargs.pop('no_iter', False)
+        if type(kwargs['init']) is list:
+            kwargs['init'] = np.array(kwargs['init'])
         super().__init__(**kwargs)
 
     def fit(self, features, sample_weight=None):

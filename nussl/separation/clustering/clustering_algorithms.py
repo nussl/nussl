@@ -7,7 +7,6 @@ from .. import FT2D, Melodia, HPSS, Repet, RepetSim, MultichannelWienerFilter
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import scale
 from copy import deepcopy
-from scipy.special import softmax
 
 class SpatialClustering(ClusteringSeparationBase):
     def extract_features(self):
@@ -93,21 +92,18 @@ class PrimitiveClustering(ClusteringSeparationBase):
         features = []
         current_signals = [self.audio_signal]
         separators = []
-        separations = []
         for i in range(self.num_cascades):
+            separations = []
             for signal in current_signals:
                 _separations, _separator = self.run_algorithm_on_signal(signal, i)
                 separations += _separations
                 separators += _separator
             current_signals = separations
         self.separations = separations
-        print('Got separations')
-        features = self.extract_features_from_signals(self.separations)
-        print('Got features')
+        features = self.extract_features_from_separators(separators)
         self._compute_spectrograms()
         features = features.reshape(-1, features.shape[-1])
-        features = scale(features, axis=0)
-        print('Scaled features of shape', features.shape)
+        #features = scale(features, axis=0)
         return features
 
 class DeepClustering(ClusteringSeparationBase, DeepMixin):

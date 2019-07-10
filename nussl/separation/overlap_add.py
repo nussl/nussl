@@ -51,10 +51,15 @@ class OverlapAdd(separation_base.SeparationBase):
     """
     def __init__(self, input_audio_signal, separation_method, separation_args=None,
                  overlap_window_size=24, overlap_hop_size=12, overlap_window_type=constants.WINDOW_TRIANGULAR,
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT):
+                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT, stft_params=None):
         super(OverlapAdd, self).__init__(input_audio_signal=input_audio_signal)
         self.background = None
         self.foreground = None
+
+        if stft_params is not None:
+            self.stft_params.window_length = stft_params['window_length']
+            self.stft_params.n_fft_bins = stft_params['window_length']
+            self.stft_params.hop_length = stft_params['hop_length']
 
         self.use_librosa_stft = use_librosa_stft
         self.overlap_window_size = overlap_window_size
@@ -295,6 +300,4 @@ class OverlapAdd(separation_base.SeparationBase):
         if self.background is None:
             raise ValueError('Cannot make audio signals prior to running algorithm!')
 
-        foreground_array = self.audio_signal.audio_data - self.background.audio_data
-        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
-        return [self.background, self.foreground]
+        return [self.background, self.audio_signal - self.background]

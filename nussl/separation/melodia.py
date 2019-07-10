@@ -188,7 +188,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         # Need to threshold the melody stft since the synthesized
         # F0 sequence overtones are at different weights.
         normalized_melody_stft = log_magnitude > -20
-        normalized_melody_stft = normalized_melody_stft / normalized_melody_stft.max()
+        normalized_melody_stft = normalized_melody_stft / (normalized_melody_stft.max() + 1e-7)
         normalized_melody_stft = normalized_melody_stft.astype(float)
         mask = np.empty(self.audio_signal.stft().shape)
 

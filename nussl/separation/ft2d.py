@@ -69,6 +69,7 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         for ch in range(self.audio_signal.num_channels):
             background_mask, foreground_mask = self.compute_ft2d_mask(self.ft2d, ch)
             background_mask[0:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
+            foreground_mask[0:self.high_pass_cutoff, :] = 0
             background_masks.append(background_mask)
             foreground_masks.append(foreground_mask)
 
@@ -100,31 +101,28 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         elif self.filter_approach == 'local_std':
             bg_ft2d, fg_ft2d = self.filter_local_maxima_with_std(ft2d[:, :, ch])
         
-        _stft = np.abs(self.stft)[:, :, ch]
-        bg_stft = np.abs(np.fft.ifft2(bg_ft2d)) / (_stft + 1e-7)
-        fg_stft = np.abs(np.fft.ifft2(fg_ft2d)) / (_stft + 1e-7)
+        _stft = np.abs(self.stft)[:, :, ch] + 1e-7
+        bg_stft = np.minimum(np.abs(np.fft.ifft2(bg_ft2d)), _stft)
         
-        bg_mask = bg_stft / (np.maximum(bg_stft, fg_stft) + 1e-7)
-        fg_mask = fg_stft / (np.maximum(bg_stft, fg_stft) + 1e-7)
-        fg_mask = fg_mask * (1 - bg_mask)
-        bg_mask = bg_mask * (1 - fg_mask)
+        bg_mask = bg_stft / _stft
+        fg_mask = 1 - bg_mask
         return bg_mask, fg_mask
 
     def filter_local_maxima_with_std(self, ft2d):
         data = np.abs(np.fft.fftshift(ft2d))
-        data /= np.max(data)
+        data /= (np.max(data) + 1e-7)
 
         data_max = maximum_filter(data, self.neighborhood_size)
         data_min = minimum_filter(data, self.neighborhood_size)
         data_mean = uniform_filter(data, self.neighborhood_size)
         data_mean_sq = uniform_filter(data ** 2, self.neighborhood_size)
-        data_std = np.sqrt(data_mean_sq - data_mean ** 2)
+        data_std = np.sqrt(data_mean_sq - data_mean ** 2) + 1e-7
 
         maxima = ((data_max - data_mean) / data_std)
         fraction_of_local_max = (data == data_max)
         maxima *= fraction_of_local_max
         maxima = maxima.astype(float)
-        maxima /= np.max(maxima)
+        maxima /= (np.max(maxima) + 1e-7)
 
         maxima = np.maximum(maxima, np.fliplr(maxima), np.flipud(maxima))
         maxima = np.fft.ifftshift(maxima)
@@ -136,7 +134,7 @@ class FT2D(mask_separation_base.MaskSeparationBase):
 
     def filter_local_maxima(self, ft2d):
         data = np.abs(np.fft.fftshift(ft2d))
-        data /= np.max(data)
+        data /= (np.max(data) + 1e-7)
         threshold = np.std(data)
         
         data_max = maximum_filter(data, self.neighborhood_size)

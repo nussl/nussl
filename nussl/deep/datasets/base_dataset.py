@@ -278,10 +278,9 @@ class BaseDataset(Dataset):
             [tuple] -- (log_spec, stft, n). log_spec contains the
             log_spectrogram, stft contains the complex spectrogram, and n is the
         """
+        audio_signal.stft_data = None
         stft = (
             audio_signal.stft(use_librosa=self.use_librosa)
-            if audio_signal.stft_data is None 
-            else audio_signal.stft_data
         )
         log_spectrogram = librosa.amplitude_to_db(np.abs(stft))
         return log_spectrogram, stft
