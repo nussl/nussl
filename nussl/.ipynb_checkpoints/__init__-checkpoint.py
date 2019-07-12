@@ -28,8 +28,6 @@ from .separation import *
 from . import evaluation
 from . import transformers
 from . import deep
-from . import core 
-from . import separation
 
 __version__ = '0.1.6'
 

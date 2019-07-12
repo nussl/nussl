@@ -194,8 +194,8 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
                 raise ValueError("This model is not a deep clustering model!")
 
             embedding = output['embedding']
-            embedding = embedding.squeeze(0)
             embedding_size = embedding.shape[-1]
+            embedding = embedding.squeeze(-2)
             embedding = embedding.permute(2, 1, 0, 3)
             embedding = embedding.reshape(-1, embedding_size).data.numpy()
         return embedding

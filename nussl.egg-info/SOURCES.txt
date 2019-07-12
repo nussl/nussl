@@ -45,6 +45,7 @@ nussl/deep/datasets/scaper_dataset.py
 nussl/deep/networks/__init__.py
 nussl/deep/networks/modules.py
 nussl/deep/networks/separation_model.py
+nussl/deep/networks/util.py
 nussl/deep/networks/clustering/__init__.py
 nussl/deep/networks/clustering/gmm.py
 nussl/deep/networks/clustering/kmeans.py
@@ -62,6 +63,7 @@ nussl/evaluation/bss_eval_v4.py
 nussl/evaluation/evaluation_base.py
 nussl/evaluation/precision_recall_fscore.py
 nussl/evaluation/run_and_eval.py
+nussl/evaluation/si_sdr.py
 nussl/separation/KAM.py
 nussl/separation/__init__.py
 nussl/separation/deep_mask_estimation.py

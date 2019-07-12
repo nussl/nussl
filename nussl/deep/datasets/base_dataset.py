@@ -111,7 +111,7 @@ class BaseDataset(Dataset):
                 k: output[k] for k in output 
                 if k in self.data_keys_for_training
             }
-        _filename = f'{filename}.cache'
+        _filename = f"{filename.split('/')[-1]}.cache"
         self.write_to_cache(output, _filename)
         return self.get_target_length(output, self.current_length)
 

@@ -45,8 +45,9 @@ class KMeansConfidence(KMeans):
         self.alpha = alpha
         self.posterior_alpha = posterior_alpha
         self.no_iter = kwargs.pop('no_iter', False)
-        if type(kwargs['init']) is list:
-            kwargs['init'] = np.array(kwargs['init'])
+        if 'init' in kwargs:
+            if type(kwargs['init']) is list:
+                kwargs['init'] = np.array(kwargs['init'])
         super().__init__(**kwargs)
 
     def fit(self, features, sample_weight=None):
