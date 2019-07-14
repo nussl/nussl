@@ -51,6 +51,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.clustering_type = clustering_type
         self.clusterer = None
         self.percentile = percentile
+        self.features = None
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(
@@ -89,7 +90,11 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
 
     def cluster_features(self, features, clusterer):
         if self.clustering_type == 'kmeans':
-            clusterer.fit(features, sample_weight=self.sample_weight.flatten())
+            sample_weight = self.sample_weight.flatten()
+            sample_weight = sample_weight[self.threshold.flatten()]
+            clusterer.fit(
+                features[self.threshold.flatten()], sample_weight=sample_weight
+            )
         elif self.clustering_type != 'spectral_clustering':
             clusterer.fit(features[self.threshold.flatten()])
         else:
@@ -218,12 +223,17 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         plt.ylabel('PCA dim 2')
         plt.title('Embedding visualization (2D)')
 
-    def plot_features_3d(self, threshold, ax):
+    def plot_features_3d(self, threshold, ax, max_points=5000):
         import pandas as pd
         output_transform, transform = self.project_embeddings(
             3,
-            threshold=threshold / 4,
+            threshold=threshold,
         )
+
+        rows_to_sample = np.random.choice(
+            output_transform.shape[0], max_points, replace=False)
+        output_transform = output_transform[rows_to_sample]
+
         result=pd.DataFrame(
             output_transform,
             columns=['PCA%i' % i for i in range(3)]
@@ -248,7 +258,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         ax.set_zlabel("PC3")
         ax.set_title("Embedding visualization (3D)")
 
-    def plot(self, cmap='Blues', bins=150):
+    def plot(self, cmap='Blues', bins=150, max_points=5000):
         """Plots relevant information for clustering onto the active
         figure, given by matplotlib.pyplot.figure() outside of this function.
         The four plots are:
@@ -296,7 +306,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
                 self.plot_features_2d(threshold)
             if i == 2:
                 ax = plt.subplot(grid[start:end, :left], projection='3d')
-                self.plot_features_3d(threshold, ax)
+                self.plot_features_3d(threshold, ax, max_points=max_points)
             
             
         spacing = int(grid_sizes[1] / num_tf_plots)

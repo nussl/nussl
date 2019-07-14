@@ -10,6 +10,11 @@ from ...core import AudioSignal
 from scipy.io import wavfile
 import logging
 import copy
+from enum import Enum
+
+class PRECISION(Enum):
+    FLOAT32=np.float32
+    FLOAT16=np.float16
 
 class BaseDataset(Dataset):
     def __init__(self, folder: str, options: Dict[str, Any]):
@@ -30,6 +35,9 @@ class BaseDataset(Dataset):
         self.use_librosa = self.options.pop('use_librosa_stft', False)
         self.dataset_tag = self.options.pop('dataset_tag', 'default')
         self.current_length = self.options.pop('min_length', self.options['length'])
+        self.excerpt_selection_strategy = self.options.pop('excerpt_selection_strategy', 'random')
+        self.save_precision = self.options.pop('save_precision', 'FLOAT32')
+        self.load_precision = self.options.pop('save_precision', 'FLOAT32')
 
         self.files = self.get_files(self.folder)
         self.cached_files = []
@@ -118,7 +126,6 @@ class BaseDataset(Dataset):
     def switch_to_cache(self):
         self.original_files = self.files
         self.files = [x for x in os.listdir(self.cache) if '.cache' in x]
-        random.shuffle(self.files)
         self.cache_populated = True
 
     def _get_item_helper(
@@ -147,12 +154,16 @@ class BaseDataset(Dataset):
         """
         if self.cache:
             if self.cache_populated:
-                return self.load_from_cache(filename)
+                output = self.load_from_cache(filename)
             else:
-                return self.populate_cache(filename, i)
+                output = self.populate_cache(filename, i)
         else:
             output = self._generate_example(filename)
-            return self.get_target_length(output, self.current_length)
+            output = self.get_target_length(output, self.current_length)
+        # for key in output:
+        #     output[key] = output[key].astype(PRECISION[self.load_precision].value)
+            
+        return output
 
     def _generate_example(self, filename: str) -> List[Dict[str, Any]]:
         """Generates one example (training|validation) from given filename
@@ -180,6 +191,8 @@ class BaseDataset(Dataset):
 
     def write_to_cache(self, data_dict, filename):
         with open(os.path.join(self.cache, filename), 'wb') as f:
+            # for key in data:
+            #     data_dict[key] = data_dict[key].astype(PRECISION[self.save_precision].value)
             pickle.dump(data_dict, f)
 
     def load_from_cache(self, filename: str):
@@ -257,8 +270,15 @@ class BaseDataset(Dataset):
 
     def get_target_length(self, data_dict, target_length):
         length = data_dict['log_spectrogram'].shape[0]
-        offset = np.random.randint(0, max(1, length - target_length))
-        
+        if self.excerpt_selection_strategy == 'random':
+            offset = np.random.randint(0, max(1, length - target_length))
+        elif self.excerpt_selection_strategy == 'balanced':
+            _balance = data_dict['assignments'].mean(axis=-3).prod(axis=-1)
+            indices = np.argwhere(_balance >= np.percentile(_balance, 50))[:, 0]
+            indices[indices > length - target_length] = max(0, length - target_length)
+            indices = np.unique(indices)
+            offset = np.random.choice(indices)
+                
         for target in data_dict:
             if target != 'classes':
                 data_dict[target] = data_dict[target][
