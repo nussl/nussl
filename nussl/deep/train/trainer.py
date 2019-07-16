@@ -257,7 +257,7 @@ class Trainer():
     def clear_cache(self):
         for key, dataloader in self.dataloaders.items():
             dataloader.dataset.clear_cache()
-            dataloader.dataset.create_cache_folder()
+            dataloader.dataset.setup_cache()
 
     def populate_cache(self):
         for key, dataloader in self.dataloaders.items():

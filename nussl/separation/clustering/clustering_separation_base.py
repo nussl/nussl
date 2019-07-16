@@ -59,7 +59,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             remove_reflection=True,
             use_librosa=self.use_librosa_stft
         )
-        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft))
+        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft), ref=np.max)
 
         threshold = self.log_spectrogram
         threshold = (threshold > np.percentile(threshold, self.percentile)).astype(float)
@@ -189,7 +189,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         output_transform = transform.fit_transform(_embedding)
         return output_transform, transform
 
-    def plot_features_1d(self, threshold, bins=150):
+    def plot_features_1d(self, threshold, plot_means=True, bins=150):
         import matplotlib.pyplot as plt
         output_transform, transform = self.project_embeddings(1, threshold=threshold)
         plt.hist(output_transform, bins=bins)
@@ -197,7 +197,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         plt.ylabel('Count')
         plt.title('Embedding visualization (1D)')
 
-        if hasattr(self.clusterer, 'cluster_centers_'):
+        if hasattr(self.clusterer, 'cluster_centers_') and plot_means:
             means = transform.transform(self.clusterer.cluster_centers_)
             for i in range(means.shape[0]):
                 plt.axvline(means[i], color='r')

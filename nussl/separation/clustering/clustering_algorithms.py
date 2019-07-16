@@ -167,6 +167,8 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             assignments = np.dot(assignments, self.filter_bank) + 1e-6
             assignments = np.clip(assignments, 0.0, 1.0) 
             assignments /= np.sum(assignments, axis=0)
+
+            confidence = np.dot(confidence, self.filter_bank)
             
             assignments = assignments.transpose()
             confidence = confidence.transpose()

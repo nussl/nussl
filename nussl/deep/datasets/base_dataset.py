@@ -11,6 +11,8 @@ from scipy.io import wavfile
 import logging
 import copy
 from enum import Enum
+import zarr
+import numcodecs
 
 class PRECISION(Enum):
     FLOAT32=np.float32
@@ -38,8 +40,10 @@ class BaseDataset(Dataset):
         self.excerpt_selection_strategy = self.options.pop('excerpt_selection_strategy', 'random')
         self.save_precision = self.options.pop('save_precision', 'FLOAT32')
         self.load_precision = self.options.pop('save_precision', 'FLOAT32')
+        self.chunk_size = self.options.pop('chunk_size', 1)
 
         self.files = self.get_files(self.folder)
+        random.shuffle(self.files)
         self.cached_files = []
         self.targets = [
             'log_spectrogram',
@@ -49,7 +53,7 @@ class BaseDataset(Dataset):
             'weights'
         ]
         self.data_keys_for_training = self.options.pop('data_keys_for_training', [])
-        self.create_cache_folder()
+        self.setup_cache()
         self.cache_populated = False
 
         if self.options['fraction_of_dataset'] < 1.0:
@@ -58,19 +62,71 @@ class BaseDataset(Dataset):
             )
             self.files = self.files[:num_files]
 
-    def create_cache_folder(self):
+    def setup_cache(self):
         if self.options['cache']:
-            self.cache = os.path.join(
+            cache = os.path.join(
                 os.path.expanduser(self.options['cache']),
                 '_'.join(self.folder.split('/')),
                 self.options['output_type'],
                 '_'.join(self.options['weight_type']),
-                self.dataset_tag
             )
+            self.cache = os.path.join(cache, self.dataset_tag + '.zarr')
+            overwrite = self.options.pop('overwrite_cache', False)
             logging.info(f'Caching to: {self.cache}')
-            os.makedirs(self.cache, exist_ok=True)
 
+            file_mode = 'r'
+            if os.path.exists(self.cache):
+                logging.info(f'Cache location {self.cache} exists! Checking if overwrite. Otherwise, will use cache.')
+                if overwrite:
+                    logging.info('Overwriting cache.')
+                    file_mode = 'w'
+            else:
+                logging.info(f'{self.cache} does not exist...creating a new cache')
+                file_mode = 'w'
+            
+            self.cache_dataset = zarr.open(
+                self.cache, 
+                mode=file_mode, 
+                shape=(len(self.files),), 
+                chunks=(self.chunk_size,),
+                dtype=object, 
+                object_codec=numcodecs.Pickle(),
+                synchronizer=zarr.ThreadSynchronizer(),
+            )
 
+    def clear_cache(self):
+        logging.info(f'Clearing cache: {self.cache}')
+        shutil.rmtree(self.cache, ignore_errors=True)
+    
+    def populate_cache(self, filename, i):
+        output = self._generate_example(filename)
+        if self.data_keys_for_training:
+            output = {
+                k: output[k] for k in output 
+                if k in self.data_keys_for_training
+            }
+        self.write_to_cache(output, i)
+        return self.get_target_length(output, self.current_length)
+
+    def switch_to_cache(self):
+        self.cache_dataset = zarr.open(
+            self.cache, 
+            mode='r', 
+            shape=(len(self.files),), 
+            chunks=(self.chunk_size,),
+            dtype=object, 
+            object_codec=numcodecs.Pickle(),
+            synchronizer=zarr.ThreadSynchronizer(),
+        )
+        self.cache_populated = True
+
+    def write_to_cache(self, data_dict, i):
+        self.cache_dataset[i] = data_dict
+
+    def load_from_cache(self, i):
+        data = self.cache_dataset[i]
+        return self.get_target_length(data, self.current_length)
+            
     def get_files(self, folder):
         raise NotImplementedError()
 
@@ -108,26 +164,6 @@ class BaseDataset(Dataset):
         """
         return self._get_item_helper(self.files[i], self.cache, i)
 
-    def clear_cache(self):
-        logging.info(f'Clearing cache: {self.cache}')
-        shutil.rmtree(self.cache, ignore_errors=True)
-    
-    def populate_cache(self, filename, i):
-        output = self._generate_example(filename)
-        if self.data_keys_for_training:
-            output = {
-                k: output[k] for k in output 
-                if k in self.data_keys_for_training
-            }
-        _filename = f"{filename.split('/')[-1]}.cache"
-        self.write_to_cache(output, _filename)
-        return self.get_target_length(output, self.current_length)
-
-    def switch_to_cache(self):
-        self.original_files = self.files
-        self.files = [x for x in os.listdir(self.cache) if '.cache' in x]
-        self.cache_populated = True
-
     def _get_item_helper(
         self,
         filename: str,
@@ -154,14 +190,12 @@ class BaseDataset(Dataset):
         """
         if self.cache:
             if self.cache_populated:
-                output = self.load_from_cache(filename)
+                output = self.load_from_cache(i)
             else:
                 output = self.populate_cache(filename, i)
         else:
             output = self._generate_example(filename)
             output = self.get_target_length(output, self.current_length)
-        # for key in output:
-        #     output[key] = output[key].astype(PRECISION[self.load_precision].value)
             
         return output
 
@@ -188,17 +222,6 @@ class BaseDataset(Dataset):
             self.options['length']
         )
         return output
-
-    def write_to_cache(self, data_dict, filename):
-        with open(os.path.join(self.cache, filename), 'wb') as f:
-            # for key in data:
-            #     data_dict[key] = data_dict[key].astype(PRECISION[self.save_precision].value)
-            pickle.dump(data_dict, f)
-
-    def load_from_cache(self, filename: str):
-        with open(os.path.join(self.cache, filename), 'rb') as f:
-            data = pickle.load(f)
-        return self.get_target_length(data, self.current_length)
 
     def whiten(self, data):
         return data
@@ -302,7 +325,7 @@ class BaseDataset(Dataset):
         stft = (
             audio_signal.stft(use_librosa=self.use_librosa)
         )
-        log_spectrogram = librosa.amplitude_to_db(np.abs(stft))
+        log_spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
         return log_spectrogram, stft
 
 

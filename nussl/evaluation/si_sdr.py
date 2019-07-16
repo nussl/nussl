@@ -3,6 +3,15 @@ from itertools import permutations
 import numpy as np
 
 class ScaleInvariantSDR(EvaluationBase):
+    """Super important. true_sources goes FIRST, estimated goes SECOND. Use keyword
+    arguments to be sure. :)
+    
+    Arguments:
+        EvaluationBase {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     def __init__(self, true_sources_list, estimated_sources_list, 
                  compute_permutation=False, source_labels=None, scaling=True):
         self.true_sources_list = true_sources_list
