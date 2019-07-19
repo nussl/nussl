@@ -169,6 +169,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             assignments /= np.sum(assignments, axis=0)
 
             confidence = np.dot(confidence, self.filter_bank)
+            confidence += np.abs(confidence.min())
             
             assignments = assignments.transpose()
             confidence = confidence.transpose()
@@ -191,15 +192,14 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         input_data = self._preprocess()
         with torch.no_grad():
             output = self.model(input_data)
-            output = {k: output[k].cpu() for k in output}
             if 'embedding' not in output:
                 raise ValueError("This model is not a deep clustering model!")
-
             embedding = output['embedding']
             embedding_size = embedding.shape[-1]
             embedding = embedding.squeeze(-2)
             embedding = embedding.permute(2, 1, 0, 3)
-            embedding = embedding.reshape(-1, embedding_size).data.numpy()
+            embedding = embedding.reshape(-1, embedding_size)
+            embedding = embedding.data.cpu().numpy()
         return embedding
 
     def make_audio_signals(self):

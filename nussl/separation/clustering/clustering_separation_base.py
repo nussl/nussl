@@ -27,7 +27,8 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         clustering_options=None,
         alpha=1.0,
         percentile=0,
-        clustering_type='kmeans'
+        clustering_type='kmeans',
+        enhancement_amount=0.0,
     ):
         super(ClusteringSeparationBase, self).__init__(
             input_audio_signal=input_audio_signal,
@@ -52,6 +53,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.clusterer = None
         self.percentile = percentile
         self.features = None
+        self.enhancement_amount = enhancement_amount
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(
@@ -108,7 +110,42 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         assignments = assignments.transpose(3, 0, 1, 2)
         return assignments, confidence
 
-    def run(self):
+    def enhance(self, estimates, amount = 0.5):
+        # an odd trick to trade SDR for SIR
+        source_fractions = np.array([m.mask.sum() for m in self.masks])
+        source_fractions /= source_fractions.sum()
+        smallest_signal = estimates[np.argmin(source_fractions)]
+        source_fractions = source_fractions.tolist()
+        
+        # How much to weight confidence by. Higher amounts lead to a sparser enhanced
+        # source, with a trade-off between leakage between estimates. 0.5 seems to be a 
+        # good amount, but enhancement_amount is set to 0 for backwards compat.
+        confidence_mask = self.confidence ** amount
+        confidence_mask = confidence_mask / np.maximum(confidence_mask.max(), 1e-7)
+        
+        confidence_mask = masks.SoftMask(confidence_mask)
+        # In the smallest signal, get rid of points we are not confident in.
+        # Idea being that the prior should take precedence for points that we are not
+        # confident in their time-frequency label.
+        enhanced = smallest_signal.apply_mask(confidence_mask)
+        enhanced.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
+        
+        residual = (smallest_signal - enhanced) / (len(estimates) - 1)
+        new_signals = []
+        
+        for frac, estimate in zip(source_fractions, estimates):
+            if frac == np.max(source_fractions):
+                # Add residual to the biggest source
+                new_signals.append(estimate + residual)
+            elif frac == np.min(source_fractions):
+                # Use enhanced source in place of original source
+                new_signals.append(enhanced)
+            else:
+                # Keep other sources the same
+                new_signals.append(estimate)
+        return new_signals
+
+    def run(self, features=None):
         """
 
         Returns:
@@ -117,7 +154,10 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self._compute_spectrograms()
         if self.clusterer is None:
             self.clusterer = self.init_clusterer()
-        self.features = self.extract_features()
+        if features is not None:
+            self.features = features
+        else:
+            self.features = self.extract_features()
         self.assignments, self.confidence = self.cluster_features(
             self.features, self.clusterer
         )
@@ -148,7 +188,6 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             overwrite=True,
             truncate_to_length=self.audio_signal.signal_length
         )
-
         return source
 
     def make_audio_signals(self):
@@ -161,6 +200,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.sources = []
         for mask in self.masks:
             self.sources.append(self.apply_mask(mask))
+        self.sources = self.enhance(self.sources, amount=self.enhancement_amount)
         return self.sources
 
     def set_audio_signal(self, new_audio_signal):

@@ -1,6 +1,7 @@
 from . import EvaluationBase
 from itertools import permutations
 import numpy as np
+import warnings
 
 class ScaleInvariantSDR(EvaluationBase):
     """Super important. true_sources goes FIRST, estimated goes SECOND. Use keyword
@@ -16,6 +17,8 @@ class ScaleInvariantSDR(EvaluationBase):
                  compute_permutation=False, source_labels=None, scaling=True):
         self.true_sources_list = true_sources_list
         self.estimated_sources_list = estimated_sources_list
+
+        self._check_estimates_sum_to_sum_of_sources()
         self.compute_permutation = compute_permutation
         self.scaling = scaling
         
@@ -29,6 +32,13 @@ class ScaleInvariantSDR(EvaluationBase):
                 source_labels.append(label)
         self.source_labels = source_labels
         self.reference_array, self.estimated_array = self._preprocess_sources()
+
+    def _check_estimates_sum_to_sum_of_sources(self):
+        sum_of_true_sources = sum(self.true_sources_list).audio_data
+        sum_of_estimated_sources = sum(self.estimated_sources_list).audio_data
+        check = np.allclose(sum_of_true_sources, sum_of_estimated_sources)
+        if not check:
+            warnings.warn("Estimated sources do not sum to sum of true sources! Results may be invalid.")
         
     def evaluate(self):
         num_sources = self.reference_array.shape[-1]

@@ -5,6 +5,7 @@
 from tempfile import NamedTemporaryFile
 import librosa
 from .. import ImportErrorClass
+from copy import deepcopy
 
 def _check_imports():
     try:
@@ -34,6 +35,7 @@ def embed_audio(audio_signal, ext = '.mp3'):
 
         This will show a little audio player where you can play the audio inline in the notebook.
 	"""
+    audio_signal = deepcopy(audio_signal)
     ffmpy, IPython = _check_imports()
     sr = audio_signal.sample_rate
     d = audio_signal.audio_data.T

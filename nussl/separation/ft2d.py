@@ -24,7 +24,8 @@ class FT2D(mask_separation_base.MaskSeparationBase):
 
     """
     def __init__(self, input_audio_signal, high_pass_cutoff=100.0, neighborhood_size=(1, 25),
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
+                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT, quadrants_to_keep=(0,1,2,3),
+                 use_background_fourier_transform=True, mask_alpha=1.0,
                  mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
                  filter_approach='local_std'):
         super(FT2D, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
@@ -34,6 +35,9 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         self.use_librosa_stft = use_librosa_stft
         self.neighborhood_size = neighborhood_size
         self.result_masks = None
+        self.quadrants_to_keep = quadrants_to_keep
+        self.use_background_fourier_transform = use_background_fourier_transform
+        self.mask_alpha = mask_alpha
 
         self.stft = None
         allowed_filter_approaches = ['original', 'local_std']
@@ -95,17 +99,51 @@ class FT2D(mask_separation_base.MaskSeparationBase):
                               for i in range(self.audio_signal.num_channels)], 
                               axis = -1)
 
+    def filter_quadrants(self, data):
+        # 1: shape[0] // 2:, :shape[1] // 2
+        # 2: :shape[0] // 2, :shape[1] // 2
+        # 3: :shape[0] // 2, shape[1] // 2:
+        # 4: shape[0] // 2:, shape[1] // 2:
+        shape = data.shape
+        for quadrant in range(4):
+            if quadrant not in self.quadrants_to_keep:
+                if quadrant == 0:
+                    data[shape[0] // 2:, :shape[1] // 2] = 0
+                elif quadrant == 1:
+                    data[:shape[0] // 2, :shape[1] // 2] = 0
+                elif quadrant == 2:
+                    data[:shape[0] // 2, shape[1] // 2:] = 0
+                elif quadrant == 3:
+                    data[shape[0] // 2:, shape[1] // 2:] = 0
+        return data
+
     def compute_ft2d_mask(self, ft2d, ch):
         if self.filter_approach == 'original':
             bg_ft2d, fg_ft2d = self.filter_local_maxima(ft2d[:, :, ch])
         elif self.filter_approach == 'local_std':
             bg_ft2d, fg_ft2d = self.filter_local_maxima_with_std(ft2d[:, :, ch])
         
+        self.bg_ft2d = self.filter_quadrants(bg_ft2d)
+        self.fg_ft2d = self.filter_quadrants(fg_ft2d)
         _stft = np.abs(self.stft)[:, :, ch] + 1e-7
-        bg_stft = np.minimum(np.abs(np.fft.ifft2(bg_ft2d)), _stft)
+        _stft = _stft
+
+        if self.use_background_fourier_transform:
+            ft2d_used = self.bg_ft2d
+        else:
+            ft2d_used = self.fg_ft2d
+
+        est_stft = np.minimum(np.abs(np.fft.ifft2(ft2d_used)), _stft)
+        est_mask = (est_stft / _stft) ** self.mask_alpha
+        est_mask /= est_mask.max()
+
+        if self.use_background_fourier_transform:
+            bg_mask = est_mask
+            fg_mask = 1 - bg_mask
+        else:
+            fg_mask = est_mask
+            bg_mask = 1 - fg_mask
         
-        bg_mask = bg_stft / _stft
-        fg_mask = 1 - bg_mask
         return bg_mask, fg_mask
 
     def filter_local_maxima_with_std(self, ft2d):

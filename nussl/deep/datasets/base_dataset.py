@@ -336,7 +336,7 @@ class BaseDataset(Dataset):
                 data_dict['magnitude_spectrogram']
             )
         elif ('source_magnitude' in weight_type):
-            weights *= self.source_magnitude_Weights(
+            weights *= self.source_magnitude_weights(
                 data_dict['source_spectrograms']
             )
         if ('threshold' in weight_type):
@@ -376,9 +376,7 @@ class BaseDataset(Dataset):
 
     @staticmethod
     def threshold_weights(log_spectrogram, threshold=-40):
-        return (
-            (log_spectrogram - np.max(log_spectrogram)) > threshold
-        ).astype(float)
+        return (log_spectrogram > threshold).astype(float)
 
     @staticmethod
     def source_magnitude_weights(source_spectrograms):
@@ -398,9 +396,12 @@ class BaseDataset(Dataset):
         Returns:
             tuple of loaded audio w/ shape ? and sample rate
         """
-        rate, audio = wavfile.read(file_path)
-        audio = audio.astype(np.float32, order='C') / 32768.0
-        audio_signal = AudioSignal(audio_data_array=audio, sample_rate=self.options['sample_rate'])
+        if os.path.splitext(file_path)[-1] == '.wav':
+            rate, audio = wavfile.read(file_path)
+            audio = audio.astype(np.float32, order='C') / 32768.0
+            audio_signal = AudioSignal(audio_data_array=audio, sample_rate=self.options['sample_rate'])
+        else:
+            audio_signal = AudioSignal(file_path, sample_rate=self.options['sample_rate'])
         audio_signal.path_to_input_file = file_path
         audio_signal.stft_params.window_length = self.options['n_fft']
         audio_signal.stft_params.hop_length = self.options['hop_length']
