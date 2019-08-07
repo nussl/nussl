@@ -28,6 +28,7 @@ class PrimitiveClustering(ClusteringSeparationBase):
         input_audio_signal,
         algorithms,
         num_cascades=1,
+        scale_features=False,
         **kwargs
     ):
         super().__init__(
@@ -39,30 +40,41 @@ class PrimitiveClustering(ClusteringSeparationBase):
         self.algorithm_parameters = [a[1] if len(a) > 1 else {} for a in algorithms]
         self.algorithm_returns = [a[2] if len(a) > 2 else [] for a in algorithms]
         self.num_cascades = num_cascades
+        self.scale_features = scale_features
+        self.separators = self.setup_algorithms()
 
-    def run_algorithm_on_signal(self, mixture, level):
-        separations = []
+    def setup_algorithms(self):
         separators = []
+        mixture = deepcopy(self.audio_signal)
         for i, algorithm in enumerate(self.algorithms):
             stft_params = self.algorithm_parameters[i].pop('stft_params', None)
             if stft_params is not None:
                 mixture.stft_data = None
                 mixture.stft_params = stft_params
-                
+
             separator = algorithm(
                 mixture, 
                 use_librosa_stft=self.use_librosa_stft, 
                 **self.algorithm_parameters[i]
             )
+
+            mixture.stft_params = self.original_stft_params
+            separators.append(separator)
+        return separators
+
+    def set_audio_signal(self, new_audio_signal):
+        super().set_audio_signal(new_audio_signal)
+        self.setup_algorithms()
+
+    def run_algorithm_on_signal(self, mixture, level):
+        separations = []
+        for i, separator in enumerate(self.separators):
             separator.run()
             signals = separator.make_audio_signals()
             if self.algorithm_returns[i]:
                 signals = [signals[j] for j in self.algorithm_returns[i]]
             separations += signals
-            separators.append(separator)
-            mixture.stft_params = self.original_stft_params
-            
-        return separations, separators
+        return separations, self.separators
 
     def extract_features_from_signals(self, signals):
         features = []
@@ -103,6 +115,8 @@ class PrimitiveClustering(ClusteringSeparationBase):
         features = self.extract_features_from_separators(separators)
         self._compute_spectrograms()
         features = features.reshape(-1, features.shape[-1])
+        if self.scale_features:
+            features = scale(features, axis=0)
         #features = scale(features, axis=0)
         return features
 
@@ -113,7 +127,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         model_path,
         model=None,
         metadata=None,
-        use_cuda=True,
+        use_cuda=False,
         **kwargs
     ):
         
@@ -148,11 +162,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         input_audio_signal.stft_params.window_length = self.metadata['n_fft']
         input_audio_signal.stft_params.n_fft_bins = self.metadata['n_fft']
         input_audio_signal.stft_params.hop_length = self.metadata['hop_length']
-
-        self.audio_signal = input_audio_signal
-        self.original_length = input_audio_signal.signal_length
-        self.original_sample_rate = input_audio_signal.sample_rate
-        self.clusterer = None
+        input_audio_signal = super().set_audio_signal(input_audio_signal)
         return input_audio_signal
 
     def postprocess(self, assignments, confidence):

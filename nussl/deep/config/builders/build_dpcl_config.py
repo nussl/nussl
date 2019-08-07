@@ -6,6 +6,10 @@ def build_dpcl_config(options):
         else options['num_frequencies']
     )
     options['num_features'] *= options['num_channels']
+    
+    norm_layer = 'batch_norm'
+    if options['instance_norm']:
+        norm_layer = 'instance_norm'
 
     return {
         'modules': {
@@ -16,6 +20,12 @@ def build_dpcl_config(options):
                 'class': 'BatchNorm',
                 'args': {
                     'use_batch_norm': options['batch_norm']
+                }
+            },
+            'instance_norm': {
+                'class': 'InstanceNorm',
+                'args': {
+                    'use_instance_norm': options['instance_norm']
                 }
             },
             'mel_projection': {
@@ -54,8 +64,8 @@ def build_dpcl_config(options):
         },
         'connections': [
             ('mel_projection', ['log_spectrogram']),
-            ('batch_norm', ['mel_projection']),
-            ('recurrent_stack', ['batch_norm']),
+            (norm_layer, ['mel_projection']),
+            ('recurrent_stack', [norm_layer]),
             ('embedding', ['recurrent_stack'])
         ],
         'output': ['embedding']

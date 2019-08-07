@@ -156,7 +156,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
             previous_frequency = frequency
             previous_time = time
 
-        melody_signal = np.asarray(melody_signal)
+        melody_signal = np.asarray(melody_signal) + 1e-7
         melody_signal /= float(np.max(melody_signal))
         melody_signal *= .8
         melody_signal = [melody_signal for channel in range(self.audio_signal.num_channels)]

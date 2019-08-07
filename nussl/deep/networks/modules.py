@@ -20,6 +20,21 @@ class BatchNorm(nn.Module):
             data = data.view(shape)
         return data
 
+class InstanceNorm(nn.Module):
+    def __init__(self, use_instance_norm=True):
+        super(InstanceNorm, self).__init__()
+        self.use_instance_norm = use_instance_norm
+        if self.use_instance_norm:
+            self.add_module('instance_norm', nn.InstanceNorm2d(1))
+    
+    def forward(self, data):
+        if self.use_instance_norm:
+            shape = data.shape
+            data = data.view(shape[0], 1, shape[1], -1)
+            data = self.instance_norm(data)
+            data = data.view(shape)
+        return data
+
 class MelProjection(nn.Module):
     def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward', 
                 clamp=False, trainable=False):

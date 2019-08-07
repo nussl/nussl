@@ -1,6 +1,7 @@
 from .base_dataset import BaseDataset
 import os
 import numpy as np
+import random
 
 class MixSourceFolder(BaseDataset):
     def __init__(self, folder, options=None):
@@ -12,6 +13,7 @@ class MixSourceFolder(BaseDataset):
         
         mix = self._load_audio_file(wav_file)
         self.channels_in_mix = mix.num_channels
+        self.sum_sources = self.options.pop('sum_sources', False)
 
     def get_files(self, folder):
         self.source_folders = sorted([
@@ -36,9 +38,9 @@ class MixSourceFolder(BaseDataset):
         return files
 
     def load_audio_files(self, wav_file):
-        channel_indices = np.arange(self.channels_in_mix)
-        np.random.shuffle(channel_indices)
-        channel_indices = channel_indices[:self.options['num_channels']]
+        channel_indices = list(range(1, self.channels_in_mix))
+        random.shuffle(channel_indices)
+        channel_indices = [0] + channel_indices[:self.options['num_channels'] - 1]
         source_dict = {}
         classes = self.options['source_labels']
 
@@ -75,4 +77,6 @@ class MixSourceFolder(BaseDataset):
                 one_hots.append(one_hot)
         
         one_hots = np.stack(one_hots)
+        if self.sum_sources:
+            mix_signal = sum(sources)
         return mix_signal, sources, one_hots

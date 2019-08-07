@@ -13,7 +13,10 @@ from .. import mask_separation_base
 from .. import masks
 
 from .clusterers import GaussianMixtureConfidence, KMeansConfidence, SpectralClusteringConfidence
+from copy import deepcopy
 
+from sklearn.metrics import silhouette_samples
+from sklearn.preprocessing import scale
 
 class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
     """Implements deep source separation models using PyTorch"""
@@ -29,6 +32,13 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         percentile=0,
         clustering_type='kmeans',
         enhancement_amount=0.0,
+        use_loudness_for_confidence=True,
+        use_posteriors_for_confidence=True,
+        apply_pca=False,
+        num_pca_dimensions=2,
+        scale_features=False,
+        ref=np.max,
+        order_sources_by_size=True,
     ):
         super(ClusteringSeparationBase, self).__init__(
             input_audio_signal=input_audio_signal,
@@ -41,6 +51,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         )
         self.alpha = alpha
         self.use_librosa_stft = use_librosa_stft
+        self.ref = ref
         
         allowed_clustering_types = ['kmeans', 'gmm', 'spectral_clustering']
         if clustering_type not in allowed_clustering_types:
@@ -54,6 +65,12 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.percentile = percentile
         self.features = None
         self.enhancement_amount = enhancement_amount
+        self.order_sources_by_size = order_sources_by_size
+        self.use_loudness_for_confidence = use_loudness_for_confidence
+        self.use_posteriors_for_confidence = use_posteriors_for_confidence
+        self.apply_pca = apply_pca
+        self.num_pca_dimensions = num_pca_dimensions
+        self.scale_features = scale_features
 
     def _compute_spectrograms(self):
         self.stft = self.audio_signal.stft(
@@ -61,10 +78,10 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             remove_reflection=True,
             use_librosa=self.use_librosa_stft
         )
-        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft), ref=np.max)
+        self.log_spectrogram = librosa.amplitude_to_db(np.abs(self.stft), ref=self.ref)
 
         threshold = self.log_spectrogram
-        threshold = (threshold > np.percentile(threshold, self.percentile)).astype(float)
+        threshold = (threshold >= np.percentile(threshold, self.percentile)).astype(float)
         self.sample_weight = self.project_data(np.abs(self.stft))
         self.threshold = self.project_data(threshold).astype(bool)
 
@@ -90,6 +107,10 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
     def extract_features(self):
         raise NotImplementedError()
 
+    def _scale_features(self, features):
+        features = scale(features, axis=0)
+        return features
+
     def cluster_features(self, features, clusterer):
         if self.clustering_type == 'kmeans':
             sample_weight = self.sample_weight.flatten()
@@ -109,6 +130,14 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         confidence = confidence.reshape(self.stft.shape)
         assignments = assignments.transpose(3, 0, 1, 2)
         return assignments, confidence
+
+    def _order_sources_by_size(self, estimates):
+        # orders sources by size, largest to smallest
+        source_fractions = [m.mask.sum() for m in self.masks]
+        estimates = [
+            x for _, x in sorted(zip(source_fractions, estimates), reverse=True)
+        ]
+        return estimates
 
     def enhance(self, estimates, amount = 0.5):
         # an odd trick to trade SDR for SIR
@@ -158,6 +187,15 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             self.features = features
         else:
             self.features = self.extract_features()
+            
+            if self.scale_features:
+                self.features = self._scale_features(self.features)
+
+            if self.apply_pca:
+                self.features, _ = self.project_embeddings(
+                    self.num_pca_dimensions
+                )
+            
         self.assignments, self.confidence = self.cluster_features(
             self.features, self.clusterer
         )
@@ -201,7 +239,51 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         for mask in self.masks:
             self.sources.append(self.apply_mask(mask))
         self.sources = self.enhance(self.sources, amount=self.enhancement_amount)
+        if self.order_sources_by_size:
+            self.sources = self._order_sources_by_size(self.sources)
         return self.sources
+
+    def get_overall_confidence(self, threshold=99, n_samples=1000, verbose=False):
+        if self.confidence is None or self.log_spectrogram is None:
+            raise RuntimeError('Must do separator.run() first before calling this!')
+        
+        if self.use_posteriors_for_confidence:
+            weights = np.percentile(self.log_spectrogram, threshold)
+            weights = self.log_spectrogram >= weights
+            posterior_confidence = np.average(
+                self.confidence, weights=weights
+            )
+        else:
+            posterior_confidence = 1.0
+
+        _features = self.features[self.threshold.flatten()]
+        n_samples = min(n_samples, _features.shape[0])
+        sampled = np.random.choice(_features.shape[0], n_samples, replace=False)
+
+        _features = _features[sampled, :]
+        labels = self.clusterer.predict(_features)
+        
+        if self.use_loudness_for_confidence:
+            source_shares = [(labels == i).sum() for i in range(self.num_sources)]
+            source_shares /= sum(source_shares)
+            source_loudness_confidence = source_shares.min()
+        else:
+            source_loudness_confidence = 1.0
+
+        if len(np.unique(labels)) > 1:
+            silhoettes = (silhouette_samples(_features, labels) + 1) / 2
+            silhoette_confidence = silhoettes.mean()
+        else:
+            silhoette_confidence = posterior_confidence
+
+        
+        if verbose:
+            print(posterior_confidence, silhoette_confidence, source_loudness_confidence)
+
+        overall_confidence = (
+            posterior_confidence * silhoette_confidence * source_loudness_confidence
+        )
+        return overall_confidence
 
     def set_audio_signal(self, new_audio_signal):
         input_audio_signal = deepcopy(new_audio_signal)
@@ -222,7 +304,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
 
         """
         transform = PCA(n_components=num_dimensions)
-        mask = (self.log_spectrogram >= threshold).astype(float)        
+        mask = (self.log_spectrogram >= threshold).astype(float)      
         mask = self.project_data(mask)
         mask = mask.reshape(-1) > 0
         _embedding = self.features[mask]

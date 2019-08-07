@@ -76,9 +76,10 @@ class Trainer():
         self.module = self.model
         resume = self.options.pop('resume', False)
         resume_location = self.options.pop('resume_location', None)
-        load_only_model = self.options.pop('load_only_model', True)
+        resume_prefix = self.options.pop('resume_prefix', ('latest',))
+        load_only_model = self.options.pop('load_only_model', False)
         if resume:
-            self.resume(resume_location, load_only_model=load_only_model)
+            self.resume(resume_location, load_only_model=load_only_model, prefixes=resume_prefix)
         if options['data_parallel'] and options['device'] == 'cuda':
             self.model = nn.DataParallel(self.module)
             self.module = self.model.module
@@ -237,6 +238,8 @@ class Trainer():
                     if setting['command'] == 'set_current_length':
                         for key, dataloader in self.dataloaders.items():
                             dataloader.dataset.set_current_length(*setting['args'])
+                    if setting['command'] == 'save':
+                        self.save(is_best=False, prefix=f'epoch{self.num_epoch}')
 
     def log_to_tensorboard(self, data, step, scope):
         if self.use_tensorboard:
@@ -254,22 +257,16 @@ class Trainer():
                 for key in data:
                     self.experiment.log_metric(key, data[key], step)
 
-    def clear_cache(self):
-        for key, dataloader in self.dataloaders.items():
-            dataloader.dataset.clear_cache()
-            dataloader.dataset.setup_cache()
-
     def populate_cache(self):
         for key, dataloader in self.dataloaders.items():
             num_batches = len(dataloader)
-            logging.info(f'Populating cache for {key} w/ {num_batches} batches')
-            for i, data in enumerate(dataloader):
-                if i % 100 == 0:
-                    logging.info(f'{i}/{num_batches} batches completed')
-                continue
-            logging.info(f'Done populating cache for {key}')
-        self.cache_populated = True
-
+            if dataloader.dataset.overwrite_cache:
+                logging.info(f'Populating cache for {key} w/ {num_batches} batches')
+                for i, data in enumerate(dataloader):
+                    if i % 50 == 0:
+                        logging.info(f'{i}/{num_batches} batches completed')
+                    continue
+                logging.info(f'Done populating cache for {key}')
 
     def switch_to_cache(self):
         for key, dataloader in self.dataloaders.items():
@@ -278,9 +275,7 @@ class Trainer():
     def fit(self):
         lowest_validation_loss = np.inf
 
-        if not self.cache_populated:
-            self.clear_cache()
-            self.populate_cache()
+        self.populate_cache()
         self.switch_to_cache()
 
         logging.info(f"Training data for {self.options['num_epochs'] - self.num_epoch} epochs")
@@ -337,7 +332,7 @@ class Trainer():
             
         return validation_loss
 
-    def save(self, is_best: bool, path: str = '') -> str:
+    def save(self, is_best: bool, prefix: str = '') -> str:
         """Saves the model being trained with either `latest` or `best` prefix
         based on validation loss
 
@@ -351,15 +346,13 @@ class Trainer():
         Returns:
             path to saved model
         """
-        if path:
-            os.makedirs(path, exist_ok=True)
-
-        prefix = 'best' if is_best else 'latest'
+        if not prefix:
+            prefix = 'latest'
         if self.model_tag is not None:
             prefix = f'{prefix}.{self.model_tag}'
         optimizer_path = os.path.join(self.checkpoint_folder, f'{prefix}.opt.pth')
         model_path = os.path.join(
-             path if path else self.checkpoint_folder,
+             self.checkpoint_folder,
             f'{prefix}.model.pth'
         )
         dataset_options = self.dataloaders['training'].dataset.options
@@ -382,6 +375,9 @@ class Trainer():
 
         torch.save(optimizer_state, optimizer_path)
         self.module.save(model_path, {'metadata': metadata})
+        if is_best:
+            torch.save(optimizer_state, optimizer_path.replace('latest', 'best'))
+            self.module.save(model_path.replace('latest', 'best'), {'metadata': metadata})
         return model_path
 
     def resume(self, resume_location, load_only_model=True, prefixes=('best', 'latest')):

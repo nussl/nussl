@@ -6,6 +6,7 @@ from sklearn import preprocessing
 import scipy
 from scipy.special import logsumexp
 from sklearn.metrics.pairwise import rbf_kernel
+from sklearn.metrics import silhouette_samples
 
 def softmax(x, axis=None):
     return np.exp(x - logsumexp(x, axis=axis, keepdims=True))
@@ -40,11 +41,12 @@ def gmm_js(gmm_p, gmm_q, n_samples=10**5):
             + log_q_Y.mean() - (log_mix_Y.mean() - np.log(2))) / 2
 
 class KMeansConfidence(KMeans):
-    def __init__(self, n_components, alpha=1.0, posterior_alpha=5.0, **kwargs):
+    def __init__(self, n_components, alpha=1.0, posterior_alpha=5.0, confidence_type='softmax', **kwargs):
         kwargs['n_clusters'] = n_components
         self.alpha = alpha
         self.posterior_alpha = posterior_alpha
         self.no_iter = kwargs.pop('no_iter', False)
+        self.confidence_type = confidence_type
         if 'init' in kwargs:
             if type(kwargs['init']) is list:
                 kwargs['init'] = np.array(kwargs['init'])
@@ -63,9 +65,13 @@ class KMeansConfidence(KMeans):
             y = (average distance between centroids)
         """
         distances = super().transform(features)
-        confidence = softmax(-distances, axis=-1)
+        if self.confidence_type == 'softmax':
+            confidence = softmax(-distances, axis=-1)
+            confidence = (self.n_clusters * np.max(confidence, axis=-1) - 1) / (self.n_clusters - 1)
+        elif self.confidence_type == 'silhouette':
+            labels = self.predict(features)
+            confidence = silhouette_samples(features, labels)
         posteriors = softmax(-self.posterior_alpha * distances, axis=-1)
-        confidence = (2 * np.max(confidence, axis=-1) - 1) ** self.alpha
         return confidence, posteriors
 
     def predict_and_get_confidence(self, features):

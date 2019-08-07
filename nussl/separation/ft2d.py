@@ -135,7 +135,7 @@ class FT2D(mask_separation_base.MaskSeparationBase):
 
         est_stft = np.minimum(np.abs(np.fft.ifft2(ft2d_used)), _stft)
         est_mask = (est_stft / _stft) ** self.mask_alpha
-        est_mask /= est_mask.max()
+        est_mask /= (est_mask + 1e-7).max()
 
         if self.use_background_fourier_transform:
             bg_mask = est_mask

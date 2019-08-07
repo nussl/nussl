@@ -71,17 +71,19 @@ class BaseDataset(Dataset):
                 '_'.join(self.options['weight_type']),
             )
             self.cache = os.path.join(cache, self.dataset_tag + '.zarr')
-            overwrite = self.options.pop('overwrite_cache', False)
+            self.overwrite_cache = self.options.pop('overwrite_cache', False)
             logging.info(f'Caching to: {self.cache}')
 
             file_mode = 'r'
             if os.path.exists(self.cache):
                 logging.info(f'Cache location {self.cache} exists! Checking if overwrite. Otherwise, will use cache.')
-                if overwrite:
+                if self.overwrite_cache:
                     logging.info('Overwriting cache.')
+                    self.clear_cache()
                     file_mode = 'w'
             else:
                 logging.info(f'{self.cache} does not exist...creating a new cache')
+                self.overwrite_cache = True
                 file_mode = 'w'
             
             self.cache_dataset = zarr.open(
@@ -394,7 +396,7 @@ class BaseDataset(Dataset):
             file_path - relative or absolute path to file to load
 
         Returns:
-            tuple of loaded audio w/ shape ? and sample rate
+            AudioSignal object
         """
         if os.path.splitext(file_path)[-1] == '.wav':
             rate, audio = wavfile.read(file_path)

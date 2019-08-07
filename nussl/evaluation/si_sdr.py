@@ -2,6 +2,7 @@ from . import EvaluationBase
 from itertools import permutations
 import numpy as np
 import warnings
+from scipy.ndimage import gaussian_filter
 
 class ScaleInvariantSDR(EvaluationBase):
     """Super important. true_sources goes FIRST, estimated goes SECOND. Use keyword
@@ -14,13 +15,19 @@ class ScaleInvariantSDR(EvaluationBase):
         [type] -- [description]
     """
     def __init__(self, true_sources_list, estimated_sources_list, 
-                 compute_permutation=False, source_labels=None, scaling=True):
+                 compute_permutation=False, source_labels=None, scaling=True,
+                 mask_for_source_activity=False, masking_threshold=-60):
         self.true_sources_list = true_sources_list
         self.estimated_sources_list = estimated_sources_list
 
         self._check_estimates_sum_to_sum_of_sources()
         self.compute_permutation = compute_permutation
         self.scaling = scaling
+        self.mask_for_source_activity = mask_for_source_activity
+        if mask_for_source_activity:
+            self._mask_for_source_activity(
+                estimated_sources_list, true_sources_list, threshold=masking_threshold
+            )
         
         if source_labels is None:
             source_labels = []
@@ -58,6 +65,14 @@ class ScaleInvariantSDR(EvaluationBase):
                     )
                     results[o, c, j, :] = [SDR, SIR, SAR]
         return self._populate_scores_dict(results, orderings)
+
+    def _mask_for_source_activity(self, estimates, references, threshold=-60):
+        for s, g in zip(estimates, references):
+            energy = 20*np.log10(np.abs(g.audio_data) + 1e-4)
+            energy = gaussian_filter(energy, (1, 1000))
+            mask = (energy < threshold)
+            s.audio_data[mask] = 0
+            g.audio_data[mask] = 0
     
     def _populate_scores_dict(self, results, orderings):
         best_permutation_by_sdr = np.argmax(results[:, :, :, 0].mean(axis=1).mean(axis=-1))
