@@ -6,13 +6,15 @@ import os
 import shutil
 import random
 from typing import Dict, Any, Optional, Tuple, List
-from ...core import AudioSignal
+from ...core import AudioSignal, jupyter_utils
+from ...separation import SoftMask
 from scipy.io import wavfile
 import logging
 import copy
 from enum import Enum
 import zarr
 import numcodecs
+import matplotlib.pyplot as plt
 
 class PRECISION(Enum):
     FLOAT32=np.float32
@@ -36,6 +38,7 @@ class BaseDataset(Dataset):
         self.options = copy.deepcopy(options)
         self.use_librosa = self.options.pop('use_librosa_stft', False)
         self.dataset_tag = self.options.pop('dataset_tag', 'default')
+        self.binary_threshold = self.options.pop('binary_threshold', 0)
         self.current_length = self.options.pop('min_length', self.options['length'])
         self.excerpt_selection_strategy = self.options.pop('excerpt_selection_strategy', 'random')
         self.save_precision = self.options.pop('save_precision', 'FLOAT32')
@@ -89,7 +92,7 @@ class BaseDataset(Dataset):
             self.cache_dataset = zarr.open(
                 self.cache, 
                 mode=file_mode, 
-                shape=(len(self.files),), 
+                shape=(len(self),), 
                 chunks=(self.chunk_size,),
                 dtype=object, 
                 object_codec=numcodecs.Pickle(),
@@ -257,6 +260,10 @@ class BaseDataset(Dataset):
             source_magnitudes == np.amax(source_magnitudes, axis=-1, keepdims=True)
         ).astype(float)
 
+        source_db = librosa.amplitude_to_db(source_magnitudes, ref=np.max)
+        db_threshold_mask = np.abs(np.diff(source_db, axis=-1)) >= self.binary_threshold
+        assignments = assignments * db_threshold_mask
+
         output = {
             'log_spectrogram': log_spectrogram,
             'magnitude_spectrogram': mix_magnitude,
@@ -270,17 +277,19 @@ class BaseDataset(Dataset):
         length = data_dict['log_spectrogram'].shape[1]
     
         for i, target in enumerate(self.targets):
-            data = data_dict[target]
-            pad_length = max(max_length - length, 0)
-            pad_tuple = [(0, 0) for k in range(len(data.shape))]
-            pad_tuple[1] = (0, pad_length)
-            data_dict[target] = np.pad(data, pad_tuple, mode='constant')
+            if not np.ndim(data_dict[target]) == 0:
+                data = data_dict[target]
+                pad_length = max(max_length - length, 0)
+                pad_tuple = [(0, 0) for k in range(len(data.shape))]
+                pad_tuple[1] = (0, pad_length)
+                data_dict[target] = np.pad(data, pad_tuple, mode='constant')
 
         for target in self.targets:
             if self.data_keys_for_training and target not in self.data_keys_for_training:
                 data_dict.pop(target)
             else:
-                data_dict[target] = np.swapaxes(data_dict[target], 0, 1)
+                if not np.ndim(data_dict[target]) == 0:
+                    data_dict[target] = np.swapaxes(data_dict[target], 0, 1)
         
         return data_dict
     
@@ -296,16 +305,16 @@ class BaseDataset(Dataset):
     def get_target_length(self, data_dict, target_length):
         length = data_dict['log_spectrogram'].shape[0]
         if self.excerpt_selection_strategy == 'random':
-            offset = np.random.randint(0, max(1, length - target_length))
+            offset = random.randint(0, max(1, length - target_length))
         elif self.excerpt_selection_strategy == 'balanced':
             _balance = data_dict['assignments'].mean(axis=-3).prod(axis=-1)
             indices = np.argwhere(_balance >= np.percentile(_balance, 50))[:, 0]
             indices[indices > length - target_length] = max(0, length - target_length)
             indices = np.unique(indices)
-            offset = np.random.choice(indices)
+            offset = random.choice(indices)
                 
         for target in data_dict:
-            if target != 'classes':
+            if target != 'classes' and not np.ndim(data_dict[target]) == 0:
                 data_dict[target] = data_dict[target][
                     offset:offset + target_length,
                     :,
@@ -360,7 +369,7 @@ class BaseDataset(Dataset):
         assignments = assignments.reshape(-1, _shape[-1])
 
         class_weights = assignments.sum(axis=0)
-        class_weights /= class_weights.sum()
+        class_weights /= (class_weights.sum() + 1e-7)
         class_weights = 1 / np.sqrt(class_weights + 1e-4)
 
         weights = assignments @ class_weights 
@@ -408,3 +417,37 @@ class BaseDataset(Dataset):
         audio_signal.stft_params.window_length = self.options['n_fft']
         audio_signal.stft_params.hop_length = self.options['hop_length']
         return audio_signal
+
+    def inspect(self, i):
+        items = self.load_audio_files(self.files[i])
+        output = self.construct_input_output(items[0], items[1])
+        output['weights'] = self.get_weights(
+            output,
+            self.options['weight_type']
+        )
+
+        for item in items:
+            print(item)
+        
+        print('Mixture + original sources')
+        jupyter_utils.embed_audio(items[0])
+        for s in items[1]:
+            jupyter_utils.embed_audio(s)
+
+        print('Sources masked from mixture')
+        for j in range(output['assignments'].shape[-1]):
+            mask = SoftMask(output['assignments'][:, :, :, j])
+            items[0].stft()
+            signal = items[0].apply_mask(mask)
+            signal.istft(overwrite=True, truncate_to_length=items[0].signal_length)
+            jupyter_utils.embed_audio(signal)
+
+        plt.subplot(211)
+        plt.grid(False)
+        plt.imshow(output['log_spectrogram'].mean(axis=-1), origin='lower', aspect='auto')
+        plt.title('Mixture spectrogram')
+
+        plt.subplot(212)
+        plt.grid(False)
+        plt.imshow(np.argmax(output['assignments'], axis=-1).mean(axis=-1), origin='lower', aspect='auto')
+        plt.title('Assignments')

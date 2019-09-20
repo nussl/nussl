@@ -19,7 +19,7 @@ def _check_imports():
         raise ImportError('IPython must be installed in order to use this function!')
     return ffmpy, IPython
 
-def embed_audio(audio_signal, ext = '.mp3'):
+def embed_audio(audio_signal, ext = '.mp3', display=True):
     """
 	Write a numpy array to a temporary mp3 file using ffmpy, then embeds the mp3 into the notebook.
 
@@ -50,7 +50,11 @@ def embed_audio(audio_signal, ext = '.mp3'):
         ff.run()
     else:
         tmp_converted = tmp_wav
-    IPython.display.display(IPython.display.Audio(data=tmp_converted.name, rate = sr))
+    
+    audio_element = IPython.display.Audio(data=tmp_converted.name, rate = sr)
+    if display:
+        IPython.display.display(audio_element)
     if ext != '.wav':
         tmp_converted.close()
     tmp_wav.close()
+    return audio_element

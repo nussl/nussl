@@ -24,6 +24,6 @@ Classifier: Topic :: Multimedia
 Classifier: Topic :: Multimedia :: Sound/Audio
 Classifier: Topic :: Multimedia :: Sound/Audio :: Editors
 Classifier: Topic :: Software Development :: Libraries
+Provides-Extra: melodia
 Provides-Extra: deep
 Provides-Extra: musdb
-Provides-Extra: melodia
