@@ -201,6 +201,9 @@ class BaseDataset(Dataset):
         else:
             output = self._generate_example(filename)
             output = self.get_target_length(output, self.current_length)
+
+        for k in output:
+            logging.info('output_shape ' + k + ' ' + str(output[k].shape))
             
         return output
 
@@ -305,7 +308,7 @@ class BaseDataset(Dataset):
     def get_target_length(self, data_dict, target_length):
         length = data_dict['log_spectrogram'].shape[0]
         if self.excerpt_selection_strategy == 'random':
-            offset = random.randint(0, max(1, length - target_length))
+            offset = random.randint(0, length - target_length)
         elif self.excerpt_selection_strategy == 'balanced':
             _balance = data_dict['assignments'].mean(axis=-3).prod(axis=-1)
             indices = np.argwhere(_balance >= np.percentile(_balance, 50))[:, 0]
