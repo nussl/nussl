@@ -201,9 +201,6 @@ class BaseDataset(Dataset):
         else:
             output = self._generate_example(filename)
             output = self.get_target_length(output, self.current_length)
-
-        for k in output:
-            logging.info('output_shape ' + k + ' ' + str(output[k].shape))
             
         return output
 
