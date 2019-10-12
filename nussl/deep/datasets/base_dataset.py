@@ -56,6 +56,8 @@ class BaseDataset(Dataset):
             'weights'
         ]
         self.data_keys_for_training = self.options.pop('data_keys_for_training', [])
+        self.targets += self.data_keys_for_training
+        self.targets = list(set(self.targets))
         self.setup_cache()
         self.cache_populated = False
 
