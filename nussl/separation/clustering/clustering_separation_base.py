@@ -18,6 +18,10 @@ from copy import deepcopy
 from sklearn.metrics import silhouette_samples
 from sklearn.preprocessing import scale
 
+from nussl.deep.train.loss import DeepClusteringLoss
+import torch
+from sklearn.preprocessing import OneHotEncoder
+
 class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
     """Implements deep source separation models using PyTorch"""
 
@@ -32,8 +36,6 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         percentile=0,
         clustering_type='kmeans',
         enhancement_amount=0.0,
-        use_loudness_for_confidence=True,
-        use_posteriors_for_confidence=True,
         apply_pca=False,
         num_pca_dimensions=2,
         scale_features=False,
@@ -66,8 +68,6 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         self.features = None
         self.enhancement_amount = enhancement_amount
         self.order_sources_by_size = order_sources_by_size
-        self.use_loudness_for_confidence = use_loudness_for_confidence
-        self.use_posteriors_for_confidence = use_posteriors_for_confidence
         self.apply_pca = apply_pca
         self.num_pca_dimensions = num_pca_dimensions
         self.scale_features = scale_features
@@ -243,18 +243,28 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
             self.sources = self._order_sources_by_size(self.sources)
         return self.sources
 
+    def get_lda_confidence(self):
+        features = self.features
+        assignments = self.clusterer.predict(features)
+
+        ohe = OneHotEncoder(categories='auto', sparse=False)
+        assignments = ohe.fit_transform(assignments.reshape(-1, 1))
+        assignments = torch.from_numpy(assignments).unsqueeze(0).float()
+
+        features = torch.from_numpy(features).unsqueeze(0).float()
+        weights = self._preprocess()['magnitude_spectrogram']
+        loss = DeepClusteringLoss()
+        return 1 - loss(features, assignments, weights).item()
+
     def get_overall_confidence(self, threshold=99, n_samples=1000, verbose=False):
         if self.confidence is None or self.log_spectrogram is None:
             raise RuntimeError('Must do separator.run() first before calling this!')
         
-        if self.use_posteriors_for_confidence:
-            weights = np.percentile(self.log_spectrogram, threshold)
-            weights = self.log_spectrogram >= weights
-            posterior_confidence = np.average(
-                self.confidence, weights=weights
-            )
-        else:
-            posterior_confidence = 1.0
+        weights = np.percentile(self.log_spectrogram, threshold)
+        weights = self.log_spectrogram >= weights
+        posterior_confidence = np.average(
+            self.confidence, weights=weights
+        )
 
         _features = self.features[self.threshold.flatten()]
         n_samples = min(n_samples, _features.shape[0])
@@ -263,12 +273,9 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         _features = _features[sampled, :]
         labels = self.clusterer.predict(_features)
         
-        if self.use_loudness_for_confidence:
-            source_shares = [(labels == i).sum() for i in range(self.num_sources)]
-            source_shares /= sum(source_shares)
-            source_loudness_confidence = source_shares.min()
-        else:
-            source_loudness_confidence = 1.0
+        source_shares = [(labels == i).sum() for i in range(self.num_sources)]
+        source_shares /= sum(source_shares)
+        source_loudness_confidence = source_shares.min()
 
         if len(np.unique(labels)) > 1:
             silhoettes = (silhouette_samples(_features, labels) + 1) / 2
@@ -280,9 +287,15 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         if verbose:
             print(posterior_confidence, silhoette_confidence, source_loudness_confidence)
 
-        overall_confidence = (
-            posterior_confidence * silhoette_confidence * source_loudness_confidence
-        )
+        lda_confidence = self.get_lda_confidence()
+
+        overall_confidence = {
+            'posterior_confidence': posterior_confidence,
+            'silhoette_confidence': silhoette_confidence,
+            'source_loudness_confidence': source_loudness_confidence,
+            'lda_confidence': lda_confidence
+        }
+
         return overall_confidence
 
     def set_audio_signal(self, new_audio_signal):
