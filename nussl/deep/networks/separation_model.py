@@ -6,7 +6,7 @@ import numpy as np
 from itertools import chain
 
 class SeparationModel(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, extra_modules=None):
         """
         SeparationModel takes a configuration file or dictionary that describes the model
         structure, which is some combination of MelProjection, Embedding, RecurrentStack,
@@ -68,6 +68,16 @@ class SeparationModel(nn.Module):
             else:
                 config = json.loads(config)
 
+        # Add extra modules to modules
+        if extra_modules:
+            for name in dir(extra_modules):
+                if name not in dir(modules):
+                    setattr(
+                        modules, 
+                        name,
+                        getattr(extra_modules, name)
+                    )
+
         module_dict = {}
         self.input = {}
         for module_key in config['modules']:
@@ -101,7 +111,12 @@ class SeparationModel(nn.Module):
             input_data = []
             for c in connection[1]:
                 input_data.append(output[c] if c in output else data[c])
-            output[connection[0]] = layer(*input_data)
+            _output = layer(*input_data)
+            if isinstance(_output, dict):
+                for k in _output:
+                    output[f'{connection[0]}:{k}'] = _output[k]
+            else:
+                output[connection[0]] = _output
         return {o: output[o] for o in self.output_keys}
 
     def project_data(self, data, clamp=False):
