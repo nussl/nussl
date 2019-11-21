@@ -9,3 +9,4 @@ Output/
 *.ipynb
 nussl.egg-info/
 .vscode/
+**/.ipynb_checkpoints
