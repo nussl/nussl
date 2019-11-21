@@ -209,6 +209,7 @@ class Trainer():
         num_batches = len(self.dataloaders[key])
         logging.info(f"Starting {key} epoch")
         for step, data in enumerate(self.dataloaders[key]):
+            #TODO factor this out into a loop that can be overridden by other classes.
             data = self.prepare_data(data)
             output = self.forward(data)
             loss = self.calculate_loss(output, data)
