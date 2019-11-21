@@ -8,8 +8,7 @@ class DeepClusteringLoss(nn.Module):
         """
         Computes the deep clustering loss with weights. Equation (7) in [1].
 
-        References:
-            [1] Wang, Z. Q., Le Roux, J., & Hershey, J. R. (2018, April).
+        [1] Wang, Z. Q., Le Roux, J., & Hershey, J. R. (2018, April).
             Alternative Objective Functions for Deep Clustering.
             In Proc. IEEE International Conference on Acoustics,  Speech
             and Signal Processing (ICASSP).
@@ -38,6 +37,15 @@ class DeepClusteringLoss(nn.Module):
 
 class PermutationInvariantLoss(nn.Module):
     def __init__(self, loss_function):
+        """Computes the Permutation Invariant Loss (PIT) [1] by permuting the estimated 
+        sources and the reference sources. Takes the best permutation and only backprops
+        the loss from that.
+
+        [1] Yu, Dong, Morten Kolbæk, Zheng-Hua Tan, and Jesper Jensen. 
+            "Permutation invariant training of deep models for speaker-independent 
+            multi-talker speech separation." In 2017 IEEE International Conference on 
+            Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
+        """
         super(PermutationInvariantLoss, self).__init__()
         self.loss_function = loss_function
         self.loss_function.reduce = False
@@ -57,16 +65,3 @@ class PermutationInvariantLoss(nn.Module):
         losses = torch.min(losses, dim=-1)[0]
         loss = torch.mean(losses)
         return loss
-
-class WeightedL1Loss(nn.Module):
-    def __init__(self, loss_function):
-        super(WeightedL1Loss, self).__init__()
-        self.loss_function = loss_function
-        self.loss_function.reduce = False
-        
-    def forward(self, estimates, targets):
-        shape = targets.shape
-        weights = shape[-1]*nn.functional.normalize(1./torch.sum(estimates.view(shape[0], -1, shape[-1]) > 0, dim=1).float(), dim=-1, p=1).unsqueeze(1)
-        loss = torch.mean(self.loss_function(estimates, targets).view(shape[0], -1, shape[-1]) * weights)
-        return loss
-

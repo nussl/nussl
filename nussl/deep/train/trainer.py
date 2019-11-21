@@ -187,6 +187,8 @@ class Trainer():
             raise ValueError("Loss went to nan - aborting training.")
 
     def prepare_data(self, data):
+        """Moves all the data to the requested device (cuda or cpu).
+        """
         for key in data:
             data[key] = data[key].float().to(self.device)
             if key not in self.loss_keys and self.model.training:
@@ -194,6 +196,8 @@ class Trainer():
         return data
     
     def forward(self, data):
+        """Performs a forward pass on the data using the model.
+        """
         if self.model.training:
             output = self.model(data)
         else:
@@ -218,7 +222,6 @@ class Trainer():
                 loss['total_loss'].backward()
                 self.optimizer.step()
             step += 1
-
         return {'loss': epoch_loss / float(num_batches)}
 
     def before_epoch(self):
@@ -241,7 +244,7 @@ class Trainer():
                     if setting['command'] == 'save':
                         self.save(is_best=False, prefix=f'epoch{self.num_epoch}')
 
-    def log_to_tensorboard(self, data, step, scope):
+    def log_metrics(self, data, step, scope):
         if self.use_tensorboard:
             prefix = 'training' if self.model.training else 'validation'
             for key in data:
@@ -285,7 +288,7 @@ class Trainer():
             self.before_epoch()
             start_time = time.time()
             epoch_loss = self.run_epoch('training')
-            self.log_to_tensorboard(epoch_loss, self.num_epoch, 'epoch')
+            self.log_metrics(epoch_loss, self.num_epoch, 'epoch')
             validation_loss = self.validate('validation')
             self.save(validation_loss['loss'] < lowest_validation_loss)
             lowest_validation_loss = (
@@ -324,7 +327,7 @@ class Trainer():
         self.model.eval()
         with torch.no_grad():
             validation_loss = self.run_epoch(key)
-        self.log_to_tensorboard(validation_loss, self.num_epoch, 'epoch')
+        self.log_metrics(validation_loss, self.num_epoch, 'epoch')
         self.model.train()
         self.scheduler.step(validation_loss['loss'])
         if self.scheduler.num_bad_epochs + 1 == self.options['patience']:
