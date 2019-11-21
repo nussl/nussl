@@ -4,7 +4,49 @@ import numpy as np
 import random
 
 class MixSourceFolder(BaseDataset):
-    def __init__(self, folder, options=None):
+    def __init__(self, folder, options):
+        """This dataset expects your data to be formatted in the following way:
+
+            data/
+                mix/
+                    [file0].wav
+                    [file1].wav
+                    [file2].wav
+                    ...
+                s0/
+                    [file0].wav
+                    [file1].wav
+                    [file2].wav
+                    ...
+                s1/
+                    [file0].wav
+                    [file1].wav
+                    [file2].wav
+                    ...
+                s2/
+                    [file0].wav
+                    [file1].wav
+                    [file2].wav
+                    ...
+                ...
+        
+        Note that the the filenames match between the mix folder and each source folder.
+        The only protected folder name here is 'mix'. The source folder names can be
+        whatever you want. Given a file in the 'mix' folder, this dataset will look up
+        the corresponding files with the same name in the source folders. These are the
+        source audio files. The sum of the sources should equal the mixture. Each source
+        will be labeled according to the folder name it comes from.
+        
+        If no mix folder exists, then this class will use the files in the first source
+        folder and look for matching files in the other source folder. Then the mix
+        will be created by summing the sources on the fly. This can also happen
+        if there is a mix folder by setting self.options['sum_sources'] = True.
+
+        Arguments:
+            folder: location where all the data lives that is in MixSourceFolder format.
+            options: the options for the dataset (see deep/config/defaults/dataset.json)
+                for more details.            
+        """
         super(MixSourceFolder, self).__init__(folder, options)
         if self.create_mix:
             wav_file = os.path.join(self.folder, self.source_folders[0], self.files[0])
