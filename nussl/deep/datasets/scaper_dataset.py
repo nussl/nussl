@@ -5,7 +5,22 @@ import os
 import numpy as np
 
 class Scaper(BaseDataset):
-    def __init__(self, folder, options=None):
+    def __init__(self, folder, options):
+        """This dataset expects that your data was mixed using Scaper, which generates
+        mixtures from a given source library. Scaper generates a bunch of JSON files
+        which are then parsed by this dataset class. Each JSON file contains all of the
+        metadata to find the sources that went into the mixture, the mixture itself (must
+        have the same name as the JSON file but with a different extension), and the 
+        classes of the sources. This JSON file is processed here to load the mixture
+        and sources, and label the sources.
+
+        For now, Scaper datasets must be mixed by this fork of Scaper, kept here:
+            https://github.com/pseeth/scaper
+
+        This fork saves the sources alongside the mixture. Datasets created using this
+        fork can be immediately used for training a deep source separation model by
+        using this Dataset class.
+        """
         super(Scaper, self).__init__(folder, options)
 
         #initialization
