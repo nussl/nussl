@@ -91,7 +91,10 @@ class ScaleInvariantSDR(EvaluationBase):
     def _compute_sdr(estimated_signal, reference_signals, source_idx, scaling=True):
         references_projection = reference_signals.T @ reference_signals
         source = reference_signals[:, source_idx]
-        scale = (source @ estimated_signal) / references_projection[source_idx, source_idx] if scaling else 1
+        scale = (
+            (source @ estimated_signal) / references_projection[source_idx, source_idx] 
+            if scaling else 1
+        )
 
         e_true = scale * source
         e_res = estimated_signal - e_true
