@@ -18,7 +18,7 @@ from copy import deepcopy
 from sklearn.metrics import silhouette_samples
 from sklearn.preprocessing import scale
 
-from nussl.deep.train.loss import DeepClusteringLoss
+from ...deep.train.loss import DeepClusteringLoss
 import torch
 from sklearn.preprocessing import OneHotEncoder
 
