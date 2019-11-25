@@ -28,7 +28,6 @@ class Trainer():
         validation_data=None,
         use_tensorboard=True,
         experiment=None,
-        cache_populated=False,
     ):
         self.options = options.copy()
         self.use_tensorboard = (
@@ -53,7 +52,11 @@ class Trainer():
             if use_tensorboard else None
         )
         
-        self.setup_loss()
+        output_target_map = {
+            'estimates': ['source_spectrograms'],
+            'embedding': ['assignments', 'weights']
+        }
+        self.setup_loss(LossFunctions, output_target_map)
         self.model_tag = self.options.pop('model_tag', None)
         self.num_epoch = 0
 
@@ -69,6 +72,7 @@ class Trainer():
         load_only_model = self.options.pop('load_only_model', False)
         if resume:
             self.resume(resume_location, load_only_model=load_only_model, prefixes=resume_prefix)
+
         if options['data_parallel'] and options['device'] == 'cuda':
             self.model = nn.DataParallel(self.module)
             self.module = self.model.module
@@ -81,15 +85,11 @@ class Trainer():
             self.dataloaders['validation'] = self.create_dataloader(
                 validation_data
             )
-        self.cache_populated = cache_populated
 
-    def setup_loss(self):
-        self.output_target_map = {
-            'estimates': ['source_spectrograms'],
-            'embedding': ['assignments', 'weights']
-        }
+    def setup_loss(self, loss_functions, output_target_map):
+        self.output_target_map = output_target_map
         self.loss_dictionary = {
-            target: (LossFunctions[fn.upper()].value(), float(weight))
+            target: (loss_functions[fn.upper()].value(), float(weight))
             for (fn, target, weight)
             in options['loss_function']
         }
@@ -157,7 +157,7 @@ class Trainer():
         )
         return optimizer, scheduler
 
-    def calculate_loss(self, outputs, targets):
+    def preprocess_targets(self, targets):
         if self.module.layers['mel_projection'].num_mels > 0:
             if 'assignments' in targets:
                 targets['assignments'] = self.module.project_data(
@@ -172,6 +172,10 @@ class Trainer():
                 )
                 if 'threshold' in self.dataloaders['training'].dataset.options['weight_type']:
                     targets['weights'] = (targets['weights'] > 0).float()
+        return targets
+
+    def calculate_loss(self, outputs, targets):
+        targets = self.preprocess_targets(targets)
         loss = {}
         for key in self.loss_keys:
             loss_function = self.loss_dictionary[key][0]
