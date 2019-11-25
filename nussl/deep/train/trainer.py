@@ -18,12 +18,6 @@ try:
 except:
     SummaryWriter = None
 
-
-OutputTargetMap = {
-    'estimates': ['source_spectrograms'],
-    'embedding': ['assignments', 'weights']
-}
-
 class Trainer():
     def __init__( 
         self,
@@ -58,13 +52,8 @@ class Trainer():
             SummaryWriter(log_dir=self.output_folder)
             if use_tensorboard else None
         )
-        self.loss_dictionary = {
-            target: (LossFunctions[fn.upper()].value(), float(weight))
-            for (fn, target, weight)
-            in options['loss_function']
-        }
-        self.loss_keys = sorted(list(self.loss_dictionary))
         
+        self.setup_loss()
         self.model_tag = self.options.pop('model_tag', None)
         self.num_epoch = 0
 
@@ -93,6 +82,18 @@ class Trainer():
                 validation_data
             )
         self.cache_populated = cache_populated
+
+    def setup_loss(self):
+        self.output_target_map = {
+            'estimates': ['source_spectrograms'],
+            'embedding': ['assignments', 'weights']
+        }
+        self.loss_dictionary = {
+            target: (LossFunctions[fn.upper()].value(), float(weight))
+            for (fn, target, weight)
+            in options['loss_function']
+        }
+        self.loss_keys = sorted(list(self.loss_dictionary))
 
     @staticmethod
     def build_model(model):
@@ -125,7 +126,7 @@ class Trainer():
         input_keys = list(chain.from_iterable(input_keys))
         input_keys += self.module.output_keys
 
-        output_keys = [OutputTargetMap[k] for k in input_keys if k in OutputTargetMap]
+        output_keys = [self.output_target_map[k] for k in input_keys if k in self.output_target_map]
         output_keys = list(chain.from_iterable(output_keys))
         
         dataset.data_keys_for_training = input_keys + output_keys
@@ -175,7 +176,7 @@ class Trainer():
         for key in self.loss_keys:
             loss_function = self.loss_dictionary[key][0]
             weight = self.loss_dictionary[key][1]
-            target_keys = OutputTargetMap[key]
+            target_keys = self.output_target_map[key]
             arguments = [outputs[key]] + [targets[t] for t in target_keys]
             _loss = weight * loss_function(*arguments)
             self.check_loss(_loss)
