@@ -91,7 +91,7 @@ class Trainer():
         self.loss_dictionary = {
             target: (loss_functions[fn.upper()].value(), float(weight))
             for (fn, target, weight)
-            in options['loss_function']
+            in self.options['loss_function']
         }
         self.loss_keys = sorted(list(self.loss_dictionary))
 
