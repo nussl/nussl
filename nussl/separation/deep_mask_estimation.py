@@ -22,6 +22,7 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
         self,
         input_audio_signal,
         model_path,
+        extra_modules=None,
         mask_type='soft',
         use_librosa_stft=False,
         use_cuda=True,
@@ -38,7 +39,7 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
             else 'cpu'
         )
 
-        self.model, self.metadata = self.load_model(model_path)
+        self.model, self.metadata = self.load_model(model_path, extra_modules=extra_modules)
         if input_audio_signal.sample_rate != self.metadata['sample_rate']:
             input_audio_signal.resample(self.metadata['sample_rate'])
 

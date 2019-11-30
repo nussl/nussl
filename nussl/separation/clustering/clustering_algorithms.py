@@ -125,21 +125,19 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
         self, 
         input_audio_signal,
         model_path,
-        model=None,
         metadata=None,
+        extra_modules=None,
         use_cuda=False,
         **kwargs
     ):
-        
         self.device = torch.device(
             'cuda'
             if torch.cuda.is_available() and use_cuda
             else 'cpu'
         )
         
-        self.model = model
         self.metadata = metadata
-        self.model, self.metadata = self.load_model(model_path)
+        self.model, self.metadata = self.load_model(model_path, extra_modules=extra_modules)
 
         input_audio_signal = self.set_audio_signal(input_audio_signal)
 

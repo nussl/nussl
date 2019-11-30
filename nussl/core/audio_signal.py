@@ -1731,7 +1731,7 @@ class AudioSignal(object):
         """
         self._verify_get_channel(n)
 
-        return utils._get_axis(self.audio_data, constants.CHAN_INDEX, n)
+        return np.asfortranarray(utils._get_axis(self.audio_data, constants.CHAN_INDEX, n))
 
     def get_channels(self):
         """Generator that will loop through channels of :attr:`audio_data`.

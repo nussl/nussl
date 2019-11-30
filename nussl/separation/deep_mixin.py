@@ -4,7 +4,7 @@ import librosa
 from ..deep import SeparationModel
 
 class DeepMixin():
-    def load_model(self, model_path):
+    def load_model(self, model_path, extra_modules=None):
         """
         Loads the model at specified path `model_path`
 
@@ -18,7 +18,7 @@ class DeepMixin():
 
         """
         model_dict = torch.load(model_path, map_location='cpu')
-        model = SeparationModel(model_dict['config'])
+        model = SeparationModel(model_dict['config'], extra_modules=extra_modules)
         model.load_state_dict(model_dict['state_dict'])
         model = model.to(self.device).eval()
         metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
