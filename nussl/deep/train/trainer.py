@@ -47,11 +47,11 @@ class Trainer():
         )
         self.model = self.model.to(self.device)
 
-        self.writer = (
-            SummaryWriter(log_dir=self.output_folder)
-            if use_tensorboard else None
-        )
-        
+        if SummaryWriter is not None and use_tensorboard:
+            self.writer = SummaryWriter(log_dir=self.output_folder)
+        else:
+            self.writer = None
+                    
         output_target_map = {
             'estimates': ['source_spectrograms'],
             'embedding': ['assignments', 'weights']
