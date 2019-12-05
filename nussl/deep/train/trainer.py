@@ -271,7 +271,7 @@ class Trainer():
             num_batches = len(dataloader)
             if dataloader.dataset.overwrite_cache:
                 logging.info(f'Populating cache for {key} w/ {num_batches} batches')
-                for i, data in enumerate(dataloader):
+                for i, _ in enumerate(dataloader):
                     if i % 50 == 0:
                         logging.info(f'{i}/{num_batches} batches completed')
                     continue
