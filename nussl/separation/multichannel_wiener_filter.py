@@ -5,32 +5,31 @@ from ..core import utils
 from ..core import constants
 
 class MultichannelWienerFilter(SeparationBase):
+    """Perform multichannel wiener filtering on a mixture signal given a list of separated
+    source estimates. A common post-processing step for many stereo source separation
+    applications to enforce spatial stability in the separated sources. Based on
+    the implementation in SIGSEP:
+
+    https://github.com/sigsep/sigsep-mus-oracle/blob/master/MWF.py
+    
+    Arguments:
+        input_audio_signal {AudioSignal} -- AudioSignal containing mixture
+        source_signals {list} -- List of AudioSignal objects containing separated sources
+    
+    Keyword Arguments:
+        use_librosa_stft {bool} -- Whether to use librosa stft (default: {False})
+    
+    Raises:
+        ValueError -- Error if input audio signal is mono.
+        ValueError -- Everything must be the same sample rate.
+        ValueError -- EVerythig must have the same number of channels.
+    """
     def __init__(
         self,
         input_audio_signal,
         source_signals,
         use_librosa_stft=constants.USE_LIBROSA_STFT
     ):
-        """Perform multichannel wiener filtering on a mixture signal given a list of separated
-        source estimates. A common post-processing step for many stereo source separation
-        applications to enforce spatial stability in the separated sources. Based on
-        the implementation in SIGSEP:
-
-        https://github.com/sigsep/sigsep-mus-oracle/blob/master/MWF.py
-        
-        Arguments:
-            input_audio_signal {AudioSignal} -- AudioSignal containing mixture
-            source_signals {list} -- List of AudioSignal objects containing separated sources
-        
-        Keyword Arguments:
-            use_librosa_stft {bool} -- Whether to use librosa stft (default: {False})
-        
-        Raises:
-            ValueError -- [description]
-            ValueError -- [description]
-            ValueError -- [description]
-        """
-
         super(MultichannelWienerFilter, self).__init__(
             input_audio_signal=input_audio_signal, 
         )

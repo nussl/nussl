@@ -24,7 +24,8 @@ class Melodia(mask_separation_base.MaskSeparationBase):
         J. Salamon and E. Gómez, "Melody Extraction from Polyphonic Music Signals using Pitch Contour Characteristics",
         IEEE Transactions on Audio, Speech and Language Processing, 20(6):1759-1770, Aug. 2012.
         This needs melodia installed as a vamp plugin, as well as having vampy for Python installed.
-        Parameters:
+
+        Arguments:
             input_audio_signal: (AudioSignal object) The AudioSignal object that has the
                                 audio data that Melodia will be run on.
             high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
@@ -86,10 +87,7 @@ class Melodia(mask_separation_base.MaskSeparationBase):
             data = vamp.collect(self.audio_signal.audio_data, self.sample_rate,
                                 "mtg-melodia:melodia", parameters=params)
         except Exception as e:
-            print('**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**\n'
-                  '*          Are Vamp and Melodia installed correctly?          *\n'
-                  '* Check https://bit.ly/2DXbrAk for installation instructions! *\n'
-                  '**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**')
+            print("Are VAMP and Melodia installed correctly?")
             raise e
 
         _, melody = data['vector']
