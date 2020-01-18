@@ -435,6 +435,3 @@ class TransformerNMF(object):
 
         ax3.set_title('Activations')
         ax3.set_xlim([min_time, activations.shape[1]])
-
-        # Finalize and save
-        plt.savefig(output_file)
