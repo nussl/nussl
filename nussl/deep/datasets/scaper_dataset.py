@@ -78,13 +78,12 @@ class Scaper(BaseDataset):
         sources = []
         one_hots = []
 
-        for i, label in enumerate(classes):
-            keys = [k for k in source_dict if k.split('::')[0] in classes]
-            for key in keys:
-                sources.append(source_dict[key])
-                one_hot = np.zeros(len(classes))
-                one_hot[classes.index(key.split('::')[0])] = 1
-                one_hots.append(one_hot)
+        keys = [k for k in source_dict if k.split('::')[0] in classes]
+        for key in keys:
+            sources.append(source_dict[key])
+            one_hot = np.zeros(len(classes))
+            one_hot[classes.index(key.split('::')[0])] = 1
+            one_hots.append(one_hot)
                 
         one_hots = np.stack(one_hots)
         return mix, sources, one_hots
