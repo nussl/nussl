@@ -54,8 +54,13 @@ class Scaper(BaseDataset):
             d = datum.value
             if d['role'] == 'foreground':
                 source_path = os.path.join(source_folder, d['audio_path'] + '.wav')
-                source_dict[d['label']] = self._load_audio_file(source_path)
-                lengths.append(source_dict[d['label']].signal_length)
+                key = d['label']
+
+                if key in source_dict:
+                    count = len([k for k in source_dict if k.split('::')[0] == key])
+                    key = f"{key}::{count}" 
+                source_dict[key] = self._load_audio_file(source_path)
+                lengths.append(source_dict[key].signal_length)
 
         min_length = min(lengths)
         mix.audio_data = mix.audio_data[:, :min_length]
@@ -74,10 +79,12 @@ class Scaper(BaseDataset):
         one_hots = []
 
         for i, label in enumerate(classes):
-            if label in source_dict:
-                sources.append(source_dict[label])
+            keys = [k for k in source_dict if k.split('::')[0] in classes]
+            for key in keys:
+                sources.append(source_dict[key])
                 one_hot = np.zeros(len(classes))
-                one_hot[classes.index(label)] = 1
+                one_hot[classes.index(key.split('::')[0])] = 1
                 one_hots.append(one_hot)
+                
         one_hots = np.stack(one_hots)
         return mix, sources, one_hots
