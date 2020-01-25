@@ -366,7 +366,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         )
 
         rows_to_sample = np.random.choice(
-            output_transform.shape[0], max_points, replace=False)
+            output_transform.shape[0], max_points, replace=True)
         output_transform = output_transform[rows_to_sample]
 
         result=pd.DataFrame(
