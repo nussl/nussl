@@ -51,14 +51,14 @@ class PermutationInvariantLoss(nn.Module):
         self.loss_function.reduce = False
         
     def forward(self, estimates, targets):
-        num_batch, sequence_length, num_frequencies, num_sources = estimates.shape
-        estimates = estimates.view(num_batch, sequence_length*num_frequencies, num_sources)
-        targets = targets.view(num_batch, sequence_length*num_frequencies, num_sources)
+        num_batch = estimates.shape[0]
+        num_sources = estimates.shape[-1]
+        estimates = estimates.view(num_batch, -1, num_sources)
+        targets = targets.view(num_batch, -1, num_sources)
         
         losses = []
         for p in permutations(range(num_sources)):
             loss = self.loss_function(estimates[:, :, list(p)], targets)
-            loss = loss.mean(dim=1).mean(dim=-1)
             losses.append(loss)
         
         losses = torch.stack(losses,dim=-1)

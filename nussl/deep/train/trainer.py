@@ -88,11 +88,15 @@ class Trainer():
 
     def setup_loss(self, loss_functions, output_target_map):
         self.output_target_map = output_target_map
-        self.loss_dictionary = {
-            target: (loss_functions[fn.upper()].value(), float(weight))
-            for (fn, target, weight)
-            in self.options['loss_function']
-        }
+        self.loss_dictionary = {}
+        for (_fn, target, weights) in self.options['loss_function']:
+            if 'PIT' in _fn.upper():
+                loss_fn = _fn.split(':')[1]
+                loss_fn = loss_functions[loss_fn.upper()].value()
+                fn = loss_functions['PIT'].value(loss_fn)
+            else:
+                fn = loss_functions[_fn.upper()].value()
+            self.loss_dictionary[target] = (fn, float(weights))
         self.loss_keys = sorted(list(self.loss_dictionary))
 
     @staticmethod

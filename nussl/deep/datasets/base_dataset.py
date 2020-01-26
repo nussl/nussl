@@ -594,12 +594,12 @@ class BaseDataset(Dataset):
         Returns:
             AudioSignal object
         """
-        if os.path.splitext(file_path)[-1] == '.wav':
-            rate, audio = wavfile.read(file_path)
-            audio = audio.astype(np.float32, order='C') / 32768.0
-            audio_signal = AudioSignal(audio_data_array=audio, sample_rate=self.options['sample_rate'])
-        else:
-            audio_signal = AudioSignal(file_path, sample_rate=self.options['sample_rate'])
+        # if os.path.splitext(file_path)[-1] == '.wav':
+        #     rate, audio = wavfile.read(file_path)
+        #     audio = audio.astype(np.float32, order='C') / 32768.0
+        #     audio_signal = AudioSignal(audio_data_array=audio, sample_rate=self.options['sample_rate'])
+        # else:
+        audio_signal = AudioSignal(file_path, sample_rate=self.options['sample_rate'])
         audio_signal.path_to_input_file = file_path
         audio_signal.stft_params.window_length = self.options['n_fft']
         audio_signal.stft_params.hop_length = self.options['hop_length']

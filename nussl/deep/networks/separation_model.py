@@ -84,6 +84,8 @@ class SeparationModel(nn.Module):
             module = config['modules'][module_key]
             if 'input_shape' not in module:
                 class_func = getattr(modules, module['class'])
+                if 'args' not in module:
+                    module['args'] = {}
                 module_dict[module_key] = class_func(**module['args'])
             else:
                 self.input[module_key] = module['input_shape']
