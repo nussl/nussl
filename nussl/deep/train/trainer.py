@@ -112,11 +112,9 @@ class Trainer():
     def prepare_directories(self, output_folder):
         self.output_folder = output_folder
         self.checkpoint_folder = os.path.join(output_folder, 'checkpoints')
-        self.config_folder = os.path.join(output_folder, 'config')
 
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.checkpoint_folder, exist_ok=True)
-        os.makedirs(self.config_folder, exist_ok=True)
 
     def create_dataloader(self, dataset):
         if not dataset:
@@ -212,15 +210,12 @@ class Trainer():
     def run_epoch(self, key):
         epoch_loss = 0
         num_batches = len(self.dataloaders[key])
-        logging.info(f"Starting {key} epoch")
         for step, data in enumerate(self.dataloaders[key]):
             #TODO factor this out into a loop that can be overridden by other classes.
             data = self.prepare_data(data)
             output = self.forward(data)
             loss = self.calculate_loss(output, data)
             loss['total_loss'] = sum(list(loss.values()))
-            if step % 100 == 0:
-                logging.info(f"Step {step}/{num_batches}, loss: {epoch_loss/(step + 1)}")
             epoch_loss += loss['total_loss'].item()
 
             if self.model.training:
@@ -287,7 +282,7 @@ class Trainer():
         self.populate_cache()
         self.switch_to_cache()
 
-        logging.info(f"Training data for {self.options['num_epochs'] - self.num_epoch} epochs")
+        logging.info(f"Training for {self.options['num_epochs'] - self.num_epoch} epochs")
         fit_start_time = time.time()
 
         for self.num_epoch in range(self.num_epoch, self.options['num_epochs']):
@@ -296,7 +291,7 @@ class Trainer():
             epoch_loss = self.run_epoch('training')
             self.log_metrics(epoch_loss, self.num_epoch, 'epoch')
             validation_loss = self.validate('validation')
-            self.save(validation_loss['loss'] < lowest_validation_loss)
+            saved_model_path = self.save(validation_loss['loss'] < lowest_validation_loss)
             lowest_validation_loss = (
                 validation_loss['loss'] 
                 if validation_loss['loss'] < lowest_validation_loss
@@ -308,13 +303,25 @@ class Trainer():
             full_elapsed_time = time.time() - fit_start_time
             full_elapsed_time = time.strftime("%H:%M:%S", time.gmtime(full_elapsed_time))
 
-            logging.info(
-                f"Epoch summary: {self.num_epoch}\t"
-                f"Training loss: {epoch_loss['loss']}\t"
-                f"Validation loss: {validation_loss['loss']}\t"
-                f"Epoch took: {epoch_elapsed_time}\t"
-                f"Time since start: {full_elapsed_time}"
+            logging_str = (
+                f"""\n
+                EPOCH SUMMARY
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                | Epoch number: {self.num_epoch:04d}         |                
+                | Training loss:   {epoch_loss['loss']:04f}  |           
+                | Validation loss: {validation_loss['loss']:04f}  |   
+                | Epoch took: {epoch_elapsed_time}       |                 
+                | Time since start: {full_elapsed_time} |          
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                Saving to {saved_model_path}.
+                """
             )
+
+            if hasattr(self.experiment, '_get_experiment_url'):
+                # then this is a comet.ml run with a link
+                logging_str += f'Watch experiment @ {self.experiment._get_experiment_url()}\n'
+
+            logging.info(logging_str)
 
     def validate(self, key) -> float:
         """Calculate loss on validation set
@@ -386,7 +393,8 @@ class Trainer():
         self.module.save(model_path, {'metadata': metadata})
         if is_best:
             torch.save(optimizer_state, optimizer_path.replace('latest', 'best'))
-            self.module.save(model_path.replace('latest', 'best'), {'metadata': metadata})
+            model_path = model_path.replace('latest', 'best')
+            self.module.save(model_path, {'metadata': metadata})
         return model_path
 
     def resume(self, resume_location, load_only_model=True, prefixes=('best', 'latest')):
