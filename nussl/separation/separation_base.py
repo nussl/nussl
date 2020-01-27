@@ -67,6 +67,13 @@ class SeparationBase(object):
     def audio_signal(self, input_audio_signal):
         self._audio_signal = copy.copy(input_audio_signal)
 
+    def set_audio_signal(self, new_audio_signal):
+        input_audio_signal = copy.deepcopy(new_audio_signal)
+        self.audio_signal = input_audio_signal
+        self.original_length = input_audio_signal.signal_length
+        self.original_sample_rate = input_audio_signal.sample_rate
+        return input_audio_signal
+
     def plot(self, **kwargs):
         """Plots relevant data for separation algorithm
 

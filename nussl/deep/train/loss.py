@@ -40,7 +40,6 @@ class PermutationInvariantLoss(nn.Module):
         """Computes the Permutation Invariant Loss (PIT) [1] by permuting the estimated 
         sources and the reference sources. Takes the best permutation and only backprops
         the loss from that.
-
         [1] Yu, Dong, Morten Kolbæk, Zheng-Hua Tan, and Jesper Jensen. 
             "Permutation invariant training of deep models for speaker-independent 
             multi-talker speech separation." In 2017 IEEE International Conference on 
@@ -48,7 +47,7 @@ class PermutationInvariantLoss(nn.Module):
         """
         super(PermutationInvariantLoss, self).__init__()
         self.loss_function = loss_function
-        self.loss_function.reduce = False
+        self.loss_function.reduction = 'none'
         
     def forward(self, estimates, targets):
         num_batch = estimates.shape[0]
@@ -59,6 +58,7 @@ class PermutationInvariantLoss(nn.Module):
         losses = []
         for p in permutations(range(num_sources)):
             loss = self.loss_function(estimates[:, :, list(p)], targets)
+            loss = loss.mean(dim=1).mean(dim=-1)
             losses.append(loss)
         
         losses = torch.stack(losses,dim=-1)

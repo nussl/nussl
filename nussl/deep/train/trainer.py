@@ -320,7 +320,7 @@ class Trainer():
                 Saving to {saved_model_path}.
                 """
             )
-
+            logging_str += f'Configuration @ {self.output_folder}\n'
             if hasattr(self.experiment, '_get_experiment_url'):
                 # then this is a comet.ml run with a link
                 logging_str += f'Watch experiment @ {self.experiment._get_experiment_url()}\n'

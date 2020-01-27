@@ -299,10 +299,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         return overall_confidence
 
     def set_audio_signal(self, new_audio_signal):
-        input_audio_signal = deepcopy(new_audio_signal)
-        self.audio_signal = input_audio_signal
-        self.original_length = input_audio_signal.signal_length
-        self.original_sample_rate = input_audio_signal.sample_rate
+        super().set_audio_signal(new_audio_signal)
         self.clusterer = None
         return input_audio_signal
 
