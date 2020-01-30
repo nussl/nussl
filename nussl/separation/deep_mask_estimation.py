@@ -67,7 +67,10 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
             features = self.model(input_data)
             if 'estimates' not in features:
                 raise ValueError("This model is not a mask estimation model!")
-            features = (features['estimates'] / input_data['magnitude_spectrogram'].unsqueeze(-1)).squeeze(0)
+            features = (
+                (features['estimates'] + 1e-6) / 
+                (input_data['magnitude_spectrogram'].unsqueeze(-1) + 1e-6)
+            ).squeeze(0)
         features = features.permute(3, 1, 0, 2)
         features = features.data.cpu().numpy()
         return features

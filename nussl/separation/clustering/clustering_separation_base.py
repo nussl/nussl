@@ -299,9 +299,8 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         return overall_confidence
 
     def set_audio_signal(self, new_audio_signal):
-        super().set_audio_signal(new_audio_signal)
         self.clusterer = None
-        return input_audio_signal
+        return super().set_audio_signal(new_audio_signal)
 
     def project_embeddings(self, num_dimensions, threshold=-80):
         """

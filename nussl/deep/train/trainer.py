@@ -35,6 +35,8 @@ class Trainer():
         )
         self.experiment = experiment
         self.prepare_directories(output_folder)
+        self.log_frequency = self.options.pop('log_frequency', None)
+
         self.model = self.build_model(model)
 
         freeze_layers = self.options.pop('freeze_layers', [])
@@ -90,10 +92,10 @@ class Trainer():
         self.output_target_map = output_target_map
         self.loss_dictionary = {}
         for (_fn, target, weights) in self.options['loss_function']:
-            if 'PIT' in _fn.upper():
-                loss_fn = _fn.split(':')[1]
+            if 'PIT' in _fn.upper() or 'CIT' in _fn.upper():
+                it_loss, loss_fn = _fn.split(':')
                 loss_fn = loss_functions[loss_fn.upper()].value()
-                fn = loss_functions['PIT'].value(loss_fn)
+                fn = loss_functions[it_loss.upper()].value(loss_fn)
             else:
                 fn = loss_functions[_fn.upper()].value()
             self.loss_dictionary[target] = (fn, float(weights))
@@ -124,14 +126,25 @@ class Trainer():
         if not dataset:
             return None
 
-        input_keys = [[connection[0]] + connection[1] for connection in self.module.connections]
-        input_keys = list(chain.from_iterable(input_keys))
-        input_keys += self.module.output_keys
+        # input_keys = []
+        # for connection in self.module.connections:
+        #     for c in connection:
+        #         if isinstance(c, dict):
+        #             for key, val in c.items():
+        #                 input_keys.append(val)
+        #         else:
+        #             input_keys.append(c)
 
-        output_keys = [self.output_target_map[k] for k in input_keys if k in self.output_target_map]
-        output_keys = list(chain.from_iterable(output_keys))
-        
-        dataset.data_keys_for_training = input_keys + output_keys
+        # input_keys += self.module.output_keys
+    
+
+        # output_keys = []
+        # for k in input_keys:
+        #     print(k)
+        #     if k in self.output_target_map:
+        #         output_keys.append(self.output_target_map[k])
+
+        # dataset.data_keys_for_training = input_keys + output_keys
 
         return DataLoader(
             dataset,
@@ -221,6 +234,9 @@ class Trainer():
             loss = self.calculate_loss(output, data)
             loss['total_loss'] = sum(list(loss.values()))
             epoch_loss += loss['total_loss'].item()
+
+            if self.log_frequency and step % self.log_frequency == 0 and step > 0:
+                logging.info(f"At {step}/{num_batches} with {loss['total_loss'].item()}")
 
             if self.model.training:
                 self.optimizer.zero_grad()
@@ -318,9 +334,10 @@ class Trainer():
                 | Time since start: {full_elapsed_time} |          
                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 Saving to {saved_model_path}.
+                Configuration @ {self.output_folder}
                 """
             )
-            logging_str += f'Configuration @ {self.output_folder}\n'
+
             if hasattr(self.experiment, '_get_experiment_url'):
                 # then this is a comet.ml run with a link
                 logging_str += f'Watch experiment @ {self.experiment._get_experiment_url()}\n'

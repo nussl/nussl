@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from itertools import permutations
+from itertools import permutations, combinations
 
 class DeepClusteringLoss(nn.Module):
     def __init__(self):
@@ -60,6 +60,39 @@ class PermutationInvariantLoss(nn.Module):
             loss = self.loss_function(estimates[:, :, list(p)], targets)
             loss = loss.mean(dim=1).mean(dim=-1)
             losses.append(loss)
+        
+        losses = torch.stack(losses,dim=-1)
+        losses = torch.min(losses, dim=-1)[0]
+        loss = torch.mean(losses)
+        return loss
+
+class CombinationInvariantLoss(nn.Module):
+    def __init__(self, loss_function):
+        """Variant on Permutation Invariant Loss where instead a combination of the
+        sources output by the model are used. This way a model can output more 
+        sources than there are in the ground truth. A subset of the output sources
+        will be compared using Permutation Invariant Loss with the ground truth
+        estimates.
+        """
+        super(CombinationInvariantLoss, self).__init__()
+        self.loss_function = loss_function
+        self.loss_function.reduction = 'none'
+        
+    def forward(self, estimates, targets):
+        num_batch = estimates.shape[0]
+        num_target_sources = targets.shape[-1]
+        num_estimate_sources = estimates.shape[-1]
+
+        estimates = estimates.view(num_batch, -1, num_estimate_sources)
+        targets = targets.view(num_batch, -1, num_target_sources)
+        
+        losses = []
+        for c in combinations(range(num_estimate_sources), num_target_sources):
+            _estimates = estimates[:, :, list(c)]
+            for p in permutations(range(num_target_sources)):
+                loss = self.loss_function(_estimates[:, :, list(p)], targets)
+                loss = loss.mean(dim=1).mean(dim=-1)
+                losses.append(loss)
         
         losses = torch.stack(losses,dim=-1)
         losses = torch.min(losses, dim=-1)[0]

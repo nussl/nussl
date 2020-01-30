@@ -111,14 +111,22 @@ class SeparationModel(nn.Module):
         for connection in self.connections:
             layer = self.layers[connection[0]]
             input_data = []
-            for c in connection[1]:
-                input_data.append(output[c] if c in output else data[c])
-            _output = layer(*input_data)
+            kwargs = {}
+
+            if len(connection) == 2:
+                for c in connection[1]:
+                    if isinstance(c, dict):
+                        for key, val in c.items():
+                            kwargs[key] = output[val] if val in output else data[val]
+                    else:
+                        input_data.append(output[c] if c in output else data[c])
+            _output = layer(*input_data, **kwargs)
             if isinstance(_output, dict):
                 for k in _output:
                     output[f'{connection[0]}:{k}'] = _output[k]
             else:
                 output[connection[0]] = _output
+                
         return {o: output[o] for o in self.output_keys}
 
     def project_data(self, data, clamp=False):

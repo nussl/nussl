@@ -52,10 +52,8 @@ class KMeans(nn.Module):
         assignments = nn.functional.softmax(self.scale(distance), dim=-1)
         return assignments
     
-    def forward(self, data, parameters=None):
-        if parameters is None:
-            means = None
-        elif parameters['means'] is None:
+    def forward(self, data, means=None):
+        if means is None:
             means = self.initialize_means(data)
         if means.shape[0] != data.shape[0]:
             means = means.expand(data.shape[0], -1, -1)
@@ -66,6 +64,4 @@ class KMeans(nn.Module):
             means = self.update_means(assignments, data, weights)
         
         assignments = self.update_assignments(data, means)
-        means = means.permute(0, 2, 1)
-        return {'assignments': assignments,
-                'parameters': means}
+        return assignments
