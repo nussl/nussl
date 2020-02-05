@@ -1,6 +1,22 @@
 import torch
 import torch.nn as nn
 import numpy as np
+
+class ScaleLayer(nn.Module):
+    def __init__(self, init_value=1.0, init_bias=0.0, bias=False):
+        super().__init__()
+        self.scale = nn.Parameter(
+            torch.FloatTensor([init_value]), requires_grad=True
+        )
+        if bias:
+            self.bias = nn.Parameter(
+                torch.FloatTensor([init_bias]), requires_grad=True
+            )
+        else:
+            self.bias = init_bias    
+        
+    def forward(self, data):
+        return (data * self.scale) + self.bias
     
 class GMM(nn.Module):
     def __init__(self, n_clusters, n_iterations=5, covariance_type='diag', covariance_init=1.0):
@@ -16,6 +32,7 @@ class GMM(nn.Module):
         self.n_iterations = n_iterations
         self.covariance_init = covariance_init
         self.covariance_type = covariance_type
+        self.scale = ScaleLayer(init_value=1.0, bias=True)
        
     def init_means(self, data):
         """
@@ -78,6 +95,7 @@ class GMM(nn.Module):
             var = torch.mean(var, dim=-1, keepdim=True).expand(-1, -1, var.shape[-1])
 
         if 'fix' in self.covariance_type:
+            var = var.clone()
             var[:, :, :] = self.covariance_init
 
         return var
@@ -156,6 +174,6 @@ class GMM(nn.Module):
         posteriors, likelihoods = self.update_posteriors(likelihoods)
         shape[-1] = posteriors.shape[1]
         posteriors = posteriors.permute(0, 2, 1).view(shape)
-        likelihoods = likelihoods.permute(0, 2, 1).view(shape).exp()
-        likelihoods = likelihoods / likelihoods.max()
-        return posteriors
+        likelihoods = likelihoods.permute(0, 2, 1).view(shape)
+        likelihoods = torch.sigmoid(self.scale(likelihoods))
+        return likelihoods
