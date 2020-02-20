@@ -120,16 +120,25 @@ detailed information. But the basics are: bug fixes/enhancements/etc have the st
 process; but, when adding new algorithms, contributors must provide benchmark files, paper 
 references, and trained models (if applicable).
 
-Contributors
-------------
-Ethan Manilow ([website](http://www.ethanmanilow.com)),
-Prem Seetharaman ([website](http://prem.seeth.org/)),
-Fatemeh Pishdadian ([website](http://fatemehpishdadian.com/))
+## Contributors
+
+- Ethan Manilow <http://github.com/ethman>
+- Prem Seetharaman <http://github.com/pseeth>
+- Fatemeh Pishdadian <http://github.com/fpishdadian>
+- Nathan Shelly
 
 Former:
 
-Corey Grief ([website](http://music.cs.northwestern.edu/emeritus.php)), 
-Daniel Felix Kim, Ben Kalish
+- Corey Grief <http://github.com/cegrief>
+- Daniel Felix Kim <http://github.com/DanielFelixKim>
+- Ben Kalish
+
+nussl's REPET, REPET-SIM implementations are based on MATLAB code from Zafar Raffi. 
+The DUET implementation is based on MATLAB code from Scott Richard. 
+nussl's PROJET implementation is based on python code from Antoine Liutkus.
+Similarly for most of the algorithms in nussl. 
+
+See documentation and inline comments for each algorithm for more information about citations and authorship.
 
 
 Contact

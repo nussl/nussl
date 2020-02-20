@@ -1,5 +1,0 @@
-include nussl/deep/config/*.json
-include nussl/deep/config/defaults/*.json
-include nussl/deep/config/defaults/metadata/*.json
-include nussl/deep/config/defaults/models/*.json
-include nussl/deep/config/defaults//models/metadata/*.json

@@ -1,13 +1,13 @@
 *.pyc
 **/.DS_Store
 .idea/
-Output/
 *.DS_STORE
 .mypy_cache
 *.swp
 *.wav
 *.ipynb
-nussl.egg-info/
+nussl.egg-info/*
 .vscode/
 **/.ipynb_checkpoints
 tests/ignored_tests/
+.coverage
