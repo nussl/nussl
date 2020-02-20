@@ -1,11 +1,26 @@
 import torch
 import torch.nn as nn
 import numpy as np
+
+class ScaleLayer(nn.Module):
+    def __init__(self, init_value=1.0, init_bias=0.0, bias=False):
+        super().__init__()
+        self.scale = nn.Parameter(
+            torch.FloatTensor([init_value]), requires_grad=True
+        )
+        if bias:
+            self.bias = nn.Parameter(
+                torch.FloatTensor([init_bias]), requires_grad=True
+            )
+        else:
+            self.bias = init_bias    
+        
+    def forward(self, data):
+        return (data * self.scale) + self.bias
     
 class GMM(nn.Module):
     def __init__(self, n_clusters, n_iterations=5, covariance_type='diag', covariance_init=1.0):
         """
-
         Args:
             n_clusters:
             n_iterations:
@@ -16,12 +31,11 @@ class GMM(nn.Module):
         self.n_clusters = n_clusters
         self.n_iterations = n_iterations
         self.covariance_init = covariance_init
-        self.covariance_type = covariance_type.split(':')
-
-            
-    def initialize_parameters(self, data):
+        self.covariance_type = covariance_type
+        self.scale = ScaleLayer(init_value=1.0, bias=True)
+       
+    def init_means(self, data):
         """
-
         Args:
             data:
 
@@ -32,17 +46,15 @@ class GMM(nn.Module):
         sampled = data.new(np.arange(0, data.shape[0])).unsqueeze(1).expand(-1, sampled.shape[1])*data.shape[1] + sampled
         sampled = sampled.long()
         means = torch.index_select(data.view(-1, data.shape[-1]), 0, sampled.view(-1)).view(data.shape[0], sampled.shape[-1], -1)
-        
+        return means
+
+    def init_var_and_prior(self, data):
         var = data.new(data.shape[0], self.n_clusters, data.shape[-1]).fill_(self.covariance_init)
         pi = data.new(data.shape[0], self.n_clusters).fill_(1./self.n_clusters)
-        
-        return {'means': means,
-                'variance': var,
-                'prior': pi}
+        return var, pi
         
     def update_parameters(self, posteriors, data, weights):
         """
-
         Args:
             posteriors:
             data:
@@ -71,20 +83,23 @@ class GMM(nn.Module):
         distance = data - updated_means.unsqueeze(2).expand(-1, -1, 1, -1)
         distance = posteriors * torch.pow(distance, 2)
         updated_var = torch.sum(distance, dim=2)
-
-        if 'tied' in self.covariance_type:
-            updated_var = torch.sum(updated_var, dim=1, keepdim=True).expand(-1, updated_var.shape[1], -1)
-            updated_var = (updated_var / (cluster_sizes.sum() + 1e-7))
-        else:
-            updated_var = updated_var / (cluster_sizes + 1e-7)
-
-        if 'spherical' in self.covariance_type:
-            updated_var = torch.mean(updated_var, dim=-1, keepdim=True).expand(-1, -1, updated_var.shape[-1])
-
-        if 'fix' in self.covariance_type:
-            updated_var[:, :, :] = self.covariance_init
+        updated_var = self._enforce_covariance_type(updated_var)
             
         return updated_means, updated_var, updated_pi
+
+    def _enforce_covariance_type(self, var):
+        if 'tied' in self.covariance_type:
+            var = torch.mean(var, dim=1, keepdim=True).expand(-1, var.shape[1], -1)
+
+        if 'spherical' in self.covariance_type:
+            var = torch.mean(var, dim=-1, keepdim=True).expand(-1, -1, var.shape[-1])
+
+        if 'fix' in self.covariance_type:
+            var = var.clone()
+            var[:, :, :] = self.covariance_init
+
+        return var
+
     
     def update_posteriors(self, likelihoods):
         """
@@ -103,16 +118,20 @@ class GMM(nn.Module):
     
     def update_likelihoods(self, data, means, var, pi):
         num_batch = data.shape[0]
-        num_examples = data.shape[1]
+        num_examples = data.shape[1] * data.shape[2] * data.shape[3]
         num_features = data.shape[-1]
         num_clusters = means.shape[1]
 
-        inv_covariance =  1. / (var + 1e-6)
-        data = data.unsqueeze(1).expand(-1, 1, -1, -1)
+        inv_covariance =  1 / (var + 1e-6)
+        data = data.view(num_batch, 1, num_examples, num_features)
         means = means.unsqueeze(2).expand(-1, -1, 1, -1)
         distance = torch.pow(data - means, 2)
-        distance = distance.view(num_batch*num_clusters, num_examples, num_features)
-        inv_covariance = inv_covariance.view(num_batch*num_clusters, num_features, 1)
+        distance = distance.view(-1, num_examples, num_features)
+        inv_covariance = inv_covariance.view(-1, num_clusters, num_features, 1)
+
+        if inv_covariance.shape[0] == 1:
+            inv_covariance = inv_covariance.expand(num_batch, -1, -1, -1)
+            inv_covariance = inv_covariance.reshape(-1, num_features, 1)
         
         distance = -.5 * torch.bmm(distance, inv_covariance)
         distance = distance.view(num_batch, num_clusters, num_examples)
@@ -123,7 +142,7 @@ class GMM(nn.Module):
         likelihoods = prior.unsqueeze(-1) + coeff.unsqueeze(-1) + distance
         return likelihoods
     
-    def forward(self, data, parameters=None, weights=1.0):
+    def forward(self, data, means=None, var=None, pi=None, weights=1.0):
         """
 
         Args:
@@ -134,9 +153,16 @@ class GMM(nn.Module):
         Returns:
 
         """
-        if parameters is None:
-            parameters = self.initialize_parameters(data)
-        means, var, pi = parameters['means'], parameters['variance'], parameters['prior']
+        shape = list(data.shape)
+
+        if means is None:
+            means = self.init_means(data)
+        if var is None:
+            var, pi = self.init_var_and_prior(data)
+        else:
+            _,  pi = self.init_var_and_prior(data)
+            var = self._enforce_covariance_type(var)
+        
 
         for i in range(self.n_iterations):
             likelihoods = self.update_likelihoods(data, means, var, pi)
@@ -144,9 +170,10 @@ class GMM(nn.Module):
             means, var, pi = self.update_parameters(posteriors, data, weights)
             var = var + 1e-6
 
-
         likelihoods = self.update_likelihoods(data, means, var, pi)
         posteriors, likelihoods = self.update_posteriors(likelihoods)
-        return {'likelihoods': likelihoods.permute(0, 2, 1),
-                'assignments': posteriors.permute(0, 2, 1),
-                'parameters': (means, var, pi)}
+        shape[-1] = posteriors.shape[1]
+        posteriors = posteriors.permute(0, 2, 1).view(shape)
+        likelihoods = likelihoods.permute(0, 2, 1).view(shape)
+        likelihoods = torch.sigmoid(self.scale(likelihoods))
+        return likelihoods

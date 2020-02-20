@@ -1,5 +1,5 @@
 from . import EvaluationBase
-from itertools import permutations
+from itertools import permutations, combinations
 import numpy as np
 import warnings
 from scipy.ndimage import gaussian_filter
@@ -50,21 +50,36 @@ class ScaleInvariantSDR(EvaluationBase):
     def evaluate(self):
         num_sources = self.reference_array.shape[-1]
         num_channels = self.reference_array.shape[1]
+
+        num_estimates = self.estimated_array.shape[-1]
+        combos = list(combinations(range(num_estimates), num_sources))
+
         orderings = (
             list(permutations(range(num_sources))) 
             if self.compute_permutation 
             else [list(range(num_sources))]
         )
-        results = np.empty((len(orderings), num_channels, num_sources, 3))
+        results = np.empty((len(combos), len(orderings), num_channels, num_sources, 3))
+
+        combo_and_permutations = []
         
-        for o, order in enumerate(orderings):
-            for c in range(num_channels):
-                for j in order:
-                    SDR, SIR, SAR = self._compute_sdr(
-                        self.estimated_array[:, c, j], self.reference_array[:, c, order], j, scaling=self.scaling
-                    )
-                    results[o, c, j, :] = [SDR, SIR, SAR]
-        return self._populate_scores_dict(results, orderings)
+        for k, combo in enumerate(combos):
+            _estimated_array = self.estimated_array[..., combo]
+            for o, order in enumerate(orderings):
+                for c in range(num_channels):
+                    for j in order:
+                        SDR, SIR, SAR = self._compute_sdr(
+                            _estimated_array[:, c, j], 
+                            self.reference_array[:, c, order], 
+                            j, 
+                            scaling=self.scaling
+                        )
+                        results[k, o, c, j, :] = [SDR, SIR, SAR]
+                        combo_and_permutations.append([list(order), list(combo)])
+        results = results.reshape(
+            (len(combos) * len(orderings), num_channels, num_sources, 3)
+        )
+        return self._populate_scores_dict(results, combo_and_permutations)
 
     def _mask_for_source_activity(self, estimates, references, threshold=-60):
         for s, g in zip(estimates, references):
@@ -75,9 +90,9 @@ class ScaleInvariantSDR(EvaluationBase):
             g.audio_data[mask] = 0
     
     def _populate_scores_dict(self, results, orderings):
-        best_permutation_by_sdr = np.argmax(results[:, :, :, 0].mean(axis=1).mean(axis=-1))
+        best_permutation_by_sdr = np.argmax(results[..., 0].mean(axis=1).mean(axis=-1))
         results = results[best_permutation_by_sdr]
-        best_permutation = orderings[best_permutation_by_sdr]
+        best_permutation = orderings[best_permutation_by_sdr][0]
         scores = {'permutation': list(best_permutation)}
         for i, j in enumerate(best_permutation):
             label = self.source_labels[j]

@@ -340,7 +340,6 @@ class DilatedConvolutionalStack(nn.Module):
             [num_batch, sequence_length, num_frequencies, num_output_channels]
         So it can be passed to an Embedding module.
         """
-        shape = data.shape
         data =  data.permute(0, 3, 1, 2)
         previous_layer = None
         for i in range(self.num_layers):

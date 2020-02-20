@@ -15,6 +15,7 @@ from enum import Enum
 import zarr
 import numcodecs
 import matplotlib.pyplot as plt
+import soundfile as sf
 
 class BaseDataset(Dataset):
     def __init__(self, folder: str, options: Dict[str, Any]):
@@ -467,7 +468,7 @@ class BaseDataset(Dataset):
         stft = (
             audio_signal.stft(use_librosa=self.use_librosa)
         )
-        log_spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
+        log_spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=1.0)
         return log_spectrogram, stft
 
 
@@ -595,8 +596,7 @@ class BaseDataset(Dataset):
             AudioSignal object
         """
         if os.path.splitext(file_path)[-1] == '.wav':
-            rate, audio = wavfile.read(file_path)
-            audio = audio.astype(np.float32, order='C') / 32768.0
+            audio, rate = sf.read(file_path)
             audio_signal = AudioSignal(audio_data_array=audio, sample_rate=self.options['sample_rate'])
         else:
             audio_signal = AudioSignal(file_path, sample_rate=self.options['sample_rate'])

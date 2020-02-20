@@ -50,40 +50,34 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
         self.use_librosa_stft = use_librosa_stft
         self._compute_spectrograms()
 
-    def _compute_spectrograms(self):
-        self.stft = self.audio_signal.stft(
-            overwrite=True,
-            remove_reflection=True,
-            use_librosa=self.use_librosa_stft
-        )
-        self.log_spectrogram = librosa.amplitude_to_db(
-            np.abs(self.stft),
-            ref=np.max
-        )
+    def extract_features(self):
+        input_data = self._preprocess()
+        with torch.no_grad():
+            features = self.model(input_data)
+            if 'estimates' not in features:
+                raise ValueError("This model is not a mask estimation model!")
+            features = (
+                (features['estimates'] + 1e-6) / 
+                (input_data['magnitude_spectrogram'].unsqueeze(-1) + 1e-6)
+            ).squeeze(0)
+        features = features.permute(3, 1, 0, 2)
+        features = features.data.cpu().numpy()
+        return features
 
-    def run(self):
+    def run(self, features=None):
         """
 
         Returns:
 
         """
-        input_data = self._preprocess()
-        with torch.no_grad():
-            output = self.model(input_data)
-            output = {k: output[k] for k in output}
-
-            if 'estimates' not in output:
-                raise ValueError("This model is not a mask estimation model!")
-
-            _masks = (output['estimates'] / input_data['magnitude_spectrogram'].unsqueeze(-1)).squeeze(0)
-            _masks = _masks.permute(3, 1, 0, 2)
-            _masks = _masks.cpu().data.numpy()
+        if features is None:
+            features = self.extract_features()
         
 
-        self.assignments = _masks
+        self.assignments = features
         self.num_sources = self.assignments.shape[0]
         self.masks = []
-        for i in range(self.assignments.shape[-1]):
+        for i in range(self.assignments.shape[0]):
             mask = self.assignments[i, :, :, :]
             mask = masks.SoftMask(mask)
             if self.mask_type == self.BINARY_MASK:

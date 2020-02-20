@@ -24,6 +24,17 @@ class DeepMixin():
         metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
         return model, metadata
 
+    def _compute_spectrograms(self):
+        self.stft = self.audio_signal.stft(
+            overwrite=True,
+            remove_reflection=True,
+            use_librosa=self.use_librosa_stft
+        )
+        self.log_spectrogram = librosa.amplitude_to_db(
+            np.abs(self.stft),
+            ref=1.0
+        )
+
     def _preprocess(self, axis=None):
         """
         Preprocess data before putting into the model.
@@ -32,9 +43,6 @@ class DeepMixin():
             'magnitude_spectrogram': np.abs(self.stft),
             'log_spectrogram': self.log_spectrogram.copy(),
         }
-        if not hasattr(self.model.layers, 'batch_norm'):
-            data['log_spectrogram'] -= np.mean(data['log_spectrogram'], axis=axis, keepdims=True)
-            data['log_spectrogram'] /= np.std(data['log_spectrogram'], axis=axis, keepdims=True) + 1e-7
 
         for key in data:
             data[key] = self._format(data[key], self.metadata['format'])

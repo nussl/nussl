@@ -1,4 +1,6 @@
 import torch
+torch.multiprocessing.set_sharing_strategy('file_system')
+
 from torch import nn
 from torch.utils.data import DataLoader
 import numpy as np
@@ -35,6 +37,8 @@ class Trainer():
         )
         self.experiment = experiment
         self.prepare_directories(output_folder)
+        self.log_frequency = self.options.pop('log_frequency', None)
+
         self.model = self.build_model(model)
 
         freeze_layers = self.options.pop('freeze_layers', [])
@@ -88,11 +92,15 @@ class Trainer():
 
     def setup_loss(self, loss_functions, output_target_map):
         self.output_target_map = output_target_map
-        self.loss_dictionary = {
-            target: (loss_functions[fn.upper()].value(), float(weight))
-            for (fn, target, weight)
-            in self.options['loss_function']
-        }
+        self.loss_dictionary = {}
+        for (_fn, target, weights) in self.options['loss_function']:
+            if 'PIT' in _fn.upper() or 'CIT' in _fn.upper():
+                it_loss, loss_fn = _fn.split(':')
+                loss_fn = loss_functions[loss_fn.upper()].value()
+                fn = loss_functions[it_loss.upper()].value(loss_fn)
+            else:
+                fn = loss_functions[_fn.upper()].value()
+            self.loss_dictionary[target] = (fn, float(weights))
         self.loss_keys = sorted(list(self.loss_dictionary))
 
     @staticmethod
@@ -112,24 +120,13 @@ class Trainer():
     def prepare_directories(self, output_folder):
         self.output_folder = output_folder
         self.checkpoint_folder = os.path.join(output_folder, 'checkpoints')
-        self.config_folder = os.path.join(output_folder, 'config')
 
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.checkpoint_folder, exist_ok=True)
-        os.makedirs(self.config_folder, exist_ok=True)
 
     def create_dataloader(self, dataset):
         if not dataset:
             return None
-
-        input_keys = [[connection[0]] + connection[1] for connection in self.module.connections]
-        input_keys = list(chain.from_iterable(input_keys))
-        input_keys += self.module.output_keys
-
-        output_keys = [self.output_target_map[k] for k in input_keys if k in self.output_target_map]
-        output_keys = list(chain.from_iterable(output_keys))
-        
-        dataset.data_keys_for_training = input_keys + output_keys
 
         return DataLoader(
             dataset,
@@ -212,19 +209,23 @@ class Trainer():
     def run_epoch(self, key):
         epoch_loss = 0
         num_batches = len(self.dataloaders[key])
-        logging.info(f"Starting {key} epoch")
         for step, data in enumerate(self.dataloaders[key]):
             #TODO factor this out into a loop that can be overridden by other classes.
             data = self.prepare_data(data)
             output = self.forward(data)
             loss = self.calculate_loss(output, data)
             loss['total_loss'] = sum(list(loss.values()))
-            if step % 100 == 0:
-                logging.info(f"Step {step}/{num_batches}, loss: {epoch_loss/(step + 1)}")
             epoch_loss += loss['total_loss'].item()
+
+            if self.log_frequency and step % self.log_frequency == 0 and step > 0:
+                logging.info(f"At {step}/{num_batches} with {loss['total_loss'].item()}")
 
             if self.model.training:
                 self.optimizer.zero_grad()
+                if 'grad_clip' in self.options:
+                    nn.utils.clip_grad_norm_(
+                        self.model.parameters, self.options['grad_norm']
+                    )
                 loss['total_loss'].backward()
                 self.optimizer.step()
             step += 1
@@ -287,7 +288,7 @@ class Trainer():
         self.populate_cache()
         self.switch_to_cache()
 
-        logging.info(f"Training data for {self.options['num_epochs'] - self.num_epoch} epochs")
+        logging.info(f"Training for {self.options['num_epochs'] - self.num_epoch} epochs")
         fit_start_time = time.time()
 
         for self.num_epoch in range(self.num_epoch, self.options['num_epochs']):
@@ -296,7 +297,7 @@ class Trainer():
             epoch_loss = self.run_epoch('training')
             self.log_metrics(epoch_loss, self.num_epoch, 'epoch')
             validation_loss = self.validate('validation')
-            self.save(validation_loss['loss'] < lowest_validation_loss)
+            saved_model_path = self.save(validation_loss['loss'] < lowest_validation_loss)
             lowest_validation_loss = (
                 validation_loss['loss'] 
                 if validation_loss['loss'] < lowest_validation_loss
@@ -308,13 +309,26 @@ class Trainer():
             full_elapsed_time = time.time() - fit_start_time
             full_elapsed_time = time.strftime("%H:%M:%S", time.gmtime(full_elapsed_time))
 
-            logging.info(
-                f"Epoch summary: {self.num_epoch}\t"
-                f"Training loss: {epoch_loss['loss']}\t"
-                f"Validation loss: {validation_loss['loss']}\t"
-                f"Epoch took: {epoch_elapsed_time}\t"
-                f"Time since start: {full_elapsed_time}"
+            logging_str = (
+                f"""\n
+                EPOCH SUMMARY
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                | Epoch number: {self.num_epoch:04d}         |                
+                | Training loss:   {epoch_loss['loss']:04f}  |           
+                | Validation loss: {validation_loss['loss']:04f}  |   
+                | Epoch took: {epoch_elapsed_time}       |                 
+                | Time since start: {full_elapsed_time} |          
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                Saving to {saved_model_path}.
+                Configuration @ {self.output_folder}
+                """
             )
+
+            if hasattr(self.experiment, '_get_experiment_url'):
+                # then this is a comet.ml run with a link
+                logging_str += f'Watch experiment @ {self.experiment._get_experiment_url()}\n'
+
+            logging.info(logging_str)
 
     def validate(self, key) -> float:
         """Calculate loss on validation set
@@ -386,7 +400,8 @@ class Trainer():
         self.module.save(model_path, {'metadata': metadata})
         if is_best:
             torch.save(optimizer_state, optimizer_path.replace('latest', 'best'))
-            self.module.save(model_path.replace('latest', 'best'), {'metadata': metadata})
+            model_path = model_path.replace('latest', 'best')
+            self.module.save(model_path, {'metadata': metadata})
         return model_path
 
     def resume(self, resume_location, load_only_model=True, prefixes=('best', 'latest')):

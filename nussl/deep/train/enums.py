@@ -16,6 +16,7 @@ class Samplers(Enum):
 class LossFunctions(Enum):
     DPCL = loss.DeepClusteringLoss
     PIT = loss.PermutationInvariantLoss
+    CIT = loss.CombinationInvariantLoss
     L1 = nn.L1Loss
     MSE = nn.MSELoss
     KL = nn.KLDivLoss

@@ -39,7 +39,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         apply_pca=False,
         num_pca_dimensions=2,
         scale_features=False,
-        ref=np.max,
+        ref=1.0,
         order_sources_by_size=True,
     ):
         super(ClusteringSeparationBase, self).__init__(
@@ -299,12 +299,8 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         return overall_confidence
 
     def set_audio_signal(self, new_audio_signal):
-        input_audio_signal = deepcopy(new_audio_signal)
-        self.audio_signal = input_audio_signal
-        self.original_length = input_audio_signal.signal_length
-        self.original_sample_rate = input_audio_signal.sample_rate
         self.clusterer = None
-        return input_audio_signal
+        return super().set_audio_signal(new_audio_signal)
 
     def project_embeddings(self, num_dimensions, threshold=-80):
         """
@@ -366,7 +362,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         )
 
         rows_to_sample = np.random.choice(
-            output_transform.shape[0], max_points, replace=False)
+            output_transform.shape[0], max_points, replace=True)
         output_transform = output_transform[rows_to_sample]
 
         result=pd.DataFrame(

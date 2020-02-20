@@ -5,7 +5,7 @@ import random
 
 class MixSourceFolder(BaseDataset):
     def __init__(self, folder, options):
-        """This dataset expects your data to be formatted in the following way:
+        """This dataset expects your data to be formatted in the following way::
 
             data/
                 mix/
@@ -42,27 +42,40 @@ class MixSourceFolder(BaseDataset):
         will be created by summing the sources on the fly. This can also happen
         if there is a mix folder by setting self.options['sum_sources'] = True.
 
+        You can also specify the following things in self.options::
+
+            mix_folder (str, optional): Which folder is designated as the mix folder. 
+                Relative path from the root of the dataset directory. If not specified,
+                the mix folder is the one labeled "mix".
+            source_folders (list, optional): Which folders are designated as the source
+            folder such that they add up to the mix folder.
+
         Arguments:
             folder: location where all the data lives that is in MixSourceFolder format.
             options: the options for the dataset (see deep/config/defaults/dataset.json)
-                for more details.            
+                for more details.
         """
+        self.source_folders = options['source_folders'] if 'source_folders' in options else []
+        self.mix_folder = options['mix_folder'] if 'mix_folder' in options else 'mix'
+
         super(MixSourceFolder, self).__init__(folder, options)
         if self.create_mix:
             wav_file = os.path.join(self.folder, self.source_folders[0], self.files[0])
         else:
-            wav_file = os.path.join(self.folder, 'mix', self.files[0])
+            wav_file = os.path.join(self.folder, self.mix_folder, self.files[0])
         
         mix = self._load_audio_file(wav_file)
         self.channels_in_mix = mix.num_channels
         self.sum_sources = self.options.pop('sum_sources', False)
-
+        
     def get_files(self, folder):
-        self.source_folders = sorted([
-            x for x in os.listdir(folder) 
-            if os.path.isdir(os.path.join(folder, x)) 
-            and 'mix' not in x and 'cache' not in x
-        ])
+        if not self.source_folders:
+            self.source_folders = sorted([
+                x for x in os.listdir(folder) 
+                if os.path.isdir(os.path.join(folder, x)) 
+                and 'mix' not in x and 'cache' not in x
+            ])
+        
         if not self.options['source_labels']:
             self.options['source_labels'] = self.source_folders
 
@@ -71,9 +84,10 @@ class MixSourceFolder(BaseDataset):
             self.options['source_labels'].append(group_name)
 
         self.num_sources = len(self.source_folders)
-        if os.path.exists(os.path.join(folder, 'mix')):
+
+        if self.mix_folder:
             self.create_mix = False
-            files = sorted([x for x in os.listdir(os.path.join(folder, 'mix')) if '.wav' in x])
+            files = sorted([x for x in os.listdir(os.path.join(folder, self.mix_folder)) if '.wav' in x])
         else:
             self.create_mix = True
             files = sorted([x for x in os.listdir(os.path.join(folder, self.source_folders[0])) if '.wav' in x])
@@ -96,7 +110,7 @@ class MixSourceFolder(BaseDataset):
         if self.create_mix:
             mix_signal = sum([source_dict[x] for x in source_dict])
         else:
-            mix_path = os.path.join(self.folder, 'mix', wav_file)
+            mix_path = os.path.join(self.folder, self.mix_folder, wav_file)
             mix_signal = self._load_audio_file(mix_path)
             mix_signal.audio_data = mix_signal.audio_data[channel_indices]
 
