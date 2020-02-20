@@ -50,17 +50,6 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
         self.use_librosa_stft = use_librosa_stft
         self._compute_spectrograms()
 
-    def _compute_spectrograms(self):
-        self.stft = self.audio_signal.stft(
-            overwrite=True,
-            remove_reflection=True,
-            use_librosa=self.use_librosa_stft
-        )
-        self.log_spectrogram = librosa.amplitude_to_db(
-            np.abs(self.stft),
-            ref=np.max
-        )
-
     def extract_features(self):
         input_data = self._preprocess()
         with torch.no_grad():

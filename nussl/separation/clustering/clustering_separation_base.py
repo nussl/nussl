@@ -39,7 +39,7 @@ class ClusteringSeparationBase(mask_separation_base.MaskSeparationBase):
         apply_pca=False,
         num_pca_dimensions=2,
         scale_features=False,
-        ref=np.max,
+        ref=1.0,
         order_sources_by_size=True,
     ):
         super(ClusteringSeparationBase, self).__init__(

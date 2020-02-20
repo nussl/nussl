@@ -468,7 +468,7 @@ class BaseDataset(Dataset):
         stft = (
             audio_signal.stft(use_librosa=self.use_librosa)
         )
-        log_spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
+        log_spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=1.0)
         return log_spectrogram, stft
 
 

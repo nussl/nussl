@@ -1,4 +1,6 @@
 import torch
+torch.multiprocessing.set_sharing_strategy('file_system')
+
 from torch import nn
 from torch.utils.data import DataLoader
 import numpy as np
@@ -126,26 +128,6 @@ class Trainer():
         if not dataset:
             return None
 
-        # input_keys = []
-        # for connection in self.module.connections:
-        #     for c in connection:
-        #         if isinstance(c, dict):
-        #             for key, val in c.items():
-        #                 input_keys.append(val)
-        #         else:
-        #             input_keys.append(c)
-
-        # input_keys += self.module.output_keys
-    
-
-        # output_keys = []
-        # for k in input_keys:
-        #     print(k)
-        #     if k in self.output_target_map:
-        #         output_keys.append(self.output_target_map[k])
-
-        # dataset.data_keys_for_training = input_keys + output_keys
-
         return DataLoader(
             dataset,
             batch_size=self.options['batch_size'],
@@ -240,6 +222,10 @@ class Trainer():
 
             if self.model.training:
                 self.optimizer.zero_grad()
+                if 'grad_clip' in self.options:
+                    nn.utils.clip_grad_norm_(
+                        self.model.parameters, self.options['grad_norm']
+                    )
                 loss['total_loss'].backward()
                 self.optimizer.step()
             step += 1
