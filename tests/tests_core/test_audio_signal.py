@@ -213,11 +213,19 @@ def test_plot_time_domain(benchmark_audio):
     a = nussl.AudioSignal(path)
     a.plot_time_domain(x_label_time=False)
 
+def test_str(benchmark_audio):
+    for key, path in benchmark_audio.items():
+        a = nussl.AudioSignal(path)
+        b = nussl.AudioSignal(path)
+        assert (str(a) == str(b))
+
+
 freq = 30
 sine_wave = np.sin(np.linspace(0, freq * 2 * np.pi, length))
 
 def test_stft_istft(benchmark_audio):
     a = nussl.AudioSignal(audio_data_array=sine_wave)
+    pytest.raises(AudioSignalException, a.istft)
     a.stft()
     a.istft()
 
@@ -226,6 +234,13 @@ def test_stft_istft(benchmark_audio):
     calc_sine = a.istft(overwrite=False, use_librosa=False)
 
     assert np.allclose(a.audio_data, calc_sine)
+
+    # also load another object with stft_data
+    b = nussl.AudioSignal(stft=a.stft(), sample_rate=a.sample_rate)
+    b.istft()
+    min_length = min(b.audio_data.shape[1], a.audio_data.shape[1])
+
+    assert np.allclose(a.audio_data[:, :min_length], b.audio_data[:, :min_length])
 
     for key, path in benchmark_audio.items():
         a = nussl.AudioSignal(path)
