@@ -1213,8 +1213,8 @@ class AudioSignal(object):
 
         if self.audio_data is None:
             raise AudioSignalException('Cannot plot with no audio data!')
-
-        if channel > self.num_channels - 1:
+        
+        if channel and channel > self.num_channels - 1:
             raise AudioSignalException('Channel selected does not exist!')
 
         # Mono or single specific channel selected for plotting
@@ -1409,7 +1409,7 @@ class AudioSignal(object):
             (:class:`AudioSignal`): New :class:`AudioSignal` object with the sum of
             ``self`` and ``other``.
         """
-        if type(other) is int:
+        if isinstance(other, int):
             # this is so that sum(list of audio_signals) works.
             # when sum is called on a list it's evaluated as 0 + elem1 + elem2 + ...
             # so the 0 case needs to be taken care of (by doing nothing)

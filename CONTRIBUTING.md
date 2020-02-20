@@ -2,14 +2,6 @@
 Contributing code
 =================
 
-#### NOTE: We are currently not accepting any large submissions as we ramp up to a beta release. 
-
-Aug. 21, 2017: As we prepare to release the beta (soon), we will not be accepting 
-large pull requets (i.e., new algorithms, large new features). Feel free to still make them,
-but know that they will not be triaged until after the beta. Pull requests for bugs 
-will still be handled normally. -e
-
-
 How to contribute
 -----------------
 

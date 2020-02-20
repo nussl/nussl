@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Init for ``nussl``, the Northwestern University Source Separation Library.
-"""
 try:
     import torch
     torch_imported = True
 except Exception:
     torch_imported = False
+
 
 try:
     import vamp
@@ -15,21 +13,19 @@ try:
 except Exception:
     vamp_imported = False
 
-
 class ImportErrorClass(object):
     def __init__(self, lib, **kwargs):
         raise ImportError(f'Cannot import {type(self).__name__} because {lib} is not installed')
 
-
 from .core.constants import *
 from .core.audio_signal import AudioSignal
-from .core import utils, efz_utils, stft_utils, datasets, jupyter_utils
-from .separation import *
-from . import evaluation
-from . import transformers
-from . import deep
-from . import core 
-from . import separation
+from .core import utils, efz_utils, stft_utils, jupyter_utils
+# from .separation import *
+# from . import evaluation
+# from . import transformers
+# from . import deep
+# from . import core 
+# from . import separation
 
 __version__ = '0.1.6'
 

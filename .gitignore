@@ -10,3 +10,4 @@ Output/
 nussl.egg-info/
 .vscode/
 **/.ipynb_checkpoints
+tests/ignored_tests/
