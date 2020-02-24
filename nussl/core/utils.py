@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides utilities for running nussl algorithms that do not belong to
 any specific algorithm or that are shared between algorithms.
 """
-
 
 import warnings
 import base64

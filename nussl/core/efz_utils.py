@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 The *nussl* External File Zoo (EFZ) is a server that houses all files that are too large to
 bundle with *nussl* when distributing it through ``pip`` or Github. These types of files include

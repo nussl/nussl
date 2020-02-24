@@ -11,3 +11,4 @@ nussl.egg-info/*
 **/.ipynb_checkpoints
 tests/ignored_tests/
 .coverage
+docs/_build/

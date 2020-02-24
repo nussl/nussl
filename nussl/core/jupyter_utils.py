@@ -1,6 +1,7 @@
-##################################################
-#              Jupyter integration
-##################################################
+"""
+These are optional utilities included in nussl that allow one to embed an AudioSignal
+as a playable object in a Jupyter notebook.
+"""
 
 from tempfile import NamedTemporaryFile
 import librosa

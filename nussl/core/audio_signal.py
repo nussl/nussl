@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 :class:`AudioSignal` is the main entry and exit point for all source separation algorithms
 in *nussl*.
@@ -22,9 +19,10 @@ In this case, there is no data stored in :attr:`audio_data` or in :attr:`stft_da
 these attributes can be updated at any time after the object has been created.
 
 Additionally, an `AudioSignal` object can be loaded with exactly one of the following:
-    1) A path to an input audio file (see :func:`load_audio_from_file` for details).
-    2) A `numpy` array of 1D or 2D real-valued time-series audio data.
-    3) A `numpy` array of 2D or 3D complex-valued time-frequency STFT data.
+
+    1. A path to an input audio file (see :func:`load_audio_from_file` for details).
+    2. A `numpy` array of 1D or 2D real-valued time-series audio data.
+    3. A `numpy` array of 2D or 3D complex-valued time-frequency STFT data.
 
 :class:`AudioSignal` will throw an error if it is initialized with more than one of the
 previous at once.
@@ -97,29 +95,35 @@ See Also:
 """
 
 
-
 import copy
 import json
 import numbers
 import os.path
 import warnings
+from collections import namedtuple
 
 import audioread
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io.wavfile as wav
+from scipy import signal
 
 from . import constants
-from . import stft_utils
 from . import utils
 
 __all__ = ['AudioSignal']
 
+STFTParams = namedtuple(
+    'STFTParams',
+    ['window_length', 'hop_length', 'window_type'])
+'''
+Container for storing STFT parameters.
+'''
 
 class AudioSignal(object):
     """
-    Parameters:
+    Arguments:
         path_to_input_file (str): Path to an input file to load upon initialization. Audio
             gets loaded into :attr:`audio_data`.
         audio_data_array (:obj:`np.ndarray`): 1D or 2D numpy array containing a real-valued,
@@ -149,7 +153,7 @@ class AudioSignal(object):
             calculated by :func:`stft` or provided upon initialization.
             3D :obj:`numpy` array with shape `(n_frequency_bins, n_hops, n_channels)`.
             ``None`` by default.
-        stft_params (:obj:`StftParams`): Container for all settings for doing a STFT. Has same
+        stft_params (:obj:`STFTParams`): Container for all settings for doing a STFT. Has same
             lifespan as :class:`AudioSignal` object.
         label (str): A label for this :class:`AudioSignal` object.
   
@@ -190,9 +194,22 @@ class AudioSignal(object):
         if stft is not None:
             self.stft_data = stft  # complex spectrogram data
 
-        self.stft_params = stft_utils.StftParams(self.sample_rate) \
-            if stft_params is None else stft_params
-        self.use_librosa_stft = constants.USE_LIBROSA_STFT
+        if stft_params is None:
+            # Defaults to 40 ms windows
+            default_win_len = int(
+                2 ** (np.ceil(np.log2(
+                    constants.DEFAULT_WIN_LEN_PARAM * self.sample_rate))
+            ))
+            self.stft_params = STFTParams(
+                window_length = default_win_len,
+                hop_length = default_win_len // 4,
+                window_type = constants.WINDOW_DEFAULT
+            )
+        else:
+            self.stft_params = stft_params
+        
+        #stft_utils.StftParams(self.sample_rate) \
+        #    if stft_params is None else stft_params
 
     def __str__(self):
         return (
@@ -883,26 +900,21 @@ class AudioSignal(object):
         if self.audio_data is None:
             raise AudioSignalException("Cannot write audio file because there is no audio data.")
 
-        try:
-            self.peak_normalize()
+        self.peak_normalize()
 
-            if sample_rate is None:
-                sample_rate = self.sample_rate
+        if sample_rate is None:
+            sample_rate = self.sample_rate
 
-            audio_output = np.copy(self.audio_data)
+        audio_output = np.copy(self.audio_data)
 
-            # TODO: better fix
-            # convert to fixed point again
-            if not np.issubdtype(audio_output.dtype, np.dtype(int).type):
-                audio_output = np.multiply(audio_output,
-                                           2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
+        # TODO: better fix
+        # convert to fixed point again
+        if not np.issubdtype(audio_output.dtype, np.dtype(int).type):
+            audio_output = np.multiply(
+                audio_output, 
+                2 ** (constants.DEFAULT_BIT_DEPTH - 1)).astype('int16')
+        wav.write(output_file_path, sample_rate, audio_output.T)
 
-            wav.write(output_file_path, sample_rate, audio_output.T)
-        except Exception as e:
-            print(f'Cannot write to file, {output_file_path}.')
-            raise e
-        if verbose:
-            print(f'Successfully wrote {output_file_path}.')
 
     ##################################################
     #                Active Region
@@ -962,42 +974,11 @@ class AudioSignal(object):
         self._active_start = 0
         self._active_end = self._signal_length
 
-    def next_window_generator(self, window_size, hop_size, convert_to_samples=False):
-        """
-        Not Implemented
-        
-        Raises:
-            NotImplemented
-            
-        Args:
-            window_size:
-            hop_size:
-            convert_to_samples:
-
-        Returns:
-
-        """
-        raise NotImplemented
-        # start = self._active_start
-        # end = self.signal_length
-        # if convert_to_samples:
-        #     start /= self.sample_rate
-        #     end = self.signal_duration
-        # old_start = self._active_start
-        # self.set_active_region_to_default()
-        #
-        # while old_start + window_size < self.signal_length:
-        #     start = old_start + hop_size
-        #     end = start + window_size
-        #     self.set_active_region(start, end)
-        #     yield start, end
-
     ##################################################
     #               STFT Utilities
     ##################################################
 
-    def stft(self, window_length=None, hop_length=None, window_type=None, n_fft_bins=None,
-             remove_reflection=True, overwrite=True, use_librosa=constants.USE_LIBROSA_STFT):
+    def stft(self, window_length=None, hop_length=None, window_type=None, overwrite=True):
         """
         Computes the Short Time Fourier Transform (STFT) of :attr:`audio_data`.
         The results of the STFT calculation can be accessed from :attr:`stft_data`
@@ -1010,10 +991,7 @@ class AudioSignal(object):
             window_length (int): Amount of time (in samples) to do an FFT on
             hop_length (int): Amount of time (in samples) to skip ahead for the new FFT
             window_type (str): Type of scaling to apply to the window.
-            n_fft_bins (int): Number of FFT bins per each hop
-            remove_reflection (bool): Should remove reflection above Nyquist
             overwrite (bool): Overwrite :attr:`stft_data` with current calculation
-            use_librosa (bool): Use *librosa's* stft function
 
         Returns:
             (:obj:`np.ndarray`) Calculated, complex-valued STFT from :attr:`audio_data`, 3D numpy
@@ -1021,40 +999,42 @@ class AudioSignal(object):
 
         """
         if self.audio_data is None or self.audio_data.size == 0:
-            raise AudioSignalException("No time domain signal (self.audio_data) to make STFT from!")
+            raise AudioSignalException(
+                "No time domain signal (self.audio_data) to make STFT from!")
 
-        window_length = self.stft_params.window_length if window_length is None \
+        window_length = (
+            self.stft_params.window_length 
+            if window_length is None
             else int(window_length)
-        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
-        window_type = self.stft_params.window_type if window_type is None else window_type
-        n_fft_bins = self.stft_params.n_fft_bins if n_fft_bins is None else int(n_fft_bins)
+        )
+        hop_length = (
+            self.stft_params.hop_length 
+            if hop_length is None 
+            else int(hop_length)
+        )
+        window_type = (
+            self.stft_params.window_type 
+            if window_type is None 
+            else window_type
+        )
 
-        calculated_stft = self._do_stft(window_length, hop_length, window_type,
-                                        n_fft_bins, remove_reflection, use_librosa)
-
-        if overwrite:
-            self.stft_data = calculated_stft
-
-        return calculated_stft
-
-    def _do_stft(self, window_length, hop_length, window_type, n_fft_bins, remove_reflection,
-                 use_librosa):
-        if self.audio_data is None or self.audio_data.size == 0:
-            raise AudioSignalException('Cannot do stft without signal!')
-
-        stfts = []
-
-        stft_func = stft_utils.librosa_stft_wrapper if use_librosa else stft_utils.e_stft
+        stft_data = []
 
         for chan in self.get_channels():
-            stfts.append(stft_func(signal=chan, window_length=window_length,
-                                   hop_length=hop_length, window_type=window_type,
-                                   n_fft_bins=n_fft_bins, remove_reflection=remove_reflection))
+            _, _, _stft = signal.stft(
+                chan, fs=self.sample_rate, window=window_type, 
+                nperseg=window_length, noverlap=window_length-hop_length)
+            stft_data.append(_stft)
 
-        return np.array(stfts).transpose((1, 2, 0))
+        stft_data = np.array(stft_data).transpose((1, 2, 0))
+
+        if overwrite:
+            self.stft_data = stft_data
+
+        return stft_data
 
     def istft(self, window_length=None, hop_length=None, window_type=None, overwrite=True,
-              use_librosa=constants.USE_LIBROSA_STFT, truncate_to_length=None):
+              truncate_to_length=None):
         """ Computes and returns the inverse Short Time Fourier Transform (iSTFT).
 
         The results of the iSTFT calculation can be accessed from :attr:`audio_data`
@@ -1068,7 +1048,6 @@ class AudioSignal(object):
             hop_length (int): Amount of time (in samples) to skip ahead for the new FFT
             window_type (str): Type of scaling to apply to the window.
             overwrite (bool): Overwrite :attr:`stft_data` with current calculation
-            use_librosa (bool): Use *librosa's* stft function
             truncate_to_length (int): truncate resultant signal to specified length. Default `None`.
 
         Returns:
@@ -1079,13 +1058,32 @@ class AudioSignal(object):
         if self.stft_data is None or self.stft_data.size == 0:
             raise AudioSignalException('Cannot do inverse STFT without self.stft_data!')
 
-        window_length = self.stft_params.window_length if window_length is None \
+        window_length = (
+            self.stft_params.window_length 
+            if window_length is None
             else int(window_length)
-        hop_length = self.stft_params.hop_length if hop_length is None else int(hop_length)
-        # TODO: bubble up center
-        window_type = self.stft_params.window_type if window_type is None else window_type
+        )
+        hop_length = (
+            self.stft_params.hop_length 
+            if hop_length is None 
+            else int(hop_length)
+        )
+        window_type = (
+            self.stft_params.window_type 
+            if window_type is None 
+            else window_type
+        )
 
-        calculated_signal = self._do_istft(window_length, hop_length, window_type, use_librosa)
+        signals = []
+
+        for stft in self.get_stft_channels():
+            _, _signal = signal.istft(
+                stft, fs=self.sample_rate, window=window_type, nperseg=window_length,
+                noverlap=window_length-hop_length)
+
+            signals.append(_signal)
+
+        calculated_signal = np.array(signals)
 
         # Make sure it's shaped correctly
         calculated_signal = np.expand_dims(calculated_signal, -1) \
@@ -1100,25 +1098,9 @@ class AudioSignal(object):
             calculated_signal = calculated_signal[:, :truncate_to_length]
 
         if overwrite or self.audio_data is None:
-            self.audio_data = calculated_signal
+            self.audio_data = calculated_signal 
 
         return calculated_signal
-
-    def _do_istft(self, window_length, hop_length, window_type, use_librosa):
-        if self.stft_data.size == 0:
-            raise AudioSignalException('Cannot do inverse STFT without self.stft_data!')
-
-        signals = []
-
-        istft_func = stft_utils.librosa_istft_wrapper if use_librosa else stft_utils.e_istft
-
-        for stft in self.get_stft_channels():
-            calculated_signal = istft_func(stft=stft, window_length=window_length,
-                                           hop_length=hop_length, window_type=window_type)
-
-            signals.append(calculated_signal)
-
-        return np.array(signals)
 
     def apply_mask(self, mask, overwrite=False):
         """
