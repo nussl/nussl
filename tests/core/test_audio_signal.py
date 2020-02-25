@@ -39,6 +39,24 @@ def test_load(benchmark_audio):
     assert (b.sample_rate == c.sample_rate)
     assert (np.array_equal(b.audio_data, c.audio_data))
 
+def test_audio_data_setters(benchmark_audio):
+    # Load from file
+    a = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    def dummy_a(signal):
+        signal.audio_data = np.ones((10, 10, 10))
+    pytest.raises(AudioSignalException, dummy_a, a)
+
+    def dummy_b(signal):
+        signal.audio_data = [1, 2, 3]
+    pytest.raises(AudioSignalException, dummy_b, a)
+
+    def dummy_c(signal):
+        _audio_data = np.ones((10, 10, 10))
+        _audio_data[0] = np.inf
+        signal.audio_data = _audio_data
+
+    pytest.raises(AudioSignalException, dummy_c, a)
+    
 def test_load_audio_from_file(benchmark_audio):
     # Do some preliminary checks
     signal_info = {}
@@ -123,6 +141,10 @@ def test_load_audio_from_file(benchmark_audio):
 def test_write_to_file(benchmark_audio):
     for key, path in benchmark_audio.items():
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=True) as f:
+            dummy = nussl.AudioSignal()
+            pytest.raises(
+                AudioSignalException, dummy.write_audio_to_file, f.name)
+
             a = nussl.AudioSignal(path)
             a.write_audio_to_file(f.name)
             b = nussl.AudioSignal(f.name)
@@ -158,6 +180,8 @@ def test_resample(benchmark_audio):
         b.resample(a.sample_rate / 2)
         assert (b.sample_rate == a.sample_rate/2)
 
+        pytest.warns(UserWarning, a.resample, a.sample_rate)
+
 def test_resample_on_load_from_file(benchmark_audio):
     # Test resample right when loading from file vs resampling after loading
     path = [benchmark_audio[key] for key in benchmark_audio][0]
@@ -167,6 +191,8 @@ def test_resample_on_load_from_file(benchmark_audio):
     b.load_audio_from_file(path, new_sample_rate=48000)
     assert (a.sample_rate == b.sample_rate)
     assert (np.allclose(a.audio_data, b.audio_data))
+
+    pytest.warns(UserWarning, nussl.AudioSignal, path, sample_rate=16000)
 
 def test_resample_vs_librosa_load(benchmark_audio):
     # Check against librosa load function
@@ -184,34 +210,6 @@ def test_default_sr_on_load_from_array(benchmark_audio):
     a = nussl.AudioSignal()
     a.load_audio_from_array(data)
     assert(a.sample_rate == nussl.DEFAULT_SAMPLE_RATE)
-
-def test_plot_time_domain(benchmark_audio):
-    path = benchmark_audio['dev1_female3_inst_mix.wav']
-    # Stereo signal that should plot both channels on same plot
-    a = nussl.AudioSignal(path)
-    a.plot_time_domain()
-
-    # Stereo signal that should only plot the specified channel
-    a.plot_time_domain(channel=0)
-
-    # Mono signal plotting
-    a.to_mono(overwrite=True)
-    a.plot_time_domain()
-
-    # Plotting a signal with 5 channels
-    num_test_channels = 5
-    freq_multiple = 5
-    freqs = [i * freq_multiple for i in range(1, num_test_channels+1)]
-    test_signal = np.array(
-        [np.sin(np.linspace(0, i * 2 * np.pi, length)) 
-        for i in freqs[:num_test_channels]
-    ])
-    a = nussl.AudioSignal(audio_data_array=test_signal)
-    a.plot_time_domain()
-
-    # Plotting a stereo signal with sample numbers on the x axis instead of time
-    a = nussl.AudioSignal(path)
-    a.plot_time_domain(x_label_time=False)
 
 def test_str(benchmark_audio):
     for key, path in benchmark_audio.items():
@@ -314,8 +312,83 @@ def _get_channel_helper(signal, n_channels):
     i = 0
     for ch in a.get_channels():
         assert np.array_equal(ch, signal[i, :])
+        new_signal = a.make_audio_signal_from_channel(i)
+        assert np.array_equal(ch, new_signal.audio_data[0])
         i += 1
     assert i == a.num_channels
+
+def test_active_region(benchmark_audio):
+    a = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    original_length = a.signal_length
+    a.set_active_region(
+        int(.1 * a.sample_rate), int(.5 * a.sample_rate))
+
+    assert (
+        a.signal_length == 
+        (int(.5 * a.sample_rate) - int(.1 * a.sample_rate)))
+    assert not a.active_region_is_default 
+    
+    a.set_active_region_to_default()
+    assert a.signal_length == original_length
+    assert a.active_region_is_default
+
+def test_audio_signal_copy(benchmark_audio):
+    for key, path in benchmark_audio.items():
+        signal = nussl.AudioSignal(path)
+
+        new_signal = signal.make_copy_with_audio_data(signal.audio_data)
+        assert np.allclose(
+            new_signal.audio_data, signal.audio_data)
+        
+        signal.set_active_region(0, 1000)
+        pytest.warns(UserWarning, signal.make_copy_with_audio_data,
+                     signal.audio_data)
+
+        signal.set_active_region_to_default()
+        audio_data = signal.audio_data[0]
+        pytest.warns(UserWarning, signal.make_copy_with_audio_data,
+                     audio_data)
+
+def test_audio_signal_utilities(benchmark_audio):
+    a1 = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    a2 = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    b = nussl.AudioSignal(benchmark_audio['K0149.wav'])
+
+    def check_if_exc(signal, func, *args):
+        signal.set_active_region(0, 100)
+        pytest.raises(AudioSignalException, func, *args)
+        signal.set_active_region_to_default()
+
+    a1.concat(b)
+    assert (a1.signal_length == (a2.signal_length + b.signal_length))
+    
+    truncate_to = a1.signal_length // 2
+    check_if_exc(a1, a1.truncate_samples, truncate_to)
+    a1.truncate_samples(truncate_to)
+    assert (a1.signal_length == truncate_to)
+
+    a1.truncate_samples(10*truncate_to)
+    assert (a1.signal_length == truncate_to)
+
+    truncate_to_sec = a1.signal_duration / 2
+    check_if_exc(a1, a1.truncate_seconds, truncate_to_sec)
+    a1.truncate_seconds(truncate_to_sec)
+    assert (a1.signal_duration == truncate_to_sec)
+
+    before, after = 1000, 1000
+    check_if_exc(a2, a2.crop_signal, before, after)
+    old_duration = a2.signal_length
+    a2.crop_signal(before, after)
+    assert (a2.signal_length == old_duration - 2000)
+
+    before, after = 1000, 1000
+    check_if_exc(a2, a2.zero_pad, before, after)
+    old_duration = a2.signal_length
+    a2.zero_pad(before, after)
+    assert (a2.signal_length == old_duration + 2000)
+
+
+
 
 def test_arithmetic(benchmark_audio):
     # These signals have two different lengths
@@ -345,4 +418,67 @@ def test_arithmetic(benchmark_audio):
     d = copy.copy(a)
     d /= 2
     assert (np.allclose(c.audio_data, d.audio_data))
+
+    a2 = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    b2 = nussl.AudioSignal(benchmark_audio['K0149.wav'])
+    a3 = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    a3.audio_data *= .5
+
+    assert (a == a2)
+    assert (a2 != b2)
+    assert (a2 != a3)
+
+    assert len(a2) == a2.audio_data.shape[-1]
+
+    a2 -= a3
+    assert (a2 == a3)
+
+    a2 += a3
+    assert (a2 == a)
+
+    a2.set_active_region(0, 100)
+    pytest.raises(AudioSignalException, lambda a, b: a + b, a, a2)
+
+    a2.set_active_region_to_default()
+    a2.resample(a2.sample_rate // 2)
+    pytest.raises(AudioSignalException, lambda a, b: a + b, a, a2)
+
+    c1 = nussl.AudioSignal(benchmark_audio['dev1_female3_inst_mix.wav'])
+    assert c1.is_stereo
+    c1.to_mono()
+    c2 = nussl.AudioSignal(benchmark_audio['dev1_female3_inst_mix.wav'])
+    pytest.raises(AudioSignalException, lambda a, b: a + b, c1, c2)
+
+    res1 = a2 + 0
+    res2 = 0 + a2
+
+    assert (res1 == res2)
     
+    def dummy(a, b):
+        a *= b
+
+    pytest.raises(AudioSignalException, dummy, a, [0, 2])
+
+def test_properties(benchmark_audio):
+    a = nussl.AudioSignal()
+    assert a.signal_duration is None
+    assert a.signal_length is None
+    assert a._signal_length is None
+    assert a.num_channels is None  
+    assert a.time_vector is None  
+    assert a.file_name is None
+
+    a = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    assert a.file_name == 'K0140.wav'
+    assert len(a.time_vector) == a.audio_data.shape[-1]
+
+    pytest.raises(AudioSignalException, lambda x: x.stft_length, a)
+    pytest.raises(AudioSignalException, lambda x: x.time_bins_vector, a)
+    pytest.raises(AudioSignalException, lambda x: x.freq_vector, a)
+    a.stft()
+
+    assert a.stft_length == a.stft_data.shape[1]
+    assert len(a.time_bins_vector) == a.stft_length
+    assert len(a.freq_vector) == a.stft_data.shape[0]
+
+    assert len(a.freq_vector) == a.stft_data.shape[0]

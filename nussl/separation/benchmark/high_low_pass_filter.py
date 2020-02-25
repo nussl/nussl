@@ -80,7 +80,8 @@ class HighLowPassFilter(mask_separation_base.MaskSeparationBase):
 
             # Compute the spectrogram and find the closest frequency bin to the cutoff freq
             self._get_stft()
-            closest_freq_bin = self.audio_signal.get_closest_frequency_bin(self.high_pass_cutoff_hz)
+            closest_freq_bin = (np.abs(
+                audio_signal.freq_vector - self.high_pass_cutoff_hz)).argmin()
 
             # Make masks
             self.low_pass_mask = self.ones_mask(self.stft.shape)

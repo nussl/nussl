@@ -25,12 +25,8 @@ win_min = 7  # 2 ** 7  =  128
 win_max = 11  # 2 ** 13 = 4096
 win_lengths = [2 ** i for i in range(win_min, win_max + 1)]
 
-# figure out what the length a 40 millisecond window would be (in samples). We pick 40 ms because...
-# it is 1/25th of a second. This gives a window length that can hold 1 full cycle of a 25 hz signal
-# Of course, human hearing extends down to 20 Hz....but at least this is lower than the lowest note
-# on a piano (27.5 Hz for equal temperament A440 tuning)
-win_length_40ms = int(2 ** (np.ceil(np.log2(nussl.DEFAULT_WIN_LEN_PARAM * sr))))
-win_lengths.append(win_length_40ms)
+win_length_32ms = int(2 ** (np.ceil(np.log2(nussl.DEFAULT_WIN_LEN_PARAM * sr))))
+win_lengths.append(win_length_32ms)
 
 # pick hop lengths in terms of window length. 1 = one full window. .1 = 1/10th of a window
 hop_length_ratios = [0.75, 0.5, 0.3, 0.25, 0.1]
@@ -46,18 +42,16 @@ def signals(benchmark_audio):
     signals = []
     # noisy signal
     noise = (np.random.rand(n_ch, length) * 2) - 1
-    noise = AudioSignal(audio_data_array=noise, sample_rate=sr)
     signals.append(noise)
 
     # ones signal
     ones = np.ones(length)
-    ones = AudioSignal(audio_data_array=ones, sample_rate=sr)
     signals.append(ones)
 
     # audio files
     for key, path in benchmark_audio.items():
         _s = nussl.AudioSignal(path, duration=dur)
-        signals.append(_s)
+        signals.append(_s.audio_data)
 
     yield signals
 
@@ -75,8 +69,91 @@ def test_stft_istft_combo(combo, signals):
             signal, win_length, hop_length, win_type
         )
 
+def test_stft_copy(signals):
+    for audio_data in signals:
+        signal = AudioSignal(
+            audio_data_array=audio_data, sample_rate=sr)
+        stft = signal.stft()
+
+        new_signal = signal.make_copy_with_stft_data(stft)
+        new_signal.istft(truncate_to_length=signal.signal_length)
+        assert np.allclose(
+            new_signal.audio_data, signal.audio_data, atol=stft_tol)
+        
+        signal.set_active_region(0, 1000)
+        pytest.warns(UserWarning, signal.make_copy_with_stft_data,
+                     stft)
+
+        signal.set_active_region_to_default()
+        stft = stft[0]
+        pytest.warns(UserWarning, signal.make_copy_with_stft_data,
+                     stft)
+
+        def dummy_a(signal):
+            signal.stft_data = np.abs(signal.stft_data)
+        pytest.warns(UserWarning, dummy_a, signal)
+
+        def dummy_b(signal):
+            signal.stft_data = np.ones((2, 100, 100, 2))
+        pytest.raises(AudioSignalException, dummy_b, signal)
+
+        def dummy_c(signal):
+            signal.stft_data = np.ones((2,))
+        pytest.raises(AudioSignalException, dummy_c, signal)
+
+        def dummy_d(signal):
+            signal.stft_data = [1, 2, 3, 4]
+        pytest.raises(AudioSignalException, dummy_d, signal)
+
+def test_stft_features(signals):
+    for audio_data in signals:
+        signal = AudioSignal(
+            audio_data_array=audio_data, sample_rate=sr)
+        pytest.raises(AudioSignalException, signal.get_stft_channel, 0)
+        pytest.raises(AudioSignalException, signal.ipd_ild_features)
+        pytest.raises(AudioSignalException, 
+            lambda x: x.log_magnitude_spectrogram_data,
+            signal)
+        pytest.raises(AudioSignalException, 
+            lambda x: x.magnitude_spectrogram_data,
+            signal)
+        pytest.raises(AudioSignalException, 
+            lambda x: x.power_spectrogram_data,
+            signal)
+
+        signal.stft()
+        ref_mag_spec = np.abs(signal.stft_data)
+        tst_mag_spec = signal.magnitude_spectrogram_data
+        assert np.allclose(ref_mag_spec, tst_mag_spec)
+
+        ref_mag_spec = np.abs(signal.stft_data)
+        tst_mag_spec = signal.magnitude_spectrogram_data
+        assert np.allclose(ref_mag_spec, tst_mag_spec)
+
+        ref_log_spec = 20 * np.log10(ref_mag_spec + 1e-8)
+        tst_log_spec = signal.log_magnitude_spectrogram_data
+        assert np.allclose(ref_log_spec, tst_log_spec)
+
+        ref_pow_spec = ref_mag_spec ** 2
+        tst_pow_spec = signal.power_spectrogram_data
+        assert np.allclose(ref_pow_spec, tst_pow_spec)
+
+        for ch in range(signal.num_channels):
+            tst_mag_spec = signal.get_magnitude_spectrogram_channel(ch)
+            tst_pow_spec = signal.get_power_spectrogram_channel(ch)
+
+            assert np.allclose(ref_mag_spec[..., ch], tst_mag_spec)
+            assert np.allclose(ref_pow_spec[..., ch], tst_pow_spec)
+        
+        if signal.is_mono:
+            pytest.raises(AudioSignalException, signal.ipd_ild_features)
+        else:
+            ipd, ild = signal.ipd_ild_features(0, 1)
 
 def test_stft_istft_defaults(benchmark_audio, atol=stft_tol):
+    dummy = nussl.AudioSignal()
+    pytest.raises(AudioSignalException, dummy.stft)
+
     a = nussl.AudioSignal(audio_data_array=sine_wave)
     pytest.raises(AudioSignalException, a.istft)
     a.stft()
@@ -104,11 +181,12 @@ def test_stft_istft_defaults(benchmark_audio, atol=stft_tol):
         recon = a.istft(overwrite=False)
         assert np.allclose(a.audio_data, recon, atol=stft_tol)
 
-def _check_stft_istft_allclose(signal, win_length, hop_length, win_type):
+def _check_stft_istft_allclose(audio_data, win_length, hop_length, win_type):
     stft_params = STFTParams(
         window_length=win_length, hop_length=hop_length, window_type=win_type
     )
-    signal.stft_params = stft_params
+    signal = AudioSignal(
+        audio_data_array=audio_data, sample_rate=sr, stft_params=stft_params)
     signal.stft()
     recon = signal.istft(overwrite=False)
     

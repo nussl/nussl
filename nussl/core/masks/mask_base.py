@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Base class for Mask objects. Contains many common utilities used for accessing masks. The mask itself is
 represented under the hood as a three dimensional numpy :obj:`ndarray` object. The dimensions are 
@@ -17,8 +14,8 @@ import numbers
 
 import numpy as np
 
-from ...core import utils
-from ...core import constants
+from .. import utils
+from .. import constants
 
 
 class MaskBase(object):
@@ -229,49 +226,6 @@ class MaskBase(object):
 
         return self.mask * value
 
-    def to_json(self):
-        """
-
-        Returns:
-
-        """
-        return json.dumps(self, default=MaskBase._to_json_helper)
-
-    @staticmethod
-    def _to_json_helper(o):
-        if not isinstance(o, MaskBase):
-            raise TypeError('MaskBase._to_json_helper() got foreign object!')
-
-        d = copy.copy(o.__dict__)
-        for k, v in list(d.items()):
-            if isinstance(v, np.ndarray):
-                d[k] = utils.json_ready_numpy_array(v)
-
-        d['__class__'] = o.__class__.__name__
-        d['__module__'] = o.__module__
-        if 'self' in d:
-            del d['self']
-
-        return d
-
-    @classmethod
-    def from_json(cls, json_string):
-        """ Creates a new :class:`MaskBase` object from the parameters stored in this JSON string.
-
-        Args:
-            json_string (str): A JSON string containing all the data to create a new :class:`MaskBase`
-                object.
-
-        Returns:
-            (:class:`SeparationBase`) A new :class:`MaskBase` object from the JSON string.
-
-        See Also:
-            :func:`to_json` to make a JSON string to freeze this object.
-
-        """
-        mask_decoder = MaskBaseDecoder(cls)
-        return mask_decoder.decode(json_string)
-
     def __add__(self, other):
         return self._add(other)
 
@@ -307,49 +261,3 @@ class MaskBase(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-
-class MaskBaseDecoder(json.JSONDecoder):
-    """ Object to decode a :class:`MaskBase`-derived object from JSON serialization.
-    You should never have to instantiate this object by hand.
-    """
-
-    def __init__(self, mask_class):
-        self.mask_class = mask_class
-        json.JSONDecoder.__init__(self, object_hook=self._json_mask_decoder)
-
-    def _json_mask_decoder(self, json_dict):
-        """
-        Helper method for :class:`MaskBaseDecoder`. Don't you worry your pretty little head about this.
-
-        NEVER CALL THIS DIRECTLY!!
-
-        Args:
-            json_dict (dict): JSON dictionary provided by `object_hook`
-
-        Returns:
-            A new :class:`MaskBase`-derived object from JSON serialization
-
-        """
-        if '__class__' in json_dict and '__module__' in json_dict:
-            class_name = json_dict.pop('__class__')
-            module_name = json_dict.pop('__module__')
-
-            mask_modules, mask_names = list(zip(*[(c.__module__, c.__name__) for c in MaskBase.__subclasses__()]))
-
-            if class_name not in mask_names or module_name not in mask_modules:
-                raise TypeError(f'Got unknown mask type ({module_name}.{class_name}) from json!')
-
-            # load the module and import the class
-            module = __import__(module_name).separation.masks
-            class_ = getattr(module, class_name)
-
-            if '_mask' not in json_dict:
-                raise TypeError(f'JSON string from {class_name} does not have mask!')
-
-            mask_json = json_dict.pop('_mask')  # this is the mask numpy array
-            mask_numpy = utils.json_numpy_obj_hook(mask_json[constants.NUMPY_JSON_KEY])
-
-            return class_(input_mask=mask_numpy)
-        else:
-            return json_dict

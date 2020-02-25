@@ -13,7 +13,7 @@ __all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
            'STFT_VERT_INDEX', 'STFT_LEN_INDEX', 'STFT_CHAN_INDEX']
 
 DEFAULT_SAMPLE_RATE = 44100  #: (int): Default sample rate. 44.1 kHz, CD-quality
-DEFAULT_WIN_LEN_PARAM = 0.04  #: (float): Default window length. 40ms
+DEFAULT_WIN_LEN_PARAM = 0.032  #: (float): Default window length. 32ms
 DEFAULT_WIN_LENGTH = 2048  #: (int): Default window length, 2048 samples.
 DEFAULT_BIT_DEPTH = 16  #: (int): Default bit depth. 16-bits, CD-quality
 DEFAULT_MAX_VAL = 2 ** 16  #: (int): Max value of 16-bit audio file (unsigned)
