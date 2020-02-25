@@ -36,8 +36,6 @@ Documentation
 
 Full documentation is [available here.](https://interactiveaudiolab.github.io/nussl/)
 
-Note: This package has been tested with python 2.7, but not python 3.x yet. python3 coming soon!
-
 
 Features
 --------
@@ -87,8 +85,19 @@ Installation
 We recommend getting installing anaconda prior to using this package.
 
 Installation is easy if you have pip (recommended):
+
 ```
 $ pip install nussl
+```
+
+Or if you want to install from source (some sort of Python environment is recommended):
+
+```
+$ git clone https://github.com/interactiveaudiolab/nussl.git
+$ cd nussl
+$ pip install -r requirements.txt
+# or
+$ pip install -e .
 ```
 
 Citing
