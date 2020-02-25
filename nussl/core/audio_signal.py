@@ -107,7 +107,7 @@ import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io.wavfile as wav
-from scipy import signal
+import scipy
 
 from . import constants
 from . import utils
@@ -897,7 +897,7 @@ class AudioSignal(object):
         stft_data = []
 
         for chan in self.get_channels():
-            _, _, _stft = signal.stft(
+            _, _, _stft = scipy.signal.stft(
                 chan, fs=self.sample_rate, window=window_type, 
                 nperseg=window_length, noverlap=window_length-hop_length)
             stft_data.append(_stft)
@@ -953,7 +953,7 @@ class AudioSignal(object):
         signals = []
 
         for stft in self.get_stft_channels():
-            _, _signal = signal.istft(
+            _, _signal = scipy.signal.istft(
                 stft, fs=self.sample_rate, window=window_type, nperseg=window_length,
                 noverlap=window_length-hop_length)
 

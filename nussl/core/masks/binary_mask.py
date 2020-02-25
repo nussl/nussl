@@ -109,9 +109,9 @@ class BinaryMask(MaskBase):
 
         """
         if channel is None:
-            return self.mask.astype('int')
+            return self.mask.astype(int)
         else:
-            return self.get_channel(channel).astype('int')
+            return self.get_channel(channel).astype(int)
 
     def invert_mask(self):
         """
@@ -123,20 +123,3 @@ class BinaryMask(MaskBase):
 
         """
         return BinaryMask(np.logical_not(self.mask))
-
-    @staticmethod
-    def mask_to_binary(mask_, threshold=None):
-        """
-        Makes a binary mask from a soft mask with a True/False threshold.
-        
-        Args:
-            mask_ (:obj:`MaskBase` or :obj:`np.ndarray`): Soft mask to convert to :class:`BinaryMask`
-            threshold (float): Value between ``[0.0, 1.0]`` to determine the True/False cutoff
-
-        Returns:
-
-        """
-        if isinstance(mask_, np.ndarray):
-            return mask_ > threshold
-        elif isinstance(mask_, mask_base.MaskBase):
-            return mask_.mask > threshold

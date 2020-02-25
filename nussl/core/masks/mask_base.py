@@ -29,24 +29,18 @@ class MaskBase(object):
 
         if mask_shape is None and input_mask is None:
             raise ValueError('Cannot initialize mask without mask_shape or input_mask!')
-
         if mask_shape is not None and input_mask is not None:
             raise ValueError('Cannot initialize mask with both mask_shape and input_mask!')
-
         if isinstance(input_mask, np.ndarray):
             self.mask = input_mask
-
         elif isinstance(mask_shape, tuple):
             self.mask = np.zeros(mask_shape)
-
         else:
             raise ValueError('input_mask must be a np.ndarray, or mask_shape must be a tuple!')
 
     @property
     def mask(self):
-        """
-        PROPERTY
-        
+        """        
         The actual mask. This is represented as a three dimensional numpy :obj:`ndarray` object.
         The input gets validated by :func:`_validate_mask`. In the case of 
         :class:`separation.masks.binary_mask.BinaryMask` the validation checks that the values are all 1 or 0 
@@ -77,54 +71,30 @@ class MaskBase(object):
 
         self._mask = self._validate_mask(value)
 
-    def get_channel(self, n):
+    def get_channel(self, ch):
         """
-        Gets mask channel ``n`` and returns it as a 2D :obj:`np.ndarray`
+        Gets mask channel ``ch`` and returns it as a 2D :obj:`np.ndarray`
         
         Args:
-            n (int): Channel index to return (0-based).
+            ch (int): Channel index to return (0-based).
 
         Returns:
             :obj:`np.array` with the mask channel
             
         Raises:
-            :obj:`AttributeError` if :attr:`mask` is ``None``
-            :obj:`ValueError` if ``n`` is less than 0 or greater than the number of channels that this mask object has.
+            :obj:`ValueError` if ``ch`` is less than 0 or greater than the number of channels that this mask object has.
 
         """
-        if self.mask is None:
-            raise AttributeError(f'Cannot get channel {n} when mask has no data!')
-
-        if n >= self.num_channels:
+        if ch >= self.num_channels:
             raise ValueError(
-                f'Cannot get channel {n} for object w/ {self.num_channels} channels!'
+                f'Cannot get channel {ch} for object w/ {self.num_channels} channels!'
                 ' (0-based)'
             )
 
-        if n < 0:
-            raise ValueError(f'Cannot get channel {n}. This will cause unexpected results!')
+        if ch < 0:
+            raise ValueError(f'Cannot get channel {ch}. This will cause unexpected results!')
 
-        return utils._get_axis(self.mask, constants.STFT_CHAN_INDEX, n)
-
-    @property
-    def length(self):
-        """
-        (int) Number of time hops that this mask represents.
-
-        """
-        if self.mask is None:
-            raise AttributeError('Cannot get length of BinaryMask when there is no mask data!')
-        return self.mask.shape[constants.STFT_LEN_INDEX]
-
-    @property
-    def height(self):
-        """
-        (int) Number of frequency bins this mask has.
-
-        """
-        if self.mask is None:
-            raise AttributeError('Cannot get height of BinaryMask when there is no mask data!')
-        return self.mask.shape[constants.STFT_VERT_INDEX]
+        return utils._get_axis(self.mask, constants.STFT_CHAN_INDEX, ch)
 
     @property
     def num_channels(self):
@@ -132,8 +102,6 @@ class MaskBase(object):
         (int) Number of channels this mask has.
 
         """
-        if self.mask is None:
-            raise AttributeError('Cannot get num_channels of BinaryMask when there is no mask data!')
         return self.mask.shape[constants.STFT_CHAN_INDEX]
 
     @property
@@ -142,8 +110,6 @@ class MaskBase(object):
         (tuple) Returns the shape of the whole mask. Identical to ``np.ndarray.shape()``.
 
         """
-        if self.mask is None:
-            raise AttributeError('Cannot get shape of BinaryMask when there is no mask data!')
         return self.mask.shape
 
     @property
@@ -152,8 +118,6 @@ class MaskBase(object):
         (str) Returns the data type of the values of the mask. 
 
         """
-        if self.mask is None:
-            raise AttributeError('Cannot get num_channels of BinaryMask when there is no mask data!')
         return self.mask.dtype
 
     @staticmethod
@@ -212,19 +176,24 @@ class MaskBase(object):
         return self.invert_mask()
 
     def _add(self, other):
+        class_method = type(self)
+        new_mask = class_method(self.mask)
         if isinstance(other, MaskBase):
-            return self.mask + other.mask
+            new_mask.mask = new_mask.mask + other.mask
+            return new_mask
         if isinstance(other, np.ndarray):
-            return self.mask + other
-
+            new_mask.mask = new_mask.mask + other
+            return new_mask
         else:
             raise ValueError(f'Cannot do arithmetic operation with MaskBase and {type(other)}')
 
     def _mult(self, value):
         if not isinstance(value, numbers.Real):
             raise ValueError(f'Cannot do operation with MaskBase and {type(value)}')
-
-        return self.mask * value
+        class_method = type(self)
+        new_mask = class_method(self.mask)
+        new_mask.mask = new_mask.mask * value
+        return new_mask
 
     def __add__(self, other):
         return self._add(other)
@@ -239,6 +208,9 @@ class MaskBase(object):
         return self - other
 
     def __mul__(self, value):
+        return self._mult(value)
+
+    def __rmul__(self, value):
         return self._mult(value)
 
     def __div__(self, value):
