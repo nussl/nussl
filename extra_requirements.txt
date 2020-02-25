@@ -1,4 +1,5 @@
 sphinx
 sphinx-rtd-theme
+m2r
 pytest
 pytest-cov
