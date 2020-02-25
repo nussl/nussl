@@ -599,8 +599,6 @@ class AudioSignal(object):
     @property
     def power_spectrogram_data(self):
         """
-        PROPERTY
-
         (:obj:`np.ndarray`): Returns a real valued :obj:`np.ndarray` with power
         spectrogram data. The power spectrogram is defined as (STFT)^2, where ^2 is
         element-wise squaring of entries of the STFT. Same shape as :attr:`stft_data`.
@@ -624,8 +622,6 @@ class AudioSignal(object):
     @property
     def magnitude_spectrogram_data(self):
         """
-        PROPERTY
-
         (:obj:`np.ndarray`): Returns a real valued ``np.array`` with magnitude spectrogram data.
         
         The power spectrogram is defined as Abs(STFT), the element-wise absolute value of every
@@ -650,8 +646,6 @@ class AudioSignal(object):
     @property
     def log_magnitude_spectrogram_data(self):
         """
-        PROPERTY
-
         (:obj:`np.ndarray`): Returns a real valued ``np.array`` with log magnitude spectrogram data.
         
         The log magnitude spectrogram is defined as 20*log10(Abs(STFT)). Same shape as :attr:`stft_data`.
@@ -1004,14 +998,15 @@ class AudioSignal(object):
         if not isinstance(mask, masks.MaskBase):
             raise AudioSignalException(f'Expected MaskBase-derived object, given {type(mask)}')
 
-        if not self.has_stft_data:
+        if self.stft_data is None:
             raise AudioSignalException('There is no STFT data to apply a mask to!')
-
-        if mask.shape != self.stft_data.shape and mask.shape[-1] != 1:
-            raise AudioSignalException(
-                'Input mask and self.stft_data are not the same shape! mask:'
-                f' {mask.shape}, self.stft_data: {self.stft_data.shape}'
-            )
+        
+        if mask.shape != self.stft_data.shape:
+            if not mask.shape[:-1] == self.stft_data.shape:
+                raise AudioSignalException(
+                    'Input mask and self.stft_data are not the same shape! mask:'
+                    f' {mask.shape}, self.stft_data: {self.stft_data.shape}'
+                )
 
         masked_stft = self.stft_data * mask.mask
 
