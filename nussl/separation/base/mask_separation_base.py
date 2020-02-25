@@ -8,14 +8,12 @@ Base class for separation algorithms that make masks. Most algorithms in nussl a
 import json
 import warnings
 
-from . import masks
-from . import separation_base
-from ..core import utils
-from ..core import audio_signal
-from ..core import constants
+from ...core import masks
+from . import SeparationBase
+from ...core import utils
+from ...core import constants
 
-
-class MaskSeparationBase(separation_base.SeparationBase):
+class MaskSeparationBase(SeparationBase):
     """
     Base class for separation algorithms that create a mask (binary or soft) to do their separation. Most algorithms 
     in nussl are derived from :class:`MaskSeparationBase`.
@@ -153,9 +151,7 @@ class MaskSeparationBase(separation_base.SeparationBase):
 
     @property
     def mask_threshold(self):
-        """
-        PROPERTY
-        
+        """        
         Threshold of determining True/False if :attr:`mask_type` is :attr:`BINARY_MASK`. Some algorithms will first 
         make a soft mask and then convert that to a binary mask using this threshold parameter. All values of the 
         soft mask are between ``[0.0, 1.0]`` and as such :func:`mask_threshold` is expected to be a float between 
@@ -223,56 +219,3 @@ class MaskSeparationBase(separation_base.SeparationBase):
             NotImplementedError: Cannot call base class!
         """
         raise NotImplementedError('Cannot call base class!')
-
-    @classmethod
-    def from_json(cls, json_string):
-        """
-        Creates a new :class:`SeparationBase` object from the parameters stored in this JSON string.
-
-        Args:
-            json_string (str): A JSON string containing all the data to create a new :class:`SeparationBase`
-                object.
-
-        Returns:
-            (:class:`SeparationBase`) A new :class:`SeparationBase` object from the JSON string.
-
-        See Also:
-            :func:`to_json` to make a JSON string to freeze this object.
-
-        """
-        mask_sep_decoder = MaskSeparationBaseDecoder(cls)
-        return mask_sep_decoder.decode(json_string)
-
-
-class MaskSeparationBaseDecoder(separation_base.SeparationBaseDecoder):
-    """ Object to decode a :class:`MaskSeparationBase`-derived object from JSON serialization.
-    You should never have to instantiate this object by hand.
-    """
-
-    def __init__(self, separation_class):
-        self.separation_class = separation_class
-        json.JSONDecoder.__init__(self, object_hook=self._json_separation_decoder)
-
-    def _json_separation_decoder(self, json_dict):
-        if '__class__' in json_dict and '__module__' in json_dict:
-            json_dict, separator = self._inspect_json_and_create_new_instance(json_dict)
-
-            # fill out the rest of the fields
-            for k, v in list(json_dict.items()):
-                if isinstance(v, dict) and constants.NUMPY_JSON_KEY in v:
-                    separator.__dict__[k] = utils.json_numpy_obj_hook(v[constants.NUMPY_JSON_KEY])
-                    
-                # TODO: test this in python3
-                elif isinstance(v, (str, bytes)) and audio_signal.__name__ in v:
-
-                    separator.__dict__[k] = audio_signal.AudioSignal.from_json(v)
-                elif k == 'result_masks':
-                    # for mask_json in v:
-
-                    separator.result_masks = [masks.MaskBase.from_json(itm) for itm in v]
-                else:
-                    separator.__dict__[k] = v if not isinstance(v, str) else v.encode('ascii')
-
-            return separator
-        else:
-            return json_dict

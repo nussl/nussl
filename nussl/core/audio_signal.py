@@ -474,6 +474,19 @@ class AudioSignal(object):
         self._stft_data = value
 
     @property
+    def has_data(self):
+        """
+        Returns `False` if :attr:`audio_data` and :attr:`stft_data` are empty. Else, returns `True`.
+        
+        Returns:
+            Returns `False` if :attr:`audio_data` and :attr:`stft_data` are empty.
+            Else, returns `True`.
+        """
+        has_audio_data = self.audio_data is not None and self.audio_data.size != 0
+        has_stft_data = self.stft_data is not None and self.stft_data.size != 0
+        return has_audio_data or has_stft_data
+
+    @property
     def file_name(self):
         """
         (str): The name of the file wth extension (NOT the full path).

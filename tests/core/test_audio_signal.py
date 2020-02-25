@@ -467,8 +467,10 @@ def test_properties(benchmark_audio):
     assert a.num_channels is None  
     assert a.time_vector is None  
     assert a.file_name is None
+    assert not a.has_data
 
     a = nussl.AudioSignal(benchmark_audio['K0140.wav'])
+    assert a.has_data
     assert a.file_name == 'K0140.wav'
     assert len(a.time_vector) == a.audio_data.shape[-1]
 
@@ -482,3 +484,6 @@ def test_properties(benchmark_audio):
     assert len(a.freq_vector) == a.stft_data.shape[0]
 
     assert len(a.freq_vector) == a.stft_data.shape[0]
+
+    a.audio_data = None 
+    assert a.has_data

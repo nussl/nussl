@@ -4,6 +4,7 @@ this wacky, mixed up source separation stuff.
 """
 import scipy.signal
 from six.moves.urllib_parse import urljoin
+from collections import OrderedDict
 
 __all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
            'DEFAULT_MAX_VAL', 'EPSILON', 'MAX_FREQUENCY',
@@ -79,10 +80,11 @@ USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will use librosa's stft fun
 
 
 # ############# MUSDB interface ############### #
-STEM_TARGET_DICT = {'vocals': {'vocals': 1},
-                    'drums': {'drums': 1},
-                    'bass': {'bass': 1},
-                    'other': {'other': 1},
-                    'accompaniment': {'bass': 1, 'drums': 1, 'other': 1}}
-
-VOX_ACC_DICT = {'vocals': {'vocals': 1}, 'accompaniment': {'accompaniment': 1}}
+STEM_TARGET_DICT = OrderedDict([
+    ('drums', 'drums'), 
+    ('bass', 'bass'), 
+    ('other', 'other'),
+    ('vocals', 'vocals'), 
+    ('accompaniment', 'bass+drums+other'), 
+    ('linear_mixture', 'vocals+bass+drums+other')
+])

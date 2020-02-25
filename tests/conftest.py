@@ -2,6 +2,7 @@ import pytest
 from nussl import efz_utils
 import tempfile
 import os
+import musdb
 
 fix_dir = os.path.expanduser('~/.nussl/tests/')
 
@@ -14,3 +15,10 @@ def benchmark_audio():
         for k in keys:
             audio_files[k] = efz_utils.download_audio_file(k, _dir)
         yield audio_files
+
+@pytest.fixture(scope="module")
+def musdb_tracks():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        _dir = tmp_dir if fix_dir is None else fix_dir
+        db = musdb.DB(root=_dir, download=True)
+        yield db
