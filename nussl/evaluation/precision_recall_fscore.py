@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 This class provides common statistical metrics for determining how well a source separation algorithm in nussl was
 able to create a binary mask compared to a known binary mask. The metrics used here are 

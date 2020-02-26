@@ -18,3 +18,5 @@ class ImportErrorClass(object):
 from .core.constants import *
 from .core.audio_signal import AudioSignal
 from .core import utils, efz_utils, jupyter_utils
+
+from . import evaluation
