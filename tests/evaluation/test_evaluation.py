@@ -1,6 +1,6 @@
 import nussl
 import pytest
-from nussl.core.masks import SoftMask
+from nussl.core.masks import SoftMask, BinaryMask
 import numpy as np
 from nussl.evaluation.evaluation_base import AudioSignalListMismatchError
 import torch
@@ -18,6 +18,8 @@ def estimated_and_true_sources(musdb_tracks):
     oracle_sources = []
     random_sources = []
     true_sources = []
+    random_masks = []
+    oracle_masks = []
     keys = []
 
     for k, v in sorted(track.sources.items(), key=lambda x: x[1].stem_id):
@@ -31,7 +33,9 @@ def estimated_and_true_sources(musdb_tracks):
         random_mask = SoftMask(mask_data)
         random_source = mixture.apply_mask(random_mask)
         random_source.istft(truncate_to_length=mixture.signal_length)
+
         random_sources.append(random_source)
+        random_masks.append(random_mask)
 
         source_stft = true_sources[-1].stft()
         
@@ -42,13 +46,17 @@ def estimated_and_true_sources(musdb_tracks):
         oracle_mask = SoftMask(mask_data)
         oracle_source = mixture.apply_mask(oracle_mask)
         oracle_source.istft(truncate_to_length=mixture.signal_length)
+
         oracle_sources.append(oracle_source)
+        oracle_masks.append(oracle_mask)
 
     yield {
         'oracle': oracle_sources, 
         'random': random_sources, 
         'true': true_sources,
-        'keys': keys
+        'keys': keys,
+        'oracle_masks': oracle_masks,
+        'random_masks': random_masks,
     }
 
 def fake_preprocess_a(self):
@@ -300,3 +308,58 @@ def test_eval_permutation(estimated_and_true_sources):
         compute_permutation=True)
     scores = evaluator.evaluate()
     assert scores['permutation'] == (3, 2, 1, 0)
+
+    oracle_masks = estimated_and_true_sources['oracle_masks']
+    estimated_masks = estimated_and_true_sources['oracle_masks'][::-1]
+
+    oracle_masks = [o.mask_to_binary() for o in oracle_masks]
+    estimated_masks = [r.mask_to_binary() for r in estimated_masks]
+
+    nussl.evaluation.PrecisionRecallFScore(
+        oracle_masks, estimated_masks)
+    scores = evaluator.evaluate()
+    assert scores['permutation'] == (3, 2, 1, 0)
+
+def test_eval_precision_recall_fscore(estimated_and_true_sources):
+    oracle_masks = estimated_and_true_sources['oracle_masks']
+    random_masks = estimated_and_true_sources['random_masks']
+
+    pytest.raises(ValueError, 
+        nussl.evaluation.PrecisionRecallFScore, oracle_masks, random_masks
+    )
+
+    random_extra_mask = [BinaryMask(np.random.rand(100, 10, 2) > .5)]
+
+    oracle_masks = [o.mask_to_binary() for o in oracle_masks]
+    random_masks = [r.mask_to_binary() for r in random_masks]
+
+    pytest.raises(ValueError, 
+        nussl.evaluation.PrecisionRecallFScore, 
+        oracle_masks + random_extra_mask, 
+        random_masks + random_extra_mask
+    )
+
+    evaluator = nussl.evaluation.PrecisionRecallFScore(
+        oracle_masks[0], random_masks[0])
+    references, estimates = evaluator.preprocess()
+
+    shape = (
+        oracle_masks[0].mask.shape[0] * oracle_masks[0].mask.shape[1],
+        oracle_masks[0].num_channels, 1) 
+    
+    assert references.shape == shape
+    assert estimates.shape == shape
+
+    evaluator = nussl.evaluation.PrecisionRecallFScore(
+        oracle_masks, random_masks)
+    references, estimates = evaluator.preprocess()
+
+    shape = (
+        oracle_masks[0].mask.shape[0] * oracle_masks[0].mask.shape[1],
+        oracle_masks[0].num_channels, len(oracle_masks)) 
+    
+    assert references.shape == shape
+    assert estimates.shape == shape
+
+    scores = evaluator.evaluate()
+    check_scores(evaluator)

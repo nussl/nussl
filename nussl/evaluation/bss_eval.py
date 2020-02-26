@@ -187,4 +187,3 @@ class BSSEvalScale(BSSEvaluationBase):
             }
             scores.append(score)
         return scores
-        

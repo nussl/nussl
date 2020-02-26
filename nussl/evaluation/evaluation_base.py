@@ -1,16 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-EvaluationBase is the base class for all evaluation methods in nussl.
-"""
-from ..core import utils
 from .. import AudioSignal
 from itertools import permutations, combinations
 import numpy as np
+from ..core import utils
 
 class EvaluationBase(object):
     """
-    Base class for all Evaluation classes for source separation algorithm in nussl. 
+    Base class for all Evaluation classes for source separation algorithms in nussl. 
     Contains common functions for all evaluation techniques. This class should not be 
     instantiated directly.
     
@@ -48,7 +43,7 @@ class EvaluationBase(object):
 
         _source_labels = []
         for i, x in enumerate(self.true_sources_list):
-            if x.path_to_input_file:
+            if isinstance(x, AudioSignal) and x.path_to_input_file:
                 label = x.path_to_input_file
             else:
                 label = f'source_{i}'

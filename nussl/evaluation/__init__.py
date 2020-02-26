@@ -8,8 +8,9 @@ init file for evaluation classes.
 
 from .evaluation_base import EvaluationBase
 from .bss_eval import (
-    BSSEvaluationBase, BSSEvalV4, BSSEvalScale, scale_bss_eval
+    BSSEvaluationBase, BSSEvalV4, BSSEvalScale, scale_bss_eval,
 )
+from .precision_recall_fscore import PrecisionRecallFScore
 # from .precision_recall_fscore import PrecisionRecallFScore
 # from .bss_eval_base import BSSEvalBase
 # from .bss_eval_sources import BSSEvalSources
