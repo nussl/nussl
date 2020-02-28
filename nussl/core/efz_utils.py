@@ -22,14 +22,6 @@ from six.moves.urllib.request import urlretrieve
 
 from . import constants
 
-
-__all__ = ['get_available_audio_files', 'print_available_audio_files',
-           'get_available_benchmark_files', 'print_available_benchmark_files',
-           'get_available_trained_models', 'print_available_trained_models',
-           'download_audio_file', 'download_benchmark_file', 'download_trained_model',
-           'FailedDownloadError', 'MismatchedHashError', 'MetadataError']
-
-
 def get_available_audio_files():
     """
     Returns a list of dicts containing metadata of the available audio files on the nussl External
@@ -541,6 +533,46 @@ def _download_file(file_name, url, local_folder, cache_subdir,
 
     else:
         return file_path
+
+
+def _hash_directory(directory, ext=None):
+    """
+    Calculates the hash of every child file in the given directory using python's built-in SHA256
+    function (using `os.walk()`, which also searches subdirectories recursively). If :param:`ext`
+    is specified, this will only look at files with extension provided.
+
+    This function is used to verify the integrity of data sets for use with nussl. Pretty much
+    just makes sure that when we loop through/look at a directory, we understand the structure
+    because the organization of the data set directories for different data sets are all unique
+    and thus need to be hard coded by each generator function (below). If we get a hash mismatch
+    we can throw an error easily.
+
+    Args:
+        directory (str): Directory within which file hashes get calculated. Searches recursively.
+        ext (str): If provided, this function will only calculate the hash on files with the given
+            extension.
+
+    Returns:
+        (str): String containing only hexadecimal digits of the has of the
+            contents of the given directory.
+
+    """
+
+    hash_list = []
+    for path, sub_dirs, files in os.walk(directory):
+        if ext is None:
+            hash_list.extend([_hash_file(os.path.join(path, f)) for f in files
+                              if os.path.isfile(os.path.join(path, f))])
+        else:
+            hash_list.extend([_hash_file(os.path.join(path, f)) for f in files
+                              if os.path.isfile(os.path.join(path, f))
+                              if os.path.splitext(f)[1] == ext])
+
+    hasher = hashlib.sha256()
+    for hash_val in sorted(hash_list):  # Sort this list so we're platform agnostic
+        hasher.update(hash_val.encode('utf-8'))
+
+    return hasher.hexdigest()
 
 
 def _hash_file(file_path, chunk_size=65535):

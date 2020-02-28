@@ -181,6 +181,55 @@ def test_stft_istft_defaults(benchmark_audio, atol=stft_tol):
         recon = a.istft(overwrite=False)
         assert np.allclose(a.audio_data, recon, atol=stft_tol)
 
+def test_stft_params_setter():
+    dummy = nussl.AudioSignal(sample_rate=44100)
+    dummy.stft_params = None
+    
+    default_win_len = int(
+        2 ** (np.ceil(np.log2(
+            nussl.DEFAULT_WIN_LEN_PARAM * dummy.sample_rate))
+    ))
+    default_hop_len = default_win_len // 4
+    default_win_type = nussl.WINDOW_DEFAULT
+
+    default_stft_params = STFTParams(
+        window_length=default_win_len,
+        hop_length=default_hop_len,
+        window_type=default_win_type
+    )
+
+    assert dummy.stft_params == default_stft_params
+
+    dummy.stft_params = STFTParams(
+        window_length=4096,
+    )
+    assert dummy.stft_params.window_length == 4096
+    assert dummy.stft_params.hop_length == default_hop_len
+    assert dummy.stft_params.window_type == default_win_type
+
+    dummy.stft_params = STFTParams(
+        window_length=4096,
+        hop_length=1024
+    )
+    assert dummy.stft_params.window_length == 4096
+    assert dummy.stft_params.hop_length == 1024
+    assert dummy.stft_params.window_type == default_win_type
+
+    dummy.stft_params = STFTParams(
+        window_length=4096,
+        hop_length=1024,
+        window_type='triang'
+    )
+    assert dummy.stft_params.window_length == 4096
+    assert dummy.stft_params.hop_length == 1024
+    assert dummy.stft_params.window_type == 'triang'
+
+    def dummy_set(x):
+        x.stft_params = ['test123']
+
+    pytest.raises(ValueError, dummy_set, dummy)
+
+
 def _check_stft_istft_allclose(audio_data, win_length, hop_length, win_type):
     stft_params = STFTParams(
         window_length=win_length, hop_length=hop_length, window_type=win_type

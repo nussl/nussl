@@ -26,18 +26,17 @@ class EvaluationBase(object):
         source_labels (list): List of strings that are labels for each source to be used as keys for
             the scores. Default value is `None` and in that case labels use the file_name attribute.
             If that is also `None`, then the source labels are `Source 0`, `Source 1`, etc.
-        eval_args (dict): Dictionary containing arguments that will be passed to the
-            eval_func that is used to compare each combination.
         compute_permutation (bool): Whether or not to evaluate in a permutation-invariant 
             fashion, where the estimates are permuted to match the true sources. Only the 
             best permutation according to ``best_permutation_key`` is returned to the 
             scores dict. Defaults to False.
         best_permutation_key (str): Which metric to use to decide which permutation of 
             the sources was best.
+        **kwargs (dict): Any additional arguments are passed on to evaluate_helper.
     """
 
     def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, 
-                 eval_args=None, compute_permutation=False, best_permutation_key=None):
+                 compute_permutation=False, best_permutation_key=None, **kwargs):
         self.true_sources_list = self._verify_input_list(true_sources_list)
         self.estimated_sources_list = self._verify_input_list(estimated_sources_list)
 
@@ -54,7 +53,7 @@ class EvaluationBase(object):
                 _source_labels[i] = label
 
         self.source_labels = _source_labels
-        self.eval_args = eval_args if eval_args else {}
+        self.eval_args = kwargs
         self.evaluation_object_type = type(self.true_sources_list[0])
         self._scores = {}
         self.num_channels = self.true_sources_list[0].num_channels
@@ -191,7 +190,7 @@ class EvaluationBase(object):
         by EvaluationBase.
         
         Returns:
-            A dictionary containing the scores for the best candidate.
+            A dictionary containing the scores for each source for the best candidate.
 
         """
         references, estimates = self.preprocess()

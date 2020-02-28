@@ -165,3 +165,31 @@ def test_mask_arithmetic():
     assert r1 == r2
     r2 *= .5
     assert r1 != r2
+
+def test_masks_sum_to_mix(benchmark_audio):
+    for key, path in benchmark_audio.items():
+        signal = nussl.AudioSignal(path)
+        signal.stft()
+
+        for num_sources in range(1, 4):
+            shape = signal.stft_data.shape + (num_sources,)
+
+            random_masks = np.random.random(shape)
+            random_masks = (
+                random_masks / 
+                np.sum(random_masks, axis=-1, keepdims=True)
+            )
+            estimates = []
+
+            for i in range(num_sources):
+                mask = SoftMask(random_masks[..., i])
+                estimate = signal.apply_mask(mask)
+                estimate.istft()
+                estimates.append(estimate)
+
+            assert np.allclose(
+                sum(estimates).audio_data,
+                signal.audio_data,
+                atol=stft_tol
+            )
+            

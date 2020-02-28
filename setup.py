@@ -31,16 +31,18 @@ setup(
     packages=['nussl'],
     keywords=['audio', 'source', 'separation', 'music', 'sound', 'source separation'],
     install_requires=[
-        'jsonpickle',
+        'jams',
         'librosa',
         'matplotlib',
         'mir_eval',
         'museval',
         'musdb',
         'pyyaml',
-        'zarr',
+        'zarr==2.3.0',
+        'numcodecs==0.6.2',
         'ffmpy',
         'torch',
+        'pytorch-ignite'
     ],
     extras_require={
         'melodia': [

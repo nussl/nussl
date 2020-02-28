@@ -16,7 +16,8 @@ class ImportErrorClass(object):
         raise ImportError(f'Cannot import {type(self).__name__} because {lib} is not installed')
 
 from .core.constants import *
-from .core.audio_signal import AudioSignal
+from .core.audio_signal import AudioSignal, STFTParams
 from .core import utils, efz_utils, jupyter_utils
 
 from . import evaluation
+from . import datasets

@@ -12,3 +12,4 @@ nussl.egg-info/*
 tests/ignored_tests/
 .coverage
 docs/_build/
+tests/local/

@@ -111,6 +111,20 @@ def test_utils_audio_signals_to_musdb_track(musdb_tracks):
     assert np.allclose(track.stems, reconstructed_track.stems)
     assert track.stems.shape == separated_track.stems.shape
 
+def test_utils_musdb_track_to_audio_signals(musdb_tracks):
+    track = musdb_tracks[0]
+    stems = track.stems
+
+    mixture, sources = nussl.utils.musdb_track_to_audio_signals(track)
+
+    assert np.allclose(mixture.audio_data, track.audio.T)
+    assert mixture.sample_rate == track.rate
+
+    for k, v in sorted(track.sources.items(), key=lambda x: x[1].stem_id):
+        assert np.allclose(sources[k].audio_data, stems[v.stem_id].T)
+        assert sources[k].sample_rate == track.rate
+        assert k in sources[k].path_to_input_file
+
 def test_utils_format():
     _in = '0123~5aBc'
     _gt = '01235abc'

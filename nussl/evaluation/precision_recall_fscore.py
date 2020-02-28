@@ -27,13 +27,12 @@ class PrecisionRecallFScore(EvaluationBase):
     """
 
     def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, 
-                 eval_args=None, compute_permutation=False, best_permutation_key="F1-Score",
-                 **kwargs):
+                 compute_permutation=False, best_permutation_key="F1-Score", **kwargs):
         self.true_sources_list = self._verify_input_list(true_sources_list)
         self.estimated_sources_list = self._verify_input_list(estimated_sources_list)
 
         super().__init__(true_sources_list, estimated_sources_list, 
-            source_labels=source_labels, eval_args=eval_args, 
+            source_labels=source_labels, 
             compute_permutation=compute_permutation, 
             best_permutation_key=best_permutation_key, **kwargs)
 

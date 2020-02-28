@@ -84,24 +84,20 @@ class BSSEvaluationBase(EvaluationBase):
         source_labels (list): List of strings that are labels for each source to be used as keys for
             the scores. Default value is `None` and in that case labels use the file_name attribute.
             If that is also `None`, then the source labels are `Source 0`, `Source 1`, etc.
-        eval_args (dict): Dictionary containing arguments that will be passed to the
-            eval_func that is used to compare each combination.
         compute_permutation (bool): Whether or not to evaluate in a permutation-invariant 
             fashion, where the estimates are permuted to match the true sources. Only the 
             best permutation according to ``best_permutation_key`` is returned to the 
             scores dict. Defaults to False.
         best_permutation_key (str): Which metric to use to decide which permutation of 
             the sources was best.
+        **kwargs (dict): Any additional arguments are passed on to evaluate_helper.
     """
 
     def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, 
-                 eval_args=None, compute_permutation=False, best_permutation_key="SDR",
-                 **kwargs):
-                
-        super().__init__(true_sources_list, estimated_sources_list, 
-            source_labels=source_labels, eval_args=eval_args, 
-            compute_permutation=compute_permutation, 
-            best_permutation_key=best_permutation_key, **kwargs)
+                compute_permutation=False, best_permutation_key="SDR", **kwargs):      
+        super().__init__(true_sources_list, estimated_sources_list, source_labels=source_labels, 
+            compute_permutation=compute_permutation, best_permutation_key=best_permutation_key, 
+            **kwargs)
     
     def preprocess(self):
         """

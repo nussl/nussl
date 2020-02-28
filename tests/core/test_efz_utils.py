@@ -91,7 +91,16 @@ def test_efz_exceptions():
     pytest.raises(NoConnectivityError, nussl.efz_utils._download_all_metadata,
         constants.NUSSL_EFZ_BASE_URL + 'garbage')
 
+def test_hashing():
+    first_hash = nussl.efz_utils._hash_directory('.')
+    second_hash = nussl.efz_utils._hash_directory('.')
 
+    assert first_hash == second_hash
+
+    first_hash = nussl.efz_utils._hash_directory('.', ext='.py')
+    second_hash = nussl.efz_utils._hash_directory('.', ext='.py')
+
+    assert first_hash == second_hash
 
 def test_efz_show_available():
     nussl.efz_utils.print_available_trained_models()

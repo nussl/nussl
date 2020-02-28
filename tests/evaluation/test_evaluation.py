@@ -265,7 +265,7 @@ def test_bss_eval_scale(estimated_and_true_sources):
             t.path_to_input_file = k
 
         evaluator = nussl.evaluation.BSSEvalScale(
-            true_sources, estimated_sources, eval_args=_eval_args)
+            true_sources, estimated_sources, **_eval_args)
         references, estimates = evaluator.preprocess()
         scores = evaluator.evaluate_helper(references, estimates)
         assert isinstance(scores, list)
@@ -274,8 +274,9 @@ def test_bss_eval_scale(estimated_and_true_sources):
         check_scores(evaluator)
 
         estimated_sources = estimated_and_true_sources['oracle']
+
         evaluator = nussl.evaluation.BSSEvalScale(
-            true_sources, estimated_sources, eval_args=_eval_args)
+            true_sources, estimated_sources, **_eval_args)
         oracle_scores = evaluator.evaluate()
         
         # the oracle score should beat the random score by a lot on average

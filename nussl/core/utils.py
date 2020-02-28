@@ -148,6 +148,31 @@ def _format(string):
     """
     return ''.join(list(filter(str.isalnum, string))).lower()
 
+def musdb_track_to_audio_signals(track):
+    """
+    Converts a musdb track to a dictionary of AudioSignal objects.
+    
+    Args:
+        track (musdb.audio_classes.MultiTrack): MultiTrack object 
+            containing stems that will each be turned into AudioSignal
+            objects.
+    """
+    # lazy load to prevent circular imports
+    from .audio_signal import AudioSignal
+
+    mixture = AudioSignal(audio_data_array=track.audio, sample_rate=track.rate)
+    stems = track.stems
+    sources = {}
+
+    for k, v in sorted(track.sources.items(), key=lambda x: x[1].stem_id):
+        sources[k] = AudioSignal(
+            audio_data_array=stems[v.stem_id],
+            sample_rate=track.rate
+        )
+        sources[k].path_to_input_file = f'musdb/{k}.wav'
+    
+    return mixture, sources
+
 def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
     """
     Converts :class:`AudioSignal` objects to ``musdb`` :class:`Track` objects that

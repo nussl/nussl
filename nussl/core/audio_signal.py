@@ -108,6 +108,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io.wavfile as wav
 import scipy
+from scipy.signal import check_COLA
 
 from . import constants
 from . import utils
@@ -115,12 +116,20 @@ from . import masks
 
 __all__ = ['AudioSignal']
 
-STFTParams = namedtuple(
-    'STFTParams',
+'''
+Container for storing STFT parameters, wrapped in a function to provide
+defaults.
+'''
+_STFTParams = namedtuple('STFTParams',
     ['window_length', 'hop_length', 'window_type'])
-'''
-Container for storing STFT parameters.
-'''
+
+def STFTParams(window_length=None, hop_length=None, window_type=None):
+    return _STFTParams(
+        window_length=window_length,
+        hop_length=hop_length,
+        window_type=window_type
+    )
+
 
 class AudioSignal(object):
     """
@@ -165,6 +174,7 @@ class AudioSignal(object):
 
         self.path_to_input_file = path_to_input_file
         self._audio_data = None
+        self.original_signal_length = None
         self._stft_data = None
         self._sample_rate = None
         self._active_start = None
@@ -191,27 +201,9 @@ class AudioSignal(object):
             self._sample_rate = constants.DEFAULT_SAMPLE_RATE \
                 if sample_rate is None else sample_rate
 
-        # stft data
-        if stft is not None:
-            self.stft_data = stft  # complex spectrogram data
-
-        if stft_params is None:
-            # Defaults to 40 ms windows
-            default_win_len = int(
-                2 ** (np.ceil(np.log2(
-                    constants.DEFAULT_WIN_LEN_PARAM * self.sample_rate))
-            ))
-            self.stft_params = STFTParams(
-                window_length = default_win_len,
-                hop_length = default_win_len // 4,
-                window_type = constants.WINDOW_DEFAULT
-            )
-        else:
-            self.stft_params = stft_params
+        self.stft_data = stft  # complex spectrogram data
+        self.stft_params = stft_params
         
-        #stft_utils.StftParams(self.sample_rate) \
-        #    if stft_params is None else stft_params
-
     def __str__(self):
         return (
             f"{self.__class__.__name__} "
@@ -243,7 +235,7 @@ class AudioSignal(object):
             :func:`set_active_region_to_default` for information about active regions.
         """
         if self.audio_data is None:
-            return None
+            return self.original_signal_length
         return self.audio_data.shape[constants.LEN_INDEX]
 
     @property
@@ -450,7 +442,6 @@ class AudioSignal(object):
 
     @stft_data.setter
     def stft_data(self, value):
-
         if value is None:
             self._stft_data = None
             return
@@ -472,6 +463,71 @@ class AudioSignal(object):
                           'This might lead to weird results!')
 
         self._stft_data = value
+
+    @property
+    def stft_params(self):
+        """
+        STFT parameters are kept in this property. STFT parameters are a namedtuple
+        called STFTParams with the following signature:
+
+        .. code-block:: python
+
+            STFTParams(
+                window_length=2048,
+                hop_length=512,
+                window_type='hann'
+            )
+
+        The defaults are 32ms windows, 8ms hop, and a hann window.
+        
+        Returns:
+            STFTParams: STFTParams object used to take STFT and ISTFT for this
+                AudioSignal.
+        """
+        return self._stft_params
+
+    @stft_params.setter
+    def stft_params(self, value):
+        """
+        Sets the STFT parameters for this AudioSignal object. If `value` is None, then
+        the default STFT parameters are used (window of 32ms with an 8ms hop and a 
+        hann window). If `value` is an STFTParams object, it is first validated and
+        then set. If attributes that should be in STFTParams (e.g. window_type) are missing
+        in `value`, then they are replaced with the defaults. Finally, the STFT
+        parameters are checked to make sure that ISTFT will reconstruct the
+        original audio faithfully via scipy.signal.check_COLA.
+        
+        Args:
+            value (STFTParams or None): the STFTParams object (or None) that self.stft_params
+                should be set to.
+        """
+        if value and not isinstance(value, _STFTParams):
+            raise ValueError("stft_params must be of type STFTParams or None!")
+
+        default_win_len = int(
+            2 ** (np.ceil(np.log2(
+                constants.DEFAULT_WIN_LEN_PARAM * self.sample_rate))
+        ))
+        default_hop_len = default_win_len // 4
+        default_win_type = constants.WINDOW_DEFAULT
+
+        default_stft_params = STFTParams(
+            window_length=default_win_len,
+            hop_length=default_hop_len,
+            window_type=default_win_type
+        )._asdict()
+
+        value = value._asdict() if value else default_stft_params
+
+        for key in default_stft_params:
+            if value[key] is None:
+                value[key] = default_stft_params[key]
+        
+        self._stft_params = STFTParams(**value)
+        check_COLA(
+            self._stft_params.window_type,
+            self._stft_params.window_length,
+            self._stft_params.hop_length)
 
     @property
     def has_data(self):
@@ -735,6 +791,7 @@ class AudioSignal(object):
                                                       mono=False)
 
         self.audio_data = audio_input
+        self.original_signal_length = self.signal_length
 
         if new_sample_rate is not None and new_sample_rate != self._sample_rate:
             warnings.warn('Input sample rate is different than the sample rate'
@@ -772,6 +829,7 @@ class AudioSignal(object):
             signal = signal.astype('float') / (np.iinfo(np.dtype('int16')).max + 1.0)
 
         self.audio_data = signal
+        self.original_signal_length = self.signal_length
         self._sample_rate = sample_rate if sample_rate is not None \
             else constants.DEFAULT_SAMPLE_RATE
 
@@ -980,6 +1038,7 @@ class AudioSignal(object):
 
         # if truncate_to_length isn't provided
         if truncate_to_length is None:
+            truncate_to_length = self.original_signal_length
             if self.signal_length is not None:
                 truncate_to_length = self.signal_length
 
@@ -1253,6 +1312,7 @@ class AudioSignal(object):
 
         new_signal = copy.deepcopy(self)
         new_signal.stft_data = stft_data
+        new_signal.original_signal_length = self.original_signal_length
         new_signal.audio_data = None
         return new_signal
 
