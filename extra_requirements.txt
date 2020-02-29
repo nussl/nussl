@@ -1,5 +1,6 @@
 sphinx
 sphinx-rtd-theme
+sphinx-autoapi
 m2r
 pytest
 pytest-cov
