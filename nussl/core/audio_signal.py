@@ -116,14 +116,25 @@ from . import masks
 
 __all__ = ['AudioSignal']
 
-'''
-Container for storing STFT parameters, wrapped in a function to provide
-defaults.
-'''
+
 _STFTParams = namedtuple('STFTParams',
     ['window_length', 'hop_length', 'window_type'])
 
 def STFTParams(window_length=None, hop_length=None, window_type=None):
+    """
+    Wrapper for a NamedTuple _STFTParams which is used to contain all
+    STFT related parameters. The wrapper is so that default arguments
+    can be done.
+    
+    Args:
+        window_length (int): Amount of time (in samples) to do an FFT on. Defaults to None.
+        hop_length (int): Amount of time (in samples) to skip ahead for the new FFT.
+            Defaults to None.
+        window_type (str): Type of scaling to apply to the window. Defaults to None.
+    
+    Returns:
+        _STFTParams: Container that holds the STFT Parameters.
+    """
     return _STFTParams(
         window_length=window_length,
         hop_length=hop_length,
@@ -1056,15 +1067,15 @@ class AudioSignal(object):
         object and returns a new `AudioSignal` object with the mask applied.
         
         Args:
-            mask (:obj:`MaskBase`-derived object): A :ref:`mask_base`-derived object 
+            mask (:obj:`MaskBase`-derived object): A ``MaskBase``-derived object 
                 containing a mask.
-            overwrite (bool): If ``True``, this will alter :ref:`stft_data` in self. 
-                If ``False``, this function will create a new :ref:`AudioSignal` object 
+            overwrite (bool): If ``True``, this will alter ``stft_data`` in self. 
+                If ``False``, this function will create a new ``AudioSignal`` object 
                 with the mask applied.
 
         Returns:
-            A new :class:`AudioSignal` object with the input mask applied to the STFT,
-            iff :param:`overwrite` is False.
+            A new `AudioSignal`` object with the input mask applied to the STFT,
+            iff ``overwrite`` is False.
 
         """
         if not isinstance(mask, masks.MaskBase):

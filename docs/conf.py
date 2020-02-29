@@ -35,7 +35,13 @@ class Mock(MagicMock):
 with open('../requirements.txt', 'r') as f:
     MOCK_MODULES = f.readlines()
     MOCK_MODULES = [_mock.rstrip() for _mock in MOCK_MODULES]
-MOCK_MODULES += ['matplotlib.pyplot']
+MOCK_MODULES += [
+    'matplotlib.pyplot', 
+    'torch.utils', 
+    'torch.utils.data', 
+    'torch.nn',
+    'torch.utils.checkpoint'
+]
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
@@ -49,7 +55,17 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
+    'autoapi.extension',
 ]
+
+autoapi_type = 'python'
+autoapi_dirs = ['../nussl']
+autoapi_ignore = ['*/separation/*', '*/ml/*']
+autoapi_add_toctree_entry = False
+autoapi_template_dir = '_templates/'
+autoapi_options = [
+    'members', 'undoc-members', 'private-members', 
+    'show-inheritance', 'special-members']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

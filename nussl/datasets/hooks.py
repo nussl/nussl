@@ -10,8 +10,7 @@ import warnings
 
 import numpy as np
 
-from ..core import efz_utils, constants
-from .. import utils
+from ..core import efz_utils, constants, utils
 from .. import AudioSignal
 import musdb
 from .base_dataset import BaseDataset, DataSetException
@@ -33,13 +32,14 @@ class MUSDB18(BaseDataset):
             includes 7s excerpts. Defaults to False.
         subsets (list, optional): Select a musdb subset train or test. 
             Defaults to ['train', 'test'] (all tracks).
-        split ([type], optional): When subset train is loaded, split selects the 
+        split (str, optional): When subset train is loaded, split selects the 
             train/validation split. split=’train’ loads the training split, 
             `split=’valid’ loads the validation split. split=None applies no 
             splitting. Defaults to None.
         **kwargs: Any additional arguments that are passed up to BaseDataset 
             (see ``nussl.datasets.BaseDataset``).
     """
+    
     def __init__(self, folder=None, is_wav=False, download=False,
             subsets=['train', 'test'], split=None, **kwargs):
         if folder is None:

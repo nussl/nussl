@@ -11,7 +11,7 @@ from scipy.signal import check_COLA
 import copy
 import itertools
 
-sr = nussl.DEFAULT_SAMPLE_RATE
+sr = nussl.constants.DEFAULT_SAMPLE_RATE
 dur = 3  # seconds
 length = dur * sr
 stft_tol = 1e-6
@@ -25,7 +25,7 @@ win_min = 7  # 2 ** 7  =  128
 win_max = 11  # 2 ** 13 = 4096
 win_lengths = [2 ** i for i in range(win_min, win_max + 1)]
 
-win_length_32ms = int(2 ** (np.ceil(np.log2(nussl.DEFAULT_WIN_LEN_PARAM * sr))))
+win_length_32ms = int(2 ** (np.ceil(np.log2(nussl.constants.DEFAULT_WIN_LEN_PARAM * sr))))
 win_lengths.append(win_length_32ms)
 
 # pick hop lengths in terms of window length. 1 = one full window. .1 = 1/10th of a window
@@ -187,10 +187,10 @@ def test_stft_params_setter():
     
     default_win_len = int(
         2 ** (np.ceil(np.log2(
-            nussl.DEFAULT_WIN_LEN_PARAM * dummy.sample_rate))
+            nussl.constants.DEFAULT_WIN_LEN_PARAM * dummy.sample_rate))
     ))
     default_hop_len = default_win_len // 4
-    default_win_type = nussl.WINDOW_DEFAULT
+    default_win_type = nussl.constants.WINDOW_DEFAULT
 
     default_stft_params = STFTParams(
         window_length=default_win_len,

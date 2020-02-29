@@ -7,7 +7,7 @@ import librosa
 from nussl.core.audio_signal import AudioSignalException
 import copy
 
-sr = nussl.DEFAULT_SAMPLE_RATE
+sr = nussl.constants.DEFAULT_SAMPLE_RATE
 dur = 3  # seconds
 length = dur * sr
 
@@ -209,7 +209,7 @@ def test_default_sr_on_load_from_array(benchmark_audio):
     sr, data = wav.read(path)
     a = nussl.AudioSignal()
     a.load_audio_from_array(data)
-    assert(a.sample_rate == nussl.DEFAULT_SAMPLE_RATE)
+    assert(a.sample_rate == nussl.constants.DEFAULT_SAMPLE_RATE)
 
 def test_str(benchmark_audio):
     for key, path in benchmark_audio.items():
@@ -220,7 +220,7 @@ def test_str(benchmark_audio):
 def test_rms():
     ans = np.sqrt(2.0) / 2.0
 
-    num_samples = nussl.DEFAULT_SAMPLE_RATE  # 1 second
+    num_samples = nussl.constants.DEFAULT_SAMPLE_RATE  # 1 second
     np_sin = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
 
     sig = nussl.AudioSignal(audio_data_array=np_sin)
@@ -232,7 +232,7 @@ def test_to_mono():
     Returns:
 
     """
-    num_samples = nussl.DEFAULT_SAMPLE_RATE  # 1 second
+    num_samples = nussl.constants.DEFAULT_SAMPLE_RATE  # 1 second
     sin1 = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
 
     sig1 = nussl.AudioSignal(audio_data_array=sin1)
@@ -263,12 +263,12 @@ def test_to_mono_channel_dimension(benchmark_audio):
     signal = nussl.AudioSignal(path)
     signal.stft_params = signal.stft_params
     signal_stft = signal.stft()
-    assert (signal_stft.shape[nussl.STFT_CHAN_INDEX] == 2)
+    assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX] == 2)
 
     signal.to_mono(overwrite=True)
     signal.stft_params = signal.stft_params
     signal_stft = signal.stft()
-    assert (signal_stft.shape[nussl.STFT_CHAN_INDEX]== 1)
+    assert (signal_stft.shape[nussl.constants.STFT_CHAN_INDEX]== 1)
 
 
 def test_get_channel():

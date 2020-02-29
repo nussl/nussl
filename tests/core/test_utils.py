@@ -101,11 +101,11 @@ def test_utils_audio_signals_to_musdb_track(musdb_tracks):
         fake_sources[k] = _source
 
     separated_track = nussl.utils.audio_signals_to_musdb_track(
-        mixture, fake_sources, nussl.core.constants.STEM_TARGET_DICT
+        mixture, fake_sources, nussl.constants.STEM_TARGET_DICT
     )
 
     reconstructed_track = nussl.utils.audio_signals_to_musdb_track(
-        mixture, true_sources, nussl.core.constants.STEM_TARGET_DICT
+        mixture, true_sources, nussl.constants.STEM_TARGET_DICT
     )
 
     assert np.allclose(track.stems, reconstructed_track.stems)

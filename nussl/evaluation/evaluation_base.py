@@ -32,7 +32,7 @@ class EvaluationBase(object):
             scores dict. Defaults to False.
         best_permutation_key (str): Which metric to use to decide which permutation of 
             the sources was best.
-        **kwargs (dict): Any additional arguments are passed on to evaluate_helper.
+        **kwargs (dict): Any additional keyword arguments are passed on to ``evaluate_helper``.
     """
 
     def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, 

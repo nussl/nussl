@@ -5,7 +5,7 @@ from nussl.core.audio_signal import AudioSignalException
 from nussl.core.masks import BinaryMask, SoftMask, MaskBase
 from copy import deepcopy
 
-sr = nussl.DEFAULT_SAMPLE_RATE
+sr = nussl.constants.DEFAULT_SAMPLE_RATE
 dur = 3  # seconds
 length = dur * sr
 stft_tol = 1e-6

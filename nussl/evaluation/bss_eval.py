@@ -22,7 +22,7 @@ def scale_bss_eval(references, estimate, idx, scaling=True):
     
     Returns:
         tuple: SDR, SIR, SAR if inputs are numpy arrays. Otherwise, only SDR as
-            a torch Tensor if inputs are torch Tensors.
+        a torch Tensor if inputs are torch Tensors.
     """
     # use of @ syntax so things can be treated the same if they are tensors
     # or if they are numpy arrays.
