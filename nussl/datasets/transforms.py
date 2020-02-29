@@ -263,12 +263,13 @@ class PhaseSensitiveSpectrumApproximation(object):
         source_magnitudes = np.stack(source_magnitudes, axis=-1)
         source_angles = np.stack(source_angles, axis=-1)
 
-        source_magnitudes = np.maximum(
-            0,
-            np.minimum(
-                mix_magnitude[..., None],
-                source_magnitudes * np.cos(source_angles - mix_angle[..., None])
-            )
+        # Section 3.1: https://arxiv.org/pdf/1909.08494.pdf
+        source_magnitudes = np.minimum(
+            np.maximum(
+                source_magnitudes * np.cos(source_angles - mix_angle[..., None]),
+                0
+            ),
+            mix_magnitude[..., None]
         )
 
         assignments = (
