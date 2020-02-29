@@ -5,3 +5,4 @@ nussl
 
    nussl.core
    nussl.evaluation
+   nussl.datasets

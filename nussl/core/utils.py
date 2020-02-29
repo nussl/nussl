@@ -153,9 +153,13 @@ def musdb_track_to_audio_signals(track):
     Converts a musdb track to a dictionary of AudioSignal objects.
     
     Args:
-        track (musdb.audio_classes.MultiTrack): MultiTrack object 
+        track (musdb.audio_classes.MultiTrack): MultiTrasack object 
             containing stems that will each be turned into AudioSignal
             objects.
+
+    Returns:
+        (2-tuple): tuple containing the mixture AudioSignal and a dictionary of
+            the sources.
     """
     # lazy load to prevent circular imports
     from .audio_signal import AudioSignal

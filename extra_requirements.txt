@@ -5,3 +5,4 @@ pytest
 pytest-cov
 IPython
 ffmpy
+scaper

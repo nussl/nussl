@@ -1,5 +1,7 @@
 from .. import AudioSignal
 import numpy as np
+from collections import OrderedDict
+import torch
 
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
@@ -7,8 +9,90 @@ def compute_ideal_binary_mask(source_magnitudes):
     ).astype(float)
 
     ibm = ibm / np.sum(ibm, axis=-1, keepdims=True)
-
     return ibm
+
+class SumSources(object):
+    """
+    Sums sources together. Looks for sources in ``data[self.source_key]``. If 
+    a source belongs to a group, it is popped from the ``data[self.source_key]`` and
+    summed with the other sources in the group. If there is a corresponding 
+    group_name in group_names, it is named that in ``data[self.source_key]``. If
+    group_names are not given, then the names are ``['group0', 'group1', ...]``.
+
+    Example:
+        >>> tfm = transforms.SumSources(
+        >>>     groupings=[['drums', 'bass', 'other]],
+        >>>     group_names=['accompaniment],
+        >>> )
+        >>> # data['sources'] is a dict containing keys: 
+        >>> #   ['vocals', 'drums', 'bass', 'other]
+        >>> data = tfm(data)
+        >>> # data['sources'] is now a dict containing keys:
+        >>> #   ['vocals', 'accompaniment']
+    
+    Args:
+        groupings (list): a list of lists telling how to group each sources. 
+        group_names (list, optional): A list containing the names of each group, or None. 
+            Defaults to None.
+        source_key (str, optional): The key to look for in the data containing the list of
+            source AudioSignals. Defaults to 'sources'.
+    
+    Raises:
+        TransformException: if groupings is not a list
+        TransformException: if group_names is not None but 
+            len(groupings) != len(group_names)
+    
+    Returns:
+        data: modified dictionary with summed sources
+    """
+
+    def __init__(self, groupings, group_names=None, source_key='sources'):
+        if not isinstance(groupings, list):
+            raise TransformException(
+                f"groupings must be a list, got {type(groupings)}!")
+        
+        if group_names:
+            if len(group_names) != len(groupings):
+                raise TransformException(
+                    f"group_names and groupings must be same length or "
+                    f"group_names can be None! Got {len(group_names)} for "
+                    f"len(group_names) and {len(groupings)} for len(groupings)."
+                )
+        
+        self.groupings = groupings
+        self.source_key = source_key
+        if group_names is None:
+            group_names = [f"group{i}" for i in range(len(groupings))]
+        self.group_names = group_names
+    
+    def __call__(self, data):
+        if self.source_key not in data:
+            raise TransformException(
+                f"Expected {self.source_key} in dictionary "
+                f"passed to this Transform!"
+            )
+        sources = data[self.source_key]
+
+        for i, group in enumerate(self.groupings):
+            combined = []
+            group_name = self.group_names[i]
+            for key in group:
+                if key in sources:
+                    combined.append(sources[key])
+                    sources.pop(key)
+            sources[group_name] = sum(combined)
+        
+        data[self.source_key] = sources
+        return data
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"groupings = {self.groupings}, "
+            f"group_names = {self.group_names}, "
+            f"source_key = {self.source_key}"
+            f")"
+        )
 
 class MagnitudeSpectrumApproximation(object):
     """
@@ -21,6 +105,12 @@ class MagnitudeSpectrumApproximation(object):
     - mix_magnitude: The magnitude spectrogram of the mixture audio signal.
     - source_magnitudes: The magnitude spectrograms of each source spectrogram.
     - assignments: The ideal binary assignments for each time-frequency bin.
+
+    ``data[self.source_key]`` points to a dictionary containing the source names in
+    the keys and the corresponding AudioSignal in the values. The keys are sorted
+    in alphabetical order and then appended to the mask. ``data[self.source_key]``
+    then points to an OrderedDict instead, where the keys are in the same order
+    as in ``data['source_magnitudes']`` and ``data['assignments']``.
 
     [1] Erdogan, Hakan, John R. Hershey, Shinji Watanabe, and Jonathan Le Roux. 
         "Phase-sensitive and recognition-boosted speech separation using 
@@ -53,18 +143,25 @@ class MagnitudeSpectrumApproximation(object):
         if self.mix_key not in data or self.source_key not in data:
             raise TransformException(
                 f"Expected {self.mix_key} and {self.source_key} in dictionary "
-                f"passed to this Transform! Got {list(data.keys())}"
+                f"passed to this Transform! Got {list(data.keys())}."
             )
 
         mixture = data[self.mix_key]
-        sources = data[self.source_key]
+        _sources = data[self.source_key]
+        source_names = sorted(list(_sources.keys()))
+
+        sources = OrderedDict()
+        for key in source_names:
+            sources[key] = _sources[key]
+        data[self.source_key] = sources
 
         mixture.stft_params = self.stft_params
         mixture.stft()
         mix_magnitude = mixture.magnitude_spectrogram_data
 
         source_magnitudes = []
-        for s in sources:
+        for key in source_names:
+            s = sources[key]
             s.stft_params = self.stft_params
             s.stft()
             source_magnitudes.append(s.magnitude_spectrogram_data)
@@ -79,6 +176,15 @@ class MagnitudeSpectrumApproximation(object):
         data['source_magnitudes'] = source_magnitudes
         return data
 
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"stft_params = {self.stft_params}, "
+            f"mix_key = {self.mix_key}, "
+            f"source_key = {self.source_key}"
+            f")"
+        )
+
 class PhaseSensitiveSpectrumApproximation(object):
     """
     Takes a dictionary and looks for two special keys, defined by the
@@ -90,6 +196,12 @@ class PhaseSensitiveSpectrumApproximation(object):
     - mix_magnitude: The magnitude spectrogram of the mixture audio signal.
     - source_magnitudes: The magnitude spectrograms of each source spectrogram.
     - assignments: The ideal binary assignments for each time-frequency bin.
+
+    ``data[self.source_key]`` points to a dictionary containing the source names in
+    the keys and the corresponding AudioSignal in the values. The keys are sorted
+    in alphabetical order and then appended to the mask. ``data[self.source_key]``
+    then points to an OrderedDict instead, where the keys are in the same order
+    as in ``data['source_magnitudes']`` and ``data['assignments']``.
 
     [1] Erdogan, Hakan, John R. Hershey, Shinji Watanabe, and Jonathan Le Roux. 
         "Phase-sensitive and recognition-boosted speech separation using 
@@ -122,11 +234,17 @@ class PhaseSensitiveSpectrumApproximation(object):
         if self.mix_key not in data or self.source_key not in data:
             raise TransformException(
                 f"Expected {self.mix_key} and {self.source_key} in dictionary "
-                f"passed to this Transform! Got {list(data.keys())}"
+                f"passed to this Transform! Got {list(data.keys())}."
             )
         
         mixture = data[self.mix_key]
-        sources = data[self.source_key]
+        _sources = data[self.source_key]
+        source_names = sorted(list(_sources.keys()))
+
+        sources = OrderedDict()
+        for key in source_names:
+            sources[key] = _sources[key]
+        data[self.source_key] = sources
 
         mixture.stft_params = self.stft_params
         mix_stft = mixture.stft()
@@ -135,7 +253,8 @@ class PhaseSensitiveSpectrumApproximation(object):
 
         source_angles = []
         source_magnitudes = []
-        for s in sources:
+        for key in source_names:
+            s = sources[key]
             s.stft_params = self.stft_params
             _stft = s.stft()
             source_magnitudes.append(np.abs(_stft))
@@ -164,8 +283,43 @@ class PhaseSensitiveSpectrumApproximation(object):
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)
         data['mix_magnitude'] = mix_magnitude
         data['source_magnitudes'] = source_magnitudes
-        return data    
+        return data
 
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"stft_params = {self.stft_params}, "
+            f"mix_key = {self.mix_key}, "
+            f"source_key = {self.source_key}"
+            f")"
+        )
+
+class ToDataLoader(object):
+    """
+    Takes in a dictionary containing objects and removes any objects that cannot
+    be passed to ``torch.datasets.DataLoader`` (e.g. not a numpy array or torch Tensor).
+    If these objects are passed to a DataLoader, then an error will occur. This 
+    class should be the last one in your list of transforms, if you're using 
+    this dataset in a DataLoader object for training a network.
+
+    If this class isn't in your transforms list for the dataset, but you are
+    using it in the Trainer class, then it is added automatically as the
+    last transform.
+    """
+    def __init__(self):
+        pass
+
+    def __call__(self, data):
+        keys = list(data.keys())
+        for key in keys:
+            is_array = isinstance(data[key], np.ndarray)
+            is_tensor = torch.is_tensor(data[key])
+            if not is_tensor and not is_array:
+                data.pop(key)
+        return data
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}()"
 
 class Compose(object):
     """Composes several transforms together. Copied from torchvision implementation.

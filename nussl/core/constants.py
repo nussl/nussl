@@ -5,6 +5,7 @@ this wacky, mixed up source separation stuff.
 import scipy.signal
 from six.moves.urllib_parse import urljoin
 from collections import OrderedDict
+import os
 
 __all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
            'DEFAULT_MAX_VAL', 'EPSILON', 'MAX_FREQUENCY',
@@ -75,6 +76,8 @@ NUSSL_EFZ_BENCHMARKS_URL = urljoin(NUSSL_EFZ_STATIC_BASE_URL, 'benchmarks/')
 NUSSL_EFZ_AUDIO_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, 'audio-metadata.json')
 NUSSL_EFZ_BENCHMARK_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, 'benchmark-metadata.json')
 NUSSL_EFZ_MODEL_METADATA_URL = urljoin(NUSSL_EFZ_BASE_URL, 'model-metadata.json')
+
+DEFAULT_DOWNLOAD_DIRECTORY = os.path.expanduser('~/.nussl/')
 
 USE_LIBROSA_STFT = False  #: (bool): Whether *nussl* will use librosa's stft function by default
 
