@@ -188,7 +188,7 @@ class MixSourceFolder(BaseDataset):
         sources = {}
         for k in self.source_folders:
             source_path = os.path.join(self.folder, k, item)
-            is os.path.exists(source_path):
+            if os.path.exists(source_path):
                 sources[k] = self._load_audio_file(source_path)
         output = {
             'mix': mix,
