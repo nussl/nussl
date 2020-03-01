@@ -21,7 +21,27 @@ class MUSDB18(BaseDataset):
     Hook for MUSDB18. Uses the musdb.DB object to access the
     dataset. If ``download=True``, then the 7s snippets of each track
     are downloaded to ``self.folder``. If no folder is given, then
-    the tracks are downloaded to ~/.nussl/musdb18.
+    the tracks are downloaded to ~/.nussl/musdb18. 
+    
+    Getting an item from this dataset with no transforms returns the 
+    following dictionary:
+
+    .. code-block:: none
+
+        {
+            'mix': [AudioSignal object containing mix audio],
+            'source': {
+                'bass': [AudioSignal object containing vocals],
+                'drums': [AudioSignal object containing drums],
+                'other': [AudioSignal object containing other],
+                'vocals': [AudioSignal object containing vocals],
+            }
+            'metadata': {
+                'labels': ['bass', 'drums', 'other', 'vocals']
+            }
+        }
+
+
     
     Args:
         folder (str, optional): Location that should be processed to produce the 
@@ -64,7 +84,10 @@ class MUSDB18(BaseDataset):
         mix, sources = utils.musdb_track_to_audio_signals(track)
         output = {
             'mix': mix,
-            'sources': sources
+            'sources': sources,
+            'metadata': {
+                'labels': ['bass', 'drums', 'other', 'vocals']
+            }
         }
         return output
 
@@ -81,17 +104,17 @@ class MixSourceFolder(BaseDataset):
                 [file1].wav
                 [file2].wav
                 ...
-            [class0]/
+            [label0]/
                 [file0].wav
                 [file1].wav
                 [file2].wav
                 ...
-            [class1]/
+            [label1]/
                 [file0].wav
                 [file1].wav
                 [file2].wav
                 ...
-            [class2]/
+            [label2]/
                 [file0].wav
                 [file1].wav
                 [file2].wav
@@ -104,6 +127,26 @@ class MixSourceFolder(BaseDataset):
     with the same name in the source folders. These are the source audio files. 
     The sum of the sources should equal the mixture. Each source will be labeled 
     according to the folder name it comes from.
+
+    Getting an item from this dataset with no transforms returns the 
+    following dictionary:
+
+    .. code-block:: none
+
+        {
+            'mix': [AudioSignal object containing mix audio],
+            'source': {
+                '[label0]': [AudioSignal object containing label0 audio],
+                '[label1]': [AudioSignal object containing label1 audio],
+                '[label2]': [AudioSignal object containing label2 audio],
+                '[label3]': [AudioSignal object containing label3 audio],
+                ...
+            }
+            'metadata': {
+                'labels': ['label0', 'label1', 'label2', 'label3']
+            }
+        }
+
 
     Args:
         folder (str, optional): Location that should be processed to produce the 
@@ -145,10 +188,14 @@ class MixSourceFolder(BaseDataset):
         sources = {}
         for k in self.source_folders:
             source_path = os.path.join(self.folder, k, item)
-            sources[k] = self._load_audio_file(source_path)
+            is os.path.exists(source_path):
+                sources[k] = self._load_audio_file(source_path)
         output = {
             'mix': mix,
-            'sources': sources
+            'sources': sources,
+            'metadata': {
+                'labels': self.source_folders
+            }
         }
         return output
 
@@ -165,6 +212,48 @@ class Scaper(BaseDataset):
     mixtures with 2 sources each. The generated dataset can then be immediately
     loaded into an instance of ``nussl.datasets.Scaper`` for integration into
     a training or evaluation pipeline.
+
+    The sources are output in a dictionary that looks like this:
+
+    .. code-block:: none
+
+        data['sources] = {
+            '{label}::{count}': AudioSignal,
+            '{label}::{count}': AudioSignal,
+            ...
+        }
+
+    For example:
+
+    .. code-block:: none
+
+        data['sources] = {
+            'siren::0': AudioSignal,
+            'siren::1': AudioSignal,
+            'car_horn::0': AudioSignal,
+            ...
+        }
+
+    Getting an item from this dataset with no transforms returns the 
+    following dictionary:
+
+    .. code-block:: none
+
+        {
+            'mix': [AudioSignal object containing mix audio],
+            'source': {
+                '[label0::count]': [AudioSignal object containing label0 audio],
+                '[label1::count]': [AudioSignal object containing label1 audio],
+                '[label2::count]': [AudioSignal object containing label2 audio],
+                '[label3::count]': [AudioSignal object containing label3 audio],
+                ...
+            }
+            'metadata': {
+                'jams': [the content of the jams file used to generate the soundscape]
+                'labels': ['label0', 'label1', 'label2', 'label3']
+            }
+        }
+
 
     Example:
 
@@ -226,11 +315,15 @@ class Scaper(BaseDataset):
             for k in sources:
                 if label in k:
                     label_count += 1
-            label = f"{label}{label_count}"
+            label = f"{label}::{label_count}"
             sources[label] = self._load_audio_file(event_audio_path)
 
         output = {
             'mix': mix,
-            'sources': sources
+            'sources': sources,
+            'metadata': {
+                'scaper': jam,
+                'labels': ann.sandbox.scaper['fg_labels'],
+            }
         }
         return output

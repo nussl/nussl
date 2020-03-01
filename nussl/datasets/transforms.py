@@ -19,6 +19,21 @@ class SumSources(object):
     group_name in group_names, it is named that in ``data[self.source_key]``. If
     group_names are not given, then the names are ``['group0', 'group1', ...]``.
 
+    If using Scaper datasets, then there may be multiple sources with the same
+    label but different counts. The Scaper dataset hook organizes the source
+    dictionary as follows:
+
+    .. code-block:: none
+
+        data['sources] = {
+            '{label}::{count}': AudioSignal,
+            '{label}::{count}': AudioSignal,
+            ...
+        }
+    
+    SumSources sums by source label, so the ``::count`` will be ignored and only the
+    label part will be used when grouping sources.
+
     Example:
         >>> tfm = transforms.SumSources(
         >>>     groupings=[['drums', 'bass', 'other]],
@@ -72,17 +87,24 @@ class SumSources(object):
                 f"passed to this Transform!"
             )
         sources = data[self.source_key]
+        source_keys = [(k.split('::')[0], k) for k in list(sources.keys())]
 
         for i, group in enumerate(self.groupings):
             combined = []
             group_name = self.group_names[i]
-            for key in group:
-                if key in sources:
-                    combined.append(sources[key])
-                    sources.pop(key)
+            for key1 in group:
+                for key2 in source_keys:
+                    if key2[0] == key1:
+                        combined.append(sources[key2[1]])
+                        sources.pop(key2[1])
             sources[group_name] = sum(combined)
+            sources[group_name].path_to_input_file = group_name
         
         data[self.source_key] = sources
+        if 'metadata' in data:
+            if 'labels' in data['metadata']:
+                data['metadata']['labels'].extend(self.group_names)
+
         return data
 
     def __repr__(self):
