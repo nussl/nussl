@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset
 from .. import AudioSignal, STFTParams
+from . import transforms as tfm
 
 class BaseDataset(Dataset):
     """
@@ -25,6 +26,11 @@ class BaseDataset(Dataset):
     - source_magnitudes: the magnitude spectrogram of each source
     - ideal_binary_mask: the ideal binary mask for each source
 
+    The transforms are applied in sequence using transforms.Compose. 
+    Not all sequences of transforms will be valid (e.g. if you pop a key in
+    one transform but a later transform operates on that key, you will get
+    an error).
+
     For examples of subclassing, see ``nussl.datasets.hooks``.
     
     Args:
@@ -33,7 +39,7 @@ class BaseDataset(Dataset):
             audio file sample rate doesn't match, it will be resampled on the fly.
             If None, uses the default sample rate. Defaults to None.
         transforms (list, optional): List of transforms to apply to the output of
-            ``self.process_item``. Defaults to None.
+            ``self.process_item`` in sequence. Defaults to None.
     
     Raises:
         DataSetException: Exceptions are raised if the output of the implemented
@@ -42,7 +48,8 @@ class BaseDataset(Dataset):
     def __init__(self, folder, sample_rate=None, transforms=None):
         self.folder = folder
         self.sample_rate = sample_rate
-        self.transforms = transforms
+        transforms = transforms if transforms else []
+        self.transforms = tfm.Compose(transforms)
         self.items = self.get_items(self.folder)
         if not isinstance(self.items, list):
             raise DataSetException("Output of self.get_items must be a list!")
@@ -89,22 +96,13 @@ class BaseDataset(Dataset):
                 item after being put through the set of transforms (if any are
                 defined).
         """
-        output = {}
         processed_item = self.process_item(self.items[i])
 
         if not isinstance(processed_item, dict):
             raise DataSetException(
                 "The output of process_item must be a dictionary!")
-
-        output.update(processed_item)
-
-        if self.transforms:
-            for transform in self.transforms:
-                transform_output = transform(processed_item)
-                if not isinstance(transform_output, dict):
-                    raise DataSetException(
-                        "The output of every transform must be a dictionary!")
-                output.update(transform_output)
+        
+        output = self.transforms(processed_item)
 
         return output
 

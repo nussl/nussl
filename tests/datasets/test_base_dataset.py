@@ -55,7 +55,7 @@ def test_dataset_base(benchmark_audio, monkeypatch):
     pytest.raises(DataSetException, initialize_bad_dataset_and_run)
 
     monkeypatch.setattr(BadDataset, 'process_item', dummy_process_item)
-    pytest.raises(DataSetException, initialize_bad_dataset_and_run)
+    pytest.raises(transforms.TransformException, initialize_bad_dataset_and_run)
 
     monkeypatch.setattr(BaseDataset, 'get_items', dummy_get)
     monkeypatch.setattr(BaseDataset, 'process_item', dummy_process_item)
@@ -68,7 +68,7 @@ def test_dataset_base(benchmark_audio, monkeypatch):
     assert _dataset[0]['mix'] == audio_signal
 
     _dataset = BaseDataset('test', transforms=[BadTransform()])
-    pytest.raises(DataSetException, _dataset.__getitem__, 0) 
+    pytest.raises(transforms.TransformException, _dataset.__getitem__, 0) 
 
     psa = transforms.MagnitudeSpectrumApproximation()
     _dataset = BaseDataset('test', transforms=[psa])

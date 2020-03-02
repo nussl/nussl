@@ -7,6 +7,7 @@ import numpy as np
 from nussl.core.masks import BinaryMask, SoftMask
 import itertools
 import copy
+import torch
 
 stft_tol = 1e-6
 
@@ -171,26 +172,32 @@ def test_transform_compose(musdb_tracks):
             diff = np.array(msa_scores[key]) - np.array(mix_scores[key])
             assert diff.mean() > 10
 
-def test_transform_to_dataloader(musdb_tracks):
+def test_transform_to_separation_model(musdb_tracks):
     track = musdb_tracks[10]
     mix, sources = nussl.utils.musdb_track_to_audio_signals(track)
 
     data = {
         'mix': mix,
-        'sources': sources
+        'sources': sources,
+        'metadata': {'labels': []}
     }
 
     msa = transforms.MagnitudeSpectrumApproximation()
-    tdl = transforms.ToDataLoader()
+    tdl = transforms.ToSeparationModel()
     assert tdl.__class__.__name__ in str(tdl)
 
     com = transforms.Compose([msa, tdl])
 
     data = com(data)
     accepted_keys = ['mix_magnitude', 'source_magnitudes']
-    rejected_keys = ['mix', 'sources']
+    rejected_keys = ['mix', 'sources', 'metadata']
 
     for a in accepted_keys:
         assert a in data
     for r in rejected_keys:
         assert r not in data
+    
+    for key in data:
+        assert torch.is_tensor(data[key])
+        assert data[key].shape[0] == mix.stft().shape[1]
+        assert data[key].shape[1] == mix.stft().shape[0]

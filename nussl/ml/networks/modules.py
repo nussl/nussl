@@ -2,37 +2,113 @@ import torch
 import torch.nn as nn
 import librosa
 import numpy as np
-from ..gmm import GMM
+from ..unfold import GaussianMixture
 from torch.utils.checkpoint import checkpoint
+import warnings
+
+class AmplitudeToDB(nn.Module):
+    """
+    Takes a magnitude spectrogram and converts it to a log
+    amplitude spectrogram in decibels.
+    
+    Args:
+        data (torch.Tensor): Magnitude spectrogram to convert to
+        log spectrogram.
+        ref (float): reference value. Defaults to 1.0.
+        amin (float): lowest possible value for numerical stability.
+        Defaults to 1e-8.
+    
+    Returns:
+        [type]: [description]
+    """
+    def forward(self, data, ref=1.0, amin=1e-4):
+        data = torch.abs(data) ** 2
+        amin = amin ** 2
+        ref = ref ** 2
+        data = 10.0 * torch.log10(torch.clamp(data, min=amin))
+        data -= 10.0 * np.log10(np.maximum(amin, ref))
+        return data
 
 class BatchNorm(nn.Module):
-    def __init__(self, use_batch_norm=True):
+    """
+    Applies a batch norm layer. Defaults to using only 1 feature, commonly
+    used at the very beginning of the network to normalize the input spectrogram.
+
+    Data comes and goes as (nb, nt, nf, nc). Inside this module, the data undergoes
+    the following procedure:
+
+    1. It is first reshaped to (nb, nf, nt, nc)
+    2. Data is reshaped to (nb, nf, nt * nc).
+    3. ``BatchNorm1d`` is applied with ``num_features`` to data.
+    4. Data is reshaped back to (nb, nt, nf, nc) and returned.
+    
+    Args:
+        use_batch_norm (bool): Skip normalization or not.
+        num_features (int): num_features argument to BatchNorm1d, defaults to 1.
+        **kwargs (dict): additional keyword arguments that can be passed to BatchNorm2d.
+    
+    Returns:
+        torch.Tensor: modified input data tensor with batch norm.
+    """
+    def __init__(self, use_batch_norm=True, num_features=1, **kwargs):
         super(BatchNorm, self).__init__()
         self.use_batch_norm = use_batch_norm
+        self.num_features = num_features
         if self.use_batch_norm:
-            self.add_module('batch_norm', nn.BatchNorm2d(1))
+            self.add_module('batch_norm', 
+                nn.BatchNorm1d(self.num_features, **kwargs))
     
     def forward(self, data):
         if self.use_batch_norm:
+            data = data.transpose(2, 1)
             shape = data.shape
-            data = data.view(shape[0], 1, shape[1], -1)
+            new_shape = (shape[0], self.num_features, -1)
+
+            data = data.view(new_shape)
             data = self.batch_norm(data)
             data = data.view(shape)
+            data = data.transpose(2, 1)
         return data
 
 class InstanceNorm(nn.Module):
-    def __init__(self, use_instance_norm=True):
+    """
+    Applies an instance norm layer. Defaults to using only 1 feature, commonly
+    used at the very beginning of the network to normalize the input spectrogram.
+
+    Data comes and goes as (nb, nt, nf, nc). Inside this module, the data undergoes
+    the following procedure:
+
+    1. It is first reshaped to (nb, nf, nt, nc)
+    2. Data is reshaped to (nb, nf, nt * nc).
+    3. ``InstanceNorm1d`` is applied with ``num_features`` to data.
+    4. Data is reshaped back to (nb, nt, nf, nc) and returned.
+    
+    Args:
+        use_instance_norm (bool): Skip normalization or not.
+        num_features (int): num_features argument to InstanceNorm1d, defaults to 1.
+        **kwargs (dict): additional keyword arguments that are passed to InstanceNorm2d.
+    
+    Returns:
+        torch.Tensor: modified input data tensor with instance norm applied.
+    """
+    def __init__(self, use_instance_norm=True, num_features=1, **kwargs):
         super(InstanceNorm, self).__init__()
         self.use_instance_norm = use_instance_norm
+        self.num_features = num_features
         if self.use_instance_norm:
-            self.add_module('instance_norm', nn.InstanceNorm2d(1))
+            self.add_module('instance_norm', 
+                nn.InstanceNorm1d(self.num_features, **kwargs))
     
     def forward(self, data):
         if self.use_instance_norm:
+            data = data.transpose(2, 1)
             shape = data.shape
-            data = data.view(shape[0], 1, shape[1], -1)
+            new_shape = (shape[0], self.num_features, -1)
+
+            data = data.view(new_shape)
             data = self.instance_norm(data)
             data = data.view(shape)
+            data = data.transpose(2, 1)
         return data
 
 class MelProjection(nn.Module):
@@ -62,12 +138,20 @@ class MelProjection(nn.Module):
         self.clamp = clamp
 
         if self.num_mels > 0:
-            shape = (num_frequencies, num_mels) if self.direction == 'forward' else (num_mels, num_frequencies)
+            shape = (
+                (num_frequencies, num_mels) 
+                if self.direction == 'forward' else 
+                (num_mels, num_frequencies)
+            )
             self.add_module('transform', nn.Linear(*shape))
 
             mel_filters = librosa.filters.mel(sample_rate, 2 * (num_frequencies - 1), num_mels)
-            mel_filters = (mel_filters.T / mel_filters.sum(axis=1)).T
-            filter_bank = mel_filters if self.direction == 'forward' else np.linalg.pinv(mel_filters)
+            mel_filters = (mel_filters.T / (mel_filters.sum(axis=1) + 1e-8)).T
+            filter_bank = (
+                mel_filters 
+                if self.direction == 'forward' 
+                else np.linalg.pinv(mel_filters)
+            )
 
             for name, param in self.transform.named_parameters():
                 if 'bias' in name:
@@ -79,11 +163,12 @@ class MelProjection(nn.Module):
     def forward(self, data):
         """
         Args:
-            data: Representation - shape: (batch_size, sequence_length, num_frequencies or num_mels, num_sources)
+            data: Representation - shape: 
+            (batch_size, sequence_length, num_frequencies or num_mels, num_sources)
 
         Returns:
             Mel-spectrogram or time-frequency representation of shape:
-                (batch_size, sequence_length, num_mels or num_frequencies, num_sources).
+            (batch_size, sequence_length, num_mels or num_frequencies, num_sources).
         """
 
         if self.num_mels > 0:
@@ -97,29 +182,43 @@ class MelProjection(nn.Module):
 
 
 class Embedding(nn.Module):
-    def __init__(self, num_features, num_channels, hidden_size, embedding_size, activation):
+    def __init__(self, num_features, hidden_size, embedding_size, activation, dim_to_embed=-1):
         """
-        Maps output from an audio representation module (e.g. RecurrentStack, DilatedConvolutionalStack) to an embedding
-        space. The output shape is (batch_size, sequence_length, num_features, embedding_size). The embeddings can
-        be passed through an activation function. If activation is 'softmax' or 'sigmoid', and embedding_size is equal
-        to the number of sources, this module can be used to implement a mask inference network (or a mask inference
+        Maps output from an audio representation module (e.g. RecurrentStack, 
+        DilatedConvolutionalStack) to an embedding space. The output shape is 
+        (batch_size, sequence_length, num_features, embedding_size). The embeddings can
+        be passed through an activation function. If activation is 'softmax' or 
+        'sigmoid', and embedding_size is equal to the number of sources, this module 
+        can be used to implement a mask inference network (or a mask inference
         head in a Chimera network setup).
 
         Args:
-            num_features: (int) Number of features being mapped for each frame. Either num_frequencies, or if used with
-                MelProjection, num_mels if using RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
-            hidden_size: (int) Size of output from RecurrentStack (hidden_size) or DilatedConvolutionalStack (num_filters). If
-                RecurrentStack is bidirectional, this should be set to 2 * hidden_size.
-            embedding_size: (int) Dimensionality of embedding.
-            activation: (list of str) Activation functions to be applied. Options are 'sigmoid', 'tanh', 'softmax'.
-                Unit normalization can be applied by adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
+            num_features (int): Number of features being mapped for each frame. 
+            Either num_frequencies, or if used with MelProjection, num_mels if using 
+            RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
+
+            hidden_size (int): Size of output from RecurrentStack (hidden_size) or 
+            DilatedConvolutionalStack (num_filters). If RecurrentStack is bidirectional, 
+            this should be set to 2 * hidden_size.
+            
+            embedding_size (int): Dimensionality of embedding.
+            
+            activation (list of str): Activation functions to be applied. Options 
+            are 'sigmoid', 'tanh', 'softmax'. Unit normalization can be applied by 
+            adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
+
+            dim_to_embed (int): Which dimension of the input to apply the embedding to.
+            Defaults to -1 (the last dimension).
         """
         super(Embedding, self).__init__()
-        self.add_module('linear', nn.Linear(hidden_size, num_features * embedding_size))
+        self.add_module(
+            'linear', 
+            nn.Linear(hidden_size, num_features * embedding_size)
+        )
         self.num_features = num_features
-        self.num_channels = num_channels
         self.activation = activation
         self.embedding_size = embedding_size
+        self.dim_to_embed = dim_to_embed
 
         for name, param in self.linear.named_parameters():
             if 'bias' in name:
@@ -132,23 +231,19 @@ class Embedding(nn.Module):
         """
         Args:
             data: output from RecurrentStack or ConvolutionalStack. Shape is:
-                (num_batch, sequence_length, hidden_size or num_filters)
-        Returns:
-            An embedding (with an optional activation) for each point in the representation of shape
-            (num_batch, sequence_length, num_features, embedding_size).
-        """
-        data = self.linear(data)
+                (num_batch, ..., hidden_size or num_filters)
 
-            # Then this is the output of RecurrentStack and needs to be reshaped a bit.
-            # Came in as [num_batch, sequence_length, num_features * embedding_size]
-            # Goes out as [num_batch, sequence_length, num_features, embedding_size]
-        data = data.view(
-            data.shape[0], 
-            data.shape[1], 
-            -1,  
-            self.num_channels, 
-            self.embedding_size
-        )
+        Returns:
+            An embedding (with an optional activation) for each point in the 
+            representation of shape (num_batch, ..., embedding_size).
+        """
+        shape = data.shape
+        data = data.transpose(self.dim_to_embed, -1)
+        data = self.linear(data)
+        data = data.transpose(-1, self.dim_to_embed)
+
+        shape = shape + (self.embedding_size,)
+        data = data.view(shape)
 
         if 'sigmoid' in self.activation:
             data = torch.sigmoid(data)
@@ -165,26 +260,39 @@ class Embedding(nn.Module):
         return data
 
 class Mask(nn.Module):
+    """
+    Takes a mask and applies it to a representation. Mask and representation must match
+    in their first 3 dimensions (nb, nt, nf). The last
+    dimension of the representation is unsqueezed to match the mask shape. So if there
+    are ``ns`` sources to separate, the mask shape will be (nb, nt, nf, ns), the 
+    representation shape will be (nb, nt, nf).
+
+    Representation gets unsqueezed to (nb, nt, nf, 1). Multiplying with the mask
+    broadcasts, resulting in (nb, nt, nf, ns) output corresponding to each separated
+    source from the representation.
+    """
     def __init__(self):
         super(Mask, self).__init__()
 
-    def forward(self, mask, magnitude_spectrogram):
-        return mask * magnitude_spectrogram.unsqueeze(-1)
+    def forward(self, mask, representation):
+        return mask * representation.unsqueeze(-1)
 
 class RecurrentStack(nn.Module):
     def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout, rnn_type='lstm'):
         """
-        Creates a stack of RNNs used to process an audio sequence represented as (sequence_length, num_features). With
-        bidirectional = True, hidden_size = 600, num_layers = 4, rnn_type='lstm', and dropout = .3, this becomes
-        the state-of-the-art audio processor used in deep clustering networks, deep attractor networks, etc. Note that
-        batch_first is set to True here.
+        Creates a stack of RNNs used to process an audio sequence represented as 
+        (sequence_length, num_features). With bidirectional = True, hidden_size = 600, 
+        num_layers = 4, rnn_type='lstm', and dropout = .3, this becomes the 
+        audio processor used in deep clustering networks, deep attractor networks, etc. 
+        Note that batch_first is set to True here.
 
         Args:
-            num_features: (int) Number of features being mapped for each frame. Either num_frequencies, or if used with
-                MelProjection, num_mels.
+            num_features: (int) Number of features being mapped for each frame. 
+            Either num_frequencies, or if used with MelProjection, num_mels.
             hidden_size: (int) Hidden size of recurrent stack for each layer.
             num_layers: (int) Number of layers in stack.
-            bidirectional: (int) True makes this a BiLSTM or a BiGRU. Note that this doubles the hidden size.
+            bidirectional: (int) True makes this a BiLSTM or a BiGRU. Note that this 
+            doubles the hidden size.
             dropout: (float) Dropout between layers.
             rnn_type: (str) LSTM ('lstm') or GRU ('gru').
         """
@@ -192,20 +300,11 @@ class RecurrentStack(nn.Module):
         if rnn_type not in ['lstm', 'gru']:
             raise ValueError("rnn_type must be one of ['lstm', 'gru']!")
 
-        if rnn_type == 'lstm':
-            self.add_module('rnn', nn.LSTM(num_features,
-                                           hidden_size,
-                                           num_layers,
-                                           batch_first=True,
-                                           bidirectional=bidirectional,
-                                           dropout=dropout))
-        elif rnn_type == 'gru':
-            self.add_module('rnn', nn.GRU(num_features,
-                                          hidden_size,
-                                          num_layers,
-                                          batch_first=True,
-                                          bidirectional=bidirectional,
-                                          dropout=dropout))
+        RNNClass = nn.LSTM if rnn_type == 'lstm' else nn.GRU
+        self.add_module(
+            'rnn', RNNClass(
+                num_features, hidden_size, num_layers, batch_first=True,
+                bidirectional=bidirectional, dropout=dropout))
 
         for name, param in self.rnn.named_parameters():
             if 'bias' in name:
@@ -224,11 +323,12 @@ class RecurrentStack(nn.Module):
         """
         Args:
             data: Audio representation to be processed. Should be of shape:
-                (num_batch, sequence_length, num_features).
+            (num_batch, sequence_length, num_features).
 
         Returns:
             Outputs the features after processing of the RNN. Shape is:
-                (num_batch, sequence_length, hidden_size or hidden_size*2 if bidirectional=True)
+            (num_batch, sequence_length, hidden_size or hidden_size*2 if 
+            bidirectional=True)
         """
         shape = data.shape
         data = data.view(shape[0], shape[1], -1)
@@ -237,7 +337,7 @@ class RecurrentStack(nn.Module):
         return data
 
 
-class DilatedConvolutionalStack(nn.Module):   
+class ConvolutionalStack2D(nn.Module):   
     def __init__(self, in_channels, channels, dilations, filter_shapes, residuals, 
         batch_norm=True, use_checkpointing=False):
         """Implements a stack of dilated convolutional layers for source separation from 
@@ -251,24 +351,22 @@ class DilatedConvolutionalStack(nn.Module):
             Proceedings of the IEEE conference on computer vision and pattern recognition. 
             2017. https://arxiv.org/abs/1705.09914
         
-        Arguments:
-            in_channels  {int}  -- Number of channels in input
-            channels {list of int} -- Number of channels for each layer
-            dilations {list of ints or int tuples} -- Dilation rate for each layer. If 
+        Args:
+            in_channels (int): Number of channels in input
+            channels (list of int): Number of channels for each layer
+            dilations (list of ints or int tuples): Dilation rate for each layer. If 
                 int, it is same in both height and width. If tuple, tuple is defined as
                 (height, width). 
-            filter_shapes {list of ints or int tuples} -- Filter shape for each layer. If 
+            filter_shapes (list of ints or int tuples): Filter shape for each layer. If 
                 int, it is same in both height and width. If tuple, tuple is defined as
-                (height, width). If a single int or tuple, then the same filter shape is used
-                for each layer.
-            residuals {list of bool} -- Whether or not to keep a residual connection at
+                (height, width).
+            residuals (list of bool): Whether or not to keep a residual connection at
                 each layer.
-            batch_norm {bool} -- Whether to use BatchNorm or not at each layer (default: True)
-            use_checkpointing {bool} -- Whether to use torch's checkpointing functionality 
+            batch_norm (bool): Whether to use BatchNorm or not at each layer (default: True)
+            use_checkpointing (bool): Whether to use torch's checkpointing functionality 
                 to reduce memory usage.
         
         Raises:
-            NotImplementedError -- [description]
             ValueError -- All the input lists must be the same length.
         """
         for x in [dilations, filter_shapes, residuals]:
@@ -277,7 +375,14 @@ class DilatedConvolutionalStack(nn.Module):
                     f"All lists (channels, dilations, filters, residuals) should have" 
                     f"the same length!"
                 )
-        super(DilatedConvolutionalStack, self).__init__()
+        super().__init__()
+
+        if any([d != 1 for d in dilations]):
+            warnings.warn(
+                "You specified a dilation != 1. Input size and output size are " 
+                "not guaranteed to be the same! This is due to the lacking of "
+                "padding = 'same' in PyTorch."
+            )
 
         self.dilations = dilations
         self.filter_shapes = filter_shapes
@@ -299,7 +404,7 @@ class DilatedConvolutionalStack(nn.Module):
             out_channels=self.channels[i],
             kernel_size=self.filter_shapes[i],
             dilation=self.dilations[i],
-            padding=self.dilations[i]
+            padding=self.filter_shapes[i] // 2,
         )
 
         if i == len(self.channels) - 1:
@@ -307,14 +412,12 @@ class DilatedConvolutionalStack(nn.Module):
             self.add_module(f'layer{i}', layer)
             return layer
 
-        batch_norm = nn.BatchNorm2d(self.channels[i])
-        relu = nn.ReLU()
-
         layer = nn.Sequential()
         layer.add_module('conv', convolution)
         if self.batch_norm:
+            batch_norm = nn.BatchNorm2d(self.channels[i])
             layer.add_module('batch_norm', batch_norm)
-        layer.add_module('relu', relu)
+        layer.add_module('relu', nn.ReLU())
         return layer
 
     def layer_function(self, data, layer, previous_layer, i):
@@ -373,14 +476,6 @@ class Clusterer(nn.Module):
         output = self.clusterer(data, parameters)
         for key in output:
             if key in ['assignments', 'likelihoods']:
-                output[key] = output[key].reshape(num_batch, sequence_length, num_features, -1)
+                output[key] = output[key].reshape(
+                    num_batch, sequence_length, num_features, -1)
         return output
-
-
-class CentroidGenerator(nn.Module):
-    def __init__(self, embedding_size, centroid_type, activation, covariance_type):
-        super(CentroidGenerator, self).__init__()
-        return
-
-    def forward(self, data):
-        return

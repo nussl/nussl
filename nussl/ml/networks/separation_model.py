@@ -10,17 +10,7 @@ class SeparationModel(nn.Module):
         """
         SeparationModel takes a configuration file or dictionary that describes the model
         structure, which is some combination of MelProjection, Embedding, RecurrentStack,
-        ConvolutionalStack, and other modules found in networks.modules. The configuration file
-        can be built using the helper functions in config.builders:
-            - build_dpcl_config: Builds the original deep clustering network, mapping each
-                time-frequency point to an embedding of some size. Takes as input a
-                log_spectrogram.
-            - build_mi_config: Builds a "traditional" mask inference network that maps the mixture
-                spectrogram to source estimates.  Takes as input a log_spectrogram and a
-                magnitude_spectrogram.
-            - build_chimera_config: Builds a Chimera network with a mask inference head and a
-                deep clustering head to map. A combination of MI and DPCL. Takes as input a
-                log_spectrogram and a magnitude_spectrogram.
+        ConvolutionalStack, and other modules found in ``nussl.ml.networks.modules``. 
 
         References:
             Hershey, J. R., Chen, Z., Le Roux, J., & Watanabe, S. (2016, March).
@@ -34,8 +24,13 @@ class SeparationModel(nn.Module):
             2017 IEEE International Conference on (pp. 61-65). IEEE.
 
         Args:
-            config: (str, dict) Either a config dictionary built from one of the helper functions,
-                or the path to a json file containing a config built from the helper functions.
+            config: (str, dict) Either a config dictionary that defines the model and its
+            connections, or the path to a json file containing the dictionary. If the
+            latter, the path will be loaded and used.
+
+            extra_modules (list): A list of classes that are to be tacked onto the default
+            classes that are used to instantiate each nn.Module that is used in the
+            network.
 
         Examples:
             >>> args = {

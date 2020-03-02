@@ -11,6 +11,9 @@ def compute_ideal_binary_mask(source_magnitudes):
     ibm = ibm / np.sum(ibm, axis=-1, keepdims=True)
     return ibm
 
+# Time-frequency dimensions get swapped in ToSeparationModel to match what is expected.
+swap_tf_dims = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask']
+
 class SumSources(object):
     """
     Sums sources together. Looks for sources in ``data[self.source_key]``. If 
@@ -317,19 +320,44 @@ class PhaseSensitiveSpectrumApproximation(object):
             f")"
         )
 
-class ToDataLoader(object):
+class ToSeparationModel(object):
     """
     Takes in a dictionary containing objects and removes any objects that cannot
-    be passed to ``torch.datasets.DataLoader`` (e.g. not a numpy array or torch Tensor).
-    If these objects are passed to a DataLoader, then an error will occur. This 
+    be passed to SeparationModel (e.g. not a numpy array or torch Tensor).
+    If these objects are passed to SeparationModel, then an error will occur. This 
     class should be the last one in your list of transforms, if you're using 
-    this dataset in a DataLoader object for training a network.
+    this dataset in a DataLoader object for training a network. If the keys
+    correspond to numpy arrays, they are converted to tensors using 
+    ``torch.from_numpy``. Finally, the dimensions corresponding to time and
+    frequency are swapped for all the keys in swap_tf_dims, as this is how 
+    SeparationModel expects it.
+
+    Example:
+
+    .. code-block:: none
+
+        data = {
+            # 2ch spectrogram for mixture
+            'mix_magnitude': torch.randn(513, 400, 2),
+            # 2ch spectrogram for each source
+            'source_magnitudes': torch.randn(513, 400, 2, 4) 
+            'mix': AudioSignal()
+        }
+
+        tfm = transforms.ToSeparationModel()
+        data = tfm(data)
+
+        data['mix_magnitude'].shape # (400, 513, 2)
+        data['source_magnitudes].shape # (400, 513, 2, 4)
+        'mix' in data.keys() # False
+    
 
     If this class isn't in your transforms list for the dataset, but you are
     using it in the Trainer class, then it is added automatically as the
     last transform.
     """
-    def __init__(self):
+    def __init__(self, swap_tf_dims=swap_tf_dims):
+        self.swap_tf_dims = swap_tf_dims
         pass
 
     def __call__(self, data):
@@ -337,8 +365,12 @@ class ToDataLoader(object):
         for key in keys:
             is_array = isinstance(data[key], np.ndarray)
             is_tensor = torch.is_tensor(data[key])
-            if not is_tensor and not is_array:
+            if is_array:
+                data[key] = torch.from_numpy(data[key])  
+            if not torch.is_tensor(data[key]):
                 data.pop(key)
+            if key in self.swap_tf_dims:
+                data[key] = data[key].transpose(1, 0)
         return data
 
     def __repr__(self):
@@ -363,6 +395,9 @@ class Compose(object):
     def __call__(self, data):
         for t in self.transforms:
             data = t(data)
+            if not isinstance(data, dict):
+                raise TransformException(
+                    "The output of every transform must be a dictionary!")
         return data
 
     def __repr__(self):

@@ -19,7 +19,7 @@ def gmm_js(gmm_p, gmm_q, n_samples=10**5):
     JS divergence has no closed form in general for GMMs, thus we use sampling to 
     compute it.
 
-    Parameters:
+    Args:
         gmm_p (GaussianMixture): A GaussianMixture class fit to some data.
         gmm_q (GaussianMixture): Another GaussianMixture class fit to some data.
         n_samples (int): Number of samples to use to estimate JS divergence. 

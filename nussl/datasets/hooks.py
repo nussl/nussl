@@ -255,7 +255,7 @@ class Scaper(BaseDataset):
         }
 
 
-    Example:
+    Example of generating a Scaper dataset and then loading it with nussl:
 
     >>> n_sources = 2
     >>> n_mixtures = 10
@@ -283,7 +283,7 @@ class Scaper(BaseDataset):
     >>>     jams_path = os.path.join(output_dir, f'{i}.jams')
     >>>     sc.generate(audio_path, jams_path, save_isolated_events=True)
     >>> dataset = nussl.datasets.Scaper(output_dir)
-    >>> dataset[0] # contains mix and sources corresponding to 0.jams.
+    >>> dataset[0] # contains mix, sources, and metadata corresponding to 0.jams.
         
     Raises:
         DataSetException: if Scaper dataset wasn't saved with isolated event audio.

@@ -4,6 +4,56 @@ from nussl.separation.base import MaskSeparationBase, SeparationBase
 from nussl.core.masks import BinaryMask, SoftMask, MaskBase
 import pytest
 
+import torch
+import random
+
+def test_utils_seed():
+    seeds = [0, 123, 666, 15, 2]
+
+    def _get_random():
+        r1 = torch.randn(100, 10)
+        r2 = np.random.rand(100, 10)
+        r3 = random.randint(10, 10000)
+
+        return r1, r2, r3
+
+    for seed in seeds:
+        nussl.utils.seed(seed)
+        t1 = _get_random()
+        nussl.utils.seed(seed)
+        t2 = _get_random()
+
+        for first, second in zip(t1, t2):
+            assert np.allclose(first, second)
+
+        other_seed = 10
+
+        nussl.utils.seed(other_seed)
+        t3 = _get_random()
+
+        for first, second in zip(t1, t3):
+            assert not np.allclose(first, second)
+            
+    # do it again with set_cudnn = True
+    for seed in seeds:
+        nussl.utils.seed(seed, set_cudnn=True)
+        t1 = _get_random()
+        nussl.utils.seed(seed, set_cudnn=True)
+        t2 = _get_random()
+
+        for first, second in zip(t1, t2):
+            assert np.allclose(first, second)
+
+        other_seed = 10
+
+        nussl.utils.seed(other_seed, set_cudnn=True)
+        t3 = _get_random()
+
+        for first, second in zip(t1, t3):
+            assert not np.allclose(first, second)
+
+
+
 def test_utils_find_peak_indices():
     array = np.arange(0, 100)
     peak = nussl.utils.find_peak_indices(array, 1)[0]

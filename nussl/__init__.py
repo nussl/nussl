@@ -1,11 +1,4 @@
 try:
-    import torch
-    torch_imported = True
-except Exception:
-    torch_imported = False
-
-
-try:
     import vamp
     vamp_imported = True
 except Exception:
@@ -21,3 +14,4 @@ from .core import utils, efz_utils, jupyter_utils, constants
 from . import core
 from . import evaluation
 from . import datasets
+from . import ml
