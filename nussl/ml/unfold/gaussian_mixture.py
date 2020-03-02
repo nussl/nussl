@@ -16,7 +16,9 @@ class GaussianMixture(nn.Module):
 
             Must be one of:
             'full'
-                each component has its own general covariance matrix
+                each component has its own general covariance matrix (this case
+                is harder to fit in EM than the others and isn't recommended at
+                the moment
             'tied'
                 all components share the same general covariance matrix
             'diag'
