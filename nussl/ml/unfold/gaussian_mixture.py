@@ -161,6 +161,35 @@ class GaussianMixture(nn.Module):
 
         return means, covariance
 
-    def forward(self, data):
-        return data
+    def forward(self, data, means=None, covariance=None):
+        """
+        [summary]
+        
+        [extended_summary]
+        
+        Args:
+            data (torch.Tensor): Data, shape is (n_batch, ..., n_features)
+            means (torch.Tensor): Means, shape (n_batch, n_components, n_features). Defaults
+            to None.
+            covariance (torch.Tensor): (n_batch, n_components, n_features, n_features) 
+            or (n_batch, n_components, n_features). 
+        
+        Returns:
+            [type]: [description]
+        """
+        shape = data.shape
+        data = data.view(shape[0], -1, shape[-1])
+        means, covariance = self.init_params(data, means, covariance)
+
+        for i in range(self.n_iter):
+            resp, log_prob = self._e_step(data, means, covariance)
+            means, covariance, prior = self._m_step(data, resp)
+
+        return {
+            'resp': resp.view(shape[:-1] + (-1,)),
+            'log_prob': log_prob.view(shape[:-1] + (-1,)),
+            'means': means,
+            'covariance': covariance,
+            'prior': prior    
+        }
 
