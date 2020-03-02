@@ -8,6 +8,8 @@ import scaper
 import random
 import glob
 import nussl
+from nussl.datasets import transforms
+import numpy as np
 
 def _unzip(path_to_zip, target_path):
     with zipfile.ZipFile(path_to_zip, 'r') as zip_ref:
@@ -154,3 +156,24 @@ def bad_scaper_folder(toy_datasets):
             sc.generate(audio_path, jams_path, save_isolated_events=False)
             
         yield _dir
+
+@pytest.fixture(scope="module")
+def one_item(scaper_folder):
+    stft_params = nussl.STFTParams(
+        window_length=512,
+        hop_length=128
+    )
+    tfms = [
+        transforms.PhaseSensitiveSpectrumApproximation(
+            stft_params=stft_params
+        ),
+        transforms.ToSeparationModel()
+    ]
+    dataset = nussl.datasets.Scaper(
+        scaper_folder, transforms=tfms)
+    i = np.random.randint(len(dataset))
+    data = dataset[i]
+    for k in data:
+        # fake a batch dimension
+        data[k] = data[k].unsqueeze(0)
+    yield data

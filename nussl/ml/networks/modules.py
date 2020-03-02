@@ -242,7 +242,7 @@ class Embedding(nn.Module):
         data = self.linear(data)
         data = data.transpose(-1, self.dim_to_embed)
 
-        shape = shape + (self.embedding_size,)
+        shape = shape[:-1] + (self.num_features, self.embedding_size,)
         data = data.view(shape)
 
         if 'sigmoid' in self.activation:
@@ -275,7 +275,8 @@ class Mask(nn.Module):
         super(Mask, self).__init__()
 
     def forward(self, mask, representation):
-        return mask * representation.unsqueeze(-1)
+        representation = representation.expand_as(mask)
+        return mask * representation
 
 class RecurrentStack(nn.Module):
     def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout, rnn_type='lstm'):
@@ -426,8 +427,8 @@ class ConvolutionalStack2D(nn.Module):
             data = checkpoint(layer, (data))
         else:
             data = layer(data)
-        if self.residuals[i] and previous_layer is not None:
-            if i > 0:
+        if self.residuals[i]:
+            if previous_layer is not None:
                 data += previous_layer
             previous_layer = data
         return data, previous_layer
@@ -451,31 +452,3 @@ class ConvolutionalStack2D(nn.Module):
             )
         data = data.permute(0, 2, 3, 1)
         return data
-
-
-class Clusterer(nn.Module):
-    def __init__(self, n_iterations, num_clusters, covariance_type='tied:spherical', covariance_init=1.0):
-        """
-
-        Args:
-            n_iterations:
-            num_clusters:
-            covariance_type:
-            covariance_init:
-        """
-        super(Clusterer, self).__init__()
-
-        self.add_module('clusterer', GMM(n_clusters=num_clusters,
-                                         n_iterations=n_iterations,
-                                         covariance_type=covariance_type,
-                                         covariance_init=covariance_init))
-
-    def forward(self, data, parameters=None):
-        num_batch, sequence_length, num_features, embedding_size = data.shape
-        data = data.reshape(num_batch, sequence_length*num_features, embedding_size)
-        output = self.clusterer(data, parameters)
-        for key in output:
-            if key in ['assignments', 'likelihoods']:
-                output[key] = output[key].reshape(
-                    num_batch, sequence_length, num_features, -1)
-        return output

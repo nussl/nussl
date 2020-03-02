@@ -7,28 +7,6 @@ import numpy as np
 import librosa
 import itertools
 
-@pytest.fixture(scope="module")
-def one_item(scaper_folder):
-    stft_params = nussl.STFTParams(
-        window_length=512,
-        hop_length=128
-    )
-    tfms = [
-        transforms.PhaseSensitiveSpectrumApproximation(
-            stft_params=stft_params
-        ),
-        transforms.ToSeparationModel()
-    ]
-    dataset = nussl.datasets.Scaper(
-        scaper_folder, transforms=tfms)
-    i = np.random.randint(len(dataset))
-    data = dataset[i]
-    for k in data:
-        # fake a batch dimension
-        data[k] = data[k].unsqueeze(0)
-    yield data
-
-
 def test_ml_amplitude_to_db(one_item):
     module = ml.networks.modules.AmplitudeToDB()
     output = module(one_item['mix_magnitude'])
@@ -202,10 +180,10 @@ def test_ml_conv_stack(one_item):
     num_features = data.shape[2]
 
     in_channels = 1
-    channels = [10, 32, 8, 16]
+    channels = [10, 32, 8, 10]
     dilations = [1, 1, 1, 1]
     filter_shapes = [7, 3, 5, 3]
-    residuals = [True, False, True, False]
+    residuals = [True, False, False, True]
     batch_norm = True
     use_checkpointing = False
 

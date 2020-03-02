@@ -4,6 +4,7 @@ from . import modules
 import torch
 import numpy as np
 from itertools import chain
+import os
 
 class SeparationModel(nn.Module):
     def __init__(self, config, extra_modules=None):
@@ -57,50 +58,70 @@ class SeparationModel(nn.Module):
         """
         super(SeparationModel, self).__init__()
         if type(config) is str:
-            if 'json' in config:
+            if os.path.exists(config):
                 with open(config, 'r') as f:
                     config = json.load(f)
             else:
                 config = json.loads(config)
 
+        self._validate_config(config)
+
         # Add extra modules to modules
         if extra_modules:
-            for name in dir(extra_modules):
-                if name not in dir(modules):
+            for module in extra_modules:
+                if module.__name__ not in dir(modules):
                     setattr(
                         modules, 
-                        name,
-                        getattr(extra_modules, name)
+                        module.__name__,
+                        module
                     )
 
         module_dict = {}
         self.input = {}
         for module_key in config['modules']:
             module = config['modules'][module_key]
-            if 'input_shape' not in module:
+            if 'class' in module:
                 class_func = getattr(modules, module['class'])
                 if 'args' not in module:
                     module['args'] = {}
                 module_dict[module_key] = class_func(**module['args'])
             else:
-                self.input[module_key] = module['input_shape']
+                self.input[module_key] = module_key
 
         self.layers = nn.ModuleDict(module_dict)
         self.connections = config['connections']
         self.output_keys = config['output']
         self.config = config
 
+    def _validate_config(self, config):
+        expected_keys = ['connections', 'modules', 'output',]
+        got_keys = sorted(list(config.keys()))
+
+        if got_keys != expected_keys:
+            raise ValueError(
+                f"Expected keys {expected_keys}, got {got_keys}")
+
+        if not isinstance(config['modules'], dict):
+            raise ValueError("config['modules'] must be a dict!")
+
+        if not isinstance(config['connections'], list):
+            raise ValueError("config['connections'] must be a list!")
+
+        if not isinstance(config['output'], list):
+            raise ValueError("config['output'] must be a list!")
+
     def forward(self, data):
         """
         Args:
-            data: (dict) a dictionary containing the input data for the model. Should match the input_keys
-                in self.input.
+            data: (dict) a dictionary containing the input data for the model. 
+            Should match the input_keys in self.input.
 
         Returns:
 
         """
         if not all(name in list(data) for name in list(self.input)):
-            raise ValueError(f'Not all keys present in data! Needs {", ".join(self.input)}')
+            raise ValueError(
+                f'Not all keys present in data! Needs {", ".join(self.input)}')
         output = {}
 
         for connection in self.connections:
@@ -123,13 +144,6 @@ class SeparationModel(nn.Module):
                 output[connection[0]] = _output
                 
         return {o: output[o] for o in self.output_keys}
-
-    def project_data(self, data, clamp=False):
-        if 'mel_projection' in self.layers:
-            data = self.layers['mel_projection'](data)
-            if clamp:
-                data = data.clamp(0.0, 1.0)
-        return data
 
     def save(self, location, metadata=None):
         """
