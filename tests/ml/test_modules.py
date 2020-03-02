@@ -89,16 +89,21 @@ def test_ml_mel_projection(one_item):
 def test_ml_embedding(one_item):
     data = one_item['mix_magnitude']
     num_frequencies = data.shape[2]
+    rnn = ml.networks.modules.RecurrentStack(
+        num_frequencies, 50, 1, bidirectional=False, dropout=0.0
+    )
+
+    
     activations = ['sigmoid', 'tanh', 'relu', 'softmax']
     embedding_sizes = [1, 5, 10, 20, 100]
 
     for a in activations:
         for e in embedding_sizes:
             module = ml.networks.modules.Embedding(
-                num_frequencies, num_frequencies, e, a,
-                dim_to_embed=2
+                num_frequencies, 50, e, a,
+                dim_to_embed=-1
             )
-            output = module(data)
+            output = module(rnn(data))
 
             if a == 'sigmoid':
                 assert output.min() >= 0
@@ -117,10 +122,10 @@ def test_ml_embedding(one_item):
             _a = [a, 'unit_norm']
 
             module = ml.networks.modules.Embedding(
-                num_frequencies, num_frequencies, e, _a,
-                dim_to_embed=2
+                num_frequencies, 50, e, _a,
+                dim_to_embed=-1
             )
-            output = module(data)
+            output = module(rnn(data))
             _norm = torch.norm(output, p=2, dim=-1)
             # relu sends entire vectors to zero, so their norm is 0.
             # only check nonzero norm values.
@@ -129,20 +134,20 @@ def test_ml_embedding(one_item):
             assert torch.allclose(_norm, torch.ones_like(_norm))
 
 def test_ml_mask(one_item):
-    data = one_item['mix_magnitude']
-    mask = torch.randn(data.shape + (4,))
+    data = one_item['mix_magnitude'].unsqueeze(-1)
+    mask = torch.randn(data.shape[:-1] + (4,))
 
-    masked_data = mask * data.unsqueeze(-1)
+    masked_data = mask * data
 
     module = ml.networks.modules.Mask()
     output = module(mask, data)
 
     assert torch.allclose(output, masked_data)
 
-    data = one_item['mix_magnitude']
+    data = one_item['mix_magnitude'].unsqueeze(-1)
     ibm = one_item['ideal_binary_mask']
 
-    masked_data = ibm * data.unsqueeze(-1)
+    masked_data = ibm * data
 
     module = ml.networks.modules.Mask()
     output = module(ibm, data)
