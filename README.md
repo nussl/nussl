@@ -12,27 +12,35 @@ A check below doesn't happen until full test coverage is achieved.
 - [x] STFT/iSTFT via ``scipy.signal``
 - [x] External file zoo functionality
 - [x] Hooks for common datasets
-    - [x] MUSDB
-    - [x] Scaper
-    - [x] MixSourceFolder 
-    - [ ] WHAM! (simple subclass MixSourceFolder)
-    - [ ] MIR1K
-    - [ ] iKala (still support?)
-  - [x] Evaluation  
-    - [x] SISDR
-    - [x] museval BSSEval
-    - [x] Precision/recall/f1-score on masks
-  - [ ] Machine learning
-    - [x] Network modules
-    - [x] SeparationModel
-    - [x] PyTorch Gaussian Mixture model
-    - [ ] Trainer via PyTorch ignite
-  - [ ] Separation (will fill this in more soon)
-    - [ ] Deep methods
-    - [ ] Existing methods
+  - [x] MUSDB
+  - [x] Scaper
+  - [x] MixSourceFolder 
+  - [ ] WHAM! (simple subclass MixSourceFolder)
+  - [ ] MIR1K
+  - [ ] iKala (still support?)
+- [x] Evaluation  
+  - [x] SISDR
+  - [x] museval BSSEval
+  - [x] Precision/recall/f1-score on masks
+- [ ] Machine learning
+  - [x] Network modules
+  - [x] SeparationModel
+  - [x] PyTorch Gaussian Mixture model
+  - [ ] Trainer via PyTorch ignite
+- [ ] Separation (will fill this in more soon)
+  - [ ] Deep methods
+  - [ ] Existing methods
 
 Current test coverage
 ---------------------
+
+Clone this repo, then run
+
+```
+pip install -r requirements.txt
+pip install -r extra_requirements.txt
+pytest
+```
 
 ```
 ---------- coverage: platform darwin, python 3.7.6-final-0 -----------
