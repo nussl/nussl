@@ -204,7 +204,7 @@ class Embedding(nn.Module):
             embedding_size (int): Dimensionality of embedding.
             
             activation (list of str): Activation functions to be applied. Options 
-            are 'sigmoid', 'tanh', 'softmax'. Unit normalization can be applied by 
+            are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
             adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
 
             dim_to_embed (int): Which dimension of the input to apply the embedding to.

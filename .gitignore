@@ -13,3 +13,4 @@ tests/ignored_tests/
 .coverage
 docs/_build/
 tests/local/
+nussl/ml/train/trainer copy.py

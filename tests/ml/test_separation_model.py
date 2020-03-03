@@ -1,7 +1,7 @@
 import nussl
 import torch
 from torch import nn
-from nussl.ml.networks import SeparationModel, modules
+from nussl.ml.networks import SeparationModel, modules, builders
 import pytest
 import json
 import tempfile
@@ -9,186 +9,35 @@ import copy
 
 n_features = 257
 
-mi_config = {
-    'modules': {
-        'mix_magnitude': {},
-        'log_spectrogram': {
-            'class': 'AmplitudeToDB'
-        },
-        'normalization': {
-            'class': 'BatchNorm'
-        },
-        'recurrent_stack': {
-            'class': 'RecurrentStack',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50,
-                'num_layers': 2,
-                'bidirectional': True,
-                'dropout': 0.3
-            }
-        },
-        'mask': {
-            'class': 'Embedding',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50 * 2,
-                'embedding_size': 2,
-                'activation': ['softmax']
-            }
-        },
-        'estimates': {
-            'class': 'Mask',
-        },
-    },
-    'connections': [
-        ('log_spectrogram', ('mix_magnitude',)),
-        ('normalization', ('log_spectrogram',)),
-        ('recurrent_stack', ('normalization',)),
-        ('mask', ('recurrent_stack',)),
-        ('estimates', ('mask', 'mix_magnitude'))
-    ],
-    'output': ['estimates']
+mi_config = builders.build_recurrent_mask_inference(
+    n_features, 50, 2, True, 0.3, 2, 'softmax', 
+)
+
+dpcl_config = builders.build_recurrent_dpcl(
+    n_features, 50, 2, False, 0.3, 20, ['sigmoid', 'unit_norm']
+)
+
+chimera_config = builders.build_recurrent_chimera(
+    n_features, 50, 2, True, 0.3, 20, ['sigmoid', 'unit_norm'], 
+    2, 'softmax', 
+)
+
+gmm_unfold_config = copy.deepcopy(dpcl_config)
+gmm_unfold_config['modules']['mask'] = {
+    'class': 'GaussianMixture',
+    'args': {
+        'n_components': 2
+    }
 }
 
-dpcl_config = {
-    'modules': {
-        'mix_magnitude': {},
-        'log_spectrogram': {
-            'class': 'AmplitudeToDB'
-        },
-        'normalization': {
-            'class': 'BatchNorm'
-        },
-        'recurrent_stack': {
-            'class': 'RecurrentStack',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50,
-                'num_layers': 2,
-                'bidirectional': True,
-                'dropout': 0.3
-            }
-        },
-        'embedding': {
-            'class': 'Embedding',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50 * 2,
-                'embedding_size': 20,
-                'activation': ['sigmoid', 'unit_norm']
-            }
-        },
-    },
-    'connections': [
-        ('log_spectrogram', ('mix_magnitude',)),
-        ('normalization', ('log_spectrogram',)),
-        ('recurrent_stack', ('normalization',)),
-        ('embedding', ('recurrent_stack',)),
-    ],
-    'output': ['embedding']
-}
+gmm_unfold_config['modules']['estimates'] = {'class': 'Mask',}
 
-chimera_config = {
-    'modules': {
-        'mix_magnitude': {},
-        'log_spectrogram': {
-            'class': 'AmplitudeToDB'
-        },
-        'normalization': {
-            'class': 'BatchNorm'
-        },
-        'recurrent_stack': {
-            'class': 'RecurrentStack',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50,
-                'num_layers': 2,
-                'bidirectional': True,
-                'dropout': 0.3
-            }
-        },
-        'embedding': {
-            'class': 'Embedding',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50 * 2,
-                'embedding_size': 20,
-                'activation': ['sigmoid', 'unit_norm']
-            }
-        },
-        'mask': {
-            'class': 'Embedding',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50 * 2,
-                'embedding_size': 2,
-                'activation': ['softmax']
-            }
-        },
-        'estimates': {
-            'class': 'Mask',
-        },
-    },
-    'connections': [
-        ('log_spectrogram', ('mix_magnitude',)),
-        ('normalization', ('log_spectrogram',)),
-        ('recurrent_stack', ('normalization',)),
-        ('embedding', ('recurrent_stack',)),
-        ('mask', ('recurrent_stack',)),
-        ('estimates', ('mask', 'mix_magnitude',))
-    ],
-    'output': ['embedding', 'estimates']
-}
+gmm_unfold_config['connections'].extend(
+    [['mask', ['embedding',]],
+    ['estimates', ['mask:resp', 'mix_magnitude',]]]
+)
 
-gmm_unfold_config = {
-    'modules': {
-        'mix_magnitude': {},
-        'log_spectrogram': {
-            'class': 'AmplitudeToDB'
-        },
-        'normalization': {
-            'class': 'BatchNorm'
-        },
-        'recurrent_stack': {
-            'class': 'RecurrentStack',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50,
-                'num_layers': 2,
-                'bidirectional': True,
-                'dropout': 0.3
-            }
-        },
-        'embedding': {
-            'class': 'Embedding',
-            'args': {
-                'num_features': n_features,
-                'hidden_size': 50 * 2,
-                'embedding_size': 20,
-                'activation': ['sigmoid', 'unit_norm']
-            }
-        },
-        'mask': {
-            'class': 'GaussianMixture',
-            'args': {
-                'n_components': 2,
-            }
-        },
-        'estimates': {
-            'class': 'Mask',
-        },
-    },
-    'connections': [
-        ('log_spectrogram', ('mix_magnitude',)),
-        ('normalization', ('log_spectrogram',)),
-        ('recurrent_stack', ('normalization',)),
-        ('embedding', ('recurrent_stack',)),
-        ('mask', ('embedding',)),
-        ('estimates', ('mask:resp', 'mix_magnitude',))
-    ],
-    'output': ['embedding', 'estimates']
-}
+gmm_unfold_config['output'].append('estimates')
 
 class MyModule(nn.Module):
     def __init__(self):
