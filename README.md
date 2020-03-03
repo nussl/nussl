@@ -2,6 +2,73 @@
 nussl
 =====
 
+This branch is an update/refactor of ``nussl`` to update to Python 3 and have complete code coverage via the tests.
+
+Current progress
+----------------
+A check below doesn't happen until full test coverage is achieved.
+
+- [x] Core AudioSignal functionality
+- [x] STFT/iSTFT via ``scipy.signal``
+- [x] External file zoo functionality
+- [x] Hooks for common datasets
+    - [x] MUSDB
+    - [x] Scaper
+    - [x] MixSourceFolder 
+    - [ ] WHAM! (simple subclass MixSourceFolder)
+    - [ ] MIR1K
+    - [ ] iKala (still support?)
+  - [x] Evaluation  
+    - [x] SISDR
+    - [x] museval BSSEval
+    - [x] Precision/recall/f1-score on masks
+  - [ ] Machine learning
+    - [x] Network modules
+    - [x] SeparationModel
+    - [x] PyTorch Gaussian Mixture model
+    - [ ] Trainer via PyTorch ignite
+  - [ ] Separation (will fill this in more soon)
+    - [ ] Deep methods
+    - [ ] Existing methods
+
+Current test coverage
+---------------------
+
+```
+---------- coverage: platform darwin, python 3.7.6-final-0 -----------
+Name                                          Stmts   Miss  Cover   Missing
+---------------------------------------------------------------------------
+nussl/core/__init__.py                            5      0   100%
+nussl/core/audio_signal.py                      431      0   100%
+nussl/core/constants.py                          38      0   100%
+nussl/core/efz_utils.py                         145      0   100%
+nussl/core/jupyter_utils.py                      33      0   100%
+nussl/core/masks/__init__.py                      4      0   100%
+nussl/core/masks/binary_mask.py                  23      0   100%
+nussl/core/masks/mask_base.py                    92      0   100%
+nussl/core/masks/soft_mask.py                    16      0   100%
+nussl/core/utils.py                             108      0   100%
+nussl/datasets/__init__.py                        2      0   100%
+nussl/datasets/base_dataset.py                   32      0   100%
+nussl/datasets/hooks.py                          68      0   100%
+nussl/datasets/transforms.py                    149      0   100%
+nussl/evaluation/__init__.py                      4      0   100%
+nussl/evaluation/bss_eval.py                     63      0   100%
+nussl/evaluation/evaluation_base.py              64      0   100%
+nussl/evaluation/precision_recall_fscore.py      34      0   100%
+nussl/ml/networks/__init__.py                     1      0   100%
+nussl/ml/networks/builders.py                    18      0   100%
+nussl/ml/networks/modules.py                    188      0   100%
+nussl/ml/networks/separation_model.py            78      0   100%
+nussl/ml/unfold/__init__.py                       1      0   100%
+nussl/ml/unfold/gaussian_mixture.py              74      0   100%
+---------------------------------------------------------------------------
+TOTAL                                          1671      0   100%
+
+=============================================================================== 230 passed, 9 warnings in 201.19s (0:03:21) 
+```
+
+
 **The Northwestern University Source Separation Library (nussl)**
 (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
 python audio source separation library created by the 
