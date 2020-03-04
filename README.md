@@ -18,6 +18,7 @@ A check below doesn't happen until full test coverage is achieved.
   - [ ] WHAM! (simple subclass MixSourceFolder)
   - [ ] MIR1K
   - [ ] iKala (still support?)
+  - [ ] Slakh2100
 - [x] Evaluation  
   - [x] SISDR
   - [x] museval BSSEval
