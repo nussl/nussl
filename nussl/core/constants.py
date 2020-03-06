@@ -29,7 +29,7 @@ WINDOW_BLACKMAN = scipy.signal.blackman.__name__  #: (str): Name for calling Bla
 WINDOW_TRIANGULAR = 'triang'  #: (str): Name for calling Triangular window. 'triangular'
 WINDOW_SQRT_HANN = 'sqrt_hann' #: (str): Name for calling square root of hann window. 'sqrt_hann'.
 
-WINDOW_DEFAULT = WINDOW_HANN  #: (str): Default window, Hamming.
+WINDOW_DEFAULT = WINDOW_SQRT_HANN  #: (str): Default window, Hamming.
 ALL_WINDOWS = [
     WINDOW_HAMMING, WINDOW_RECTANGULAR, WINDOW_HANN, WINDOW_BLACKMAN, 
     WINDOW_TRIANGULAR, WINDOW_SQRT_HANN]
