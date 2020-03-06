@@ -14,6 +14,7 @@ def compute_ideal_binary_mask(source_magnitudes):
 # Time-frequency dimensions get swapped in ToSeparationModel to match what is expected.
 swap_tf_dims = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask']
 
+
 class SumSources(object):
     """
     Sums sources together. Looks for sources in ``data[self.source_key]``. If 
@@ -137,6 +138,9 @@ class MagnitudeSpectrumApproximation(object):
     then points to an OrderedDict instead, where the keys are in the same order
     as in ``data['source_magnitudes']`` and ``data['assignments']``.
 
+    This transform uses the STFTParams that are attached to the AudioSignal objects
+    contained in ``data[mix_key]`` and ``data[source_key]``.
+
     [1] Erdogan, Hakan, John R. Hershey, Shinji Watanabe, and Jonathan Le Roux. 
         "Phase-sensitive and recognition-boosted speech separation using 
         deep recurrent neural networks." In 2015 IEEE International Conference 
@@ -148,8 +152,6 @@ class MagnitudeSpectrumApproximation(object):
             Defaults to 'mix'.
         source_key (str, optional): The key to look for in the data containing the list of
             source AudioSignals. Defaults to 'sources'.
-        stft_params ([type], optional): The STFT Parameters to use for each AudioSignal
-            object. Defaults to None.
     
     Raises:
             TransformException: if the expected keys are not in the dictionary, an
@@ -159,19 +161,26 @@ class MagnitudeSpectrumApproximation(object):
         data: Modified version of the input dictionary.
     """
 
-    def __init__(self, mix_key='mix', source_key='sources', stft_params=None):
-        self.stft_params = stft_params
+    def __init__(self, mix_key='mix', source_key='sources'):
         self.mix_key = mix_key
         self.source_key = source_key
 
     def __call__(self, data):        
-        if self.mix_key not in data or self.source_key not in data:
+        if self.mix_key not in data:
             raise TransformException(
-                f"Expected {self.mix_key} and {self.source_key} in dictionary "
+                f"Expected {self.mix_key} in dictionary "
                 f"passed to this Transform! Got {list(data.keys())}."
             )
 
         mixture = data[self.mix_key]
+        mixture.stft()
+        mix_magnitude = mixture.magnitude_spectrogram_data
+
+        data['mix_magnitude'] = mix_magnitude
+
+        if self.source_key not in data:
+            return data
+
         _sources = data[self.source_key]
         source_names = sorted(list(_sources.keys()))
 
@@ -180,14 +189,10 @@ class MagnitudeSpectrumApproximation(object):
             sources[key] = _sources[key]
         data[self.source_key] = sources
 
-        mixture.stft_params = self.stft_params
-        mixture.stft()
-        mix_magnitude = mixture.magnitude_spectrogram_data
 
         source_magnitudes = []
         for key in source_names:
             s = sources[key]
-            s.stft_params = self.stft_params
             s.stft()
             source_magnitudes.append(s.magnitude_spectrogram_data)
 
@@ -197,14 +202,13 @@ class MagnitudeSpectrumApproximation(object):
             mix_magnitude[..., None], source_magnitudes)
         
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)
-        data['mix_magnitude'] = mix_magnitude
         data['source_magnitudes'] = source_magnitudes
+
         return data
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
-            f"stft_params = {self.stft_params}, "
             f"mix_key = {self.mix_key}, "
             f"source_key = {self.source_key}"
             f")"
@@ -228,6 +232,9 @@ class PhaseSensitiveSpectrumApproximation(object):
     then points to an OrderedDict instead, where the keys are in the same order
     as in ``data['source_magnitudes']`` and ``data['assignments']``.
 
+    This transform uses the STFTParams that are attached to the AudioSignal objects
+    contained in ``data[mix_key]`` and ``data[source_key]``.
+
     [1] Erdogan, Hakan, John R. Hershey, Shinji Watanabe, and Jonathan Le Roux. 
         "Phase-sensitive and recognition-boosted speech separation using 
         deep recurrent neural networks." In 2015 IEEE International Conference 
@@ -239,8 +246,6 @@ class PhaseSensitiveSpectrumApproximation(object):
             Defaults to 'mix'.
         source_key (str, optional): The key to look for in the data containing the list of
             source AudioSignals. Defaults to 'sources'.
-        stft_params ([type], optional): The STFT Parameters to use for each AudioSignal
-            object. Defaults to None.
     
     Raises:
             TransformException: if the expected keys are not in the dictionary, an
@@ -250,19 +255,27 @@ class PhaseSensitiveSpectrumApproximation(object):
         data: Modified version of the input dictionary.
     """
 
-    def __init__(self, mix_key='mix', source_key='sources', stft_params=None):
-        self.stft_params = stft_params
+    def __init__(self, mix_key='mix', source_key='sources'):
         self.mix_key = mix_key
         self.source_key = source_key
 
     def __call__(self, data):
-        if self.mix_key not in data or self.source_key not in data:
+        if self.mix_key not in data:
             raise TransformException(
-                f"Expected {self.mix_key} and {self.source_key} in dictionary "
+                f"Expected {self.mix_key} in dictionary "
                 f"passed to this Transform! Got {list(data.keys())}."
             )
         
         mixture = data[self.mix_key]
+
+        mix_stft = mixture.stft()
+        mix_magnitude = np.abs(mix_stft)
+        mix_angle = np.angle(mix_stft)
+        data['mix_magnitude'] = mix_magnitude
+
+        if self.source_key not in data:
+            return data
+
         _sources = data[self.source_key]
         source_names = sorted(list(_sources.keys()))
 
@@ -271,16 +284,10 @@ class PhaseSensitiveSpectrumApproximation(object):
             sources[key] = _sources[key]
         data[self.source_key] = sources
 
-        mixture.stft_params = self.stft_params
-        mix_stft = mixture.stft()
-        mix_magnitude = np.abs(mix_stft)
-        mix_angle = np.angle(mix_stft)
-
         source_angles = []
         source_magnitudes = []
         for key in source_names:
             s = sources[key]
-            s.stft_params = self.stft_params
             _stft = s.stft()
             source_magnitudes.append(np.abs(_stft))
             source_angles.append(np.angle(_stft))
@@ -307,14 +314,13 @@ class PhaseSensitiveSpectrumApproximation(object):
         )
         
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)
-        data['mix_magnitude'] = mix_magnitude
         data['source_magnitudes'] = source_magnitudes
+
         return data
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
-            f"stft_params = {self.stft_params}, "
             f"mix_key = {self.mix_key}, "
             f"source_key = {self.source_key}"
             f")"
@@ -377,15 +383,15 @@ class ToSeparationModel(object):
         return f"{self.__class__.__name__}()"
 
 class Compose(object):
-    """Composes several transforms together. Copied from torchvision implementation.
+    """Composes several transforms together. Inspired by torchvision implementation.
 
     Args:
         transforms (list of ``Transform`` objects): list of transforms to compose.
 
     Example:
         >>> transforms.Compose([
-        >>>     transforms.CenterCrop(10),
-        >>>     transforms.ToTensor(),
+        >>>     transforms.MagnitudeSpectrumApproximation(),
+        >>>     transforms.ToSeparationModel(),
         >>> ])
     """
 

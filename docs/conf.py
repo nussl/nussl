@@ -60,7 +60,7 @@ extensions = [
 
 autoapi_type = 'python'
 autoapi_dirs = ['../nussl']
-autoapi_ignore = ['*/separation/*', '*/ml/*']
+autoapi_ignore = ['*/separation/*']
 autoapi_add_toctree_entry = False
 autoapi_template_dir = '_templates/'
 autoapi_options = [

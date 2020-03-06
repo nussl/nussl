@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 from .. import AudioSignal, STFTParams
 from . import transforms as tfm
+import warnings
 
 class BaseDataset(Dataset):
     """
@@ -35,22 +36,41 @@ class BaseDataset(Dataset):
     
     Args:
         folder (str): location that should be processed to produce the list of files
+
+        transform (transforms.* object, optional): A transforms to apply to the output of
+        ``self.process_item``. If using transforms.Compose, each transform will be
+        applied in sequence. Defaults to None.
+
         sample_rate (int, optional): Sample rate to use for each audio files. If
-            audio file sample rate doesn't match, it will be resampled on the fly.
-            If None, uses the default sample rate. Defaults to None.
-        transforms (list, optional): List of transforms to apply to the output of
-            ``self.process_item`` in sequence. Defaults to None.
+        audio file sample rate doesn't match, it will be resampled on the fly.
+        If None, uses the default sample rate. Defaults to None.
+
+        stft_params (STFTParams, optional): STFTParams object defining window_length,
+        hop_length, and window_type that will be set for each AudioSignal object. 
+        Defaults to None (32ms window length, 8ms hop, 'hann' window).
+
+        num_channels (int, optional): Number of channels to make each AudioSignal
+        object conform to. If an audio signal in your dataset has fewer channels
+        than ``num_channels``, a warning is raised, as the behavior in this case
+        is undefined. Defaults to None.
+
+        strict_sample_rate (bool, optional): Whether to raise an error if 
     
     Raises:
         DataSetException: Exceptions are raised if the output of the implemented
             functions by the subclass don't match the specification.
     """
-    def __init__(self, folder, sample_rate=None, transforms=None):
+    def __init__(self, folder, transform=None, sample_rate=None, stft_params=None,
+                 num_channels=None, strict_sample_rate=True):
         self.folder = folder
-        self.sample_rate = sample_rate
-        transforms = transforms if transforms else []
-        self.transforms = tfm.Compose(transforms)
+        self.transform = transform
         self.items = self.get_items(self.folder)
+
+        self.stft_params = stft_params
+        self.sample_rate = sample_rate
+        self.num_channels = num_channels
+        self.strict_sample_rate = strict_sample_rate
+
         if not isinstance(self.items, list):
             raise DataSetException("Output of self.get_items must be a list!")
 
@@ -96,15 +116,20 @@ class BaseDataset(Dataset):
                 item after being put through the set of transforms (if any are
                 defined).
         """
-        processed_item = self.process_item(self.items[i])
+        data = self.process_item(self.items[i])
 
-        if not isinstance(processed_item, dict):
+        if not isinstance(data, dict):
             raise DataSetException(
                 "The output of process_item must be a dictionary!")
         
-        output = self.transforms(processed_item)
+        if self.transform:
+            data = self.transform(data)
 
-        return output
+            if not isinstance(data, dict):
+                raise tfm.TransformException(
+                    "The output of transform must be a dictionary!")
+
+        return data
 
     def process_item(self, item):
         """Each file returned by get_items is processed by this function. For example,
@@ -123,23 +148,19 @@ class BaseDataset(Dataset):
         """
         raise NotImplementedError()
 
-    def _load_audio_file(self, path_to_audio_file, sample_rate=None):
+    def _load_audio_file(self, path_to_audio_file):
         """
         Loads audio file at given path. Uses AudioSignal to load the audio data
         from disk.
 
         Args:
             path_to_audio_file: relative or absolute path to file to load
-            sample_rate (int, optional): the sample rate at which to load
-                the audio file. If None, self.sample_rate or the sample rate of 
-                the actual file is used. Defaults to None.
 
         Returns:
             AudioSignal: loaded AudioSignal object of path_to_audio_file
         """
-        sample_rate = sample_rate if sample_rate else self.sample_rate
-        audio_signal = AudioSignal(
-            path_to_audio_file, sample_rate=sample_rate)
+        audio_signal = AudioSignal(path_to_audio_file)
+        self._setup_audio_signal(audio_signal)
         return audio_signal
     
     def _load_audio_from_array(self, audio_data, sample_rate=None):
@@ -149,19 +170,68 @@ class BaseDataset(Dataset):
         
         Args:
             audio_data (np.ndarray): numpy array containing the samples containing
-                the audio data.
+            the audio data.
+
             sample_rate (int): the sample rate at which to load the audio file. 
-                 If None, self.sample_rate or the sample rate of the actual file is used. 
-                 Defaults to None.
+            If None, self.sample_rate or the sample rate of the actual file is used. 
+            Defaults to None.
         
         Returns:
             AudioSignal: loaded AudioSignal object of audio_data
         """
         sample_rate = sample_rate if sample_rate else self.sample_rate
         audio_signal = AudioSignal(
-            audio_data_array=audio_data, sample_rate=sample_rate
-        )
-        return audio_signal    
+            audio_data_array=audio_data, sample_rate=sample_rate)
+        self._setup_audio_signal(audio_signal)
+        return audio_signal
+
+    def _setup_audio_signal(self, audio_signal):
+        """
+        You will want every item from a dataset to be uniform in sample rate, STFT
+        parameters, and number of channels. This function takes an audio signal 
+        object loaded by the dataset and uses it to set the sample rate, STFT parameters,
+        and the number of channels. If ``self.sample_rate``, ``self.stft_params``, and
+        ``self.num_channels`` are set at construction time of the dataset, then the
+        opposite happens - attributes of the AudioSignal object are set to the desired
+        values.
+        
+        Args:
+            audio_signal (AudioSignal): AudioSignal object to query to set the parameters
+            of this dataset or to set the parameters of, according to what is in the 
+            dataset.
+        """
+
+        # set audio signal attributes to requested values, if they exist
+        if self.stft_params:
+            audio_signal.stft_params = self.stft_params
+        else:
+            self.stft_params = audio_signal.stft_params
+
+        if self.sample_rate and self.sample_rate != audio_signal.sample_rate:
+            if self.strict_sample_rate:
+                raise DataSetException(
+                    f"All audio files should have been the same sample rate already " 
+                    f"because self.strict_sample_rate = True. Please resample or "
+                    f"turn set self.strict_sample_rate = False"
+                )
+            audio_signal.resample(self.sample_rate)
+                
+        else:
+            self.sample_rate = audio_signal.sample_rate
+
+        if self.num_channels:
+            if audio_signal.num_channels > self.num_channels:
+                # pick the first ``self.num_channels`` channels 
+                audio_signal.audio_data = audio_signal.audio_data[:self.num_channels]
+            elif audio_signal.num_channels < self.num_channels:
+                warnings.warn(
+                    f"AudioSignal had {audio_signal.num_channels} channels "
+                    f"but self.num_channels = {self.num_channels}. Unsure "
+                    f"of what to do, so warning. You might want to make sure "
+                    f"your dataset is uniform!"
+                )
+        else:
+            self.num_channels = audio_signal.num_channels
 
 class DataSetException(Exception):
     """

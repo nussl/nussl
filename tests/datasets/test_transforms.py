@@ -51,8 +51,12 @@ def test_transform_msa_psa(musdb_tracks):
     assert msa.__class__.__name__ in str(msa)
     assert psa.__class__.__name__ in str(psa)
 
-    pytest.raises(TransformException, psa, {'mix': 'blah'})
-    pytest.raises(TransformException, msa, {'mix': 'blah'})
+    pytest.raises(TransformException, psa, {'sources': 'blah'})
+    pytest.raises(TransformException, msa, {'sources': 'blah'})
+
+    _data = {'mix': mix}
+    output = msa(_data)
+    assert np.allclose(output['mix_magnitude'], np.abs(mix.stft()))
 
     output = msa(data)
     assert np.allclose(output['mix_magnitude'], np.abs(mix.stft()))
@@ -77,6 +81,10 @@ def test_transform_msa_psa(musdb_tracks):
             output['source_magnitudes'])
     )
     msa_scores = separate_and_evaluate(mix, data['sources'], mask_data)
+
+    _data = {'mix': mix}
+    output = psa(_data)
+    assert np.allclose(output['mix_magnitude'], np.abs(mix.stft()))
 
     output = psa(data)
     assert np.allclose(output['mix_magnitude'], np.abs(mix.stft()))
@@ -140,8 +148,18 @@ def test_transform_compose(musdb_tracks):
 
     data = {
         'mix': mix,
-        'sources': sources
+        'sources': sources,
+        'metadata': {
+            'labels': ['bass', 'drums', 'other', 'vocals']
+        }
     }
+
+    class _BadTransform(object):
+        def __call__(self, data):
+            return 'not a dictionary'
+
+    com = transforms.Compose([_BadTransform()])
+    pytest.raises(TransformException, com, data)
 
     msa = transforms.MagnitudeSpectrumApproximation()
     tfm = transforms.SumSources(
@@ -155,6 +173,8 @@ def test_transform_compose(musdb_tracks):
     data = com(data)
 
     assert np.allclose(data['mix_magnitude'], np.abs(mix.stft()))
+    assert data['metadata']['labels'] == [
+        'bass', 'drums', 'other', 'vocals', 'accompaniment']
 
     mask_data = (
         data['source_magnitudes'] / 

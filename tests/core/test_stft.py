@@ -60,8 +60,9 @@ def test_stft_istft_combo(combo, signals):
     win_length = combo[0]
     hop_length = int(combo[0] * combo[1])
     win_type = combo[2]
+    window = nussl.AudioSignal.get_window(combo[2], win_length)
 
-    if not check_COLA(win_type, win_length, win_length - hop_length):
+    if not check_COLA(window, win_length, win_length - hop_length):
         assert True
 
     for signal in signals:

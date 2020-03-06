@@ -4,15 +4,15 @@ import numpy as np
 from itertools import permutations, combinations
 
 class DeepClusteringLoss(nn.Module):
-    def __init__(self):
-        """
-        Computes the deep clustering loss with weights. Equation (7) in [1].
+    """
+    Computes the deep clustering loss with weights. Equation (7) in [1].
 
-        [1] Wang, Z. Q., Le Roux, J., & Hershey, J. R. (2018, April).
-            Alternative Objective Functions for Deep Clustering.
-            In Proc. IEEE International Conference on Acoustics,  Speech
-            and Signal Processing (ICASSP).
-        """
+    [1] Wang, Z. Q., Le Roux, J., & Hershey, J. R. (2018, April).
+        Alternative Objective Functions for Deep Clustering.
+        In Proc. IEEE International Conference on Acoustics,  Speech
+        and Signal Processing (ICASSP).
+    """
+    def __init__(self):
         super(DeepClusteringLoss, self).__init__()
 
     def forward(self, embedding, assignments, weights):
@@ -36,15 +36,18 @@ class DeepClusteringLoss(nn.Module):
         return loss * norm
 
 class PermutationInvariantLoss(nn.Module):
+    """
+    Computes the Permutation Invariant Loss (PIT) [1] by permuting the estimated 
+    sources and the reference sources. Takes the best permutation and only backprops
+    the loss from that.
+    
+    [1] Yu, Dong, Morten Kolbæk, Zheng-Hua Tan, and Jesper Jensen. 
+        "Permutation invariant training of deep models for speaker-independent 
+        multi-talker speech separation." In 2017 IEEE International Conference on 
+        Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
+    """
     def __init__(self, loss_function):
-        """Computes the Permutation Invariant Loss (PIT) [1] by permuting the estimated 
-        sources and the reference sources. Takes the best permutation and only backprops
-        the loss from that.
-        [1] Yu, Dong, Morten Kolbæk, Zheng-Hua Tan, and Jesper Jensen. 
-            "Permutation invariant training of deep models for speaker-independent 
-            multi-talker speech separation." In 2017 IEEE International Conference on 
-            Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
-        """
+        
         super(PermutationInvariantLoss, self).__init__()
         self.loss_function = loss_function
         self.loss_function.reduction = 'none'
@@ -67,13 +70,14 @@ class PermutationInvariantLoss(nn.Module):
         return loss
 
 class CombinationInvariantLoss(nn.Module):
+    """
+    Variant on Permutation Invariant Loss where instead a combination of the
+    sources output by the model are used. This way a model can output more 
+    sources than there are in the ground truth. A subset of the output sources
+    will be compared using Permutation Invariant Loss with the ground truth
+    estimates.
+    """
     def __init__(self, loss_function):
-        """Variant on Permutation Invariant Loss where instead a combination of the
-        sources output by the model are used. This way a model can output more 
-        sources than there are in the ground truth. A subset of the output sources
-        will be compared using Permutation Invariant Loss with the ground truth
-        estimates.
-        """
         super(CombinationInvariantLoss, self).__init__()
         self.loss_function = loss_function
         self.loss_function.reduction = 'none'

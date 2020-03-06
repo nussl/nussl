@@ -7,55 +7,55 @@ from itertools import chain
 import os
 
 class SeparationModel(nn.Module):
+    """
+    SeparationModel takes a configuration file or dictionary that describes the model
+    structure, which is some combination of MelProjection, Embedding, RecurrentStack,
+    ConvolutionalStack, and other modules found in ``nussl.ml.networks.modules``. 
+
+    References:
+        Hershey, J. R., Chen, Z., Le Roux, J., & Watanabe, S. (2016, March).
+        Deep clustering: Discriminative embeddings for segmentation and separation.
+        In Acoustics, Speech and Signal Processing (ICASSP),
+        2016 IEEE International Conference on (pp. 31-35). IEEE.
+
+        Luo, Y., Chen, Z., Hershey, J. R., Le Roux, J., & Mesgarani, N. (2017, March).
+        Deep clustering and conventional networks for music separation: Stronger together.
+        In Acoustics, Speech and Signal Processing (ICASSP),
+        2017 IEEE International Conference on (pp. 61-65). IEEE.
+
+    Args:
+        config: (str, dict) Either a config dictionary that defines the model and its
+        connections, or the path to a json file containing the dictionary. If the
+        latter, the path will be loaded and used.
+
+        extra_modules (list): A list of classes that are to be tacked onto the default
+        classes that are used to instantiate each nn.Module that is used in the
+        network.
+
+    Examples:
+        >>> args = {
+        >>>    'num_frequencies': 512,
+        >>>    'num_mels': 128,
+        >>>    'sample_rate': 44100,
+        >>>    'hidden_size': 300,
+        >>>    'bidirectional': True,
+        >>>    'num_layers': 4,
+        >>>    'embedding_size': 20,
+        >>>    'num_sources': 4,
+        >>>    'embedding_activation': ['sigmoid', 'unitnorm'],
+        >>>    'mask_activation': ['softmax']
+        >>> }
+        >>> config = helpers.build_chimera_config(args)
+        >>> with open('config.json', 'w') as f:
+        >>>    json.dump(config, f)
+        >>> model = SeparationModel('config.json')
+        >>> test_data = np.random.random((1, 100, 512))
+        >>> data = torch.from_numpy(test_data).float()
+        >>> output = model({'log_spectrogram': data,
+        >>>                'magnitude_spectrogram': data})
+
+    """
     def __init__(self, config, extra_modules=None):
-        """
-        SeparationModel takes a configuration file or dictionary that describes the model
-        structure, which is some combination of MelProjection, Embedding, RecurrentStack,
-        ConvolutionalStack, and other modules found in ``nussl.ml.networks.modules``. 
-
-        References:
-            Hershey, J. R., Chen, Z., Le Roux, J., & Watanabe, S. (2016, March).
-            Deep clustering: Discriminative embeddings for segmentation and separation.
-            In Acoustics, Speech and Signal Processing (ICASSP),
-            2016 IEEE International Conference on (pp. 31-35). IEEE.
-
-            Luo, Y., Chen, Z., Hershey, J. R., Le Roux, J., & Mesgarani, N. (2017, March).
-            Deep clustering and conventional networks for music separation: Stronger together.
-            In Acoustics, Speech and Signal Processing (ICASSP),
-            2017 IEEE International Conference on (pp. 61-65). IEEE.
-
-        Args:
-            config: (str, dict) Either a config dictionary that defines the model and its
-            connections, or the path to a json file containing the dictionary. If the
-            latter, the path will be loaded and used.
-
-            extra_modules (list): A list of classes that are to be tacked onto the default
-            classes that are used to instantiate each nn.Module that is used in the
-            network.
-
-        Examples:
-            >>> args = {
-            >>>    'num_frequencies': 512,
-            >>>    'num_mels': 128,
-            >>>    'sample_rate': 44100,
-            >>>    'hidden_size': 300,
-            >>>    'bidirectional': True,
-            >>>    'num_layers': 4,
-            >>>    'embedding_size': 20,
-            >>>    'num_sources': 4,
-            >>>    'embedding_activation': ['sigmoid', 'unitnorm'],
-            >>>    'mask_activation': ['softmax']
-            >>> }
-            >>> config = helpers.build_chimera_config(args)
-            >>> with open('config.json', 'w') as f:
-            >>>    json.dump(config, f)
-            >>> model = SeparationModel('config.json')
-            >>> test_data = np.random.random((1, 100, 512))
-            >>> data = torch.from_numpy(test_data).float()
-            >>> output = model({'log_spectrogram': data,
-            >>>                'magnitude_spectrogram': data})
-
-        """
         super(SeparationModel, self).__init__()
         if type(config) is str:
             if os.path.exists(config):

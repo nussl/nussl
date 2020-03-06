@@ -9,3 +9,4 @@ numcodecs==0.6.2
 ffmpy
 torch
 pytorch-ignite
+tensorboard

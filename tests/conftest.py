@@ -163,14 +163,12 @@ def one_item(scaper_folder):
         window_length=512,
         hop_length=128
     )
-    tfms = [
-        transforms.PhaseSensitiveSpectrumApproximation(
-            stft_params=stft_params
-        ),
+    tfms = transforms.Compose([
+        transforms.PhaseSensitiveSpectrumApproximation(),
         transforms.ToSeparationModel()
-    ]
+    ])
     dataset = nussl.datasets.Scaper(
-        scaper_folder, transforms=tfms)
+        scaper_folder, transform=tfms, stft_params=stft_params)
     i = np.random.randint(len(dataset))
     data = dataset[i]
     for k in data:

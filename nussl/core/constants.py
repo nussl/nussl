@@ -27,9 +27,12 @@ WINDOW_RECTANGULAR = 'rectangular'  #: (str): Name for calling Rectangular windo
 WINDOW_HANN = scipy.signal.hann.__name__  #: (str): Name for calling Hann window. 'hann'
 WINDOW_BLACKMAN = scipy.signal.blackman.__name__  #: (str): Name for calling Blackman window. 'blackman'
 WINDOW_TRIANGULAR = 'triang'  #: (str): Name for calling Triangular window. 'triangular'
+WINDOW_SQRT_HANN = 'sqrt_hann' #: (str): Name for calling square root of hann window. 'sqrt_hann'.
 
 WINDOW_DEFAULT = WINDOW_HANN  #: (str): Default window, Hamming.
-ALL_WINDOWS = [WINDOW_HAMMING, WINDOW_RECTANGULAR, WINDOW_HANN, WINDOW_BLACKMAN, WINDOW_TRIANGULAR]
+ALL_WINDOWS = [
+    WINDOW_HAMMING, WINDOW_RECTANGULAR, WINDOW_HANN, WINDOW_BLACKMAN, 
+    WINDOW_TRIANGULAR, WINDOW_SQRT_HANN]
 """list(str): list of all available windows in *nussl*
 """
 

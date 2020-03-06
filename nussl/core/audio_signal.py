@@ -116,30 +116,15 @@ from . import masks
 
 __all__ = ['AudioSignal']
 
-
-_STFTParams = namedtuple('STFTParams',
-    ['window_length', 'hop_length', 'window_type'])
-
-def STFTParams(window_length=None, hop_length=None, window_type=None):
-    """
-    Wrapper for a NamedTuple _STFTParams which is used to contain all
-    STFT related parameters. The wrapper is so that default arguments
-    can be done.
-    
-    Args:
-        window_length (int): Amount of time (in samples) to do an FFT on. Defaults to None.
-        hop_length (int): Amount of time (in samples) to skip ahead for the new FFT.
-            Defaults to None.
-        window_type (str): Type of scaling to apply to the window. Defaults to None.
-    
-    Returns:
-        _STFTParams: Container that holds the STFT Parameters.
-    """
-    return _STFTParams(
-        window_length=window_length,
-        hop_length=hop_length,
-        window_type=window_type
-    )
+"""
+STFTParams object is a container that holds STFT parameters - window_length, 
+hop_length, and window_type. Not all parameters need to be specified. Ones that
+are not specified will be inferred by the AudioSignal parameters and the settings
+in nussl.constants.
+"""
+STFTParams = namedtuple('STFTParams',
+    ['window_length', 'hop_length', 'window_type'],
+    defaults=(None, None, None))
 
 
 class AudioSignal(object):
@@ -512,7 +497,7 @@ class AudioSignal(object):
             value (STFTParams or None): the STFTParams object (or None) that self.stft_params
                 should be set to.
         """
-        if value and not isinstance(value, _STFTParams):
+        if value and not isinstance(value, STFTParams):
             raise ValueError("stft_params must be of type STFTParams or None!")
 
         default_win_len = int(
@@ -535,8 +520,12 @@ class AudioSignal(object):
                 value[key] = default_stft_params[key]
         
         self._stft_params = STFTParams(**value)
+        if self._stft_params.window_type == 'sqrt_hann':
+            window_type = constants.WINDOW_HANN
+        else:
+            window_type = self._stft_params.window_type
         check_COLA(
-            self._stft_params.window_type,
+            window_type,
             self._stft_params.window_length,
             self._stft_params.hop_length)
 
@@ -936,6 +925,29 @@ class AudioSignal(object):
     #               STFT Utilities
     ##################################################
 
+    @staticmethod
+    def get_window(window_type, window_length):
+        """
+        Wrapper around scipy.signal.get_window so one can also get the 
+        popular sqrt-hann window.
+        
+        Args:
+            window_type (str): Type of window to get (see constants.ALL_WINDOW).
+            window_length (int): Length of the window
+        
+        Returns:
+            np.ndarray: Window returned by scipy.signa.get_window
+        """
+        if window_type == constants.WINDOW_SQRT_HANN:
+            window = np.sqrt(scipy.signal.get_window(
+                'hann', window_length
+            ))
+        else:
+            window = scipy.signal.get_window(
+                window_type, window_length)
+        
+        return window
+
     def stft(self, window_length=None, hop_length=None, window_type=None, overwrite=True):
         """
         Computes the Short Time Fourier Transform (STFT) of :attr:`audio_data`.
@@ -978,9 +990,11 @@ class AudioSignal(object):
 
         stft_data = []
 
+        window = self.get_window(window_type, window_length)
+
         for chan in self.get_channels():
             _, _, _stft = scipy.signal.stft(
-                chan, fs=self.sample_rate, window=window_type, 
+                chan, fs=self.sample_rate, window=window, 
                 nperseg=window_length, noverlap=window_length-hop_length)
             stft_data.append(_stft)
 
@@ -1034,10 +1048,12 @@ class AudioSignal(object):
 
         signals = []
 
+        window = self.get_window(window_type, window_length)
+
         for stft in self.get_stft_channels():
             _, _signal = scipy.signal.istft(
-                stft, fs=self.sample_rate, window=window_type, nperseg=window_length,
-                noverlap=window_length-hop_length)
+                stft, fs=self.sample_rate, window=window, 
+                nperseg=window_length, noverlap=window_length-hop_length)
 
             signals.append(_signal)
 
