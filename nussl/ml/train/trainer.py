@@ -30,11 +30,11 @@ def cache_dataset(dataset, log_frequency=.1):
     
     Args:
         dataset (nussl.datasets.BaseDataset): Must be a subclass of 
-        `nussl.datasets.BaseDataset`.
+          `nussl.datasets.BaseDataset`.
 
         log_frequency (float, optional): How often to log progress, as a fraction between
-        0.0 and 1.0 of the total dataset length. Defaults to .1 
-        (10x over the course of caching).
+          0.0 and 1.0 of the total dataset length. Defaults to .1 
+          (10x over the course of caching).
     """
     def dummy_process(engine, data):
         pass
@@ -73,11 +73,11 @@ def create_train_and_validation_engines(train_func, val_func=None, val_data=None
     
     Args:
         train_func (func): Function that provides the closure for training for
-        a single batch.
+          a single batch.
         val_func (func, optional): Function that provides the closure for
-        validating a single batch. Defaults to None.
+          validating a single batch. Defaults to None.
         val_data (torch.utils.data.Dataset, optional): The validation data. 
-        Defaults to None.
+          Defaults to None.
         device (str, optional): Device to move tensors to. Defaults to 'cpu'.
     """
     # Set up engines for training and validation
@@ -162,16 +162,16 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
 
     Args:
         model (torch.nn.Module): Model that is being trained (typically a SeparationModel).
-        optimizer (torch.optim.Optimizer): Optimizer being used to train.
+          optimizer (torch.optim.Optimizer): Optimizer being used to train.
 
         train_data (BaseDataset): dataset that is being used to train the model. This is to
-        save additional metadata information alongside the model checkpoint such as the
-        STFTParams, dataset folder, length, list of transforms, etc.
+          save additional metadata information alongside the model checkpoint such as the
+          STFTParams, dataset folder, length, list of transforms, etc.
 
         trainer (ignite.Engine): Engine for trainer
 
         validator (ignite.Engine, optional): Engine for validation. 
-        Defaults to None.
+          Defaults to None.
     """ 
     # When the trainer finishes an epoch, it should validate and save 
     # the model.
@@ -268,7 +268,7 @@ def add_stdout_handler(trainer, validator=None):
         trainer (ignite.Engine): Engine for trainer
 
         validator (ignite.Engine, optional): Engine for validation. 
-        Defaults to None.
+          Defaults to None.
     """
     # Set up timers for overall time taken and each epoch
     overall_timer = Timer(average=False)
@@ -323,7 +323,7 @@ def add_tensorboard_handler(output_folder, engine):
     
     Args:
         output_folder (str): Where the tensorboard logs should go. The output
-        logs will go into a subfolder 'tensorboard'.
+          logs will go into a subfolder 'tensorboard'.
 
         trainer (ignite.Engine): The engine to log.
     """

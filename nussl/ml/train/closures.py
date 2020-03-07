@@ -1,5 +1,7 @@
 import torch
 from . import loss
+from collections import namedtuple
+
 
 class Closure(object):
     """
@@ -43,11 +45,8 @@ class Closure(object):
 
     """
     def __init__(self, loss_dictionary):
-        if not isinstance(loss_dictionary, dict):
-            raise ClosureException(
-                "loss_dictionary must be a dictionary specifying the "
-                "class and arguments for each loss function! ")
-        
+        self._validate_loss_dictionary(loss_dictionary)
+
         self.losses = []
         for key, val in loss_dictionary.items():
             loss_class = getattr(loss, key)
@@ -61,6 +60,40 @@ class Closure(object):
             _loss = (
                 loss_class(*args, **kwargs), weight, keys, key)
             self.losses.append(_loss)
+
+    def _validate_loss_dictionary(self, loss_dictionary):
+        if not isinstance(loss_dictionary, dict):
+            raise ClosureException(
+                "loss_dictionary must be a dictionary specifying the "
+                "class and arguments for each loss function! ")
+
+        for key, val in loss_dictionary.items():
+            if key not in dir(loss):
+                raise ClosureException(
+                    f"Loss function {key} not found in loss which has {dir(loss)}")
+
+            if not isinstance(val, dict):
+                raise ClosureException(
+                    "Each key in loss dictionary must point to a dict!")
+
+            for val_key in val:
+                if val_key not in ['weight', 'args', 'kwargs']:
+                    raise ClosureException(
+                        f"{key} in loss_dictionary not in ['weight', 'args', 'kwargs'")
+                elif val_key == 'weight':
+                    if not isinstance(val[val_key], float) and not isinstance(
+                        val[val_key], int):
+                        raise ClosureException(
+                            f"weight can only be an int or a float")
+                elif val_key == 'args':
+                    if not isinstance(val[val_key], list):
+                        raise ClosureException(
+                            f"args must be a list")
+                elif val_key == 'kwargs':
+                    if not isinstance(val[val_key], dict):
+                        raise ClosureException(
+                            "kwargs must be a dict")
+
     
     def __call__(self, engine, data):
         raise NotImplementedError()

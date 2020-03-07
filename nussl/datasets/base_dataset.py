@@ -38,21 +38,21 @@ class BaseDataset(Dataset):
         folder (str): location that should be processed to produce the list of files
 
         transform (transforms.* object, optional): A transforms to apply to the output of
-        ``self.process_item``. If using transforms.Compose, each transform will be
-        applied in sequence. Defaults to None.
+          ``self.process_item``. If using transforms.Compose, each transform will be
+          applied in sequence. Defaults to None.
 
         sample_rate (int, optional): Sample rate to use for each audio files. If
-        audio file sample rate doesn't match, it will be resampled on the fly.
-        If None, uses the default sample rate. Defaults to None.
+          audio file sample rate doesn't match, it will be resampled on the fly.
+          If None, uses the default sample rate. Defaults to None.
 
         stft_params (STFTParams, optional): STFTParams object defining window_length,
-        hop_length, and window_type that will be set for each AudioSignal object. 
-        Defaults to None (32ms window length, 8ms hop, 'hann' window).
+          hop_length, and window_type that will be set for each AudioSignal object. 
+          Defaults to None (32ms window length, 8ms hop, 'hann' window).
 
         num_channels (int, optional): Number of channels to make each AudioSignal
-        object conform to. If an audio signal in your dataset has fewer channels
-        than ``num_channels``, a warning is raised, as the behavior in this case
-        is undefined. Defaults to None.
+          object conform to. If an audio signal in your dataset has fewer channels
+          than ``num_channels``, a warning is raised, as the behavior in this case
+          is undefined. Defaults to None.
 
         strict_sample_rate (bool, optional): Whether to raise an error if 
     
@@ -181,7 +181,7 @@ class BaseDataset(Dataset):
 
         Args:
             item (object): the item that will be processed by this function. Input depends
-                on implementation of ``self.get_items``.
+              on implementation of ``self.get_items``.
 
         Returns:
             This should return a dictionary that gets processed by the transforms.
@@ -210,11 +210,11 @@ class BaseDataset(Dataset):
         
         Args:
             audio_data (np.ndarray): numpy array containing the samples containing
-            the audio data.
+              the audio data.
 
             sample_rate (int): the sample rate at which to load the audio file. 
-            If None, self.sample_rate or the sample rate of the actual file is used. 
-            Defaults to None.
+              If None, self.sample_rate or the sample rate of the actual file is used. 
+              Defaults to None.
         
         Returns:
             AudioSignal: loaded AudioSignal object of audio_data
@@ -237,8 +237,8 @@ class BaseDataset(Dataset):
         
         Args:
             audio_signal (AudioSignal): AudioSignal object to query to set the parameters
-            of this dataset or to set the parameters of, according to what is in the 
-            dataset.
+              of this dataset or to set the parameters of, according to what is in the 
+              dataset.
         """
 
         # set audio signal attributes to requested values, if they exist

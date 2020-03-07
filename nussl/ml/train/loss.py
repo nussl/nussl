@@ -22,7 +22,7 @@ class SISDRLoss(nn.Module):
     
     Args:
         scaling (bool, optional): Whether to use scale-invariant (True) or
-        scale-dependent (False) SDR. Defaults to True.
+          scale-dependent SDR. Defaults to True.
     """
     DEFAULT_KEYS = {'estimates': 'estimates', 'references': 'references'}
 
@@ -64,9 +64,9 @@ class DeepClusteringLoss(nn.Module):
     Computes the deep clustering loss with weights. Equation (7) in [1].
 
     [1] Wang, Z. Q., Le Roux, J., & Hershey, J. R. (2018, April).
-        Alternative Objective Functions for Deep Clustering.
-        In Proc. IEEE International Conference on Acoustics,  Speech
-        and Signal Processing (ICASSP).
+    Alternative Objective Functions for Deep Clustering.
+    In Proc. IEEE International Conference on Acoustics,  Speech
+    and Signal Processing (ICASSP).
     """
     DEFAULT_KEYS = {
         'embedding': 'embedding', 
@@ -104,9 +104,9 @@ class PermutationInvariantLoss(nn.Module):
     the loss from that.
     
     [1] Yu, Dong, Morten Kolbæk, Zheng-Hua Tan, and Jesper Jensen. 
-        "Permutation invariant training of deep models for speaker-independent 
-        multi-talker speech separation." In 2017 IEEE International Conference on 
-        Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
+    "Permutation invariant training of deep models for speaker-independent 
+    multi-talker speech separation." In 2017 IEEE International Conference on 
+    Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
     """
     DEFAULT_KEYS = {'estimates': 'estimates', 'source_magnitudes': 'targets'}
 

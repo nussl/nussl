@@ -62,7 +62,45 @@ def test_base_closure():
         }
     }
 
+    # checking validation
     pytest.raises(ClosureException, ml.train.closures.Closure, ['not a dict'])
+    pytest.raises(ClosureException, ml.train.closures.Closure, {'no_matching_loss': {}})
+    pytest.raises(ClosureException, ml.train.closures.Closure, 
+        {
+            'DeepClusteringLoss': ['not a dict']
+        }
+    )
+    pytest.raises(ClosureException, ml.train.closures.Closure, 
+        {
+            'DeepClusteringLoss': {
+                'bad_val_key': []
+            }
+        }
+    )
+    pytest.raises(ClosureException, ml.train.closures.Closure, 
+        {
+            'DeepClusteringLoss': {
+                'weight': 'not a float or int'
+            }
+        }
+    )
+    pytest.raises(ClosureException, ml.train.closures.Closure, 
+        {
+            'DeepClusteringLoss': {
+                'weight': 1,
+                'args': {'not a list': 'woo'}
+            }
+        }
+    )
+    pytest.raises(ClosureException, ml.train.closures.Closure, 
+        {
+            'DeepClusteringLoss': {
+                'weight': 1,
+                'args': [],
+                'kwargs': ['not a dict']
+            }
+        }
+    ) 
 
     closure = ml.train.closures.Closure(loss_dictionary)
     loss_b = closure.compute_loss(output, target)
@@ -114,6 +152,9 @@ def test_train_and_validate_closure():
     closure = ml.train.closures.TrainClosure(
         loss_dictionary, optimizer, model)
     
+    # need a hack here to put "None" since closure expects an
+    # engine within an ignite object, but we're not using
+    # ignite in the tests
     init_loss = closure(None, data)
 
     for i in range(100):

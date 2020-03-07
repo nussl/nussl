@@ -60,9 +60,9 @@ class SumSources(object):
     Args:
         groupings (list): a list of lists telling how to group each sources. 
         group_names (list, optional): A list containing the names of each group, or None. 
-            Defaults to None.
+          Defaults to None.
         source_key (str, optional): The key to look for in the data containing the list of
-            source AudioSignals. Defaults to 'sources'.
+          source AudioSignals. Defaults to 'sources'.
     
     Raises:
         TransformException: if groupings is not a list
@@ -187,13 +187,13 @@ class MagnitudeSpectrumApproximation(object):
     
     Args:
         mix_key (str, optional): The key to look for in data for the mixture AudioSignal. 
-            Defaults to 'mix'.
+          Defaults to 'mix'.
         source_key (str, optional): The key to look for in the data containing the list of
-            source AudioSignals. Defaults to 'sources'.
+          source AudioSignals. Defaults to 'sources'.
     
     Raises:
             TransformException: if the expected keys are not in the dictionary, an
-                Exception is raised.
+              Exception is raised.
         
     Returns:
         data: Modified version of the input dictionary.
@@ -281,13 +281,13 @@ class PhaseSensitiveSpectrumApproximation(object):
     
     Args:
         mix_key (str, optional): The key to look for in data for the mixture AudioSignal. 
-            Defaults to 'mix'.
+          Defaults to 'mix'.
         source_key (str, optional): The key to look for in the data containing the list of
-            source AudioSignals. Defaults to 'sources'.
+          source AudioSignals. Defaults to 'sources'.
     
     Raises:
             TransformException: if the expected keys are not in the dictionary, an
-                Exception is raised.
+              Exception is raised.
         
     Returns:
         data: Modified version of the input dictionary.
@@ -371,7 +371,7 @@ class GetExcerpt(object):
     length in frames. Can be used to get L-length spectrograms from mixture and source
     spectrograms. If the data is shorter than the specified length, it
     is padded to the specified length. If it is longer, a random offset between
-    ``(0, data_length - specified_length)``is chosen. This function assumes that
+    ``(0, data_length - specified_length)`` is chosen. This function assumes that
     it is being passed data AFTER ToSeparationModel. Thus the time dimension is
     on axis=1. 
     
@@ -379,10 +379,10 @@ class GetExcerpt(object):
         excerpt_length (int): Specified length of transformed data in frames.
 
         time_dim (int): Which dimension time is on (excerpts are taken along this axis).
-        Defaults to 0.
+          Defaults to 0.
 
         time_frequency_keys (list): Which keys to look at it in the data dictionary to
-        take excerpts from.
+          take excerpts from.
     """
     def __init__(self, excerpt_length, time_dim=0, 
                 time_frequency_keys=time_frequency_keys):
@@ -432,6 +432,7 @@ class Cache(object):
     cache. A typical pipeline might look like this:
 
     .. code-block:: python
+
         dataset = datasets.Scaper('path/to/scaper/folder')
         tfm = transforms.Compose([
             transforms.PhaseSensitiveApproximation(),
@@ -440,14 +441,14 @@ class Cache(object):
             transforms.GetExcerpt()
         ])
         dataset[0] # first time will write to cache then apply GetExcerpt
-        dataset.use_cache = True # switches to reading from cache
+        dataset.cache_populated = True # switches to reading from cache
         dataset[0] # second time will read from cache then apply GetExcerpt
         dataset[1] # will error out as it wasn't written to the cache!
 
-        dataset.use_cache = False
+        dataset.cache_populated = False
         for i in range(len(dataset)):
             dataset[i] # every item will get written to cache
-        dataset.use_cache = True
+        dataset.cache_populated = True
         dataset[1] # now it exists
 
         dataset = datasets.Scaper('path/to/scaper/folder') # next time around
@@ -457,7 +458,7 @@ class Cache(object):
             transforms.Cache('~/.nussl/cache/tag', overwrite=False),
             transforms.GetExcerpt()
         ])
-        dataset.use_cache = True
+        dataset.cache_populated = True
         dataset[0] # will read from cache, which still exists from last time
     
     Args:

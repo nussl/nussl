@@ -107,12 +107,12 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
         dropout (float): Amount of dropout to be used between layers of RNN.
         embedding_size (int): Embedding dimensionality of the deep clustering network. 
         embedding_activation (list of str): Activation of the embedding ('sigmoid', 'softmax', etc.). 
-        See ``nussl.ml.networks.modules.Embedding``. 
+          See ``nussl.ml.networks.modules.Embedding``. 
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
         normalization_class (str, optional): Type of normalization to apply, either
-        'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+          'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
         mix_key (str, optional): The key to look for in the input dictionary that contains
-        the mixture spectrogram. Defaults to 'mix_magnitude'.
+          the mixture spectrogram. Defaults to 'mix_magnitude'.
     
     Returns:
         dict: A recurrent deep clustering network configuration that can be passed to

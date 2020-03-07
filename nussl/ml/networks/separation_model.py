@@ -25,12 +25,12 @@ class SeparationModel(nn.Module):
 
     Args:
         config: (str, dict) Either a config dictionary that defines the model and its
-        connections, or the path to a json file containing the dictionary. If the
-        latter, the path will be loaded and used.
+          connections, or the path to a json file containing the dictionary. If the
+          latter, the path will be loaded and used.
 
         extra_modules (list): A list of classes that are to be tacked onto the default
-        classes that are used to instantiate each nn.Module that is used in the
-        network.
+          classes that are used to instantiate each nn.Module that is used in the
+          network.
 
     Examples:
         >>> config = nussl.ml.networks.builders.build_recurrent_dpcl(
