@@ -10,6 +10,7 @@ import glob
 import nussl
 from nussl.datasets import transforms
 import numpy as np
+import torch
 
 def _unzip(path_to_zip, target_path):
     with zipfile.ZipFile(path_to_zip, 'r') as zip_ref:
@@ -173,5 +174,6 @@ def one_item(scaper_folder):
     data = dataset[i]
     for k in data:
         # fake a batch dimension
-        data[k] = data[k].unsqueeze(0)
+        if torch.is_tensor(data[k]):
+            data[k] = data[k].unsqueeze(0)
     yield data

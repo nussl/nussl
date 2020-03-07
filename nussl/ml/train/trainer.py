@@ -78,7 +78,8 @@ def create_train_and_validation_engines(train_func, val_func=None, val_data=None
     def prepare_batch(engine):
         batch = engine.state.batch
         for key in batch:
-            batch[key] = batch[key].float().to(device)
+            if torch.is_tensor(batch[key]):
+                batch[key] = batch[key].float().to(device)
         engine.state.batch = batch      
     
     # Set up stuff for bookkeeping as training progresses.
