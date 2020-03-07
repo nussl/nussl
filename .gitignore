@@ -10,7 +10,7 @@ nussl.egg-info/*
 .vscode/
 **/.ipynb_checkpoints
 tests/ignored_tests/
-.coverage
+.coverage*
 docs/_build/
 tests/local/
 nussl/ml/train/trainer copy.py

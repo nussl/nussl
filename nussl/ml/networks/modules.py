@@ -182,7 +182,8 @@ class MelProjection(nn.Module):
 
 
 class Embedding(nn.Module):
-    def __init__(self, num_features, hidden_size, embedding_size, activation, dim_to_embed=-1):
+    def __init__(self, num_features, hidden_size, embedding_size, activation, 
+                 num_audio_channels=1, dim_to_embed=-1):
         """
         Maps output from an audio representation module (e.g. RecurrentStack, 
         DilatedConvolutionalStack) to an embedding space. The output shape is 
@@ -216,6 +217,7 @@ class Embedding(nn.Module):
             nn.Linear(hidden_size, num_features * embedding_size)
         )
         self.num_features = num_features
+        self.num_audio_channels = num_audio_channels
         self.activation = activation
         self.embedding_size = embedding_size
         self.dim_to_embed = dim_to_embed
@@ -242,7 +244,8 @@ class Embedding(nn.Module):
         data = self.linear(data)
         data = data.transpose(-1, self.dim_to_embed)
 
-        shape = shape[:-1] + (self.num_features, self.embedding_size,)
+        shape = shape[:-1] + (
+            self.num_features, self.num_audio_channels, self.embedding_size,)
         data = data.view(shape)
 
         if 'sigmoid' in self.activation:
@@ -275,7 +278,7 @@ class Mask(nn.Module):
         super(Mask, self).__init__()
 
     def forward(self, mask, representation):
-        representation = representation.expand_as(mask)
+        representation = representation.unsqueeze(-1).expand_as(mask)
         return mask * representation
 
 class RecurrentStack(nn.Module):

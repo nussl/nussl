@@ -134,20 +134,20 @@ def test_ml_embedding(one_item):
             assert torch.allclose(_norm, torch.ones_like(_norm))
 
 def test_ml_mask(one_item):
-    data = one_item['mix_magnitude'].unsqueeze(-1)
-    mask = torch.randn(data.shape[:-1] + (4,))
+    data = one_item['mix_magnitude']
+    mask = torch.randn(data.shape + (4,))
 
-    masked_data = mask * data
+    masked_data = mask * data.unsqueeze(-1)
 
     module = ml.networks.modules.Mask()
     output = module(mask, data)
 
     assert torch.allclose(output, masked_data)
 
-    data = one_item['mix_magnitude'].unsqueeze(-1)
+    data = one_item['mix_magnitude']
     ibm = one_item['ideal_binary_mask']
 
-    masked_data = ibm * data
+    masked_data = ibm * data.unsqueeze(-1)
 
     module = ml.networks.modules.Mask()
     output = module(ibm, data)

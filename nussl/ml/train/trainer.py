@@ -10,7 +10,6 @@ from enum import Enum
 import os
 import numpy as np
 from nussl import STFTParams
-import jsonpickle
 
 class ValidationEvents(Enum):
     """
@@ -51,8 +50,7 @@ def cache_dataset(dataset, log_frequency=.1):
     cache.run(dataset)
     dataset.cache_populated = True
 
-def create_train_and_validation_engines(train_func, val_func=None, val_data=None, 
-                                        device='cpu'):
+def create_train_and_validation_engines(train_func, val_func=None, device='cpu'):
     """
     Helper function for creating an ignite Engine object with helpful defaults.
     This sets up an Engine that has two handlers attached to it:
@@ -76,8 +74,6 @@ def create_train_and_validation_engines(train_func, val_func=None, val_data=None
           a single batch.
         val_func (func, optional): Function that provides the closure for
           validating a single batch. Defaults to None.
-        val_data (torch.utils.data.Dataset, optional): The validation data. 
-          Defaults to None.
         device (str, optional): Device to move tensors to. Defaults to 'cpu'.
     """
     # Set up engines for training and validation
@@ -171,6 +167,9 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
         trainer (ignite.Engine): Engine for trainer
 
         validator (ignite.Engine, optional): Engine for validation. 
+          Defaults to None.
+
+        val_data (torch.utils.data.Dataset, optional): The validation data. 
           Defaults to None.
     """ 
     # When the trainer finishes an epoch, it should validate and save 

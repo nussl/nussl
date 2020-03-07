@@ -138,13 +138,12 @@ class TrainClosure(Closure):
     def __call__(self, engine, data):
         self.model.train()
         self.optimizer.zero_grad()
+
         output = self.model(data)
 
         loss = self.compute_loss(output, data)
-
         loss['loss'].backward()
         self.optimizer.step()
-
         loss = {key: loss[key].item() for key in loss}
 
         return loss
