@@ -6,6 +6,9 @@ from nussl import STFTParams
 import numpy as np
 import soundfile as sf
 import itertools
+import tempfile
+import os
+import torch
 
 class BadTransform(object):
     def __init__(self, fake=None):
@@ -152,3 +155,91 @@ def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
         for _sr, _stft in zip(_srs, _stfts):
             assert _sr == _srs[0]
             assert _stft == _stfts[0]
+
+
+def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
+    keys = [benchmark_audio[k] for k in benchmark_audio]  
+
+    def dummy_get(self, folder):
+        return keys      
+
+    monkeypatch.setattr(BaseDataset, 'get_items', dummy_get)
+    monkeypatch.setattr(
+        BaseDataset, 'process_item', dummy_process_item_by_audio)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tfm = transforms.Cache(
+                os.path.join(tmpdir, 'cache'), overwrite=True)
+
+        _dataset = BaseDataset('test', transform=tfm, cache_populated=False)
+        assert tfm.cache_size == len(_dataset)
+        
+        _data_a = _dataset[0]
+        _dataset.cache_populated = True
+        pytest.raises(transforms.TransformException, 
+            _dataset.__getitem__, 1) # haven't written to this yet!
+        assert len(_dataset.post_cache_transforms.transforms) == 1
+        _data_b = _dataset[0]
+
+        for key in _data_a:
+            assert _data_a[key] == _data_b[key]
+
+        _dataset.cache_populated = False
+
+        outputs_a = []
+        outputs_b = []
+
+        for i in range(len(_dataset)):
+            outputs_a.append(_dataset[i])
+        
+        _dataset.cache_populated = True
+
+        for i in range(len(_dataset)):
+            outputs_b.append(_dataset[i])
+        
+        for _data_a, _data_b in zip(outputs_a, outputs_b):
+            for key in _data_a:
+                assert _data_a[key] == _data_b[key]  
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tfm = transforms.Compose([
+            transforms.MagnitudeSpectrumApproximation(),
+            transforms.ToSeparationModel(),
+            transforms.Cache(
+                os.path.join(tmpdir, 'cache'), overwrite=True),
+        ])
+        _dataset = BaseDataset('test', transform=tfm, cache_populated=False)
+        assert tfm.transforms[-1].cache_size == len(_dataset)
+        _data_a = _dataset[0]
+
+        _dataset.cache_populated = True
+        pytest.raises(transforms.TransformException, 
+            _dataset.__getitem__, 1) # haven't written to this yet!
+        assert len(_dataset.post_cache_transforms.transforms) == 1
+        _data_b = _dataset[0]
+
+        for key in _data_a:
+            if torch.is_tensor(_data_a[key]):
+                assert torch.allclose(_data_a[key], _data_b[key])
+            else:
+                assert _data_a[key] == _data_b[key]
+
+        _dataset.cache_populated = False
+
+        outputs_a = []
+        outputs_b = []
+
+        for i in range(len(_dataset)):
+            outputs_a.append(_dataset[i])
+        
+        _dataset.cache_populated = True
+
+        for i in range(len(_dataset)):
+            outputs_b.append(_dataset[i])
+        
+        for _data_a, _data_b in zip(outputs_a, outputs_b):
+            for key in _data_a:
+                if torch.is_tensor(_data_a[key]):
+                    assert torch.allclose(_data_a[key], _data_b[key])
+                else:
+                    assert _data_a[key] == _data_b[key]        

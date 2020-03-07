@@ -4,6 +4,11 @@ import numpy as np
 from collections import OrderedDict
 import torch
 import random
+import zarr
+import numcodecs
+import logging
+import os
+import shutil
 
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
@@ -344,7 +349,7 @@ class GetExcerpt(object):
         excerpt_length (int): Specified length of transformed data in frames.
 
         time_dim (int): Which dimension time is on (excerpts are taken along this axis).
-        Defaults to 1.
+        Defaults to 0.
 
         time_frequency_keys (list): Which keys to look at it in the data dictionary to
         take excerpts from.
@@ -385,6 +390,101 @@ class GetExcerpt(object):
 
                 data[key] = utils._slice_along_dim(
                     data[key], self.time_dim, offset, offset + self.excerpt_length)
+        return data
+
+class Cache(object):
+    """
+    The Cache transform can be placed within a Compose transform. The data 
+    dictionary coming into this transform will be saved to the specified
+    location using ``zarr``. Then instead of computing all of the transforms
+    before the cache, one can simply read from the cache. The transforms after
+    this will then be applied to the data dictionary that is read from the
+    cache. A typical pipeline might look like this:
+
+    .. code-block:: python
+        dataset = datasets.Scaper('path/to/scaper/folder')
+        tfm = transforms.Compose([
+            transforms.PhaseSensitiveApproximation(),
+            transforms.ToSeparationModel(),
+            transforms.Cache('~/.nussl/cache/tag', overwrite=True),
+            transforms.GetExcerpt()
+        ])
+        dataset[0] # first time will write to cache then apply GetExcerpt
+        dataset.use_cache = True # switches to reading from cache
+        dataset[0] # second time will read from cache then apply GetExcerpt
+        dataset[1] # will error out as it wasn't written to the cache!
+
+        dataset.use_cache = False
+        for i in range(len(dataset)):
+            dataset[i] # every item will get written to cache
+        dataset.use_cache = True
+        dataset[1] # now it exists
+
+        dataset = datasets.Scaper('path/to/scaper/folder') # next time around
+        tfm = transforms.Compose([
+            transforms.PhaseSensitiveApproximation(),
+            transforms.ToSeparationModel(),
+            transforms.Cache('~/.nussl/cache/tag', overwrite=False),
+            transforms.GetExcerpt()
+        ])
+        dataset.use_cache = True
+        dataset[0] # will read from cache, which still exists from last time
+    
+    Args:
+        object ([type]): [description]
+    """
+    def __init__(self, location, cache_size=1, overwrite=False):
+        self.location = location
+        self.cache_size = cache_size
+        self.overwrite = overwrite
+
+    @property
+    def info(self):
+        return self.cache.info
+
+    @property
+    def overwrite(self):
+        return self._overwrite
+    
+    @overwrite.setter
+    def overwrite(self, value):
+        self._overwrite = value
+        self._clear_cache(self.location)
+        self._open_cache(self.location)
+    
+    def _clear_cache(self, location):
+        if os.path.exists(location):
+            if self.overwrite:
+                logging.info(
+                    f"Cache {location} exists and overwrite = True, clearing cache.")
+                shutil.rmtree(location, ignore_errors=True)
+
+    def _open_cache(self, location):
+        file_mode = 'r' if not self.overwrite else 'w'
+        if self.overwrite:
+            self.cache = zarr.open(location, mode='w', shape=(self.cache_size,), 
+                chunks=(1,), dtype=object, object_codec=numcodecs.Pickle(), 
+                synchronizer=zarr.ThreadSynchronizer())
+        else:
+            self.cache = zarr.open(location, mode='r', 
+                object_codec=numcodecs.Pickle(), 
+                synchronizer=zarr.ThreadSynchronizer())
+
+    def __call__(self, data):
+        if 'index' not in data:
+            raise TransformException(
+                f"Expected 'index' in dictionary, got {list(data.keys())}")  
+        index = data['index']
+        if self.overwrite:
+            self.cache[index] = data
+        data = self.cache[index]
+
+        if not isinstance(data, dict):
+            raise TransformException(
+                f"Reading from cache resulted in not a dictionary! "
+                f"Maybe you haven't written to index {index} yet in "
+                f"the cache?")
+
         return data
 
 class ToSeparationModel(object):
@@ -429,14 +529,15 @@ class ToSeparationModel(object):
     def __call__(self, data):
         keys = list(data.keys())
         for key in keys:
-            is_array = isinstance(data[key], np.ndarray)
-            is_tensor = torch.is_tensor(data[key])
-            if is_array:
-                data[key] = torch.from_numpy(data[key])  
-            if not torch.is_tensor(data[key]):
-                data.pop(key)
-            if key in self.swap_tf_dims:
-                data[key] = data[key].transpose(1, 0)
+            if key != 'index':
+                is_array = isinstance(data[key], np.ndarray)
+                is_tensor = torch.is_tensor(data[key])
+                if is_array:
+                    data[key] = torch.from_numpy(data[key])  
+                if not torch.is_tensor(data[key]):
+                    data.pop(key)
+                if key in self.swap_tf_dims:
+                    data[key] = data[key].transpose(1, 0)
         return data
 
     def __repr__(self):

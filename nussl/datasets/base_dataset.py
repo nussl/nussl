@@ -61,11 +61,13 @@ class BaseDataset(Dataset):
             functions by the subclass don't match the specification.
     """
     def __init__(self, folder, transform=None, sample_rate=None, stft_params=None,
-                 num_channels=None, strict_sample_rate=True):
+                 num_channels=None, strict_sample_rate=True, cache_populated=False):
         self.folder = folder
-        self.transform = transform
         self.items = self.get_items(self.folder)
+        self.transform = transform
 
+        self.cache_populated = cache_populated
+        
         self.stft_params = stft_params
         self.sample_rate = sample_rate
         self.num_channels = num_channels
@@ -73,6 +75,39 @@ class BaseDataset(Dataset):
 
         if not isinstance(self.items, list):
             raise DataSetException("Output of self.get_items must be a list!")
+
+    @property
+    def cache_populated(self):
+        return self._cache_populated
+
+    @cache_populated.setter
+    def cache_populated(self, value):
+        self.post_cache_transforms = []
+        cache_transform = None
+
+        transforms = (
+            self.transform.transforms 
+            if isinstance(self.transform, tfm.Compose) 
+            else [self.transform])
+
+        found_cache_transform = False
+        for t in transforms:
+            if isinstance(t, tfm.Cache):
+                found_cache_transform = True
+                cache_transform = t
+            if found_cache_transform:
+                self.post_cache_transforms.append(t)
+
+        if not found_cache_transform:
+            # there is no cache transform
+            self._cache_populated = False
+        else:
+            self._cache_populated = value
+            cache_transform.cache_size = len(self)
+            cache_transform.overwrite = not value
+
+            self.post_cache_transforms = tfm.Compose(
+                self.post_cache_transforms)
 
     def get_items(self, folder):
         """
@@ -116,18 +151,23 @@ class BaseDataset(Dataset):
                 item after being put through the set of transforms (if any are
                 defined).
         """
-        data = self.process_item(self.items[i])
-
-        if not isinstance(data, dict):
-            raise DataSetException(
-                "The output of process_item must be a dictionary!")
-        
-        if self.transform:
-            data = self.transform(data)
+        if self.cache_populated:
+            data = {'index': i}
+            data = self.post_cache_transforms(data)
+        else:
+            data = self.process_item(self.items[i])
 
             if not isinstance(data, dict):
-                raise tfm.TransformException(
-                    "The output of transform must be a dictionary!")
+                raise DataSetException(
+                    "The output of process_item must be a dictionary!")
+            
+            if self.transform:
+                data['index'] = i
+                data = self.transform(data)
+
+                if not isinstance(data, dict):
+                    raise tfm.TransformException(
+                        "The output of transform must be a dictionary!")
 
         return data
 

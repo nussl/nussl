@@ -8,6 +8,8 @@ from nussl.core.masks import BinaryMask, SoftMask
 import itertools
 import copy
 import torch
+import tempfile
+import os
 
 stft_tol = 1e-6
 
@@ -270,3 +272,47 @@ def test_transform_get_excerpt(musdb_tracks):
         }
 
         pytest.raises(TransformException, exc, data)
+
+def test_transform_cache(musdb_tracks):
+    track = musdb_tracks[10]
+    mix, sources = nussl.utils.musdb_track_to_audio_signals(track)
+
+    data = {
+        'mix': mix,
+        'sources': sources,
+        'metadata': {'labels': sorted(list(sources.keys()))},
+        'index': 0
+    }
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tfm = transforms.Cache(
+            os.path.join(tmpdir, 'cache'), overwrite=True)
+
+        _data_a = tfm(data)
+        _info_a = tfm.info
+
+        tfm.overwrite = False
+        _data_b = tfm({'index': 0})
+
+        pytest.raises(TransformException, tfm, {})
+        
+        for key in _data_a:
+            assert _data_a[key] == _data_b[key]
+
+        com = transforms.Compose([
+            transforms.MagnitudeSpectrumApproximation(),
+            transforms.ToSeparationModel(),
+            transforms.Cache(
+                os.path.join(tmpdir, 'cache'), 
+                overwrite=True),
+        ])
+
+        _data_a = com(data)
+        com.transforms[-1].overwrite = False
+        _data_b = com.transforms[-1]({'index': 0})
+
+        for key in _data_a:
+            if torch.is_tensor(_data_a[key]):
+                assert torch.allclose(_data_a[key], _data_b[key])
+            else:
+                assert _data_a[key] == _data_b[key]
