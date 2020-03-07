@@ -55,11 +55,7 @@ class SeparationModel(nn.Module):
         if extra_modules:
             for module in extra_modules:
                 if module.__name__ not in dir(modules):
-                    setattr(
-                        modules, 
-                        module.__name__,
-                        module
-                    )
+                    setattr(modules, module.__name__, module)
 
         module_dict = {}
         self.input = {}

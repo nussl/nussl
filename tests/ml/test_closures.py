@@ -115,6 +115,21 @@ def test_base_closure():
 
     assert np.allclose(loss_a['loss'].item(), loss_b['loss'].item(), atol=1e-2)
 
+    class CustomLoss:
+        DEFAULT_KEYS = {}
+        pass
+
+    custom_loss_dictionary = {
+        'CustomLoss': {
+            'weight': .8,
+        }
+    }
+
+    closure = ml.train.closures.Closure(
+        custom_loss_dictionary, custom_losses=[CustomLoss])
+    assert isinstance(closure.losses[0][0], CustomLoss)
+    
+
 def test_train_and_validate_closure():
     n_batch = 5
     n_time = 100
