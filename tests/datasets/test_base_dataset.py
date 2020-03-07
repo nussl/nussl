@@ -242,4 +242,30 @@ def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
                 if torch.is_tensor(_data_a[key]):
                     assert torch.allclose(_data_a[key], _data_b[key])
                 else:
-                    assert _data_a[key] == _data_b[key]        
+                    assert _data_a[key] == _data_b[key]   
+
+    for L in [100, 400, 1000]:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tfm = transforms.Compose([
+                transforms.MagnitudeSpectrumApproximation(),
+                transforms.ToSeparationModel(),
+                transforms.Cache(
+                    os.path.join(tmpdir, 'cache'), overwrite=True),
+                transforms.GetExcerpt(L)
+            ])
+            _dataset = BaseDataset('test', transform=tfm, cache_populated=False)
+            assert tfm.transforms[-2].cache_size == len(_dataset)
+            assert len(_dataset.post_cache_transforms.transforms) == 2
+
+            for i in range(len(_dataset)):
+                _dataset[i]
+            
+            _dataset.cache_populated = True
+            outputs = []
+            for i in range(len(_dataset)):
+                outputs.append(_dataset[i])
+
+            for _output in outputs:
+                for key, val in _output.items():
+                    if torch.is_tensor(val):
+                        assert val.shape[0] == L     

@@ -161,13 +161,47 @@ def test_trainer_data_parallel(mix_source_folder):
         assert len(trainer.state.iter_history['loss']) == 10
 
 def test_cache_dataset(mix_source_folder):
-    tfms = datasets.transforms.Compose([
-        datasets.transforms.PhaseSensitiveSpectrumApproximation(),
-        datasets.transforms.ToSeparationModel()
-    ])
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tfms = datasets.transforms.Compose([
+            datasets.transforms.PhaseSensitiveSpectrumApproximation(),
+            datasets.transforms.ToSeparationModel(),
+        ])
+        chc = datasets.transforms.Cache(
+            os.path.join(tmpdir, 'cache'), overwrite=True)
 
-    dataset = datasets.MixSourceFolder(
-        mix_source_folder,
-        transform=tfms)
-    ml.train.cache_dataset(dataset)
-    
+        # no cache
+        dataset = datasets.MixSourceFolder(
+            mix_source_folder,
+            transform=tfms)
+        outputs_a = []
+
+        for i in range(len(dataset)):
+            outputs_a.append(dataset[i])
+        
+        # now add a cache
+        tfms.transforms.append(chc)
+        dataset = datasets.MixSourceFolder(
+            mix_source_folder,
+            transform=tfms,
+            cache_populated=False) 
+        assert (
+            tfms.transforms[-1].cache.nchunks_initialized == 0)
+
+        ml.train.cache_dataset(dataset)
+        assert (
+            tfms.transforms[-1].cache.nchunks_initialized == len(dataset))
+
+        # now make sure the cached stuff matches
+        dataset.cache_populated = True
+        outputs_b = []
+
+        for i in range(len(dataset)):
+            outputs_b.append(dataset[i])
+
+        for _data_a, _data_b in zip(outputs_a, outputs_b):
+            for key in _data_a:
+                if torch.is_tensor(_data_a[key]):
+                    assert torch.allclose(_data_a[key], _data_b[key])
+                else:
+                    assert _data_a[key] == _data_b[key] 
+                    

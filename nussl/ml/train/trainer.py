@@ -21,13 +21,16 @@ class ValidationEvents(Enum):
 
 def cache_dataset(dataset, log_frequency=.1):
     """
-    [summary]
-    
-    [extended_summary]
+    Runs through an entire dataset and caches it if there nussl.datasets.transforms.Cache
+    is in dataset.transform. If there is no caching, or dataset.cache_populated = True,
+    then this function just iterates through the dataset and does nothing.
+
+    This function can also take a `torch.util.data.DataLoader` object wrapped around
+    a `nussl.datasets.BaseDataset` object.
     
     Args:
         dataset (nussl.datasets.BaseDataset): Must be a subclass of 
-        nussl.datasets.BaseDataset.
+        `nussl.datasets.BaseDataset`.
 
         log_frequency (float, optional): How often to log progress, as a fraction between
         0.0 and 1.0 of the total dataset length. Defaults to .1 
