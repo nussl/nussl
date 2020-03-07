@@ -232,6 +232,7 @@ def test_bss_eval_v4(estimated_and_true_sources):
 def test_scale_bss_eval(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true']
     estimated_sources = estimated_and_true_sources['oracle']
+    random_sources = estimated_and_true_sources['random']
 
     evaluator = nussl.evaluation.BSSEvalScale(
         true_sources, estimated_sources)
@@ -239,19 +240,22 @@ def test_scale_bss_eval(estimated_and_true_sources):
     _references = references[:, 0, :]
     _estimates = estimates[:, 0, :]
 
-    nSDR, SIR, SAR = nussl.evaluation.scale_bss_eval(
+    tSDR, tSIR, tSAR = nussl.evaluation.scale_bss_eval(
         _references, _estimates[..., 0], 0, scaling=True
     )
-    
-    _references_as_tensor = torch.from_numpy(_references)
-    _estimates_as_tensor = torch.from_numpy(_estimates)
 
-    tSDR = nussl.evaluation.scale_bss_eval(
-        _references_as_tensor, _estimates_as_tensor[..., 0], 0, 
-        scaling=True
+    evaluator = nussl.evaluation.BSSEvalScale(
+        true_sources, random_sources)
+    references, estimates = evaluator.preprocess()
+    _references = references[:, 0, :]
+    _estimates = estimates[:, 0, :]
+
+    rSDR, rSIR, rSAR = nussl.evaluation.scale_bss_eval(
+        _references, _estimates[..., 0], 0, scaling=True
     )
 
-    assert np.allclose(nSDR, tSDR, atol=1e-3)
+    assert tSDR > rSIR
+    assert tSIR > rSIR
 
 def test_bss_eval_scale(estimated_and_true_sources):
     eval_args = [{'scaling': True}, {'scaling': False}]

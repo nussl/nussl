@@ -40,14 +40,16 @@ def cache_dataset(dataset, log_frequency=.1):
         pass
 
     cache = Engine(dummy_process)
-    log_frequency = int(len(dataset) * log_frequency)
+    log_frequency = max(int(len(dataset) * log_frequency), 1)
 
     @cache.on(Events.ITERATION_STARTED(every=log_frequency))
     def log_progress(engine):
         logging.info(
             f"Cached {engine.state.iteration} / "
             f"{engine.state.epoch_length} batches")
+
     cache.run(dataset)
+    dataset.cache_populated = True
 
 def create_train_and_validation_engines(train_func, val_func=None, val_data=None, 
                                         device='cpu'):
@@ -58,13 +60,25 @@ def create_train_and_validation_engines(train_func, val_func=None, val_data=None
     - prepare_batch: before a batch is passed to train_func or val_func, this
       function runs, moving every item in the batch (which is a dictionary) to
       the appropriate device ('cpu'  or 'cuda').
+
+    - book_keeping: sets up some dictionaries that are used for bookkeeping so one
+      can easily track the epoch and iteration losses for both training and
+      validation.
+
+    - add_to_iter_history: records the iteration, epoch, and past iteration losses
+      into the dictionaries set up by book_keeping.
+
+    - clear_iter_history: resets the current iteration history of losses after moving
+      the current iteration history into past iteration history.
     
     Args:
-        train_func ([type]): [description]
-        val_func ([type], optional): [description]. Defaults to None.
-        val_data (torch.utils.data.Dataset, optional): Defaults to None.
-        max_epochs (int, optional): [description]. Defaults to 10.
-        device (str, optional): [description]. Defaults to 'cpu'.
+        train_func (func): Function that provides the closure for training for
+        a single batch.
+        val_func (func, optional): Function that provides the closure for
+        validating a single batch. Defaults to None.
+        val_data (torch.utils.data.Dataset, optional): The validation data. 
+        Defaults to None.
+        device (str, optional): Device to move tensors to. Defaults to 'cpu'.
     """
     # Set up engines for training and validation
     trainer = Engine(train_func)
@@ -154,9 +168,10 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
         save additional metadata information alongside the model checkpoint such as the
         STFTParams, dataset folder, length, list of transforms, etc.
 
-        trainer ([type]): [description]
+        trainer (ignite.Engine): Engine for trainer
 
-        validator ([type], optional): [description]. Defaults to None.
+        validator (ignite.Engine, optional): Engine for validation. 
+        Defaults to None.
     """ 
     # When the trainer finishes an epoch, it should validate and save 
     # the model.
@@ -250,8 +265,10 @@ def add_stdout_handler(trainer, validator=None):
             Output @ tests/local/trainer
     
     Args:
-        trainer ([type]): [description]
-        validator ([type]): [description]
+        trainer (ignite.Engine): Engine for trainer
+
+        validator (ignite.Engine, optional): Engine for validation. 
+        Defaults to None.
     """
     # Set up timers for overall time taken and each epoch
     overall_timer = Timer(average=False)

@@ -8,24 +8,24 @@ def scale_bss_eval(references, estimate, idx, scaling=True):
     Computes SDR, SIR, SAR for references[idx] relative to the
     chosen estimate. This only works for mono audio. Each
     channel should be done independently when calling this
-    function. Lovingly borrowed from Gordon Wichern and Jonathan Le
-    Roux at Mitsubishi Electric Research Labs.
+    function. Lovingly borrowed from Gordon Wichern and 
+    Jonathan Le Roux at Mitsubishi Electric Research Labs.
     
     Args:
-        references (np.ndarray or torch.Tensor): object containing the
-            references data. Of shape (n_samples, n_sources).
-        estimates (np.ndarray or torch.Tensor): object containing the
-            estimate data. Of shape (n_samples, 1).
+        references (np.ndarray): object containing the
+        references data. Of shape (n_samples, n_sources).
+        
+        estimates (np.ndarray): object containing the
+        estimate data. Of shape (n_samples, 1).
+
         idx (int): Which estimate to compute metrics for.
+
         scaling (bool, optional): Whether to use scale-invariant (True) or
-            scale-dependent (False) metrics. Defaults to True.
+        scale-dependent (False) metrics. Defaults to True.
     
     Returns:
-        tuple: SDR, SIR, SAR if inputs are numpy arrays. Otherwise, only SDR as
-        a torch Tensor if inputs are torch Tensors.
+        tuple: SDR, SIR, SAR if inputs are numpy arrays.
     """
-    # use of @ syntax so things can be treated the same if they are tensors
-    # or if they are numpy arrays.
     references_projection = references.T @ references
     source = references[..., idx]
     scale = (
@@ -39,14 +39,7 @@ def scale_bss_eval(references, estimate, idx, scaling=True):
 
     signal = (e_true ** 2).sum()
     noise = (e_res ** 2).sum()
-    
-    # if it's a tensor, this is as far as we can go right now
-    # using current PyTorch.
-    if torch.is_tensor(estimate):
-        SDR = 10 * torch.log10(signal / noise)
-        return SDR
-    
-    # if these are numpy arrays, we can keep going.
+
     SDR = 10 * np.log10(signal / noise)
     
     references_onto_residual = np.dot(references.transpose(), e_res)

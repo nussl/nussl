@@ -5,3 +5,6 @@ from .trainer import (
     add_validate_and_checkpoint,
     add_stdout_handler
 )
+
+from . import loss
+from . import closures

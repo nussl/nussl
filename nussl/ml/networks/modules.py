@@ -64,9 +64,9 @@ class BatchNorm(nn.Module):
             shape = data.shape
             new_shape = (shape[0], self.num_features, -1)
 
-            data = data.view(new_shape)
+            data = data.reshape(new_shape)
             data = self.batch_norm(data)
-            data = data.view(shape)
+            data = data.reshape(shape)
             data = data.transpose(2, 1)
         return data
 
@@ -105,9 +105,9 @@ class InstanceNorm(nn.Module):
             shape = data.shape
             new_shape = (shape[0], self.num_features, -1)
 
-            data = data.view(new_shape)
+            data = data.reshape(new_shape)
             data = self.instance_norm(data)
-            data = data.view(shape)
+            data = data.reshape(shape)
             data = data.transpose(2, 1)
         return data
 

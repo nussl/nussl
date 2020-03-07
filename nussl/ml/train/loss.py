@@ -2,6 +2,62 @@ import torch
 import torch.nn as nn
 import numpy as np
 from itertools import permutations, combinations
+from enum import Enum
+
+class L1Loss(nn.L1Loss):
+    DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
+
+class MSELoss(nn.MSELoss):
+    DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
+
+class KLDivLoss(nn.KLDivLoss):
+    DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
+
+class SISDRLoss(nn.Module):
+    """
+    Computes the Scale-Invariant Source-to-Distortion Ratio between a batch
+    of estimated and reference audio signals. Used in end-to-end networks.
+    This is essentially a batch PyTorch version of the function 
+    ``nussl.evaluation.bss_eval.scale_bss_eval``.
+    
+    Args:
+        scaling (bool, optional): Whether to use scale-invariant (True) or
+        scale-dependent (False) SDR. Defaults to True.
+    """
+    DEFAULT_KEYS = {'estimates': 'estimates', 'references': 'references'}
+
+    def __init__(self, scaling=True, reduction='mean'):
+        self.scaling = scaling
+        self.reduction = reduction
+        super().__init__()
+
+    def forward(self, estimates, references):
+        references_projection = references.transpose(2, 1) @ references
+
+        references_projection = torch.diagonal(
+            references_projection, dim1=-2, dim2=-1)
+    
+        references_on_estimates = torch.diagonal(
+            references.transpose(2, 1) @ estimates, dim1=-2, dim2=-1)
+
+        scale = (
+            (references_on_estimates / references_projection).unsqueeze(1)
+            if self.scaling else 1)
+
+        e_true = scale * references
+        e_res = estimates - e_true
+
+        signal = (e_true ** 2).sum(dim=1)
+        noise = (e_res ** 2).sum(dim=1)
+
+        SDR = 10 * torch.log10(signal / noise)
+
+        if self.reduction == 'mean':
+            SDR = SDR.mean()
+        elif self.reduction == 'sum':
+            SDR = SDR.sum()
+        # go negative so it's a loss
+        return -SDR
 
 class DeepClusteringLoss(nn.Module):
     """
@@ -12,6 +68,12 @@ class DeepClusteringLoss(nn.Module):
         In Proc. IEEE International Conference on Acoustics,  Speech
         and Signal Processing (ICASSP).
     """
+    DEFAULT_KEYS = {
+        'embedding': 'embedding', 
+        'ideal_binary_mask': 'assignments', 
+        'weights': 'weights'
+    }
+
     def __init__(self):
         super(DeepClusteringLoss, self).__init__()
 
@@ -24,7 +86,7 @@ class DeepClusteringLoss(nn.Module):
         embedding = embedding.view(batch_size, -1, embedding_size)
         assignments = assignments.view(batch_size, -1, num_sources)
 
-        norm = 1. / (((((weights) ** 2)).sum(dim=1) ** 2).sum() + 1e-10)
+        norm = 1. / (((((weights) ** 2)).sum(dim=1) ** 2).sum() + 1e-8)
 
         assignments = weights.expand_as(assignments) * assignments
         embedding = weights.expand_as(embedding) * embedding
@@ -46,6 +108,8 @@ class PermutationInvariantLoss(nn.Module):
         multi-talker speech separation." In 2017 IEEE International Conference on 
         Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
     """
+    DEFAULT_KEYS = {'estimates': 'estimates', 'source_magnitudes': 'targets'}
+
     def __init__(self, loss_function):
         
         super(PermutationInvariantLoss, self).__init__()
@@ -77,6 +141,8 @@ class CombinationInvariantLoss(nn.Module):
     will be compared using Permutation Invariant Loss with the ground truth
     estimates.
     """
+    DEFAULT_KEYS = {'estimates': 'estimates', 'source_magnitudes': 'targets'}
+
     def __init__(self, loss_function):
         super(CombinationInvariantLoss, self).__init__()
         self.loss_function = loss_function

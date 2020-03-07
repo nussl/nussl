@@ -9,6 +9,7 @@ import numcodecs
 import logging
 import os
 import shutil
+from sklearn.preprocessing import OneHotEncoder
 
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
@@ -21,7 +22,6 @@ def compute_ideal_binary_mask(source_magnitudes):
 # Keys that correspond to the time-frequency representations after being passed through
 # the transforms here.
 time_frequency_keys = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask']
-
 
 class SumSources(object):
     """
@@ -127,6 +127,36 @@ class SumSources(object):
             f"source_key = {self.source_key}"
             f")"
         )
+
+class LabelsToOneHot(object):
+    """
+    Takes a data dictionary with sources and their keys and converts the keys to
+    a one-hot numpy array using the list in data['metadata']['labels'] to figure
+    out which index goes where.
+    """
+    def __init__(self, source_key='sources'):
+        self.source_key = source_key
+
+    def __call__(self, data):
+        if 'metadata' not in data:
+            raise TransformException(
+                f"Expected metadata in data, got {list(data.keys())}")
+        if 'labels' not in data['metadata']:
+            raise TransformException(
+                f"Expected labels in data['metadata'], got "
+                f"{list(data['metadata'].keys())}")
+
+        enc = OneHotEncoder(categories=[data['metadata']['labels']])
+
+        sources = data[self.source_key]
+        source_keys = [k.split('::')[0] for k in list(sources.keys())]
+        source_labels = [[l] for l in sorted(source_keys)]
+
+        one_hot_labels = enc.fit_transform(source_labels)
+        data['one_hot_labels'] = one_hot_labels.toarray()
+
+        return data
+
 
 class MagnitudeSpectrumApproximation(object):
     """

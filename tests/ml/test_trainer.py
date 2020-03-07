@@ -204,4 +204,27 @@ def test_cache_dataset(mix_source_folder):
                     assert torch.allclose(_data_a[key], _data_b[key])
                 else:
                     assert _data_a[key] == _data_b[key] 
-                    
+
+def test_cache_dataset_with_dataloader(mix_source_folder):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tfms = datasets.transforms.Compose([
+            datasets.transforms.PhaseSensitiveSpectrumApproximation(),
+            datasets.transforms.ToSeparationModel(),
+            datasets.transforms.Cache(
+                os.path.join(tmpdir, 'cache'), overwrite=True),
+            datasets.transforms.GetExcerpt(400)
+        ])
+        dataset = datasets.MixSourceFolder(
+            mix_source_folder,
+            transform=tfms,
+            cache_populated=False)
+        
+        dataloader = torch.utils.data.DataLoader(
+            dataset, shuffle=True, batch_size=2)
+
+        ml.train.cache_dataset(dataloader)
+
+        assert (
+            tfms.transforms[-2].cache.nchunks_initialized == len(dataset))
+
+

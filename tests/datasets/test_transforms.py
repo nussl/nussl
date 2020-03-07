@@ -286,15 +286,17 @@ def test_transform_cache(musdb_tracks):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tfm = transforms.Cache(
-            os.path.join(tmpdir, 'cache'), overwrite=True)
+            os.path.join(tmpdir, 'cache'), cache_size=2, overwrite=True)
 
         _data_a = tfm(data)
         _info_a = tfm.info
 
         tfm.overwrite = False
+        
         _data_b = tfm({'index': 0})
 
         pytest.raises(TransformException, tfm, {})
+        pytest.raises(TransformException, tfm, {'index': 1})
         
         for key in _data_a:
             assert _data_a[key] == _data_b[key]
@@ -317,4 +319,28 @@ def test_transform_cache(musdb_tracks):
             else:
                 assert _data_a[key] == _data_b[key]
 
-        
+
+def test_transforms_labels_to_one_hot(mix_source_folder, scaper_folder):
+    dataset = nussl.datasets.MixSourceFolder(mix_source_folder)
+    item = dataset[0]
+
+    tfm = transforms.LabelsToOneHot()
+
+    one_hots = tfm(item)['one_hot_labels']
+    assert np.allclose(one_hots, np.eye(2))
+
+    item['sources'].pop('s0')
+    one_hots = tfm(item)['one_hot_labels']
+    assert np.allclose(one_hots, np.array([0, 1]))
+
+    dataset = nussl.datasets.Scaper(scaper_folder)
+    item = dataset[0]
+
+    one_hots = tfm(item)['one_hot_labels']
+    assert one_hots.shape[-1] == len(item['metadata']['labels'])
+
+    item['metadata'].pop('labels')
+    pytest.raises(TransformException, tfm, item)
+
+    item.pop('metadata')
+    pytest.raises(TransformException, tfm, item)

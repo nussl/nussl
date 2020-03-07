@@ -29,6 +29,7 @@ A check below doesn't happen until full test coverage is achieved.
   - [x] SeparationModel
   - [x] PyTorch Gaussian Mixture model
   - [ ] Trainer via PyTorch ignite
+  - [ ] NMF (switch to sklearn NMF?)
 - [ ] Separation (will fill this in more soon)
   - [ ] Deep methods
   - [ ] Existing methods
