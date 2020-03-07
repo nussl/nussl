@@ -221,3 +221,52 @@ def test_transform_to_separation_model(musdb_tracks):
         assert torch.is_tensor(data[key])
         assert data[key].shape[0] == mix.stft().shape[1]
         assert data[key].shape[1] == mix.stft().shape[0]
+
+def test_transform_get_excerpt(musdb_tracks):
+    track = musdb_tracks[10]
+    mix, sources = nussl.utils.musdb_track_to_audio_signals(track)
+
+    msa = transforms.MagnitudeSpectrumApproximation()
+    tdl = transforms.ToSeparationModel()
+    excerpt_lengths = [400, 1000, 2000]
+    for excerpt_length in excerpt_lengths:
+        data = {
+            'mix': mix,
+            'sources': sources,
+            'metadata': {'labels': []}
+        }
+
+        exc = transforms.GetExcerpt(excerpt_length=excerpt_length)
+        com = transforms.Compose([msa, tdl, exc])
+
+        data = com(data)
+        
+        for key in data:
+            assert torch.is_tensor(data[key])
+            assert data[key].shape[0] == excerpt_length
+            assert data[key].shape[1] == mix.stft().shape[0]
+
+        data = {
+            'mix': mix,
+            'sources': sources,
+            'metadata': {'labels': []}
+        }
+
+        exc = transforms.GetExcerpt(excerpt_length=excerpt_length)
+        com = transforms.Compose([msa, tdl])
+
+        data = com(data)
+        for key in data:
+            data[key] = data[key].cpu().data.numpy()
+        
+        data = exc(data)
+
+        for key in data:
+            assert data[key].shape[0] == excerpt_length
+            assert data[key].shape[1] == mix.stft().shape[0]
+
+        data = {
+            'mix_magnitude': 'not an array or tensor'
+        }
+
+        pytest.raises(TransformException, exc, data)

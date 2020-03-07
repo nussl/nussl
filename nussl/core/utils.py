@@ -176,6 +176,31 @@ def _get_axis(array, axis_num, i):
 
     return np.take(array, i, axis_num)
 
+def _slice_along_dim(data, dim, start, end):
+    """
+    Takes a slice of data along a dim between a start and an end. Agnostic to
+    whether the data is a numpy array or a torch tensor.
+    
+    Args:
+        data (np.ndarray or torch.Tensor): Data to slice.
+        dim (int): Dimension along which to do the slicing.
+        start (int): Start of the slice.
+        end (int): End of the slice
+    """
+    if dim > 3:
+        raise ValueError("Unsupported for dim > 4")
+    if dim >= len(data.shape):
+        raise ValueError(f"dim {dim} too high for data.shape {data.shape}!")
+    
+    if dim == 0:
+        return data[start:end, ...]
+    elif dim == 1:
+        return data[:, start:end, ...]
+    elif dim == 2:
+        return data[:, :, start:end, ...]
+    elif dim == 3:
+        return data[:, :, :, start:end, ...]
+
 def _format(string):
     """ Formats a class name correctly for checking function and class names.
         Strips all non-alphanumeric chars and makes lowercase.

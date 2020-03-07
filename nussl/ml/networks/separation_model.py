@@ -33,27 +33,12 @@ class SeparationModel(nn.Module):
         network.
 
     Examples:
-        >>> args = {
-        >>>    'num_frequencies': 512,
-        >>>    'num_mels': 128,
-        >>>    'sample_rate': 44100,
-        >>>    'hidden_size': 300,
-        >>>    'bidirectional': True,
-        >>>    'num_layers': 4,
-        >>>    'embedding_size': 20,
-        >>>    'num_sources': 4,
-        >>>    'embedding_activation': ['sigmoid', 'unitnorm'],
-        >>>    'mask_activation': ['softmax']
-        >>> }
-        >>> config = helpers.build_chimera_config(args)
-        >>> with open('config.json', 'w') as f:
-        >>>    json.dump(config, f)
-        >>> model = SeparationModel('config.json')
-        >>> test_data = np.random.random((1, 100, 512))
-        >>> data = torch.from_numpy(test_data).float()
-        >>> output = model({'log_spectrogram': data,
-        >>>                'magnitude_spectrogram': data})
-
+        >>> config = nussl.ml.networks.builders.build_recurrent_dpcl(
+        >>>     num_features=512, hidden_size=300, num_layers=3, bidirectional=True,
+        >>>     dropout=0.3, embedding_size=20, 
+        >>>     embedding_activation=['sigmoid', 'unit_norm'])
+        >>>
+        >>> model = SeparationModel(config)
     """
     def __init__(self, config, extra_modules=None):
         super(SeparationModel, self).__init__()
@@ -153,6 +138,7 @@ class SeparationModel(nn.Module):
             location: (str) Where you want the model saved, as a path.
 
         Returns:
+            (str): where the model was saved.
 
         """
         save_dict = {

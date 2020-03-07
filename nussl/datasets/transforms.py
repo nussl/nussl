@@ -1,7 +1,9 @@
 from .. import AudioSignal
+from .. import utils
 import numpy as np
 from collections import OrderedDict
 import torch
+import random
 
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
@@ -11,8 +13,9 @@ def compute_ideal_binary_mask(source_magnitudes):
     ibm = ibm / np.sum(ibm, axis=-1, keepdims=True)
     return ibm
 
-# Time-frequency dimensions get swapped in ToSeparationModel to match what is expected.
-swap_tf_dims = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask']
+# Keys that correspond to the time-frequency representations after being passed through
+# the transforms here.
+time_frequency_keys = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask']
 
 
 class SumSources(object):
@@ -326,6 +329,64 @@ class PhaseSensitiveSpectrumApproximation(object):
             f")"
         )
 
+class GetExcerpt(object):
+    """
+    Takes in a dictionary containing Torch tensors or numpy arrays and extracts an 
+    excerpt from each tensor corresponding to a spectral representation of a specified 
+    length in frames. Can be used to get L-length spectrograms from mixture and source
+    spectrograms. If the data is shorter than the specified length, it
+    is padded to the specified length. If it is longer, a random offset between
+    ``(0, data_length - specified_length)``is chosen. This function assumes that
+    it is being passed data AFTER ToSeparationModel. Thus the time dimension is
+    on axis=1. 
+    
+    Args:
+        excerpt_length (int): Specified length of transformed data in frames.
+
+        time_dim (int): Which dimension time is on (excerpts are taken along this axis).
+        Defaults to 1.
+
+        time_frequency_keys (list): Which keys to look at it in the data dictionary to
+        take excerpts from.
+    """
+    def __init__(self, excerpt_length, time_dim=0, 
+                time_frequency_keys=time_frequency_keys):
+        self.excerpt_length = excerpt_length
+        self.time_dim = time_dim
+        self.time_frequency_keys = time_frequency_keys
+
+    def __call__(self, data):
+        for key in data:
+            if key in self.time_frequency_keys:
+                is_tensor = torch.is_tensor(data[key])
+                is_array = isinstance(data[key], np.ndarray)
+                if not is_tensor and not is_array:
+                    raise TransformException(
+                        f"data[{key}] was not a torch Tensor or a numpy array!")
+
+                current_length = data[key].shape[self.time_dim]
+                if current_length >= self.excerpt_length:
+                    offset = random.randint(0, current_length - self.excerpt_length)
+                else:
+                    offset = 0
+                    pad_amount = self.excerpt_length - current_length
+
+                    if is_tensor:
+                        pad_tuple = [0 for i in range(2 * len(data[key].shape))]
+                        pad_tuple[2*self.time_dim] = 0
+                        pad_tuple[2*self.time_dim + 1] = pad_amount
+                        pad_tuple = pad_tuple[::-1]
+                        data[key] = torch.nn.functional.pad(
+                            data[key], tuple(pad_tuple))
+                    else:
+                        pad_tuple = [(0, 0) for i in range(len(data[key].shape))]
+                        pad_tuple[self.time_dim] = (0, pad_amount)
+                        data[key] = np.pad(data[key], pad_tuple)
+
+                data[key] = utils._slice_along_dim(
+                    data[key], self.time_dim, offset, offset + self.excerpt_length)
+        return data
+
 class ToSeparationModel(object):
     """
     Takes in a dictionary containing objects and removes any objects that cannot
@@ -362,9 +423,8 @@ class ToSeparationModel(object):
     using it in the Trainer class, then it is added automatically as the
     last transform.
     """
-    def __init__(self, swap_tf_dims=swap_tf_dims):
+    def __init__(self, swap_tf_dims=time_frequency_keys):
         self.swap_tf_dims = swap_tf_dims
-        pass
 
     def __call__(self, data):
         keys = list(data.keys())

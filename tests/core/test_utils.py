@@ -190,3 +190,35 @@ def test_utils_get_axis():
     assert _out.shape == (100, 1)
     _out = nussl.utils._get_axis(mat, 2, 0)
     assert _out.shape == (100, 10)
+
+def test_utils_slice_along_dim():
+    data = [
+        np.random.rand(10, 10, 10, 10, 10),
+        torch.rand(10, 10, 10, 10, 10)
+    ]
+    for _data in data:
+        dims = range(len(_data.shape))
+
+        for d in dims:
+            _first = np.random.randint(_data.shape[d])
+            _second = np.random.randint(_data.shape[d])
+            start = min(_first, _second)
+            end = max(_first, _second)
+
+            if d > 3:
+                pytest.raises(ValueError, 
+                    nussl.utils._slice_along_dim,
+                    _data, d, start, end)
+            else:
+                sliced_data = nussl.utils._slice_along_dim(
+                    _data, d, start, end)
+
+                expected_shape = list(_data.shape)
+                expected_shape[d] = end - start
+                expected_shape = tuple(expected_shape)
+
+                assert sliced_data.shape == expected_shape
+
+    data = np.random.rand(10, 10)
+    pytest.raises(ValueError, nussl.utils._slice_along_dim,
+        data, 2, 0, 10)
