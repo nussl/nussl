@@ -33,7 +33,7 @@ def construct_transforms(cache_location):
         datasets.transforms.MagnitudeWeights(), # get magnitude weights
         datasets.transforms.ToSeparationModel(), # convert to tensors
         datasets.transforms.Cache(cache_location, overwrite=True),
-        datasets.transforms.GetExcerpt(400) # get 400 frame excerpts
+        datasets.transforms.GetExcerpt(400) # get 400 frame excerpts (3.2 seconds)
     ])
     return tfm
 
