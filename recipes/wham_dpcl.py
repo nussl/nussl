@@ -8,6 +8,12 @@ import os
 import torch
 from multiprocessing import cpu_count
 from torch import optim
+import logging
+
+logging.basicConfig(	
+    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',	
+    datefmt='%Y-%m-%d:%H:%M:%S',	
+    level=logging.INFO) 
 
 # make sure this is set to WHAM root directory
 WHAM_ROOT = os.getenv("WHAM_ROOT")
@@ -15,6 +21,8 @@ CACHE_ROOT = os.getenv("CACHE_ROOT")
 NUM_WORKERS = cpu_count() // 2
 OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_dpcl/')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+BATCH_SIZE = 20
+MAX_EPOCHS = 80
 
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
@@ -29,7 +37,7 @@ def construct_transforms(cache_location):
 
 def cache_dataset(_dataset):
     cache_dataloader = torch.utils.data.DataLoader(
-        _dataset, num_workers=NUM_WORKERS)
+        _dataset, num_workers=NUM_WORKERS, batch_size=BATCH_SIZE)
     ml.train.cache_dataset(cache_dataloader)
     _dataset.cache_populated = True
 
@@ -44,15 +52,15 @@ cache_dataset(dataset)
 cache_dataset(val_dataset)
 
 # reload after caching
-dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS)
-val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS)
+dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
+    batch_size=BATCH_SIZE)
+val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS,
+    batch_size=BATCH_SIZE)
 
 n_features = dataset[0]['mix_magnitude'].shape[1]
-# builds the baseline model from
-# Wang, Zhong-Qiu, Jonathan Le Roux, and John R. Hershey. 
-# "Alternative objective functions for deep clustering."
-#  2018 IEEE International Conference on Acoustics, 
-# Speech and Signal Processing (ICASSP). IEEE, 2018.
+# builds the baseline model from: Wang, Zhong-Qiu, Jonathan Le Roux, and John R. Hershey. 
+# "Alternative objective functions for deep clustering." 2018 IEEE International 
+# Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2018.
 config = ml.networks.builders.build_recurrent_dpcl(
     n_features, 600, 4, True, 0.3, 20, ['sigmoid', 'unit_norm'])
 model = ml.SeparationModel(config).to(DEVICE)
@@ -88,4 +96,4 @@ def step_scheduler(trainer):
     scheduler.step(val_loss)
 
 # train it
-trainer.run(dataloader)
+trainer.run(dataloader, max_epochs=MAX_EPOCHS)
