@@ -89,11 +89,11 @@ def test_separation_model_mask_inference(one_item):
 
             assert (
                 output['estimates'].shape == (
-                    one_item['mix_magnitude'].shape[:-1] + (2,))
+                    one_item['mix_magnitude'].shape + (2,))
             )
             assert  (
                 torch.allclose(
-                    output['estimates'].sum(dim=-1, keepdims=True), 
+                    output['estimates'].sum(dim=-1), 
                     one_item['mix_magnitude']))
 
 def test_separation_model_dpcl(one_item):
@@ -111,7 +111,7 @@ def test_separation_model_dpcl(one_item):
 
             assert (
                 output['embedding'].shape == (
-                    one_item['mix_magnitude'].shape[:-1] + (20,)))
+                    one_item['mix_magnitude'].shape + (20,)))
 
 def test_separation_model_chimera(one_item):
     n_features = one_item['mix_magnitude'].shape[2]
@@ -127,16 +127,16 @@ def test_separation_model_chimera(one_item):
 
             assert (
                 output['estimates'].shape == (
-                    one_item['mix_magnitude'].shape[:-1] + (2,))
+                    one_item['mix_magnitude'].shape + (2,))
             )
             assert  (
                 torch.allclose(
-                    output['estimates'].sum(dim=-1, keepdims=True), 
+                    output['estimates'].sum(dim=-1), 
                     one_item['mix_magnitude']))
 
             assert (
                 output['embedding'].shape == (
-                    one_item['mix_magnitude'].shape[:-1] + (20,)))
+                    one_item['mix_magnitude'].shape + (20,)))
 
 def test_separation_model_gmm_unfold(one_item):
     n_features = one_item['mix_magnitude'].shape[2]
@@ -152,16 +152,16 @@ def test_separation_model_gmm_unfold(one_item):
 
             assert (
                 output['estimates'].shape == (
-                    one_item['mix_magnitude'].shape[:-1] + (2,))
+                    one_item['mix_magnitude'].shape + (2,))
             )
             assert  (
                 torch.allclose(
-                    output['estimates'].sum(dim=-1, keepdims=True), 
+                    output['estimates'].sum(dim=-1), 
                     one_item['mix_magnitude']))
 
             assert (
                 output['embedding'].shape == (
-                    one_item['mix_magnitude'].shape[:-1] + (20,)))
+                    one_item['mix_magnitude'].shape + (20,)))
 
 def test_separation_model_extra_modules(one_item):
     with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
@@ -182,7 +182,7 @@ def test_separation_model_extra_modules(one_item):
 
             assert (
                 output['embedding'].shape == (
-                    one_item['mix_magnitude'].shape[:-1] + (20,)))
+                    one_item['mix_magnitude'].shape + (20,)))
 
             assert torch.allclose(
                 one_item['mix_magnitude'], output['test']

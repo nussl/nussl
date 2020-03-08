@@ -149,10 +149,10 @@ def test_train_and_validate_closure():
     weights = torch.ones(n_batch, n_time, n_freq)
 
     data = {
-        'mix_magnitude': torch.rand(n_batch, n_time, n_freq).unsqueeze(-1),
+        'mix_magnitude': torch.rand(n_batch, n_time, n_freq, 1),
         'ideal_binary_mask': assignments,
         'weights': weights,
-        'source_magnitudes': torch.rand(n_batch, n_time, n_freq, n_sources)
+        'source_magnitudes': torch.rand(n_batch, n_time, n_freq, 1, n_sources)
     }
 
     loss_dictionary = {

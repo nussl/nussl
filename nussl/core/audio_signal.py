@@ -109,6 +109,7 @@ import numpy as np
 import scipy.io.wavfile as wav
 import scipy
 from scipy.signal import check_COLA
+import soundfile as sf
 
 from . import constants
 from . import utils
@@ -773,8 +774,14 @@ class AudioSignal(object):
         if duration is not None:
             assert duration >= 0, 'Parameter `duration` must be >= 0!'
 
-        with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
-            file_length = input_file.duration
+        try:
+            # try reading headers with soundfile for speed
+            audio_info = sf.info(input_file_path)
+            file_length = audio_info.duration
+        except:
+            # if that doesn't work try audioread
+            with audioread.audio_open(os.path.realpath(input_file_path)) as input_file:
+                file_length = input_file.duration
 
         if offset > file_length:
             raise AudioSignalException('offset is longer than signal!')
@@ -783,6 +790,7 @@ class AudioSignal(object):
             warnings.warn('offset + duration are longer than the signal.'
                           ' Reading until end of signal...',
                           UserWarning)
+        
 
         audio_input, self._sample_rate = librosa.load(input_file_path,
                                                       sr=None,

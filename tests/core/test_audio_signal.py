@@ -108,7 +108,7 @@ def test_load_audio_from_file(benchmark_audio):
             assert abs(a.signal_length - ref_length) <= 1
 
     # Test offsets and durations
-    percentages = np.arange(0.0, 0.51, 0.05)
+    percentages = np.arange(0.01, 0.51, 0.05)
     for key, path in benchmark_audio.items():
         for start in percentages:
             for duration in percentages:

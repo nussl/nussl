@@ -45,7 +45,7 @@ def test_create_engine(mix_source_folder):
     with tempfile.TemporaryDirectory() as tmpdir:
         _dir = fix_dir if fix_dir else tmpdir
         trainer, validator = ml.train.create_train_and_validation_engines(
-            train_batch, train_batch, dataset
+            train_batch, train_batch
         )
 
         # add handlers to engine
@@ -133,7 +133,7 @@ def test_trainer_data_parallel(mix_source_folder):
     with tempfile.TemporaryDirectory() as tmpdir:
         _dir = fix_dir if fix_dir else tmpdir
         trainer, validator = ml.train.create_train_and_validation_engines(
-            train_batch, train_batch, dataset
+            train_batch, train_batch
         )
 
         # add handlers to engine
