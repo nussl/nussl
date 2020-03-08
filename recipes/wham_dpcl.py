@@ -2,19 +2,20 @@
 This recipe trains and evaluates a deep clustering model
 on the clean data from the WHAM dataset with 8k.
 """
-from nussl import ml
-from nussl import datasets
+from nussl import ml, datasets, utils
 import os
 import torch
 from multiprocessing import cpu_count
 from torch import optim
 import logging
 
+# seed
+utils.seed(0)
+
 # set up logging
 logging.basicConfig(	
     format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',	
-    datefmt='%Y-%m-%d:%H:%M:%S',	
-    level=logging.INFO) 
+    datefmt='%Y-%m-%d:%H:%M:%S', level=logging.INFO) 
 
 # make sure this is set to WHAM root directory
 WHAM_ROOT = os.getenv("WHAM_ROOT")
@@ -59,9 +60,8 @@ val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKER
     batch_size=BATCH_SIZE)
 
 n_features = dataset[0]['mix_magnitude'].shape[1]
-# builds the baseline model from: Wang, Zhong-Qiu, Jonathan Le Roux, and John R. Hershey. 
-# "Alternative objective functions for deep clustering." 2018 IEEE International 
-# Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2018.
+# builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
+# and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_dpcl(
     n_features, 600, 4, True, 0.3, 20, ['sigmoid', 'unit_norm'])
 model = ml.SeparationModel(config).to(DEVICE)
