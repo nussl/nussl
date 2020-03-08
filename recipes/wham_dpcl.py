@@ -79,7 +79,7 @@ train_closure = ml.train.closures.TrainClosure(
 val_closure = ml.train.closures.ValidationClosure(
     loss_dictionary, model)
 
-# set up engine for training
+# set up engines for training and validation
 trainer, validator = ml.train.create_train_and_validation_engines(
     train_closure, val_closure, device=DEVICE)
 
