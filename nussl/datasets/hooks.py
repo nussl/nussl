@@ -327,3 +327,58 @@ class Scaper(BaseDataset):
             }
         }
         return output
+
+class WHAM(MixSourceFolder):
+    """
+    Hook for the WHAM dataset. Essentially subclasses MixSourceFolder but with presets
+    that are helpful for WHAM, which as the following directory structure:
+
+    .. code-block:: none
+
+        [wav8k, wav16k]/
+          [min, max]/
+            [tr, cv, tt]/
+                mix_both/
+                mix_clean/
+                mix_single/
+                noise/
+                s1/
+                s2/
+        wham_noise/
+          tr/
+          cv/
+          tt/
+          metadata/
+
+    Args:
+        MixSourceFolder ([type]): [description]
+    """
+    MIX_TO_SOURCE_MAP = {
+        'mix_clean': ['s1', 's2'],
+        'mix_both': ['s1', 's2', 'noise'],
+        'mix_single': ['s1'],
+    }
+
+    def __init__(self, root, mix_folder='mix_clean', mode='min', split='tr', 
+                 sample_rate=8000, **kwargs):
+        if mix_folder not in self.MIX_TO_SOURCE_MAP.keys():
+            raise DataSetException(
+                f"{mix_folder} must be in {list(self.MIX_TO_SOURCE_MAP.keys())}")
+        if sample_rate not in [8000, 16000]:
+            raise DataSetException(
+                f"{sample_rate} not available for WHAM (only 8000 and 16000 Hz allowed)")
+        if mode not in ['min', 'max']:
+            raise DataSetException(
+                f"{mode} not available, only 'min' or 'max' allowed.")
+        if split not in ['tr', 'cv', 'tt']:
+            raise DataSetException(
+                f"{split} not available, must be one of 'tr' (train), "
+                f"'cv' (validation), and 'tt' (test)")
+
+        wav_folder = 'wav8k' if sample_rate == 8000 else 'wav16k'
+        folder = os.path.join(root, wav_folder, mode, split)
+        source_folders = self.MIX_TO_SOURCE_MAP[mix_folder]
+
+        super().__init__(folder, mix_folder=mix_folder, source_folders=source_folders, 
+            sample_rate=sample_rate, strict_sample_rate=True, **kwargs)
+        
