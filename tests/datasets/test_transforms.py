@@ -344,3 +344,17 @@ def test_transforms_labels_to_one_hot(mix_source_folder, scaper_folder):
 
     item.pop('metadata')
     pytest.raises(TransformException, tfm, item)
+
+
+def test_transforms_magnitude_weights(mix_source_folder):
+    dataset = nussl.datasets.MixSourceFolder(mix_source_folder)
+    item = dataset[0]
+
+    tfm = transforms.MagnitudeWeights()
+    pytest.raises(TransformException, tfm, item)
+
+    msa = transforms.MagnitudeSpectrumApproximation()
+    item = tfm(msa(item))
+
+    assert np.allclose(item['weights'], item['mix_magnitude'])
+    

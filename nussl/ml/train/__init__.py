@@ -3,7 +3,8 @@ from .trainer import (
     add_tensorboard_handler,
     cache_dataset,
     add_validate_and_checkpoint,
-    add_stdout_handler
+    add_stdout_handler,
+    ValidationEvents
 )
 
 from . import loss

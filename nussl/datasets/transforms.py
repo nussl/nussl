@@ -21,7 +21,8 @@ def compute_ideal_binary_mask(source_magnitudes):
 
 # Keys that correspond to the time-frequency representations after being passed through
 # the transforms here.
-time_frequency_keys = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask']
+time_frequency_keys = [
+    'mix_magnitude', 'source_magnitudes', 'ideal_binary_mask', 'weights']
 
 class SumSources(object):
     """
@@ -251,6 +252,35 @@ class MagnitudeSpectrumApproximation(object):
             f"source_key = {self.source_key}"
             f")"
         )
+
+class MagnitudeWeights(object):
+    """
+    Applying time-frequency weights to the deep clustering objective results in a
+    huge performance boost. This transform looks for 'mix_magnitude', which is output
+    by either MagnitudeSpectrumApproximation or PhaseSensitiveSpectrumApproximation
+    and puts it into the weights.
+
+    [1] Wang, Zhong-Qiu, Jonathan Le Roux, and John R. Hershey. 
+    "Alternative objective functions for deep clustering." 2018 IEEE International 
+    Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2018.
+    
+    Args:
+        mix_magnitude_key (str): Which key to look for the mix_magnitude data in.
+    """
+    def __init__(self, mix_magnitude_key='mix_magnitude'):
+        self.mix_magnitude_key = mix_magnitude_key
+
+    def __call__(self, data):
+        if self.mix_magnitude_key not in data:
+            raise TransformException(
+                f"Expected {self.mix_magnitude_key} in dictionary "
+                f"passed to this Transform! Got {list(data.keys())}. "
+                "Either MagnitudeSpectrumApproximation or "
+                "PhaseSensitiveSpectrumApproximation should be called "
+                "on the data dict prior to this transform. "
+            )
+        data['weights'] = data['mix_magnitude']
+        return data
 
 class PhaseSensitiveSpectrumApproximation(object):
     """
