@@ -9,7 +9,7 @@ from multiprocessing import cpu_count
 from torch import optim
 import logging
 
-# seed
+# seed this recipe for reproducibility
 utils.seed(0)
 
 # set up logging

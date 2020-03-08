@@ -279,7 +279,12 @@ class MagnitudeWeights(object):
                 "PhaseSensitiveSpectrumApproximation should be called "
                 "on the data dict prior to this transform. "
             )
-        data['weights'] = data['mix_magnitude']
+        magnitude_spectrogram = data['mix_magnitude']
+        weights = magnitude_spectrogram / (np.sum(magnitude_spectrogram) + 1e-6)
+        weights *= (
+            magnitude_spectrogram.shape[0] * magnitude_spectrogram.shape[1]
+        )
+        data['weights'] = weights
         return data
 
 class PhaseSensitiveSpectrumApproximation(object):
