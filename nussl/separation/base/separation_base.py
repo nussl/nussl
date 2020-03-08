@@ -18,8 +18,8 @@ class SeparationBase(object):
     Do not call this. It will not do anything.
 
     Parameters:
-        input_audio_signal (:class:`audio_signal.AudioSignal`). :class:`audio_signal.AudioSignal` object.
-                            This will always ke a copy of the provided AudioSignal object.
+        input_audio_signal (AudioSignal). AudioSignal` object.
+                            This will always be a copy of the provided AudioSignal object.
     """
 
     def __init__(self, input_audio_signal):
@@ -27,11 +27,7 @@ class SeparationBase(object):
             raise ValueError('input_audio_signal is not an AudioSignal object!')
 
         self._audio_signal = None
-
-        if input_audio_signal is not None:
-            self.audio_signal = input_audio_signal
-        else:
-            self.audio_signal = AudioSignal()
+        self.audio_signal = input_audio_signal
 
         if not self.audio_signal.has_data:
             warnings.warn('input_audio_signal has no data!')
@@ -49,15 +45,13 @@ class SeparationBase(object):
 
     @property
     def stft_params(self):
-        """(:class:`spectral_utils.StftParams`): :class:`spectral_utils.StftParams` of :attr:`audio_signal`
-        Literally :attr:`audio_signal.stft_params`.
+        """STFTParams object containing
         """
         return self.audio_signal.stft_params
 
     @property
     def audio_signal(self):
-        """(:class:`audio_signal.AudioSignal`): Copy of the :class:`audio_signal.AudioSignal` object passed in 
-        upon initialization.
+        """Copy of AudioSignal that is made on initialization.
         """
         return self._audio_signal
 
@@ -65,20 +59,9 @@ class SeparationBase(object):
     def audio_signal(self, input_audio_signal):
         self._audio_signal = copy.copy(input_audio_signal)
 
-    def set_audio_signal(self, new_audio_signal):
-        input_audio_signal = copy.deepcopy(new_audio_signal)
-        self.audio_signal = input_audio_signal
-        self.original_length = input_audio_signal.signal_length
-        self.original_sample_rate = input_audio_signal.sample_rate
-        return input_audio_signal
-
     def plot(self, **kwargs):
         """Plots relevant data for separation algorithm
-
-        Raises:
-            NotImplementedError: Cannot call base class
         """
-        print("Plotting not implemented for this class")
         pass
 
     def run(self):
@@ -98,18 +81,17 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def __call__(self):
-        return self.run()
+        self.run()
+        return self.make_audio_signals()
 
     def __repr__(self):
-        return self.__class__.__name__ + ' instance'
+        return f"{self.__class__.__name__} on {str(self.audio_signal)}"
 
     def __eq__(self, other):
         for k, v in list(self.__dict__.items()):
             if isinstance(v, np.ndarray):
                 if not np.array_equal(v, other.__dict__[k]):
                     return False
-            elif k == 'self':
-                pass
             elif v != other.__dict__[k]:
                 return False
         return True

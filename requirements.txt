@@ -10,3 +10,4 @@ ffmpy
 torch
 pytorch-ignite
 tensorboard
+norbert

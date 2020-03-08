@@ -319,8 +319,6 @@ class AudioSignal(object):
             * :func:`stft` to calculate an STFT from this data,
             and :func:`istft` to calculate the inverse STFT and put it in :attr:`audio_data`.
 
-            * :attr:`has_audio_data` to check if this attribute is empty or not.
-
             * :func:`plot_time_domain` to create a plot of audio data stored in this attribute.
 
             * :func:`peak_normalize` to apply gain such that to the

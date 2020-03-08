@@ -15,3 +15,4 @@ from . import core
 from . import evaluation
 from . import datasets
 from . import ml
+from . import separation
