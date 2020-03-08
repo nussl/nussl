@@ -10,6 +10,7 @@ from multiprocessing import cpu_count
 from torch import optim
 import logging
 
+# set up logging
 logging.basicConfig(	
     format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',	
     datefmt='%Y-%m-%d:%H:%M:%S',	
@@ -82,18 +83,18 @@ val_closure = ml.train.closures.ValidationClosure(
 trainer, validator = ml.train.create_train_and_validation_engines(
     train_closure, val_closure, device=DEVICE)
 
-# attach handlers for visualizing output
+# attach handlers for visualizing output and saving the model
 ml.train.add_stdout_handler(trainer, validator)
 ml.train.add_validate_and_checkpoint(
     OUTPUT_DIR, model, optimizer, dataset, 
     trainer, val_data=val_dataloader, validator=validator)
 ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 
-# add a custom event to set up patience
+# add a handler to set up patience
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
 def step_scheduler(trainer):
     val_loss = trainer.state.epoch_history['validation/loss'][-1]
     scheduler.step(val_loss)
 
-# train it
+# train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)
