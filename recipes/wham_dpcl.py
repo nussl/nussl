@@ -27,7 +27,7 @@ OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_dpcl/')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 20
 MAX_EPOCHS = 80
-CACHE_POPULATED = True
+CACHE_POPULATED = False
 
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
@@ -70,8 +70,10 @@ n_features = dataset[0]['mix_magnitude'].shape[1]
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_dpcl(
     n_features, 600, 4, True, 0.3, 20, ['sigmoid'], 
-    normalization_class='BatchNorm')
+    normalization_class='InstanceNorm')
 model = ml.SeparationModel(config).to(DEVICE)
+logging.info(model)
+
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
@@ -97,7 +99,7 @@ ml.train.add_validate_and_checkpoint(
     trainer, val_data=val_dataloader, validator=validator)
 ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 
-shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'))
+shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 
 # add a handler to set up patience
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)

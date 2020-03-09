@@ -1,4 +1,3 @@
-
 nussl
 =====
 
@@ -10,13 +9,13 @@ Current progress
 A check below doesn't happen until full test coverage is achieved.
 
 - [x] Core AudioSignal functionality
-- [x] STFT/iSTFT via ``scipy.signal``
+- [x] STFT/iSTFT via `scipy.signal`
 - [x] External file zoo functionality
 - [x] Hooks for common datasets
   - [x] MUSDB
   - [x] Scaper
   - [x] MixSourceFolder 
-  - [ ] WHAM! (simple subclass MixSourceFolder)
+  - [x] WHAM! (simple subclass MixSourceFolder)
   - [ ] MIR1K
   - [ ] iKala (still support?)
   - [ ] Slakh2100
@@ -28,11 +27,21 @@ A check below doesn't happen until full test coverage is achieved.
   - [x] Network modules
   - [x] SeparationModel
   - [x] PyTorch Gaussian Mixture model
-  - [ ] Trainer via PyTorch ignite
+  - [x] Trainer via PyTorch ignite
   - [ ] NMF (switch to sklearn NMF?)
 - [ ] Separation (will fill this in more soon)
+  - [x] SeparationBase
   - [ ] Deep methods
   - [ ] Existing methods
+  - [ ] Oracle methods, using `norbert`
+- [ ] Recipes
+  - [x] Deep clustering on WHAM
+  - [ ] Chimera on WHAM
+  - [ ] Mask inference on WHAM
+  - [ ] Deep clustering on MUSDB (for each instrument)
+  - [ ] Chimera on MUSDB
+  - [ ] Mask inference on MUSDB
+  - [ ] TasNet and ConvTasnet on MUSDB and WHAM
 
 Current test coverage
 ---------------------

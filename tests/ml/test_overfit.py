@@ -81,18 +81,6 @@ def test_overfit_a(mix_source_folder):
             model_path, map_location=lambda storage, loc: storage)
         model.load_state_dict(state_dict['state_dict'])
 
-        history = state_dict['metadata']['trainer.state.past_iter_history']
-
-        os.makedirs(os.path.join(trainer.state.output_folder, 'plots'), exist_ok=True)
-
-        for key in history:
-            plt.figure(figsize=(5, 5))
-            plt.title(f"iter:{key}")
-            plt.plot(np.array(history[key]).reshape(-1,))
-            plt.savefig(os.path.join(
-                trainer.state.output_folder, 'plots',
-                f"iter:{key.replace('/', ':')}.png"))
-
         history = state_dict['metadata']['trainer.state.epoch_history']
 
         for key in history:

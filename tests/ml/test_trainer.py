@@ -68,7 +68,6 @@ def test_create_engine(mix_source_folder):
             trainer.state.output_folder, 'checkpoints', 'best.optimizer.pth'))
 
 
-        assert len(trainer.state.past_iter_history['loss']) == 3 * len(dataset)
         assert len(trainer.state.epoch_history['loss']) == 3
         assert len(trainer.state.iter_history['loss']) == 10
 
@@ -156,7 +155,6 @@ def test_trainer_data_parallel(mix_source_folder):
             trainer.state.output_folder, 'checkpoints', 'best.optimizer.pth'))
 
 
-        assert len(trainer.state.past_iter_history['loss']) == 3 * len(dataset)
         assert len(trainer.state.epoch_history['loss']) == 3
         assert len(trainer.state.iter_history['loss']) == 10
 
