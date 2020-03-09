@@ -248,6 +248,9 @@ def test_transform_get_excerpt(musdb_tracks):
             assert data[key].shape[0] == excerpt_length
             assert data[key].shape[1] == mix.stft().shape[0]
 
+        assert torch.mean((data['source_magnitudes'].sum(dim=-1) - 
+                    data['mix_magnitude']) ** 2).item() < 1e-5
+
         data = {
             'mix': mix,
             'sources': sources,
@@ -266,6 +269,9 @@ def test_transform_get_excerpt(musdb_tracks):
         for key in data:
             assert data[key].shape[0] == excerpt_length
             assert data[key].shape[1] == mix.stft().shape[0]
+  
+        assert np.mean((data['source_magnitudes'].sum(axis=-1) - 
+                    data['mix_magnitude']) ** 2) < 1e-5
 
         data = {
             'mix_magnitude': 'not an array or tensor'

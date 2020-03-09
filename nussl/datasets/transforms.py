@@ -425,33 +425,53 @@ class GetExcerpt(object):
         self.time_dim = time_dim
         self.time_frequency_keys = time_frequency_keys
 
+    def _validate(self, data, key):
+        is_tensor = torch.is_tensor(data[key])
+        is_array = isinstance(data[key], np.ndarray)
+        if not is_tensor and not is_array:
+            raise TransformException(
+                f"data[{key}] was not a torch Tensor or a numpy array!")
+        return is_tensor, is_array
+
+    def _get_offset(self, data, key):
+        self._validate(data, key)
+        data_length = data[key].shape[self.time_dim]
+
+        if data_length >= self.excerpt_length:
+            offset = random.randint(0, data_length - self.excerpt_length)
+        else:
+            offset = 0
+        
+        pad_amount = max(0, self.excerpt_length - data_length)
+
+        return offset, pad_amount
+
+    def _construct_pad_func_tuple(self, shape, pad_amount, is_tensor):
+        if is_tensor:
+            pad_func = torch.nn.functional.pad
+            pad_tuple = [0 for i in range(2 * len(shape))]
+            pad_tuple[2*self.time_dim] = 0
+            pad_tuple[2*self.time_dim + 1] = pad_amount
+            pad_tuple = pad_tuple[::-1]
+        else:
+            pad_func  = np.pad
+            pad_tuple = [(0, 0) for i in range(len(shape))]
+            pad_tuple = [(0, 0) for i in range(len(shape))]
+            pad_tuple[self.time_dim] = (0, pad_amount)
+        return pad_func, pad_tuple
+
     def __call__(self, data):
+        offset, pad_amount = self._get_offset(
+            data, time_frequency_keys[0])
+
         for key in data:
             if key in self.time_frequency_keys:
-                is_tensor = torch.is_tensor(data[key])
-                is_array = isinstance(data[key], np.ndarray)
-                if not is_tensor and not is_array:
-                    raise TransformException(
-                        f"data[{key}] was not a torch Tensor or a numpy array!")
+                is_tensor, is_array = self._validate(data, key)
 
-                current_length = data[key].shape[self.time_dim]
-                if current_length >= self.excerpt_length:
-                    offset = random.randint(0, current_length - self.excerpt_length)
-                else:
-                    offset = 0
-                    pad_amount = self.excerpt_length - current_length
-
-                    if is_tensor:
-                        pad_tuple = [0 for i in range(2 * len(data[key].shape))]
-                        pad_tuple[2*self.time_dim] = 0
-                        pad_tuple[2*self.time_dim + 1] = pad_amount
-                        pad_tuple = pad_tuple[::-1]
-                        data[key] = torch.nn.functional.pad(
-                            data[key], tuple(pad_tuple))
-                    else:
-                        pad_tuple = [(0, 0) for i in range(len(data[key].shape))]
-                        pad_tuple[self.time_dim] = (0, pad_amount)
-                        data[key] = np.pad(data[key], pad_tuple)
+                if pad_amount > 0:
+                    pad_func, pad_tuple = self._construct_pad_func_tuple(
+                        data[key].shape, pad_amount, is_tensor)
+                    data[key] = pad_func(data[key], pad_tuple)
 
                 data[key] = utils._slice_along_dim(
                     data[key], self.time_dim, offset, offset + self.excerpt_length)

@@ -108,7 +108,7 @@ def step_scheduler(trainer):
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
 def visualize_grad_norm(trainer):
     plt.clf()
-    epoch = train.state.trainer.state.epoch
+    epoch = trainer.state.epoch
     utils.visualize_gradient_flow(model.named_parameters())
     plt.savefig(os.path.join(OUTPUT_DIR, f'{epoch}:grad.png'))
 
