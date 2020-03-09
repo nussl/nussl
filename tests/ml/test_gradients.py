@@ -8,7 +8,7 @@ def test_gradients(mix_source_folder):
         datasets.transforms.PhaseSensitiveSpectrumApproximation(),
         datasets.transforms.MagnitudeWeights(),
         datasets.transforms.ToSeparationModel(),
-        datasets.transforms.GetExcerpt(100)
+        datasets.transforms.GetExcerpt(400)
     ])
     dataset = datasets.MixSourceFolder(
         mix_source_folder, transform=tfms)
@@ -18,11 +18,15 @@ def test_gradients(mix_source_folder):
     n_features = dataset[0]['mix_magnitude'].shape[1]
 
     # make some configs
-    names = ['dpcl', 'mask_inference', 'chimera']
+    names = ['dpcl', 'mask_inference_l1', 'mask_inference_mse_loss', 'chimera']
     configs = [
         ml.networks.builders.build_recurrent_dpcl(
             n_features, 50, 1, True, 0.0, 20, ['sigmoid'], 
             normalization_class='InstanceNorm'),
+        ml.networks.builders.build_recurrent_mask_inference(
+            n_features, 50, 1, True, 0.0, 2, ['softmax'], 
+            normalization_class='InstanceNorm'
+        ),
         ml.networks.builders.build_recurrent_mask_inference(
             n_features, 50, 1, True, 0.0, 2, ['softmax'], 
             normalization_class='InstanceNorm'
@@ -45,10 +49,16 @@ def test_gradients(mix_source_folder):
             }
         },
         {
+            'MSELoss': {
+                'weight': 1.0
+            }
+        },
+        {
             'DeepClusteringLoss': {
                 'weight': 1.0
             },
-            'L1Loss': {
+            'PermutationInvariantLoss': {
+                'args': ['L1Loss'],
                 'weight': 1.0
             }
         },
@@ -59,6 +69,7 @@ def test_gradients(mix_source_folder):
 
         utils.seed(0, set_cudnn=True)
         model_grad = ml.SeparationModel(config)
+        model_grad.output_keys.append('normalization')
 
         all_data = {}
         for data in dataset:
@@ -82,6 +93,7 @@ def test_gradients(mix_source_folder):
 
         utils.seed(0, set_cudnn=True)
         model_acc = ml.SeparationModel(config)
+        model_acc.output_keys.append('normalization')
 
         for i, data in enumerate(dataset):
             for key in data:
@@ -95,12 +107,13 @@ def test_gradients(mix_source_folder):
                 # somehow...
                 _data_a = output_acc[key]
                 _data_b = output_grad[key][i].unsqueeze(0)
-                assert torch.allclose(_data_a, _data_b)
+                assert torch.allclose(_data_a, _data_b, atol=1e-4)
+                
             _loss = loss_closure.compute_loss(output_acc, data)
             # do a backward pass on each item individually
             _loss['loss'] = _loss['loss'] / len(dataset)
             _loss['loss'].backward()
-            
+
         plt.figure()
         utils.visualize_gradient_flow(model_acc.named_parameters()) 
         plt.savefig(f'tests/local/{name}:accumulated_gradient.png')
@@ -109,4 +122,4 @@ def test_gradients(mix_source_folder):
         # if they don't, then the items in a batch are talking to each other in the loss
         for param1, param2 in zip(model_grad.parameters(), model_acc.parameters()):
             assert torch.allclose(param1, param2)
-            assert torch.allclose(param1.grad, param2.grad)
+            assert torch.allclose(param1.grad, param2.grad, atol=1e-3)

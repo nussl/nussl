@@ -9,6 +9,7 @@ from multiprocessing import cpu_count
 from torch import optim
 import logging
 import matplotlib.pyplot as plt
+import shutil
 
 # seed this recipe for reproducibility
 utils.seed(0)
@@ -26,6 +27,7 @@ OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_dpcl/')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 20
 MAX_EPOCHS = 80
+CACHE_POPULATED = True
 
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
@@ -33,7 +35,7 @@ def construct_transforms(cache_location):
         datasets.transforms.MagnitudeSpectrumApproximation(), # take stfts and get ibm
         datasets.transforms.MagnitudeWeights(), # get magnitude weights
         datasets.transforms.ToSeparationModel(), # convert to tensors
-        datasets.transforms.Cache(cache_location, overwrite=True),
+        datasets.transforms.Cache(cache_location), # up to here gets cached
         datasets.transforms.GetExcerpt(400) # get 400 frame excerpts (3.2 seconds)
     ])
     return tfm
@@ -45,14 +47,17 @@ def cache_dataset(_dataset):
     _dataset.cache_populated = True
 
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'tr'))
-dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm, cache_populated=False)
+dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm, 
+    cache_populated=CACHE_POPULATED)
 
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'cv'))
-val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm, cache_populated=False)
+val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm, 
+    cache_populated=CACHE_POPULATED)
 
-# cache datasets for speed
-cache_dataset(dataset)
-cache_dataset(val_dataset)
+if not CACHE_POPULATED:
+    # cache datasets for speed
+    cache_dataset(dataset)
+    cache_dataset(val_dataset)
 
 # reload after caching
 dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
@@ -64,7 +69,8 @@ n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_dpcl(
-    n_features, 600, 4, True, 0.3, 20, ['sigmoid'])
+    n_features, 600, 4, True, 0.3, 20, ['sigmoid'], 
+    normalization_class='BatchNorm')
 model = ml.SeparationModel(config).to(DEVICE)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
@@ -91,6 +97,8 @@ ml.train.add_validate_and_checkpoint(
     trainer, val_data=val_dataloader, validator=validator)
 ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 
+shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'))
+
 # add a handler to set up patience
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
 def step_scheduler(trainer):
@@ -99,8 +107,10 @@ def step_scheduler(trainer):
 
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
 def visualize_grad_norm(trainer):
+    plt.clf()
+    epoch = train.state.trainer.state.epoch
     utils.visualize_gradient_flow(model.named_parameters())
-    plt.savefig(os.path.join(OUTPUT_DIR, 'grad.png'))
+    plt.savefig(os.path.join(OUTPUT_DIR, f'{epoch}:grad.png'))
 
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)

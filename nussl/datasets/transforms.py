@@ -284,7 +284,7 @@ class MagnitudeWeights(object):
         weights *= (
             magnitude_spectrogram.shape[0] * magnitude_spectrogram.shape[1]
         )
-        data['weights'] = weights
+        data['weights'] = np.sqrt(weights)
         return data
 
 class PhaseSensitiveSpectrumApproximation(object):

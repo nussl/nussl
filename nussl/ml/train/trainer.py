@@ -223,7 +223,6 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                 'seed': trainer.state.seed,
             },
             'trainer.state.epoch_history': trainer.state.epoch_history,
-            'trainer.state.past_iter_history': trainer.state.past_iter_history
         }
 
         for _path in output_paths:

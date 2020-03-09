@@ -43,31 +43,26 @@ class BatchNorm(nn.Module):
     4. Data is reshaped back to (nb, nt, nf, nc) and returned.
     
     Args:
-        use_batch_norm (bool): Skip normalization or not.
         num_features (int): num_features argument to BatchNorm1d, defaults to 1.
         **kwargs (dict): additional keyword arguments that can be passed to BatchNorm2d.
     
     Returns:
         torch.Tensor: modified input data tensor with batch norm.
     """
-    def __init__(self, use_batch_norm=True, num_features=1, **kwargs):
+    def __init__(self, num_features=1, **kwargs):
         super(BatchNorm, self).__init__()
-        self.use_batch_norm = use_batch_norm
         self.num_features = num_features
-        if self.use_batch_norm:
-            self.add_module('batch_norm', 
-                nn.BatchNorm1d(self.num_features, **kwargs))
+        self.add_module('batch_norm', nn.BatchNorm1d(self.num_features, **kwargs))
     
     def forward(self, data):
-        if self.use_batch_norm:
-            data = data.transpose(2, 1)
-            shape = data.shape
-            new_shape = (shape[0], self.num_features, -1)
+        data = data.transpose(2, 1)
+        shape = data.shape
+        new_shape = (shape[0], self.num_features, -1)
 
-            data = data.reshape(new_shape)
-            data = self.batch_norm(data)
-            data = data.reshape(shape)
-            data = data.transpose(2, 1)
+        data = data.reshape(new_shape)
+        data = self.batch_norm(data)
+        data = data.reshape(shape)
+        data = data.transpose(2, 1)
         return data
 
 class InstanceNorm(nn.Module):
@@ -91,24 +86,20 @@ class InstanceNorm(nn.Module):
     Returns:
         torch.Tensor: modified input data tensor with instance norm applied.
     """
-    def __init__(self, use_instance_norm=True, num_features=1, **kwargs):
+    def __init__(self, num_features=1, **kwargs):
         super(InstanceNorm, self).__init__()
-        self.use_instance_norm = use_instance_norm
         self.num_features = num_features
-        if self.use_instance_norm:
-            self.add_module('instance_norm', 
-                nn.InstanceNorm1d(self.num_features, **kwargs))
+        self.add_module('instance_norm', nn.InstanceNorm1d(self.num_features, **kwargs))
     
     def forward(self, data):
-        if self.use_instance_norm:
-            data = data.transpose(2, 1)
-            shape = data.shape
-            new_shape = (shape[0], self.num_features, -1)
+        data = data.transpose(2, 1)
+        shape = data.shape
+        new_shape = (shape[0], self.num_features, -1)
 
-            data = data.reshape(new_shape)
-            data = self.instance_norm(data)
-            data = data.reshape(shape)
-            data = data.transpose(2, 1)
+        data = data.reshape(new_shape)
+        data = self.instance_norm(data)
+        data = data.reshape(shape)
+        data = data.transpose(2, 1)
         return data
 
 class MelProjection(nn.Module):
@@ -222,6 +213,12 @@ class Embedding(nn.Module):
         self.embedding_size = embedding_size
         self.dim_to_embed = dim_to_embed
 
+        for name, param in self.linear.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
+
     def forward(self, data):
         """
         Args:
@@ -239,7 +236,7 @@ class Embedding(nn.Module):
 
         shape = shape[:-1] + (
             self.num_features, self.num_audio_channels, self.embedding_size,)
-        data = data.view(shape)
+        data = data.reshape(shape)
 
         if 'sigmoid' in self.activation:
             data = torch.sigmoid(data)
@@ -304,11 +301,24 @@ class RecurrentStack(nn.Module):
                 num_features, hidden_size, num_layers, batch_first=True,
                 bidirectional=bidirectional, dropout=dropout))
 
+        for name, param in self.rnn.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
+
+        for names in self.rnn._all_weights:
+            for name in filter(lambda n: "bias" in n,  names):
+                bias = getattr(self.rnn, name)
+                n = bias.size(0)
+                start, end = n//4, n//2
+                bias.data[start:end].fill_(1.)
+
     def forward(self, data):
         """
         Args:
             data: Audio representation to be processed. Should be of shape:
-            (num_batch, sequence_length, num_features).
+            (num_batch, sequence_length, ...).
 
         Returns:
             Outputs the features after processing of the RNN. Shape is:
@@ -316,7 +326,7 @@ class RecurrentStack(nn.Module):
             bidirectional=True)
         """
         shape = data.shape
-        data = data.view(shape[0], shape[1], -1)
+        data = data.reshape(shape[0], shape[1], -1)
         self.rnn.flatten_parameters()
         data = self.rnn(data)[0]
         return data
