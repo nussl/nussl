@@ -123,11 +123,11 @@ class MelProjection(nn.Module):
             sample_rate: (int) Sample rate of audio for computing the mel filters.
             num_frequencies: (int) Number of frequency bins in input spectrogram.
             num_mels: (int) Number of mel bins in output mel spectrogram. if num_mels < 0, this does nothing
-                other than clamping the output of clamp is True
+              other than clamping the output of clamp is True
             direction: (str) Which direction to go in (either 'forward' - to mel, or 'backward' - to frequencies).
-                Defaults to 'forward'.
+              Defaults to 'forward'.
             clamp: (bool) Whether to clamp the output values of the transform between 0.0 and 1.0. Used for transforming
-                a mask in and out of the mel-domain. Defaults to False.
+              a mask in and out of the mel-domain. Defaults to False.
             trainable: (bool) Whether the mel transform can be adjusted by the optimizer. Defaults to False.
         """
         super(MelProjection, self).__init__()
@@ -164,11 +164,11 @@ class MelProjection(nn.Module):
         """
         Args:
             data: Representation - shape: 
-            (batch_size, sequence_length, num_frequencies or num_mels, num_sources)
+              (batch_size, sequence_length, num_frequencies or num_mels, num_sources)
 
         Returns:
             Mel-spectrogram or time-frequency representation of shape:
-            (batch_size, sequence_length, num_mels or num_frequencies, num_sources).
+              (batch_size, sequence_length, num_mels or num_frequencies, num_sources).
         """
 
         if self.num_mels > 0:
@@ -195,26 +195,26 @@ class Embedding(nn.Module):
 
         Args:
             num_features (int): Number of features being mapped for each frame. 
-            Either num_frequencies, or if used with MelProjection, num_mels if using 
-            RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
+              Either num_frequencies, or if used with MelProjection, num_mels if using 
+              RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
 
             hidden_size (int): Size of output from RecurrentStack (hidden_size) or 
-            DilatedConvolutionalStack (num_filters). If RecurrentStack is bidirectional, 
-            this should be set to 2 * hidden_size.
+              DilatedConvolutionalStack (num_filters). If RecurrentStack is bidirectional, 
+              this should be set to 2 * hidden_size.
             
             embedding_size (int): Dimensionality of embedding.
             
             activation (list of str): Activation functions to be applied. Options 
-            are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
-            adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
+              are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
+              adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
 
             dim_to_embed (int): Which dimension of the input to apply the embedding to.
-            Defaults to -1 (the last dimension).
+              Defaults to -1 (the last dimension).
         """
         super(Embedding, self).__init__()
         self.add_module(
             'linear', 
-            nn.Linear(hidden_size, num_features * embedding_size)
+            nn.Linear(hidden_size, num_features * num_audio_channels * embedding_size)
         )
         self.num_features = num_features
         self.num_audio_channels = num_audio_channels
@@ -222,22 +222,15 @@ class Embedding(nn.Module):
         self.embedding_size = embedding_size
         self.dim_to_embed = dim_to_embed
 
-        for name, param in self.linear.named_parameters():
-            if 'bias' in name:
-                nn.init.constant_(param, 0.0)
-            elif 'weight' in name:
-                nn.init.xavier_normal_(param)
-
-
     def forward(self, data):
         """
         Args:
             data: output from RecurrentStack or ConvolutionalStack. Shape is:
-                (num_batch, ..., hidden_size or num_filters)
+              (num_batch, ..., hidden_size or num_filters)
 
         Returns:
             An embedding (with an optional activation) for each point in the 
-            representation of shape (num_batch, ..., embedding_size).
+              representation of shape (num_batch, ..., embedding_size).
         """
         shape = data.shape
         data = data.transpose(self.dim_to_embed, -1)
@@ -278,6 +271,7 @@ class Mask(nn.Module):
         super(Mask, self).__init__()
 
     def forward(self, mask, representation):
+        # add a source dimension
         representation = representation.unsqueeze(-1).expand_as(mask)
         return mask * representation
 
@@ -292,11 +286,11 @@ class RecurrentStack(nn.Module):
 
         Args:
             num_features: (int) Number of features being mapped for each frame. 
-            Either num_frequencies, or if used with MelProjection, num_mels.
+              Either num_frequencies, or if used with MelProjection, num_mels.
             hidden_size: (int) Hidden size of recurrent stack for each layer.
             num_layers: (int) Number of layers in stack.
             bidirectional: (int) True makes this a BiLSTM or a BiGRU. Note that this 
-            doubles the hidden size.
+              doubles the hidden size.
             dropout: (float) Dropout between layers.
             rnn_type: (str) LSTM ('lstm') or GRU ('gru').
         """
@@ -309,19 +303,6 @@ class RecurrentStack(nn.Module):
             'rnn', RNNClass(
                 num_features, hidden_size, num_layers, batch_first=True,
                 bidirectional=bidirectional, dropout=dropout))
-
-        for name, param in self.rnn.named_parameters():
-            if 'bias' in name:
-                nn.init.constant_(param, 0.0)
-            elif 'weight' in name:
-                nn.init.xavier_normal_(param)
-
-        for names in self.rnn._all_weights:
-            for name in filter(lambda n: "bias" in n,  names):
-                bias = getattr(self.rnn, name)
-                n = bias.size(0)
-                start, end = n//4, n//2
-                bias.data[start:end].fill_(1.)
 
     def forward(self, data):
         """
@@ -339,7 +320,6 @@ class RecurrentStack(nn.Module):
         self.rnn.flatten_parameters()
         data = self.rnn(data)[0]
         return data
-
 
 class ConvolutionalStack2D(nn.Module):   
     def __init__(self, in_channels, channels, dilations, filter_shapes, residuals, 
@@ -359,16 +339,16 @@ class ConvolutionalStack2D(nn.Module):
             in_channels (int): Number of channels in input
             channels (list of int): Number of channels for each layer
             dilations (list of ints or int tuples): Dilation rate for each layer. If 
-                int, it is same in both height and width. If tuple, tuple is defined as
-                (height, width). 
+              int, it is same in both height and width. If tuple, tuple is defined as
+              (height, width). 
             filter_shapes (list of ints or int tuples): Filter shape for each layer. If 
-                int, it is same in both height and width. If tuple, tuple is defined as
-                (height, width).
+              int, it is same in both height and width. If tuple, tuple is defined as
+              (height, width).
             residuals (list of bool): Whether or not to keep a residual connection at
-                each layer.
+              each layer.
             batch_norm (bool): Whether to use BatchNorm or not at each layer (default: True)
             use_checkpointing (bool): Whether to use torch's checkpointing functionality 
-                to reduce memory usage.
+              to reduce memory usage.
         
         Raises:
             ValueError -- All the input lists must be the same length.
@@ -440,11 +420,11 @@ class ConvolutionalStack2D(nn.Module):
         """ 
         Data comes in as: [num_batch, sequence_length, num_frequencies, num_audio_channels]
         We reshape it in the forward pass so that everything works to:
-            [num_batch, num_audio_channels, sequence_length, num_frequencies]
+          [num_batch, num_audio_channels, sequence_length, num_frequencies]
         After this input is processed, the shape is then:
-            [num_batch, num_output_channels, sequence_length, num_frequencies]
+          [num_batch, num_output_channels, sequence_length, num_frequencies]
         We transpose again to make the shape:
-            [num_batch, sequence_length, num_frequencies, num_output_channels]
+          [num_batch, sequence_length, num_frequencies, num_output_channels]
         So it can be passed to an Embedding module.
         """
         data =  data.permute(0, 3, 1, 2)

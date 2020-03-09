@@ -82,20 +82,33 @@ class DeepClusteringLoss(nn.Module):
         embedding_size = embedding.shape[-1]
         num_sources = assignments.shape[-1]
 
+        eps = 1e-12
+
         weights = weights.view(batch_size, -1, 1)
+        # make data unit norm without affecting gradient
         embedding = embedding.view(batch_size, -1, embedding_size)
+        denom = embedding.norm(2, dim=-1, keepdim=True).clamp_min(
+            eps).expand_as(embedding)
+        embedding = embedding / denom.data
+
         assignments = assignments.view(batch_size, -1, num_sources)
+        denom = assignments.norm(2, dim=-1, keepdim=True).clamp_min(
+            eps).expand_as(assignments)
+        assignments = assignments / denom.data
 
-        norm = 1. / (((((weights) ** 2)).sum(dim=1) ** 2).sum() + 1e-8)
+        norm = 1. / (((((weights) ** 2)).sum(dim=1) ** 2) + 1e-8).sum(dim=-1)
 
-        assignments = weights.expand_as(assignments) * assignments
-        embedding = weights.expand_as(embedding) * embedding
+        assignments = weights * assignments
+        embedding = weights * embedding
 
-        vTv = ((embedding.transpose(2, 1) @ embedding) ** 2).sum()
-        vTy = ((embedding.transpose(2, 1) @ assignments) ** 2).sum()
-        yTy = ((assignments.transpose(2, 1) @ assignments) ** 2).sum()
+        vTv = ((embedding.transpose(2, 1) @ embedding) ** 2).reshape(
+            batch_size, -1).sum(dim=-1)
+        vTy = ((embedding.transpose(2, 1) @ assignments) ** 2).reshape(
+            batch_size, -1).sum(dim=-1)
+        yTy = ((assignments.transpose(2, 1) @ assignments) ** 2).reshape(
+            batch_size, -1).sum(dim=-1)
         loss = (vTv - 2 * vTy + yTy)
-        return loss * norm
+        return (loss * norm.detach()).mean()
 
 class PermutationInvariantLoss(nn.Module):
     """

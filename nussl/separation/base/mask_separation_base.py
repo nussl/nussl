@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Base class for separation algorithms that make masks. Most algorithms in nussl are derived from MaskSeparationBase. 
-
+Base class for separation algorithms that make masks. Most algorithms in 
+nussl are derived from MaskSeparationBase. 
 """
 import json
 import warnings

@@ -13,6 +13,7 @@ import numpy as np
 import torch
 import random
 import musdb
+import matplotlib.pyplot as plt
 
 from . import constants
 
@@ -347,3 +348,37 @@ def verify_audio_signal_list_strict(audio_signal_list):
         raise ValueError('All input AudioSignal objects must have the same signal length!')
 
     return audio_signal_list
+
+
+def visualize_gradient_flow(named_parameters, n_bins=50):
+    """
+    Visualize the gradient flow through the named parameters of a PyTorch model. 
+
+    Plots the gradients flowing through different layers in the net during training.
+    Can be used for checking for possible gradient vanishing / exploding problems.
+
+    Usage: Plug this function in Trainer class after loss.backwards() as 
+    "plot_grad_flow(self.model.named_parameters())" to visualize the gradient flow
+    
+    Args:
+        named_parameters (generator): Generator object yielding name and parameters
+          for each layer in a PyTorch model.
+        n_bins (int): Number of bins to use for each histogram. Defaults to 50.
+    """
+    data = []
+
+    for n, p in named_parameters:
+        if p.requires_grad and "bias" not in n:
+            _data = p.grad.abs().cpu().data.numpy().flatten()
+            lower = np.percentile(_data, 10)
+            upper = np.percentile(_data, 90)
+            _data = _data[_data >= lower]
+            _data = _data[_data <= upper]
+            data.append((n, _data, _data.mean()))
+    
+    _data = [d[1] for d in sorted(data, key=lambda x: x[-1])]
+    _names = [d[0] for d in sorted(data, key=lambda x: x[-1])]
+
+    plt.hist(_data, len(_data) * n_bins, histtype='step', fill=False, 
+        stacked=True, label=_names)
+    plt.legend(loc="upper right")

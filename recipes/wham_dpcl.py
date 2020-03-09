@@ -8,6 +8,7 @@ import torch
 from multiprocessing import cpu_count
 from torch import optim
 import logging
+import matplotlib.pyplot as plt
 
 # seed this recipe for reproducibility
 utils.seed(0)
@@ -63,7 +64,7 @@ n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_dpcl(
-    n_features, 600, 4, True, 0.3, 20, ['sigmoid', 'unit_norm'])
+    n_features, 600, 4, True, 0.3, 20, ['sigmoid'])
 model = ml.SeparationModel(config).to(DEVICE)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
@@ -95,6 +96,11 @@ ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 def step_scheduler(trainer):
     val_loss = trainer.state.epoch_history['validation/loss'][-1]
     scheduler.step(val_loss)
+
+@trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
+def visualize_grad_norm(trainer):
+    utils.visualize_gradient_flow(model.named_parameters())
+    plt.savefig(os.path.join(OUTPUT_DIR, 'grad.png'))
 
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)
