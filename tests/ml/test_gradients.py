@@ -55,11 +55,11 @@ def test_gradients(mix_source_folder):
         },
         {
             'DeepClusteringLoss': {
-                'weight': 1.0
+                'weight': 0.2
             },
             'PermutationInvariantLoss': {
                 'args': ['L1Loss'],
-                'weight': 1.0
+                'weight': 0.8
             }
         },
     ]

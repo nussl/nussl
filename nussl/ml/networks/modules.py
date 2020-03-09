@@ -273,7 +273,8 @@ class Mask(nn.Module):
         return mask * representation
 
 class RecurrentStack(nn.Module):
-    def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout, rnn_type='lstm'):
+    def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout, 
+                 rnn_type='lstm'):
         """
         Creates a stack of RNNs used to process an audio sequence represented as 
         (sequence_length, num_features). With bidirectional = True, hidden_size = 600, 

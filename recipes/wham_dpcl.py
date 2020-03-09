@@ -27,7 +27,8 @@ OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_dpcl/')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 20
 MAX_EPOCHS = 80
-CACHE_POPULATED = False
+CACHE_POPULATED = True
+LEARNING_RATE = 2e-4
 
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
@@ -74,7 +75,7 @@ config = ml.networks.builders.build_recurrent_dpcl(
 model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)
 
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
 # set up the loss function
