@@ -1,1 +1,1 @@
-from .base import SeparationBase
+from .base import SeparationBase, MaskSeparationBase
