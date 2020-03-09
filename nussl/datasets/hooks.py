@@ -59,6 +59,9 @@ class MUSDB18(BaseDataset):
         **kwargs: Any additional arguments that are passed up to BaseDataset 
             (see ``nussl.datasets.BaseDataset``).
     """
+    DATASET_HASHES = {
+        "musdb": "56777516ad56fe6a8590badf877e6be013ff932c010e0fbdb0aba03ef878d4cd",
+    }
     
     def __init__(self, folder=None, is_wav=False, download=False,
             subsets=['train', 'test'], split=None, **kwargs):
@@ -357,6 +360,11 @@ class WHAM(MixSourceFolder):
         'mix_clean': ['s1', 's2'],
         'mix_both': ['s1', 's2', 'noise'],
         'mix_single': ['s1'],
+    }
+
+    DATASET_HASHES =  {
+        "wav8k": "acd49e0dae066e16040c983d71cc5a8adb903abff6e5cbb92b3785a1997b7547", 
+        "wav16k": "5691d6a35382f2408a99594f21d820b58371b5ea061841db37d548c0b8d6ec7f"
     }
 
     def __init__(self, root, mix_folder='mix_clean', mode='min', split='tr', 

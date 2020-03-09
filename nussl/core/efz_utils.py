@@ -557,7 +557,6 @@ def _hash_directory(directory, ext=None):
             contents of the given directory.
 
     """
-
     hash_list = []
     for path, sub_dirs, files in os.walk(directory):
         if ext is None:
