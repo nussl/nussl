@@ -1,6 +1,7 @@
 from nussl import ml, datasets, utils
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 
 def test_gradients(mix_source_folder):
     tfms = datasets.transforms.Compose([

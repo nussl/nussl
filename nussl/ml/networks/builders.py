@@ -7,7 +7,7 @@ depending on input size, it's good to work this out in a function like those bel
 """
 
 def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidirectional,
-    dropout, num_sources, mask_activation, rnn_type='lstm', 
+    dropout, num_sources, mask_activation, num_audio_channels=1, rnn_type='lstm', 
     normalization_class='BatchNorm', mix_key='mix_magnitude'):
     """
     Builds a config for a mask inference network that can be passed to 
@@ -16,23 +16,25 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
     
     Args:
         num_features (int): Number of features in the input spectrogram (usually means
-        window length of STFT // 2 + 1.)
+          window length of STFT // 2 + 1.)
         hidden_size (int): Hidden size of the RNN.
         num_layers (int): Number of layers in the RNN.
         bidirectional (int): Whether the RNN is bidirectional.
         dropout (float): Amount of dropout to be used between layers of RNN.
         num_sources (int): Number of sources to create masks for. 
         mask_activation (list of str): Activation of the mask ('sigmoid', 'softmax', etc.). 
-        See ``nussl.ml.networks.modules.Embedding``. 
+          See ``nussl.ml.networks.modules.Embedding``. 
+        num_audio_channels (int): Number of audio channels in input (e.g. mono or stereo).
+          Defaults to 1.
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
         normalization_class (str, optional): Type of normalization to apply, either
-        'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+          'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
         mix_key (str, optional): The key to look for in the input dictionary that contains
-        the mixture spectrogram. Defaults to 'mix_magnitude'.
+          the mixture spectrogram. Defaults to 'mix_magnitude'.
     
     Returns:
         dict: A recurrent mask inference network configuration that can be passed to
-        SeparationModel.
+          SeparationModel.
     """
 
     # define the building blocks
@@ -61,7 +63,8 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
                 'num_features': num_features,
                 'hidden_size': hidden_size * 2 if bidirectional else hidden_size,
                 'embedding_size': num_sources,
-                'activation': mask_activation
+                'activation': mask_activation,
+                'num_audio_channels': num_audio_channels
             }
         },
         'estimates': {
@@ -91,7 +94,7 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
     return config
 
 def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
-    dropout, embedding_size, embedding_activation, rnn_type='lstm', 
+    dropout, embedding_size, embedding_activation, num_audio_channels=1, rnn_type='lstm', 
     normalization_class='BatchNorm', mix_key='mix_magnitude'):
     """
     Builds a config for a deep clustering network that can be passed to 
@@ -100,7 +103,7 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
     
     Args:
         num_features (int): Number of features in the input spectrogram (usually means
-        window length of STFT // 2 + 1.)
+          window length of STFT // 2 + 1.)
         hidden_size (int): Hidden size of the RNN.
         num_layers (int): Number of layers in the RNN.
         bidirectional (int): Whether the RNN is bidirectional.
@@ -108,6 +111,8 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
         embedding_size (int): Embedding dimensionality of the deep clustering network. 
         embedding_activation (list of str): Activation of the embedding ('sigmoid', 'softmax', etc.). 
           See ``nussl.ml.networks.modules.Embedding``. 
+        num_audio_channels (int): Number of audio channels in input (e.g. mono or stereo).
+          Defaults to 1.
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
         normalization_class (str, optional): Type of normalization to apply, either
           'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
@@ -116,7 +121,7 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
     
     Returns:
         dict: A recurrent deep clustering network configuration that can be passed to
-        SeparationModel.
+          SeparationModel.
     """
 
     # define the building blocks
@@ -145,7 +150,8 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
                 'num_features': num_features,
                 'hidden_size': hidden_size * 2 if bidirectional else hidden_size,
                 'embedding_size': embedding_size,
-                'activation': embedding_activation
+                'activation': embedding_activation,
+                'num_audio_channels': num_audio_channels
             }
         },
     }
@@ -172,7 +178,8 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
 
 def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional,
     dropout, embedding_size, embedding_activation, num_sources, mask_activation,
-    rnn_type='lstm', normalization_class='BatchNorm', mix_key='mix_magnitude'):
+    num_audio_channels=1, rnn_type='lstm', normalization_class='BatchNorm', 
+    mix_key='mix_magnitude'):
     """
     Builds a config for a Chimera network that can be passed to SeparationModel. 
     Chimera networks are so-called because they have two "heads" which can be trained
@@ -183,26 +190,28 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
     
     Args:
         num_features (int): Number of features in the input spectrogram (usually means
-        window length of STFT // 2 + 1.)
+          window length of STFT // 2 + 1.)
         hidden_size (int): Hidden size of the RNN.
         num_layers (int): Number of layers in the RNN.
         bidirectional (int): Whether the RNN is bidirectional.
         dropout (float): Amount of dropout to be used between layers of RNN.
         embedding_size (int): Embedding dimensionality of the deep clustering network. 
         embedding_activation (list of str): Activation of the embedding ('sigmoid', 'softmax', etc.). 
-        See ``nussl.ml.networks.modules.Embedding``. 
+          See ``nussl.ml.networks.modules.Embedding``. 
         num_sources (int): Number of sources to create masks for. 
         mask_activation (list of str): Activation of the mask ('sigmoid', 'softmax', etc.). 
-        See ``nussl.ml.networks.modules.Embedding``. 
+          See ``nussl.ml.networks.modules.Embedding``. 
+        num_audio_channels (int): Number of audio channels in input (e.g. mono or stereo).
+          Defaults to 1.
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
-        normalization_class (str, optional): Type of normalization to apply, either
+          normalization_class (str, optional): Type of normalization to apply, either
         'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
         mix_key (str, optional): The key to look for in the input dictionary that contains
-        the mixture spectrogram. Defaults to 'mix_magnitude'.
+          the mixture spectrogram. Defaults to 'mix_magnitude'.
     
     Returns:
         dict: A recurrent Chimera network configuration that can be passed to
-        SeparationModel.
+          SeparationModel.
     """
 
     # define the building blocks
@@ -231,7 +240,8 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
                 'num_features': num_features,
                 'hidden_size': hidden_size * 2 if bidirectional else hidden_size,
                 'embedding_size': embedding_size,
-                'activation': embedding_activation
+                'activation': embedding_activation,
+                'num_audio_channels': num_audio_channels
             }
         },
         'mask': {
@@ -240,7 +250,8 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
                 'num_features': num_features,
                 'hidden_size': hidden_size * 2 if bidirectional else hidden_size,
                 'embedding_size': num_sources,
-                'activation': mask_activation
+                'activation': mask_activation,
+                'num_audio_channels': num_audio_channels
             }
         },
         'estimates': {
