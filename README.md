@@ -56,36 +56,44 @@ pytest
 
 ```
 ---------- coverage: platform darwin, python 3.7.6-final-0 -----------
-Name                                          Stmts   Miss  Cover   Missing
----------------------------------------------------------------------------
-nussl/core/__init__.py                            5      0   100%
-nussl/core/audio_signal.py                      431      0   100%
-nussl/core/constants.py                          38      0   100%
-nussl/core/efz_utils.py                         145      0   100%
-nussl/core/jupyter_utils.py                      33      0   100%
-nussl/core/masks/__init__.py                      4      0   100%
-nussl/core/masks/binary_mask.py                  23      0   100%
-nussl/core/masks/mask_base.py                    92      0   100%
-nussl/core/masks/soft_mask.py                    16      0   100%
-nussl/core/utils.py                             108      0   100%
-nussl/datasets/__init__.py                        2      0   100%
-nussl/datasets/base_dataset.py                   32      0   100%
-nussl/datasets/hooks.py                          68      0   100%
-nussl/datasets/transforms.py                    149      0   100%
-nussl/evaluation/__init__.py                      4      0   100%
-nussl/evaluation/bss_eval.py                     63      0   100%
-nussl/evaluation/evaluation_base.py              64      0   100%
-nussl/evaluation/precision_recall_fscore.py      34      0   100%
-nussl/ml/networks/__init__.py                     1      0   100%
-nussl/ml/networks/builders.py                    18      0   100%
-nussl/ml/networks/modules.py                    188      0   100%
-nussl/ml/networks/separation_model.py            78      0   100%
-nussl/ml/unfold/__init__.py                       1      0   100%
-nussl/ml/unfold/gaussian_mixture.py              74      0   100%
----------------------------------------------------------------------------
-TOTAL                                          1671      0   100%
+Name                                                  Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------------------------
+nussl/core/__init__.py                                    5      0   100%
+nussl/core/audio_signal.py                              444      0   100%
+nussl/core/constants.py                                  39      0   100%
+nussl/core/efz_utils.py                                 145      0   100%
+nussl/core/jupyter_utils.py                              33      0   100%
+nussl/core/masks/__init__.py                              4      0   100%
+nussl/core/masks/binary_mask.py                          23      0   100%
+nussl/core/masks/mask_base.py                            92      0   100%
+nussl/core/masks/soft_mask.py                            16      0   100%
+nussl/core/utils.py                                     136      0   100%
+nussl/datasets/__init__.py                                2      0   100%
+nussl/datasets/base_dataset.py                           78      0   100%
+nussl/datasets/hooks.py                                  83      0   100%
+nussl/datasets/transforms.py                            255      0   100%
+nussl/evaluation/__init__.py                              4      0   100%
+nussl/evaluation/bss_eval.py                             60      0   100%
+nussl/evaluation/evaluation_base.py                      64      0   100%
+nussl/evaluation/precision_recall_fscore.py              34      0   100%
+nussl/ml/networks/__init__.py                             2      0   100%
+nussl/ml/networks/builders.py                            18      0   100%
+nussl/ml/networks/modules.py                            183      0   100%
+nussl/ml/networks/separation_model.py                    78      0   100%
+nussl/ml/train/__init__.py                                3      0   100%
+nussl/ml/train/closures.py                               77      0   100%
+nussl/ml/train/loss.py                                   98      0   100%
+nussl/ml/train/trainer.py                               118      0   100%
+nussl/ml/unfold/__init__.py                               1      0   100%
+nussl/ml/unfold/gaussian_mixture.py                      74      0   100%
+nussl/separation/base/__init__.py                         2      0   100%
+nussl/separation/base/clustering_separation_base.py     276    276     0%   3-491
+nussl/separation/base/mask_separation_base.py            59     39    34%   48-54, 112, 116-150, 168, 172-175, 187-190, 201-204
+nussl/separation/base/separation_base.py                 45      0   100%
+-----------------------------------------------------------------------------------
+TOTAL                                                  2551    315    88%
 
-=============================================================================== 230 passed, 9 warnings in 201.19s (0:03:21) 
+=============================================================================== 283 passed, 12 warnings in 338.84s (0:05:38) ===============================================================================
 ```
 
 
