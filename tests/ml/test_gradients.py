@@ -1,18 +1,6 @@
 from nussl import ml, datasets, utils
-import tempfile
-from torch import optim
 import numpy as np
-import logging
-import os
 import torch
-from matplotlib import pyplot as plt
-from matplotlib.lines import Line2D
-
-logging.basicConfig(	
-    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',	
-    datefmt='%Y-%m-%d:%H:%M:%S',	
-    level=logging.INFO	
-) 
 
 def test_gradients(mix_source_folder):
     tfms = datasets.transforms.Compose([
@@ -121,4 +109,3 @@ def test_gradients(mix_source_folder):
         for param1, param2 in zip(model_grad.parameters(), model_acc.parameters()):
             assert torch.allclose(param1, param2)
             assert torch.allclose(param1.grad, param2.grad)
-    
