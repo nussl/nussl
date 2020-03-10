@@ -110,6 +110,9 @@ class PermutationInvariantLoss(nn.Module):
     Computes the Permutation Invariant Loss (PIT) [1] by permuting the estimated 
     sources and the reference sources. Takes the best permutation and only backprops
     the loss from that.
+
+    For when you're trying to match the estimates to the sources but you don't 
+    know the order in which your model outputs the estimates.
     
     [1] Yu, Dong, Morten Kolbæk, Zheng-Hua Tan, and Jesper Jensen. 
     "Permutation invariant training of deep models for speaker-independent 
@@ -148,6 +151,11 @@ class CombinationInvariantLoss(nn.Module):
     sources than there are in the ground truth. A subset of the output sources
     will be compared using Permutation Invariant Loss with the ground truth
     estimates.
+
+    For when you're trying to match the estimates to the sources but you don't 
+    know the order in which your model outputs the estimates AND you are 
+    outputting more estimates then there are sources.
+
     """
     DEFAULT_KEYS = {'estimates': 'estimates', 'source_magnitudes': 'targets'}
 

@@ -1,6 +1,6 @@
 """
-This recipe trains and evaluates a deep clustering model
-on the clean data from the WHAM dataset with 8k.
+This recipe trains and evaluates a mask inference model
+on the clean data from the WHAM dataset with 8k sample rate.
 """
 from nussl import ml, datasets, utils
 import os
@@ -80,7 +80,7 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
 # set up the loss function
 loss_dictionary = {
-    'PermutationInvariantLoss': {'weight': 0.8, 'args': ['L1Loss']}
+    'PermutationInvariantLoss': {'weight': 1.0, 'args': ['L1Loss']}
 }
 
 # set up closures for the forward and backward pass on one batch
@@ -107,13 +107,6 @@ shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 def step_scheduler(trainer):
     val_loss = trainer.state.epoch_history['validation/loss'][-1]
     scheduler.step(val_loss)
-
-@trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
-def visualize_grad_norm(trainer):
-    plt.clf()
-    epoch = trainer.state.epoch
-    utils.visualize_gradient_flow(model.named_parameters())
-    plt.savefig(os.path.join(OUTPUT_DIR, f'{epoch}:grad.png'))
 
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)

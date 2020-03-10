@@ -195,9 +195,10 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                 is_best = cur == min(trainer.state.epoch_history['validation/loss'])
 
         for key in trainer.state.iter_history:
-            if key not in trainer.state.epoch_history:
-                trainer.state.epoch_history[key] = []
-            trainer.state.epoch_history[key].append(np.mean(
+            _key = f"train/{key}"
+            if _key not in trainer.state.epoch_history:
+                trainer.state.epoch_history[_key] = []
+            trainer.state.epoch_history[_key].append(np.mean(
                 trainer.state.iter_history[key]
             ))
 
