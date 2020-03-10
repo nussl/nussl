@@ -1,7 +1,7 @@
 import torch
 from . import loss
 from collections import namedtuple
-
+import copy
 
 class Closure(object):
     """
@@ -56,7 +56,7 @@ class Closure(object):
             if custom_loss.__name__ not in dir(loss):
                 setattr(loss, custom_loss.__name__, custom_loss)
 
-        self._validate_loss_dictionary(loss_dictionary)
+        loss_dictionary = self._validate_loss_dictionary(loss_dictionary)
 
         self.losses = []
         for key, val in loss_dictionary.items():
@@ -104,7 +104,7 @@ class Closure(object):
                     if not isinstance(val[val_key], dict):
                         raise ClosureException(
                             "kwargs must be a dict")
-
+        return copy.deepcopy(loss_dictionary)
     
     def __call__(self, engine, data):
         raise NotImplementedError()

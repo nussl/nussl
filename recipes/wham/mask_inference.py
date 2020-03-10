@@ -23,12 +23,12 @@ logging.basicConfig(
 WHAM_ROOT = os.getenv("WHAM_ROOT")
 CACHE_ROOT = os.getenv("CACHE_ROOT")
 NUM_WORKERS = cpu_count() // 2
-OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_dpcl/')
+OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_mask_inference/')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 20
 MAX_EPOCHS = 80
 CACHE_POPULATED = True
-LEARNING_RATE = 2e-4
+LEARNING_RATE = 1e-3
 
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
@@ -69,8 +69,8 @@ val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKER
 n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
 # and 20 dimensional embedding
-config = ml.networks.builders.build_recurrent_dpcl(
-    n_features, 600, 4, True, 0.3, 20, ['sigmoid'], 
+config = ml.networks.builders.build_recurrent_mask_inference(
+    n_features, 600, 4, True, 0.3, 2, ['sigmoid'], 
     normalization_class='InstanceNorm')
 model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)
@@ -80,7 +80,7 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
 # set up the loss function
 loss_dictionary = {
-    'DeepClusteringLoss': {'weight': 1.0}
+    'PermutationInvariantLoss': {'weight': 0.8, 'args': ['L1Loss']}
 }
 
 # set up closures for the forward and backward pass on one batch

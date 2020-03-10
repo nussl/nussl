@@ -57,19 +57,19 @@ def test_mask_separation_base(mix_source_folder, monkeypatch):
         pass
 
     separator = separation.MaskSeparationBase(mix)
-    assert separator.mask_type == separation.MaskSeparationBase.SOFT_MASK
+    assert separator.mask_type == core.masks.SoftMask
     assert separator.mask_threshold == 0.5
 
     separator = separation.MaskSeparationBase(mix, 
         mask_type=core.masks.SoftMask(mask_shape=(100, 10)))
-    assert separator.mask_type == separation.MaskSeparationBase.SOFT_MASK
+    assert separator.mask_type == core.masks.SoftMask
 
     separator = separation.MaskSeparationBase(mix, mask_type='binary')
-    assert separator.mask_type == separation.MaskSeparationBase.BINARY_MASK
+    assert separator.mask_type == core.masks.BinaryMask
 
     separator = separation.MaskSeparationBase(mix, 
         mask_type=core.masks.BinaryMask(mask_shape=(100, 10)))
-    assert separator.mask_type == separation.MaskSeparationBase.BINARY_MASK
+    assert separator.mask_type == core.masks.BinaryMask
 
     pytest.raises(ValueError, separation.MaskSeparationBase, mix, mask_type=None)
     pytest.raises(ValueError, separation.MaskSeparationBase, mix, 

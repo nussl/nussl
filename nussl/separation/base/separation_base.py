@@ -80,8 +80,8 @@ class SeparationBase(object):
         """
         raise NotImplementedError('Cannot call base class.')
 
-    def __call__(self):
-        self.run()
+    def __call__(self, *args, **kwargs):
+        self.run(*args, **kwargs)
         return self.make_audio_signals()
 
     def __repr__(self):
@@ -98,3 +98,6 @@ class SeparationBase(object):
 
     def __ne__(self, other):
         return not self == other
+
+class SeparationException(Exception):
+    pass

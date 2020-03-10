@@ -12,6 +12,7 @@ from ...core import masks
 from . import SeparationBase
 from ...core import utils
 from ...core import constants
+from .separation_base import SeparationException
 
 class MaskSeparationBase(SeparationBase):
     """
@@ -33,23 +34,18 @@ class MaskSeparationBase(SeparationBase):
         input_audio_signal: (:class:`audio_signal.AudioSignal`) An 
           :class:`audio_signal.AudioSignal` object containing the mixture to be 
           separated.
-        mask_type: (str) Indicates whether to make binary or soft masks. 
-          See :attr:`mask_type` property for details.
+        mask_type: (str, BinaryMask, or SoftMask) Indicates whether to make 
+          binary or soft masks. See :attr:`mask_type` property for details.
         mask_threshold: (float) Value between [0.0, 1.0] to convert a soft mask 
           to a binary mask. See :attr:`mask_threshold` property for details.
     """
+    
+    MASKS = {
+        'binary': masks.BinaryMask,
+        'soft': masks.SoftMask
+    }
 
-    BINARY_MASK = 'binary'
-    """ String alias for setting this object to return :class:`separation.masks.binary_mask.BinaryMask` objects
-    """
-
-    SOFT_MASK = 'soft'
-    """ String alias for setting this object to return :class:`separation.masks.soft_mask.SoftMask` objects
-    """
-
-    _valid_mask_types = [BINARY_MASK, SOFT_MASK]
-
-    def __init__(self, input_audio_signal, mask_type=SOFT_MASK, mask_threshold=0.5):
+    def __init__(self, input_audio_signal, mask_type='soft', mask_threshold=0.5):
         super().__init__(input_audio_signal=input_audio_signal)
 
         self._mask_type = None
@@ -64,7 +60,7 @@ class MaskSeparationBase(SeparationBase):
         This property indicates what type of mask the derived algorithm will create 
         and be returned by :func:`run()`. Options are either 'soft' or 'binary'. 
         :attr:`mask_type` is usually set when initializing a 
-        :class:`MaskSeparationBase`-derived class and defaults to :attr:`SOFT_MASK`.
+        :class:`MaskSeparationBase`-derived class and defaults to 'soft..
         
         This property, though stored as a string, can be set in two ways when 
         initializing:
@@ -124,7 +120,7 @@ class MaskSeparationBase(SeparationBase):
     def mask_type(self, value):
         error = ValueError(
             f"Invalid mask type! Got {value} but valid masks are:"
-            f" [{', '.join(self._valid_mask_types)}]!"
+            f" [{', '.join(list(self.MASKS.keys()))}]!"
         )
 
         if value is None:
@@ -132,14 +128,14 @@ class MaskSeparationBase(SeparationBase):
 
         if isinstance(value, str):
             value = value.lower()
-            if value in self._valid_mask_types:
-                self._mask_type = value
+            if value in self.MASKS:
+                self._mask_type = self.MASKS[value]
             else:
                 raise error
         elif isinstance(value, masks.BinaryMask):
-            self._mask_type = self.BINARY_MASK
+            self._mask_type = self.MASKS['binary']
         elif isinstance(value, masks.SoftMask):
-            self._mask_type = self.SOFT_MASK
+            self._mask_type = self.MASKS['soft']
         else:
             raise error
 
@@ -180,10 +176,7 @@ class MaskSeparationBase(SeparationBase):
         Returns:
             A subclass of `MaskBase` containing 0s.
         """
-        if self.mask_type == self.BINARY_MASK:
-            return masks.BinaryMask.zeros(shape)
-        else:
-            return masks.SoftMask.zeros(shape)
+        return self.mask_type.zeros(shape)
 
     def ones_mask(self, shape):
         """
@@ -195,10 +188,7 @@ class MaskSeparationBase(SeparationBase):
         Returns:
             A subclass of `MaskBase` containing 1s.
         """
-        if self.mask_type == self.BINARY_MASK:
-            return masks.BinaryMask.ones(shape)
-        else:
-            return masks.SoftMask.ones(shape)
+        return self.mask_type.ones(shape)
 
     def run(self):
         """Runs mask-based separation algorithm. Base class: Do not call directly!
@@ -211,10 +201,28 @@ class MaskSeparationBase(SeparationBase):
     def make_audio_signals(self):
         """
         Makes :class:`audio_signal.AudioSignal` objects after mask-based
-        separation algorithm is run. 
-        Base class: Do not call directly!
+        separation algorithm is run. This looks in ``self.result_masks``
+        which must be filled by ``run`` in the algorithm that
+        subclasses this. It applies each mask to the mixture audio 
+        signal and returns a list of the estimates, which are each
+        AudioSignal objects.
 
-        Raises:
-            NotImplementedError: Cannot call base class!
+        Returns:
+            list: List of AudioSignal objects corresponding to the 
+              separated estimates.
         """
-        raise NotImplementedError('Cannot call base class!')
+        if not self.result_masks:
+            raise SeparationException(
+                "self.result_masks is empty! Did you call self.run()?")
+        
+        estimates = []
+        for mask in self.result_masks:
+            if not isinstance(mask, self.mask_type):
+                raise SeparationException(
+                    f"Expected {self.mask_type} but got {type(mask)} "
+                    f"in self.result_masks!"
+                )
+            estimate = self.audio_signal.apply_mask(mask, overwrite=False)
+            estimate.istft()
+            estimates.append(estimate)
+        return estimates
