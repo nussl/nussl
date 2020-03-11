@@ -267,19 +267,23 @@ class MagnitudeWeights(object):
     Args:
         mix_magnitude_key (str): Which key to look for the mix_magnitude data in.
     """
-    def __init__(self, mix_magnitude_key='mix_magnitude'):
+    def __init__(self, mix_key='mix', mix_magnitude_key='mix_magnitude'):
         self.mix_magnitude_key = mix_magnitude_key
+        self.mix_key = mix_key
 
     def __call__(self, data):
-        if self.mix_magnitude_key not in data:
+        if self.mix_magnitude_key not in data and self.mix_key not in data:
             raise TransformException(
-                f"Expected {self.mix_magnitude_key} in dictionary "
+                f"Expected {self.mix_magnitude_key} or {self.mix_key} in dictionary "
                 f"passed to this Transform! Got {list(data.keys())}. "
                 "Either MagnitudeSpectrumApproximation or "
                 "PhaseSensitiveSpectrumApproximation should be called "
                 "on the data dict prior to this transform. "
             )
-        magnitude_spectrogram = data['mix_magnitude']
+        elif self.mix_magnitude_key not in data:
+            data[self.mix_magnitude_key] = np.abs(data[self.mix_key].stft())
+
+        magnitude_spectrogram = data[self.mix_magnitude_key]
         weights = magnitude_spectrogram / (np.sum(magnitude_spectrogram) + 1e-6)
         weights *= (
             magnitude_spectrogram.shape[0] * magnitude_spectrogram.shape[1]

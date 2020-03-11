@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-class GaussianMixture(nn.Module):
+class GaussianMixtureTorch(nn.Module):
     def __init__(self, n_components, n_iter=5, covariance_type='diag',
                  covariance_init=1.0, reg_covar=1e-4):
         """

@@ -41,21 +41,17 @@ class Closure(object):
         }
 
     If you have your own loss function classes you wish to use, you can pass those
-    into the loss dictionary and make them discoverable by the closure by passing
-    a list of classes into the ``custom_losses`` argument.
+    into the loss dictionary and make them discoverable by the closure by using
+    `ml.register_loss.`
 
     Args:
         loss_dictionary (dict): Dictionary of losses described above.
 
-        custom_losses (list): A list of classes that are to be tacked onto the default
-          classes that are used to instantiate each Loss function in the loss dictionary.
+    See also:
+        ml.register_loss to register your loss functions with this closure.
 
     """
-    def __init__(self, loss_dictionary, custom_losses=[]):
-        for custom_loss in custom_losses:
-            if custom_loss.__name__ not in dir(loss):
-                setattr(loss, custom_loss.__name__, custom_loss)
-
+    def __init__(self, loss_dictionary):
         loss_dictionary = self._validate_loss_dictionary(loss_dictionary)
 
         self.losses = []
@@ -130,8 +126,8 @@ class TrainClosure(Closure):
         optimizer (torch Optimizer): Optimizer to use to train the model.
         model (SeparationModel): The model to be trained.
     """
-    def __init__(self, loss_dictionary, optimizer, model, custom_losses=[]):
-        super().__init__(loss_dictionary, custom_losses=custom_losses)
+    def __init__(self, loss_dictionary, optimizer, model):
+        super().__init__(loss_dictionary)
         self.optimizer = optimizer
         self.model = model
 
@@ -156,8 +152,8 @@ class ValidationClosure(Closure):
         loss_dictionary (dict): Dictionary containing loss functions and specification.
         model (SeparationModel): The model to be validated.
     """
-    def __init__(self, loss_dictionary, model, custom_losses=[]):
-        super().__init__(loss_dictionary, custom_losses=custom_losses)
+    def __init__(self, loss_dictionary, model):
+        super().__init__(loss_dictionary)
         self.model = model
 
     def __call__(self, engine, data):

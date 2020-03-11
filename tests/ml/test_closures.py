@@ -125,8 +125,9 @@ def test_base_closure():
         }
     }
 
-    closure = ml.train.closures.Closure(
-        custom_loss_dictionary, custom_losses=[CustomLoss])
+    ml.register_loss(CustomLoss)
+
+    closure = ml.train.closures.Closure(custom_loss_dictionary)
     assert isinstance(closure.losses[0][0], CustomLoss)
     
 

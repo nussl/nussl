@@ -26,46 +26,71 @@ class SeparationBase(object):
         if not isinstance(input_audio_signal, AudioSignal):
             raise ValueError('input_audio_signal is not an AudioSignal object!')
 
-        self._audio_signal = None
         self.audio_signal = input_audio_signal
-
-        if not self.audio_signal.has_data:
-            warnings.warn('input_audio_signal has no data!')
-
-            # initialize to empty arrays so that we don't crash randomly
-            self.audio_signal.audio_data = np.array([])
-            self.audio_signal.stft_data = np.array([[]])
 
     @property
     def sample_rate(self):
-        """(int): Sample rate of :attr:`audio_signal`.
+        """
+        (int): Sample rate of :attr:`audio_signal`.
         Literally :attr:`audio_signal.sample_rate`.
         """
         return self.audio_signal.sample_rate
 
     @property
     def stft_params(self):
-        """STFTParams object containing
+        """
+        STFTParams object containing the STFT parameters of the copied AudioSignal.
         """
         return self.audio_signal.stft_params
 
     @property
     def audio_signal(self):
-        """Copy of AudioSignal that is made on initialization.
+        """
+        Copy of AudioSignal that is made on initialization.
         """
         return self._audio_signal
 
+    def _preprocess_audio_signal(self):
+        """
+        This function should be implemented by the subclass. It can do things like
+        take the STFT of the audio signal, or resample it to a desired sample rate,
+        build the input data for a deep model, etc. Here, it does nothing.
+        """
+        pass
+
     @audio_signal.setter
     def audio_signal(self, input_audio_signal):
+        """
+        When setting the AudioSignal object for a separation algorithm (which
+        can happen on initialization or later one), it is copied on set so
+        as to not alter the data within the original audio signal. If the
+        AudioSignal object has data, then it the function `_preprocess_audio_signal`
+        is run, which is implemented by the subclass. 
+        
+        Args:
+            input_audio_signal ([type]): [description]
+        """
         self._audio_signal = copy.copy(input_audio_signal)
 
+        if self.audio_signal is not None:
+            if not self.audio_signal.has_data:
+                warnings.warn('input_audio_signal has no data!')
+
+                # initialize to empty arrays so that we don't crash randomly
+                self.audio_signal.audio_data = np.array([])
+                self.audio_signal.stft_data = np.array([[]])
+            else:
+                self._preprocess_audio_signal()
+
     def plot(self, **kwargs):
-        """Plots relevant data for separation algorithm
+        """
+        Plots relevant data for separation algorithm
         """
         pass
 
     def run(self):
-        """Runs separation algorithm
+        """
+        Runs separation algorithm.
 
         Raises:
             NotImplementedError: Cannot call base class
@@ -73,7 +98,8 @@ class SeparationBase(object):
         raise NotImplementedError('Cannot call base class.')
 
     def make_audio_signals(self):
-        """Makes :class:`audio_signal.AudioSignal` objects after separation algorithm is run
+        """
+        Makes :class:`audio_signal.AudioSignal` objects after separation algorithm is run
 
         Raises:
             NotImplementedError: Cannot call base class

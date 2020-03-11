@@ -68,7 +68,7 @@ def test_create_engine(mix_source_folder):
             trainer.state.output_folder, 'checkpoints', 'best.optimizer.pth'))
 
 
-        assert len(trainer.state.epoch_history['loss']) == 3
+        assert len(trainer.state.epoch_history['train/loss']) == 3
         assert len(trainer.state.iter_history['loss']) == 10
 
         # try resuming
@@ -154,8 +154,7 @@ def test_trainer_data_parallel(mix_source_folder):
         assert os.path.exists(os.path.join(
             trainer.state.output_folder, 'checkpoints', 'best.optimizer.pth'))
 
-
-        assert len(trainer.state.epoch_history['loss']) == 3
+        assert len(trainer.state.epoch_history['train/loss']) == 3
         assert len(trainer.state.iter_history['loss']) == 10
 
 def test_cache_dataset(mix_source_folder):

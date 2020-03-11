@@ -190,6 +190,18 @@ class MaskSeparationBase(SeparationBase):
         """
         return self.mask_type.ones(shape)
 
+    def _preprocess_audio_signal(self):
+        """
+        Masking based separation algorithm always need an STFT to work with. 
+        So here, the STFT of the AudioSignal object belonging to this separation
+        algorithm is taken. It also resets the `self.result_masks` object to
+        an empty list - new audio signal means new masks.
+
+        This gets called when the `self.audio_signal` is set.
+        """
+        self.stft = self.audio_signal.stft()
+        self.result_masks = []
+
     def run(self):
         """Runs mask-based separation algorithm. Base class: Do not call directly!
 

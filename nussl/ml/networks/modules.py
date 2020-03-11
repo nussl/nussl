@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import librosa
 import numpy as np
-from ..unfold import GaussianMixture
+from ..unfold import GaussianMixtureTorch
 from torch.utils.checkpoint import checkpoint
 import warnings
 

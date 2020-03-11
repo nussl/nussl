@@ -3,6 +3,16 @@ from nussl import ml
 from torch import nn
 import numpy as np
 
+def test_register_loss():
+    class ExampleLoss(nn.Module):
+        DEFAULT_KEYS = {'key1': 'arg1', 'key2': 'arg2'}
+        def forward(self, arg1, arg2):
+            return 0
+
+    assert ExampleLoss.__name__ not in (dir(ml.train.loss))
+    ml.register_loss(ExampleLoss)
+    assert ExampleLoss.__name__ in (dir(ml.train.loss))
+
 def test_deep_clustering_loss():
     n_batch = 40
     n_time = 400

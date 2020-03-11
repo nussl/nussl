@@ -1,4 +1,4 @@
-from nussl.ml.unfold import GaussianMixture
+from nussl.ml.unfold import GaussianMixtureTorch
 import torch
 import numpy as np
 from torch import nn
@@ -26,7 +26,7 @@ def test_ml_gaussian_mixture():
 
         X = X.view(10, 3000, -1)
 
-        gmm = GaussianMixture(
+        gmm = GaussianMixtureTorch(
             n_components=n_components, covariance_type=covariance_type)
         _loc = loc.view(1, 3, 2).expand(10, -1, -1)
         _cov = cov.view(1, 3, 2, 2).expand(10, -1, -1, -1)

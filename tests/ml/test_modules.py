@@ -7,6 +7,16 @@ import numpy as np
 import librosa
 import itertools
 
+def test_register_module():
+    class ExampleModule(torch.nn.Module):
+        def forward(self, data):
+            data = data * 2
+            return data
+
+    assert ExampleModule.__name__ not in (dir(ml.networks.modules))
+    ml.register_module(ExampleModule)
+    assert ExampleModule.__name__ in (dir(ml.networks.modules))
+
 def test_ml_amplitude_to_db(one_item):
     module = ml.networks.modules.AmplitudeToDB()
     output = module(one_item['mix_magnitude'])

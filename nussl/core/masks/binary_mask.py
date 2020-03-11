@@ -73,7 +73,8 @@ from . import MaskBase
 
 class BinaryMask(MaskBase):
     """
-    Class for creating a Binary Mask to apply to a time-frequency representation of the audio. 
+    Class for creating a Binary Mask to apply to a time-frequency representation of 
+    the audio. 
     
     Args:
         input_mask (:obj:`np.ndarray`): 2- or 3-D :obj:`np.array` that represents the mask.

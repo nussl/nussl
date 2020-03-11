@@ -24,7 +24,7 @@ chimera_config = builders.build_recurrent_chimera(
 
 gmm_unfold_config = copy.deepcopy(dpcl_config)
 gmm_unfold_config['modules']['mask'] = {
-    'class': 'GaussianMixture',
+    'class': 'GaussianMixtureTorch',
     'args': {
         'n_components': 2
     }
@@ -176,8 +176,10 @@ def test_separation_model_extra_modules(one_item):
             json.dump(dpcl_config, f)
         configs = [dpcl_config, tmp.name, json.dumps(dpcl_config)]
 
+        nussl.ml.register_module(MyModule)
+
         for config in configs:    
-            model = SeparationModel(config, extra_modules=[MyModule])
+            model = SeparationModel(config)
             output = model(one_item)
 
             assert (

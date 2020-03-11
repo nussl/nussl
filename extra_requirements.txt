@@ -7,3 +7,5 @@ pytest-cov
 IPython
 ffmpy
 scaper
+tqdm
+wrapt

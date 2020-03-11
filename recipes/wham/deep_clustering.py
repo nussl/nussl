@@ -2,14 +2,18 @@
 This recipe trains and evaluates a deep clustering model
 on the clean data from the WHAM dataset with 8k.
 """
-from nussl import ml, datasets, utils
+import nussl
+from nussl import ml, datasets, utils, separation, evaluation
 import os
 import torch
-from multiprocessing import cpu_count
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from torch import optim
 import logging
 import matplotlib.pyplot as plt
 import shutil
+import json
+import tqdm
 
 # seed this recipe for reproducibility
 utils.seed(0)
@@ -22,8 +26,9 @@ logging.basicConfig(
 # make sure this is set to WHAM root directory
 WHAM_ROOT = os.getenv("WHAM_ROOT")
 CACHE_ROOT = os.getenv("CACHE_ROOT")
-NUM_WORKERS = cpu_count() // 2
+NUM_WORKERS = multiprocessing.cpu_count() // 2
 OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_dpcl/')
+MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 20
 MAX_EPOCHS = 80
@@ -106,7 +111,41 @@ shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
 def step_scheduler(trainer):
     val_loss = trainer.state.epoch_history['validation/loss'][-1]
-    scheduler.step(val_loss
+    scheduler.step(val_loss)
 
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)
+
+test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
+# make a deep clustering separator with an empty audio signal initially
+# this one will live on gpu and be used in a threadpool for speed
+dpcl = separation.deep.DeepClustering(
+    nussl.AudioSignal(), num_sources=2, model_path=MODEL_PATH, device='cuda')
+
+os.makedirs(os.path.join(OUTPUT_DIR, 'results'), exist_ok=True)
+
+def forward_on_gpu(audio_signal):
+    # set the audio signal of the object to this item's mix
+    dpcl.audio_signal = audio_signal
+    features = dpcl.extract_features()
+    return features
+
+def separate_and_evaluate(item, features):
+    separator = separation.deep.DeepClustering(item['mix'], num_sources=2)
+    estimates = separator(features)
+
+    evaluator = evaluation.BSSEvalScale(
+        list(item['sources'].values()), estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+    output_path = os.path.join(
+        OUTPUT_DIR, 'results', f"{item['mix'].file_name}.json")
+    with open(output_path, 'w') as f:
+        json.dump(scores, f)
+
+pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
+
+for item in tqdm.tqdm(test_dataset):
+    features = forward_on_gpu(item['mix'])
+    pool.submit(separate_and_evaluate, item, features)
+
+pool.shutdown(wait=True)

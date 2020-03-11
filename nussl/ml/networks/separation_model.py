@@ -28,9 +28,8 @@ class SeparationModel(nn.Module):
           connections, or the path to a json file containing the dictionary. If the
           latter, the path will be loaded and used.
 
-        extra_modules (list): A list of classes that are to be tacked onto the default
-          classes that are used to instantiate each nn.Module that is used in the
-          network.
+    See also:
+        ml.register_module to register your custom modules with SeparationModel.
 
     Examples:
         >>> config = nussl.ml.networks.builders.build_recurrent_dpcl(
@@ -40,7 +39,7 @@ class SeparationModel(nn.Module):
         >>>
         >>> model = SeparationModel(config)
     """
-    def __init__(self, config, extra_modules=None):
+    def __init__(self, config):
         super(SeparationModel, self).__init__()
         if type(config) is str:
             if os.path.exists(config):
@@ -50,12 +49,6 @@ class SeparationModel(nn.Module):
                 config = json.loads(config)
 
         self._validate_config(config)
-
-        # Add extra modules to modules
-        if extra_modules:
-            for module in extra_modules:
-                if module.__name__ not in dir(modules):
-                    setattr(modules, module.__name__, module)
 
         module_dict = {}
         self.input = {}

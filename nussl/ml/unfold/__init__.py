@@ -8,4 +8,4 @@ submodule collects implementations that allow one to unfold different
 optimization processes in a neural network.
 """
 
-from .gaussian_mixture import GaussianMixture
+from .gaussian_mixture import GaussianMixtureTorch

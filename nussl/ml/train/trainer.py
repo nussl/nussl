@@ -297,7 +297,7 @@ def add_stdout_handler(trainer, validator=None):
         except:
             validation_loss = 'N/A'
 
-        train_loss = trainer.state.epoch_history['loss'][-1]
+        train_loss = trainer.state.epoch_history['train/loss'][-1]
         saved_model_path = trainer.state.saved_model_path
 
         logging_str = (

@@ -357,9 +357,12 @@ def test_transforms_magnitude_weights(mix_source_folder):
     item = dataset[0]
 
     tfm = transforms.MagnitudeWeights()
-    pytest.raises(TransformException, tfm, item)
+    pytest.raises(TransformException, tfm, {'sources': []})
+
+    item_from_mix = tfm(item)
 
     msa = transforms.MagnitudeSpectrumApproximation()
     item = tfm(msa(item))
 
     assert item['weights'].shape == item['mix_magnitude'].shape
+    assert np.allclose(item_from_mix['weights'], item['weights'])
