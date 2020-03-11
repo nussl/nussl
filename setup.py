@@ -43,7 +43,7 @@ setup(
         'ffmpy',
         'torch',
         'pytorch-ignite',
-        'tensorboard,
+        'tensorboard',
         'norbert'
     ],
     extras_require={
