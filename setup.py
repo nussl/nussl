@@ -42,7 +42,9 @@ setup(
         'numcodecs==0.6.2',
         'ffmpy',
         'torch',
-        'pytorch-ignite'
+        'pytorch-ignite',
+        'tensorboard,
+        'norbert'
     ],
     extras_require={
         'melodia': [
