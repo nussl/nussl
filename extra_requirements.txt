@@ -8,5 +8,4 @@ IPython
 ffmpy
 scaper
 tqdm
-wrapt
 termtables

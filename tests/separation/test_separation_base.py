@@ -130,9 +130,9 @@ def test_mask_separation_base(mix_source_folder, monkeypatch):
 
     pytest.raises(SeparationException, separator.make_audio_signals)
 
-def test_clustering_separation_base(mix_source_folder, monkeypatch):
-    dataset = datasets.MixSourceFolder(mix_source_folder)
-    item = dataset[0]
+def test_clustering_separation_base(scaper_folder, monkeypatch):
+    dataset = datasets.Scaper(scaper_folder)
+    item = dataset[5]
     mix = item['mix']
     sources = item['sources']
 
@@ -173,7 +173,7 @@ def test_clustering_separation_base(mix_source_folder, monkeypatch):
             for metric in ['SDR', 'SIR']:
                 _score = scores[key][metric]  
                 for val in _score:
-                    assert val > 9    
+                    assert val > 5
 
         separator = separation.ClusteringSeparationBase(
             mix, 2, clustering_type=clustering_type, mask_type='binary')

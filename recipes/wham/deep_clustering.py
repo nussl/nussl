@@ -53,7 +53,7 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 20
 MAX_EPOCHS = 80
 CACHE_POPULATED = True
-LEARNING_RATE = 1e-3
+LEARNING_RATE = 5e-4
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)

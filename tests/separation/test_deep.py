@@ -100,6 +100,11 @@ def test_deep_mixin(overfit_model):
     assert isinstance(
         output_tfm, datasets.transforms.MagnitudeSpectrumApproximation)
 
+    item['mix'].resample(8000)
+    deep_mixin.audio_signal = item['mix']
+    deep_mixin._get_input_data_for_model()
+    assert deep_mixin.audio_signal.sample_rate == deep_mixin.metadata['sample_rate']
+
 def test_deep_clustering(overfit_model):
     model_path, item = overfit_model
     dpcl = separation.deep.DeepClustering(

@@ -114,7 +114,7 @@ class MelProjection(nn.Module):
             sample_rate: (int) Sample rate of audio for computing the mel filters.
             num_frequencies: (int) Number of frequency bins in input spectrogram.
             num_mels: (int) Number of mel bins in output mel spectrogram. if num_mels < 0, this does nothing
-              other than clamping the output of clamp is True
+              other than clamping the output if clamp is True.
             direction: (str) Which direction to go in (either 'forward' - to mel, or 'backward' - to frequencies).
               Defaults to 'forward'.
             clamp: (bool) Whether to clamp the output values of the transform between 0.0 and 1.0. Used for transforming
