@@ -2,6 +2,63 @@ from .. import AudioSignal
 from itertools import permutations, combinations
 import numpy as np
 from ..core import utils
+import json
+import pandas as pd
+import os
+
+def aggregate_score_files(json_files, aggregator=np.median):
+    """
+    Takes a list of json files output by an Evaluation method in nussl
+    and aggregates all the metrics into a Pandas dataframe. Sample
+    output:
+
+    .. code-block:: none
+
+                                SDR        SIR        SAR
+        drums  oracle0.json   9.086025  15.025801  10.362709
+               random0.json  -6.539877  -6.087538   3.508338
+               oracle1.json   9.591432  14.335700  11.365882
+               random1.json  -1.358840  -0.993666   9.577297
+        bass   oracle0.json   7.936720  12.843092   9.631929
+               random0.json  -4.190299  -3.730649   5.802003
+               oracle1.json   8.581090  12.513445  10.831370
+               random1.json   0.365171   0.697621  11.693103
+        other  oracle0.json   2.024207   6.133359   4.158805
+               random0.json  -9.857085  -9.481909   0.965199
+               oracle1.json   3.961383   6.861785   7.085745
+               random1.json  -4.042277  -3.707997   7.260934
+        vocals oracle0.json  12.169686  16.650161  14.085037
+               random0.json  -2.440166  -1.884026   6.760966
+               oracle1.json  12.409913  16.248470  14.725983
+               random1.json   1.609577   1.958037  12.738970
+    
+    Args:
+        json_files (list): List of JSON files that will be parsed for metrics.
+        aggregator ([type], optional): How to aggregate results within a single
+          track. Defaults to np.median.
+    
+    Returns:
+        pd.DataFrame: Pandas dataframe containing the aggregated metrics.
+    """
+    metrics = {}
+    for json_file in json_files:
+        with open(json_file, 'r') as f:
+            data = json.load(f)
+        json_key = os.path.basename(json_file)
+        for name in data:
+            if name not in ['combination', 'permutation']:
+                if name not in metrics:
+                    metrics[name] = {}
+                if json_key not in metrics[name]:
+                    metrics[name][json_key] = {}
+                for key in data[name]:
+                    _data = aggregator(data[name][key])
+                    metrics[name][json_key][key] = _data
+    
+    df = pd.concat({
+        k: pd.DataFrame(v).T for k, v in metrics.items()
+    }, axis=0, names=['source', 'file'])
+    return df
 
 class EvaluationBase(object):
     """

@@ -9,3 +9,4 @@ ffmpy
 scaper
 tqdm
 wrapt
+termtables

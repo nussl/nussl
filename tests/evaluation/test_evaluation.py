@@ -4,6 +4,10 @@ from nussl.core.masks import SoftMask, BinaryMask
 import numpy as np
 from nussl.evaluation.evaluation_base import AudioSignalListMismatchError
 import torch
+import json
+import tempfile
+import os
+import glob
 
 @pytest.fixture(scope='module')
 def estimated_and_true_sources(musdb_tracks):
@@ -260,37 +264,51 @@ def test_scale_bss_eval(estimated_and_true_sources):
 def test_bss_eval_scale(estimated_and_true_sources):
     eval_args = [{'scaling': True}, {'scaling': False}]
 
-    for _eval_args in eval_args:
-        true_sources = estimated_and_true_sources['true']
-        estimated_sources = estimated_and_true_sources['random']
-        keys = estimated_and_true_sources['keys']
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for i, _eval_args in enumerate(eval_args):
+            true_sources = estimated_and_true_sources['true']
+            estimated_sources = estimated_and_true_sources['random']
+            keys = estimated_and_true_sources['keys']
 
-        for k, t in zip(keys, true_sources):
-            t.path_to_input_file = k
+            for k, t in zip(keys, true_sources):
+                t.path_to_input_file = k
 
-        evaluator = nussl.evaluation.BSSEvalScale(
-            true_sources, estimated_sources, **_eval_args)
-        references, estimates = evaluator.preprocess()
-        scores = evaluator.evaluate_helper(references, estimates)
-        assert isinstance(scores, list)
+            evaluator = nussl.evaluation.BSSEvalScale(
+                true_sources, estimated_sources, **_eval_args)
+            references, estimates = evaluator.preprocess()
+            scores = evaluator.evaluate_helper(references, estimates)
+            assert isinstance(scores, list)
 
-        random_scores = evaluator.evaluate()
-        check_scores(evaluator)
+            random_scores = evaluator.evaluate()
+            check_scores(evaluator)
 
-        estimated_sources = estimated_and_true_sources['oracle']
+            estimated_sources = estimated_and_true_sources['oracle']
 
-        evaluator = nussl.evaluation.BSSEvalScale(
-            true_sources, estimated_sources, **_eval_args)
-        oracle_scores = evaluator.evaluate()
+            evaluator = nussl.evaluation.BSSEvalScale(
+                true_sources, estimated_sources, **_eval_args)
+            oracle_scores = evaluator.evaluate()
+            
+            # the oracle score should beat the random score by a lot on average
+            # for SDR and SIR
+            for key in evaluator.source_labels:
+                for metric in ['SDR', 'SIR']:
+                    _oracle = oracle_scores[key][metric]
+                    _random = random_scores[key][metric]
+                    
+                    assert np.alltrue(_oracle > _random)
+            
+            save_scores(tmpdir, oracle_scores, f'oracle{i}.json')
+            save_scores(tmpdir, random_scores, f'random{i}.json')
         
-        # the oracle score should beat the random score by a lot on average
-        # for SDR and SIR
-        for key in evaluator.source_labels:
-            for metric in ['SDR', 'SIR']:
-                _oracle = oracle_scores[key][metric]
-                _random = random_scores[key][metric]
-                
-                assert np.alltrue(_oracle > _random)
+        check_aggregate(tmpdir)
+
+def save_scores(directory, scores, name):
+    with open(os.path.join(directory, f'{name}.json'), 'w') as f:
+        json.dump(scores, f)
+
+def check_aggregate(directory):
+    json_files = glob.glob(f"{directory}/*.json")
+    df = nussl.evaluation.aggregate_score_files(json_files)
 
 def test_eval_permutation(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true'][:2]

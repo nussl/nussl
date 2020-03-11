@@ -1,6 +1,18 @@
 """
 This recipe trains and evaluates a deep clustering model
-on the clean data from the WHAM dataset with 8k.
+on the clean data from the WHAM dataset with 8k. It's divided into 
+three big chunks: data preparation, training, and evaluation.
+Final output of this script:
+
+┌───────────────────┬────────────────────┬───────────────────┐
+│                   │ OVERALL (N = 6000) │                   │
+╞═══════════════════╪════════════════════╪═══════════════════╡
+│        SAR        │        SDR         │        SIR        │
+├───────────────────┼────────────────────┼───────────────────┤
+│ 9.904043743062067 │ 9.494108055691273  │ 22.97060326591949 │
+└───────────────────┴────────────────────┴───────────────────┘
+
+Last run on 3/11/2020.
 """
 import nussl
 from nussl import ml, datasets, utils, separation, evaluation
@@ -14,6 +26,13 @@ import matplotlib.pyplot as plt
 import shutil
 import json
 import tqdm
+import glob
+import numpy as np
+import termtables
+
+# ----------------------------------------------------
+# ------------------- SETTING UP ---------------------
+# ----------------------------------------------------
 
 # seed this recipe for reproducibility
 utils.seed(0)
@@ -28,12 +47,17 @@ WHAM_ROOT = os.getenv("WHAM_ROOT")
 CACHE_ROOT = os.getenv("CACHE_ROOT")
 NUM_WORKERS = multiprocessing.cpu_count() // 2
 OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_dpcl/')
+RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 20
 MAX_EPOCHS = 80
 CACHE_POPULATED = True
-LEARNING_RATE = 2e-4
+LEARNING_RATE = 1e-3
+
+os.makedirs(RESULTS_DIR, exist_ok=True)
+shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
+shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
@@ -65,6 +89,10 @@ if not CACHE_POPULATED:
     cache_dataset(dataset)
     cache_dataset(val_dataset)
 
+# ----------------------------------------------------
+# -------------------- TRAINING ----------------------
+# ----------------------------------------------------
+
 # reload after caching
 dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
     batch_size=BATCH_SIZE)
@@ -76,7 +104,7 @@ n_features = dataset[0]['mix_magnitude'].shape[1]
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_dpcl(
     n_features, 600, 4, True, 0.3, 20, ['sigmoid'], 
-    normalization_class='InstanceNorm')
+    normalization_class='BatchNorm')
 model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)
 
@@ -105,8 +133,6 @@ ml.train.add_validate_and_checkpoint(
     trainer, val_data=val_dataloader, validator=validator)
 ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 
-shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
-
 # add a handler to set up patience
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
 def step_scheduler(trainer):
@@ -116,13 +142,15 @@ def step_scheduler(trainer):
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)
 
+# ----------------------------------------------------
+# ------------------- EVALUATION ---------------------
+# ----------------------------------------------------
+
 test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
 # make a deep clustering separator with an empty audio signal initially
 # this one will live on gpu and be used in a threadpool for speed
 dpcl = separation.deep.DeepClustering(
     nussl.AudioSignal(), num_sources=2, model_path=MODEL_PATH, device='cuda')
-
-os.makedirs(os.path.join(OUTPUT_DIR, 'results'), exist_ok=True)
 
 def forward_on_gpu(audio_signal):
     # set the audio signal of the object to this item's mix
@@ -137,8 +165,7 @@ def separate_and_evaluate(item, features):
     evaluator = evaluation.BSSEvalScale(
         list(item['sources'].values()), estimates, compute_permutation=True)
     scores = evaluator.evaluate()
-    output_path = os.path.join(
-        OUTPUT_DIR, 'results', f"{item['mix'].file_name}.json")
+    output_path = os.path.join(RESULTS_DIR, f"{item['mix'].file_name}.json")
     with open(output_path, 'w') as f:
         json.dump(scores, f)
 
@@ -149,3 +176,16 @@ for item in tqdm.tqdm(test_dataset):
     pool.submit(separate_and_evaluate, item, features)
 
 pool.shutdown(wait=True)
+
+json_files = glob.glob(f"{RESULTS_DIR}/*.json")
+
+df = evaluation.aggregate_score_files(json_files)
+
+overall = df.mean()
+headers = ["", f"OVERALL (N = {df.shape[0]})", ""]
+metrics = ["SAR", "SDR", "SIR"]
+data = np.array(df.mean()).T
+
+data = [metrics, data]
+
+termtables.print(data, header=headers, padding=(0, 1), alignment="ccc")
