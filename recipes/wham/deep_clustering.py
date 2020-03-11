@@ -170,15 +170,12 @@ def separate_and_evaluate(item, features):
         json.dump(scores, f)
 
 pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
-
 for item in tqdm.tqdm(test_dataset):
     features = forward_on_gpu(item['mix'])
     pool.submit(separate_and_evaluate, item, features)
-
 pool.shutdown(wait=True)
 
 json_files = glob.glob(f"{RESULTS_DIR}/*.json")
-
 df = evaluation.aggregate_score_files(json_files)
 
 overall = df.mean()
@@ -187,5 +184,4 @@ metrics = ["SAR", "SDR", "SIR"]
 data = np.array(df.mean()).T
 
 data = [metrics, data]
-
 termtables.print(data, header=headers, padding=(0, 1), alignment="ccc")
