@@ -119,6 +119,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
                 f"dimension! Got {features.shape[:-1]}, expected {self.stft.shape}.")
 
         responsibilities = self.cluster_features(features, self.clusterer)
+        self.features = features
 
         for i in range(responsibilities.shape[-1]):
             mask_data = responsibilities[..., i]
