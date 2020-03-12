@@ -19,7 +19,7 @@ class DeepMixin():
             model_path (str): path to model saved as SeparatonModel.
             device (str or torch.Device): loads model on CPU or GPU. Defaults to
               'cuda'.
-              
+
         Returns:
             model (SeparationModel): Loaded model, nn.Module
             metadata (dict): metadata associated with model, used for making
@@ -85,7 +85,7 @@ class DeepMixin():
 
         for key in data:
             if torch.is_tensor(data[key]):
-                data[key] = data[key].unsqueeze(0).to(self.device)
+                data[key] = data[key].unsqueeze(0).to(self.device).float()
                 if self.metadata['num_channels'] == 1:
                     # then each channel is processed indep
                     data[key] = data[key].transpose(0, -1)

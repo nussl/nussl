@@ -75,6 +75,10 @@ class BaseDataset(Dataset):
 
         if not isinstance(self.items, list):
             raise DataSetException("Output of self.get_items must be a list!")
+        
+        # getting one item in order to set up parameters for audio
+        # signals if necessary
+        self.process_item(self.items[0])
 
     @property
     def cache_populated(self):
@@ -240,13 +244,6 @@ class BaseDataset(Dataset):
               of this dataset or to set the parameters of, according to what is in the 
               dataset.
         """
-
-        # set audio signal attributes to requested values, if they exist
-        if self.stft_params:
-            audio_signal.stft_params = self.stft_params
-        else:
-            self.stft_params = audio_signal.stft_params
-
         if self.sample_rate and self.sample_rate != audio_signal.sample_rate:
             if self.strict_sample_rate:
                 raise DataSetException(
@@ -254,10 +251,15 @@ class BaseDataset(Dataset):
                     f"because self.strict_sample_rate = True. Please resample or "
                     f"turn set self.strict_sample_rate = False"
                 )
-            audio_signal.resample(self.sample_rate)
-                
+            audio_signal.resample(self.sample_rate)  
         else:
             self.sample_rate = audio_signal.sample_rate
+
+        # set audio signal attributes to requested values, if they exist
+        if self.stft_params:
+            audio_signal.stft_params = self.stft_params
+        else:
+            self.stft_params = audio_signal.stft_params
 
         if self.num_channels:
             if audio_signal.num_channels > self.num_channels:

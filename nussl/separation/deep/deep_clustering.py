@@ -13,6 +13,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
 
     def extract_features(self):
         input_data = self._get_input_data_for_model()
+
         with torch.no_grad():
             output = self.model(input_data)
             if 'embedding' not in output:

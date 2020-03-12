@@ -85,6 +85,10 @@ class MUSDB18(BaseDataset):
     def process_item(self, item):
         track = self.musdb[item]
         mix, sources = utils.musdb_track_to_audio_signals(track)
+        self._setup_audio_signal(mix)
+        for source in list(sources.values()):
+            self._setup_audio_signal(source)
+        
         output = {
             'mix': mix,
             'sources': sources,

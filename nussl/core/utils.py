@@ -225,6 +225,7 @@ def musdb_track_to_audio_signals(track):
     from .audio_signal import AudioSignal
 
     mixture = AudioSignal(audio_data_array=track.audio, sample_rate=track.rate)
+    mixture.path_to_input_file = track.name
     stems = track.stems
     sources = {}
 
@@ -233,7 +234,7 @@ def musdb_track_to_audio_signals(track):
             audio_data_array=stems[v.stem_id],
             sample_rate=track.rate
         )
-        sources[k].path_to_input_file = f'musdb/{k}.wav'
+        sources[k].path_to_input_file = f'musdb/{track.name}_{k}.wav'
     
     return mixture, sources
 
