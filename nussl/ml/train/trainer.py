@@ -234,7 +234,8 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
             else:
                 _model = model
             _model.save(_path, {'metadata': metadata})
-            torch.save(optimizer.state_dict(), _path.replace('model', 'optimizer'))
+            torch.save(optimizer.state_dict(), 
+                _path.replace('model.pth', 'optimizer.pth'))
 
         trainer.state.saved_model_path = output_paths[-1]
         trainer.state.output_folder = output_folder
