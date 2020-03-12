@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.md') as file:
     long_description = file.read()
@@ -14,7 +14,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Artistic Software',
         'Topic :: Multimedia',
         'Topic :: Multimedia :: Sound/Audio',
@@ -28,7 +28,7 @@ setup(
     maintainer_email='ethanmanilow@u.northwestern.edu',
     url='https://github.com/interactiveaudiolab/nussl',
     license='MIT',
-    packages=['nussl'],
+    packages=find_packages(),
     keywords=['audio', 'source', 'separation', 'music', 'sound', 'source separation'],
     install_requires=[
         'jams',
