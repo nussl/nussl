@@ -4,13 +4,13 @@ on the clean data from the WHAM dataset with 8k. It's divided into
 three big chunks: data preparation, training, and evaluation.
 Final output of this script:
 
-┌───────────────────┬────────────────────┬───────────────────┐
-│                   │ OVERALL (N = 3000) │                   │
-╞═══════════════════╪════════════════════╪═══════════════════╡
-│        SAR        │        SDR         │        SIR        │
-├───────────────────┼────────────────────┼───────────────────┤
-│ 9.904043743062067 │ 9.494108055691273  │ 22.97060326591949 │
-└───────────────────┴────────────────────┴───────────────────┘
+┌────────────────────┬────────────────────┬───────────────────┐
+│                    │ OVERALL (N = 6000) │                   │
+╞════════════════════╪════════════════════╪═══════════════════╡
+│        SAR         │        SDR         │        SIR        │
+├────────────────────┼────────────────────┼───────────────────┤
+│ 10.070061988415594 │ 9.709680676403222  │ 22.73901055858742 │
+└────────────────────┴────────────────────┴───────────────────┘
 
 Last run on 3/11/2020.
 """
@@ -53,94 +53,94 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 25
 MAX_EPOCHS = 100
 CACHE_POPULATED = True
-LEARNING_RATE = 5e-4
+LEARNING_RATE = 2e-4
 
+shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
-# shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
-# shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
+shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 
-# def construct_transforms(cache_location):
-#     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
-#     tfm = datasets.transforms.Compose([
-#         datasets.transforms.MagnitudeSpectrumApproximation(), # take stfts and get ibm
-#         datasets.transforms.MagnitudeWeights(), # get magnitude weights
-#         datasets.transforms.ToSeparationModel(), # convert to tensors
-#         datasets.transforms.Cache(cache_location), # up to here gets cached
-#         datasets.transforms.GetExcerpt(400) # get 400 frame excerpts (3.2 seconds)
-#     ])
-#     return tfm
+def construct_transforms(cache_location):
+    # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
+    tfm = datasets.transforms.Compose([
+        datasets.transforms.MagnitudeSpectrumApproximation(), # take stfts and get ibm
+        datasets.transforms.MagnitudeWeights(), # get magnitude weights
+        datasets.transforms.ToSeparationModel(), # convert to tensors
+        datasets.transforms.Cache(cache_location), # up to here gets cached
+        datasets.transforms.GetExcerpt(400) # get 400 frame excerpts (3.2 seconds)
+    ])
+    return tfm
 
-# def cache_dataset(_dataset):
-#     cache_dataloader = torch.utils.data.DataLoader(
-#         _dataset, num_workers=NUM_WORKERS, batch_size=BATCH_SIZE)
-#     ml.train.cache_dataset(cache_dataloader)
-#     _dataset.cache_populated = True
+def cache_dataset(_dataset):
+    cache_dataloader = torch.utils.data.DataLoader(
+        _dataset, num_workers=NUM_WORKERS, batch_size=BATCH_SIZE)
+    ml.train.cache_dataset(cache_dataloader)
+    _dataset.cache_populated = True
 
-# tfm = construct_transforms(os.path.join(CACHE_ROOT, 'tr'))
-# dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm, 
-#     cache_populated=CACHE_POPULATED)
+tfm = construct_transforms(os.path.join(CACHE_ROOT, 'tr'))
+dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm, 
+    cache_populated=CACHE_POPULATED)
 
-# tfm = construct_transforms(os.path.join(CACHE_ROOT, 'cv'))
-# val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm, 
-#     cache_populated=CACHE_POPULATED)
+tfm = construct_transforms(os.path.join(CACHE_ROOT, 'cv'))
+val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm, 
+    cache_populated=CACHE_POPULATED)
 
-# if not CACHE_POPULATED:
-#     # cache datasets for speed
-#     cache_dataset(dataset)
-#     cache_dataset(val_dataset)
+if not CACHE_POPULATED:
+    # cache datasets for speed
+    cache_dataset(dataset)
+    cache_dataset(val_dataset)
 
-# # ----------------------------------------------------
-# # -------------------- TRAINING ----------------------
-# # ----------------------------------------------------
+# ----------------------------------------------------
+# -------------------- TRAINING ----------------------
+# ----------------------------------------------------
 
-# # reload after caching
-# dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
-#     batch_size=BATCH_SIZE)
-# val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS,
-#     batch_size=BATCH_SIZE)
+# reload after caching
+dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
+    batch_size=BATCH_SIZE)
+val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS,
+    batch_size=BATCH_SIZE)
 
-# n_features = dataset[0]['mix_magnitude'].shape[1]
-# # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
-# # and 20 dimensional embedding
-# config = ml.networks.builders.build_recurrent_dpcl(
-#     n_features, 600, 4, True, 0.3, 20, ['sigmoid'], 
-#     normalization_class='BatchNorm')
-# model = ml.SeparationModel(config).to(DEVICE)
-# logging.info(model)
+n_features = dataset[0]['mix_magnitude'].shape[1]
+# builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
+# and 20 dimensional embedding
+config = ml.networks.builders.build_recurrent_dpcl(
+    n_features, 600, 4, True, 0.3, 20, ['sigmoid'], 
+    normalization_class='BatchNorm')
+model = ml.SeparationModel(config).to(DEVICE)
+logging.info(model)
 
-# optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-# scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
-# # set up the loss function
-# loss_dictionary = {
-#     'DeepClusteringLoss': {'weight': 1.0}
-# }
+# set up the loss function
+loss_dictionary = {
+    'DeepClusteringLoss': {'weight': 1.0}
+}
 
-# # set up closures for the forward and backward pass on one batch
-# train_closure = ml.train.closures.TrainClosure(
-#     loss_dictionary, optimizer, model)
-# val_closure = ml.train.closures.ValidationClosure(
-#     loss_dictionary, model)
+# set up closures for the forward and backward pass on one batch
+train_closure = ml.train.closures.TrainClosure(
+    loss_dictionary, optimizer, model)
+val_closure = ml.train.closures.ValidationClosure(
+    loss_dictionary, model)
 
-# # set up engines for training and validation
-# trainer, validator = ml.train.create_train_and_validation_engines(
-#     train_closure, val_closure, device=DEVICE)
+# set up engines for training and validation
+trainer, validator = ml.train.create_train_and_validation_engines(
+    train_closure, val_closure, device=DEVICE)
 
-# # attach handlers for visualizing output and saving the model
-# ml.train.add_stdout_handler(trainer, validator)
-# ml.train.add_validate_and_checkpoint(
-#     OUTPUT_DIR, model, optimizer, dataset, 
-#     trainer, val_data=val_dataloader, validator=validator)
-# ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
+# attach handlers for visualizing output and saving the model
+ml.train.add_stdout_handler(trainer, validator)
+ml.train.add_validate_and_checkpoint(
+    OUTPUT_DIR, model, optimizer, dataset, 
+    trainer, val_data=val_dataloader, validator=validator)
+ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 
-# # add a handler to set up patience
-# @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
-# def step_scheduler(trainer):
-#     val_loss = trainer.state.epoch_history['validation/loss'][-1]
-#     scheduler.step(val_loss)
+# add a handler to set up patience
+@trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
+def step_scheduler(trainer):
+    val_loss = trainer.state.epoch_history['validation/loss'][-1]
+    scheduler.step(val_loss)
 
-# # train the model
-# trainer.run(dataloader, max_epochs=MAX_EPOCHS)
+# train the model
+trainer.run(dataloader, max_epochs=MAX_EPOCHS)
 
 # ----------------------------------------------------
 # ------------------- EVALUATION ---------------------
