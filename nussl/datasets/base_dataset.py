@@ -77,8 +77,9 @@ class BaseDataset(Dataset):
             raise DataSetException("Output of self.get_items must be a list!")
         
         # getting one item in order to set up parameters for audio
-        # signals if necessary
-        self.process_item(self.items[0])
+        # signals if necessary, if there are any items
+        if self.items:
+            self.process_item(self.items[0])
 
     @property
     def cache_populated(self):

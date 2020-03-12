@@ -66,8 +66,8 @@ def test_dataset_hook_scaper_folder(scaper_folder):
 
 
 def test_dataset_hook_bad_scaper_folder(bad_scaper_folder):
-    dataset = nussl.datasets.Scaper(bad_scaper_folder)
-    pytest.raises(DataSetException, dataset.__getitem__, 0)
+    pytest.raises(
+        DataSetException, nussl.datasets.Scaper, bad_scaper_folder)
 
 def test_dataset_hook_wham(benchmark_audio):
     # make a fake wham dir structure

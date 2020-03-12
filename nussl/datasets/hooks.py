@@ -69,16 +69,11 @@ class MUSDB18(BaseDataset):
             folder = os.path.join(
                 constants.DEFAULT_DOWNLOAD_DIRECTORY, 'musdb18'
             )
-        self.db_args = {
-            'is_wav': is_wav,
-            'download': download,
-            'subsets': subsets,
-            'split': split
-        }
+        self.musdb = musdb.DB(root=folder, is_wav=is_wav, download=download, 
+                              subsets=subsets, split=split)
         super().__init__(folder, **kwargs)
 
     def get_items(self, folder):
-        self.musdb = musdb.DB(root=folder, **self.db_args)
         items = range(len(self.musdb))
         return list(items)
 

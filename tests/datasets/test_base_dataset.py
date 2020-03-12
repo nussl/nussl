@@ -124,15 +124,16 @@ def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
 
 
     for s, sr, nc, s_sr in product:
+        if s_sr and sr is not None:
+            pytest.raises(
+                DataSetException, BaseDataset, 'test', stft_params=s,
+                sample_rate=sr, num_channels=nc, strict_sample_rate=s_sr)
+            continue
+
         _dataset = BaseDataset(
             'test', stft_params=s, 
             sample_rate=sr, num_channels=nc,
             strict_sample_rate=s_sr)
-        
-        if s_sr and sr is not None:
-            pytest.raises(DataSetException, _get_outputs, _dataset)
-            continue
-
         outputs = _get_outputs(_dataset)
 
         # they should all have the same sample rate and stft
