@@ -133,24 +133,25 @@ def test_separation_deep_clustering(overfit_model):
 
 def test_separation_deep_mask_estimation(overfit_model):
     model_path, item = overfit_model
-    dme = separation.deep.DeepMaskEstimation(
-        item['mix'], model_path, mask_type='soft')
+    for mask_type in ['soft', 'binary']:
+        dme = separation.deep.DeepMaskEstimation(
+            item['mix'], model_path, mask_type=mask_type)
 
-    item['mix'].write_audio_to_file('tests/local/dme_mix.wav')
-    sources = item['sources']
-    estimates = dme()
-    for i, e in enumerate(estimates):
-        e.write_audio_to_file(f'tests/local/dme_overfit{i}.wav')
+        item['mix'].write_audio_to_file('tests/local/dme_mix.wav')
+        sources = item['sources']
+        estimates = dme()
+        for i, e in enumerate(estimates):
+            e.write_audio_to_file(f'tests/local/dme_overfit{i}.wav')
 
-    evaluator = evaluation.BSSEvalScale(
-        list(sources.values()), estimates, compute_permutation=True)
-    scores = evaluator.evaluate()
+        evaluator = evaluation.BSSEvalScale(
+            list(sources.values()), estimates, compute_permutation=True)
+        scores = evaluator.evaluate()
 
-    for key in evaluator.source_labels:
-        for metric in ['SDR', 'SIR']:
-            _score = scores[key][metric]  
-            for val in _score:
-                assert val > SDR_CUTOFF
+        for key in evaluator.source_labels:
+            for metric in ['SDR', 'SIR']:
+                _score = scores[key][metric]  
+                for val in _score:
+                    assert val > SDR_CUTOFF
 
-    dme.model.output_keys = []
-    pytest.raises(SeparationException, dme.run)
+        dme.model.output_keys = []
+        pytest.raises(SeparationException, dme.run)

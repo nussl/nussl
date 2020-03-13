@@ -115,7 +115,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
 
         if 'KMeans' in self.clustering_type:
             distances = clusterer.transform(features.reshape(-1, shape[-1]))
-            distances = np.exp(-self.beta * distances)
+            distances = np.exp(-self.beta * distances) + 1e-8
             responsibilities = distances / distances.sum(axis=-1, keepdims=True)
         if 'GaussianMixture' in self.clustering_type:
             responsibilities = clusterer.predict_proba(features.reshape(-1, shape[-1]))

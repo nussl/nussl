@@ -446,38 +446,3 @@ class Duet(mask_separation_base.MaskSeparationBase):
             cur_signal = AudioSignal(audio_data_array=source_estimate, sample_rate=self.sample_rate)
             signals.append(cur_signal)
         return signals
-
-    def plot(self, normalize=True):
-        """Plots histograms with the results of the DUET algorithm
-
-        Parameters:
-            output_name (str): path to save plot as
-            three_d_plot (Optional[bool]): Flags whether or not to plot in 3d. Defaults to False
-            normalize (Optional[bool]): Flags whether the matrix should be normalized or not
-        """
-        from mpl_toolkits.mplot3d import axes3d
-        
-        histogram_data = self.get_atn_delay_histogram(recompute=True, normalized=normalize) \
-            if self.attenuation_delay_histogram is None \
-            else self.attenuation_delay_histogram
-
-        atn_tile = np.tile(self.attenuation_bins[1:], (self.num_delay_bins, 1)).T
-        delay_tile = np.tile(self.delay_bins[1:].T, (self.num_attenuation_bins, 1))
-
-        # plot the histogram in 2D
-        plt.subplot(121)
-        plt.pcolormesh(atn_tile, delay_tile, histogram_data)
-        plt.xlabel(r'$\alpha$', fontsize=16)
-        plt.ylabel(r'$\delta$', fontsize=16)
-        plt.title(r'$\alpha-\delta$ Histogram')
-        plt.axis('tight')
-
-        # plot the histogram in 3D
-        fig = plt.gcf()
-        ax = fig.add_subplot(122, projection='3d')
-        ax.plot_wireframe(atn_tile, delay_tile, histogram_data, rstride=2, cstride=2)
-        plt.xlabel(r'$\alpha$', fontsize=16)
-        plt.ylabel(r'$\delta$', fontsize=16)
-        plt.title(r'$\alpha-\delta$ Histogram')
-        plt.axis('tight')
-        ax.view_init(30, 30)

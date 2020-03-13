@@ -8,6 +8,9 @@ class SpatialClustering(ClusteringSeparationBase):
     IPD/ILD features are inter-phase difference and inter-level difference
     features. Sounds coming from different directions will naturally cluster
     in IPD/ILD space. 
+
+    Subclasses ClusteringSeparationBase which actually handles all of the
+    clustering functionality behind this function.
     """
     def extract_features(self):
         ipd, ild = self.audio_signal.ipd_ild_features()

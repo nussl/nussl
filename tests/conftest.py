@@ -12,12 +12,14 @@ from nussl.datasets import transforms
 from nussl import datasets
 import numpy as np
 import torch
+import json
 
 def _unzip(path_to_zip, target_path):
     with zipfile.ZipFile(path_to_zip, 'r') as zip_ref:
         zip_ref.extractall(target_path)
 
 fix_dir = os.path.expanduser('~/.nussl/tests/')
+OVERWRITE_REGRESSION_DATA = False
 
 @pytest.fixture(scope="module")
 def benchmark_audio():
@@ -128,6 +130,15 @@ def mix_and_sources(scaper_folder):
     return item['mix'], item['sources']
 
 @pytest.fixture(scope="module")
+def music_mix_and_sources(musdb_tracks):
+    dataset = datasets.MUSDB18(
+        folder=musdb_tracks.root, download=False, 
+        transform=transforms.SumSources(
+            [['drums', 'bass', 'other']]))
+    item = dataset[0]
+    return item['mix'], item['sources']
+
+@pytest.fixture(scope="module")
 def bad_scaper_folder(toy_datasets):
     wsj_sources = toy_datasets['babywsj_oW0F0H9.zip']
     fg_path = os.path.join(
@@ -184,3 +195,21 @@ def one_item(scaper_folder):
         if torch.is_tensor(data[k]):
             data[k] = data[k].unsqueeze(0)
     yield data
+
+@pytest.fixture(scope="module")
+def check_against_regression_data():
+    def check(scores, path):
+        if not os.path.exists(path):
+            with open(path, 'w') as f:
+                json.dump(scores, f, indent=4)
+        if OVERWRITE_REGRESSION_DATA:
+            with open(path, 'w') as f:
+                json.dump(scores, f, indent=4)
+        else:
+            with open(path, 'r') as f:
+                reg_scores = json.load(f)
+            for key in scores:
+                if key not in ['permutation', 'combination']:
+                    for metric in scores[key]:
+                        assert scores[key][metric] == reg_scores[key][metric]
+    return check

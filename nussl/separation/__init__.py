@@ -1,7 +1,12 @@
 from .base import (
     SeparationBase, 
     MaskSeparationBase,
-    ClusteringSeparationBase
+    ClusteringSeparationBase,
+    SeparationException
 )
 
-from . import deep
+from . import (
+    deep, 
+    spatial, 
+    benchmark
+)

@@ -1,0 +1,32 @@
+{
+    "combination": [
+        0,
+        1
+    ],
+    "permutation": [
+        0,
+        1
+    ],
+    "/Users/prem/.nussl/tests/scaper/0_events/foreground0_050.wav": {
+        "SDR": [
+            7.092710733413696
+        ],
+        "SIR": [
+            12.415660619735718
+        ],
+        "SAR": [
+            8.601992130279541
+        ]
+    },
+    "/Users/prem/.nussl/tests/scaper/0_events/foreground1_050.wav": {
+        "SDR": [
+            6.020876169204712
+        ],
+        "SIR": [
+            7.339829206466675
+        ],
+        "SAR": [
+            11.839230060577393
+        ]
+    }
+}
