@@ -1,7 +1,13 @@
 from setuptools import setup, find_packages
 
-with open('README.md') as file:
-    long_description = file.read()
+with open('README.md') as f:
+    long_description = f.read()
+
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
+with open('extra_requirements.txt') as f:
+    extra_requirements = f.read().splitlines()
 
 setup(
     name='nussl',
@@ -30,26 +36,11 @@ setup(
     license='MIT',
     packages=find_packages(),
     keywords=['audio', 'source', 'separation', 'music', 'sound', 'source separation'],
-    install_requires=[
-        'jams',
-        'librosa',
-        'matplotlib',
-        'mir_eval',
-        'museval',
-        'musdb',
-        'pyyaml',
-        'zarr==2.3.0',
-        'numcodecs==0.6.2',
-        'ffmpy',
-        'torch',
-        'pytorch-ignite',
-        'tensorboard',
-        'norbert'
-    ],
+    install_requires=requirements,
     extras_require={
         'melodia': [
             'vamp'
         ],
-        'tests': ['pytest', 'pytest_cov']
+        'extras': extra_requirements
     }
 )
