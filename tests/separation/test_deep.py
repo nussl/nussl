@@ -1,4 +1,4 @@
-from nussl.separation.base import DeepMixin
+from nussl.separation.base import DeepMixin, SeparationException
 from nussl.separation.base.deep_mixin import OMITTED_TRANSFORMS
 from nussl import datasets, ml, separation, evaluation
 import nussl
@@ -9,6 +9,8 @@ import pytest
 import os
 
 fix_dir = 'tests/local/trainer'
+EPOCH_LENGTH = 1 # use 1 for quick testing, 500 for actual testing
+SDR_CUTOFF = -10 # use -10 for quick testing, 5 for actual testing
 
 @pytest.fixture(scope="module")
 def overfit_model(scaper_folder):
@@ -61,7 +63,7 @@ def overfit_model(scaper_folder):
         ml.train.add_validate_and_checkpoint(
             _dir, model, optimizer, dataset, trainer)
 
-        trainer.run(dataloader, max_epochs=1, epoch_length=500)
+        trainer.run(dataloader, max_epochs=1, epoch_length=EPOCH_LENGTH)
 
         model_path = os.path.join(
             trainer.state.output_folder, 'checkpoints', 'best.model.pth')
@@ -105,7 +107,7 @@ def test_deep_mixin(overfit_model):
     deep_mixin._get_input_data_for_model()
     assert deep_mixin.audio_signal.sample_rate == deep_mixin.metadata['sample_rate']
 
-def test_deep_clustering(overfit_model):
+def test_separation_deep_clustering(overfit_model):
     model_path, item = overfit_model
     dpcl = separation.deep.DeepClustering(
         item['mix'], 2, model_path, mask_type='binary')
@@ -124,4 +126,7 @@ def test_deep_clustering(overfit_model):
         for metric in ['SDR', 'SIR']:
             _score = scores[key][metric]  
             for val in _score:
-                assert val > 5
+                assert val > SDR_CUTOFF
+
+    dpcl.model.output_keys = []
+    pytest.raises(SeparationException, dpcl.extract_features)

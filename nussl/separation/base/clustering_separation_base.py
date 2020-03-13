@@ -8,22 +8,43 @@ ALLOWED_CLUSTERING_TYPES = ['KMeans', 'GaussianMixture', 'MiniBatchKMeans']
 
 class ClusteringSeparationBase(MaskSeparationBase):
     """
-    [summary]
-    
-    [extended_summary]
+    A base class for any clustering-based separation approach. Subclasses 
+    of this class must implement just one function to use it: `extract_features`.
+    This function should uses the internal variables of the class to 
+    extract the appropriate time-frequency features of the signal. These 
+    time-frequency features will then be clustered by `cluster_features`. 
+    Masks will then be produced by the run function and applied to the 
+    audio signal to produce separated estimates.
     
     Args:
-        mask_separation_base ([type]): [description]
+        input_audio_signal: (`AudioSignal`) An AudioSignal object containing the 
+          mixture to be separated.
+        num_sources (int): Number of sources to cluster the features of and separate
+          the mixture.
+        clustering_type (str): One of 'KMeans', 'GaussianMixture', and 'MiniBatchKMeans'.
+          The clustering approach to use on the features. Defaults to 'KMeans'.
+        percentile (int): Percentile of time-frequency points to consider by loudness. 
+          Audio spectrograms are very high dimensional, and louder points tend to 
+          matter more than quieter points. By setting the percentile high, one can more
+          efficiently cluster an auditory scene by considering only points above
+          that threshold. Defaults to 90 (which means the top 10 percentile of 
+          time-frequency points will be used for clustering).
+        beta (float): When using KMeans, we use soft KMeans, which has an additional 
+          parameter `beta`. `beta` controls how soft the assignments are. As beta 
+          increases, the assignments become more binary (either 0 or 1). Defaults to 
+          5.0, a value discovered through cross-validation.
+        mask_type (str): Masking approach to use. Passed up to MaskSeparationBase.
+        mask_threshold (float): Threshold for masking. Passed up to MaskSeparationBase.
+        **kwargs (dict): Additional keyword arguments that are passed to the clustering
+          object (one of KMeans, GaussianMixture, or MiniBatchKMeans).
     
     Raises:
-        ValueError: [description]
-        NotImplementedError: [description]
-    
-    Returns:
-        [type]: [description]
+        SeparationException: If clustering type is not one of the allowed ones, or if
+          the output of `extract_features` has the wrong shape according to the STFT
+          shape of the AudioSignal.
     """
-    def __init__(self, input_audio_signal, num_sources, percentile=90, beta=5.0,
-      clustering_type='KMeans', mask_type='soft', mask_threshold=0.5, **kwargs):
+    def __init__(self, input_audio_signal, num_sources, clustering_type='KMeans', 
+        percentile=90, beta=5.0, mask_type='soft', mask_threshold=0.5, **kwargs):
 
         if clustering_type not in dir(ml.cluster):
             raise SeparationException(
@@ -51,6 +72,11 @@ class ClusteringSeparationBase(MaskSeparationBase):
         )
 
     def _preprocess_audio_signal(self):
+        """
+        Preprocess the audio signal object - takes STFTs, sets features to None 
+        (new audio signal means new features), finds the time frequency points above
+        the cutoff according to the percentile. 
+        """
         self.features = None
         self.result_masks = []
 
@@ -61,6 +87,11 @@ class ClusteringSeparationBase(MaskSeparationBase):
         self.tf_point_over_cutoff = np.abs(self.stft) >= self.cutoff
 
     def extract_features(self):
+        """
+        This function should be implemented by the subclass. It should extract
+        features. If the STFT shape is `(n_freq, n_time, n_chan)`, the output of this
+        function should be `(n_freq, n_time, n_chan, n_features)`.
+        """
         raise NotImplementedError()
 
 
@@ -73,11 +104,11 @@ class ClusteringSeparationBase(MaskSeparationBase):
           `(..., n_features)`
         
         Args:
-            features (np.ndarray): [description]
-            clusterer ([type]): [description]
+            features (np.ndarray): Features to cluster, for each time-frequency point.
+            clusterer (object): Clustering object to use.
         
         Returns:
-            [type]: [description]
+            np.ndarray: Responsibilities for each cluster for each time-frequency point. 
         """
         shape = features.shape
         features_to_fit = features.reshape(-1, shape[-1])
