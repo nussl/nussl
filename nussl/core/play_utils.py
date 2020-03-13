@@ -1,12 +1,14 @@
 """
 These are optional utilities included in nussl that allow one to embed an AudioSignal
-as a playable object in a Jupyter notebook.
+as a playable object in a Jupyter notebook, or to play audio from
+the terminal.
 """
 
 from tempfile import NamedTemporaryFile
 import librosa
 from .. import ImportErrorClass
 from copy import deepcopy
+import subprocess
 
 def _check_imports():
     try:
@@ -32,7 +34,7 @@ def embed_audio(audio_signal, ext='.mp3', display=True):
         >>> import nussl
         >>> audio_file = nussl.efz_utils.download_audio_file('schoolboy_fascination_excerpt.wav')
         >>> audio_signal = nussl.AudioSignal(audio_file)
-        >>> nussl.jupyter_utils.embed_audio(audio_signal)
+        >>> nussl.play_utils.embed_audio(audio_signal)
 
         This will show a little audio player where you can play the audio inline in the notebook.
 	"""
@@ -60,3 +62,15 @@ def embed_audio(audio_signal, ext='.mp3', display=True):
     tmp_wav.close()
     return audio_element
     
+def play(audio_signal):
+    """
+    Plays an audio signal if ffplay from the ffmpeg suite of tools is installed.
+    Otherwise, will fail. The audio signal is written to a temporary file
+    and then played with ffplay.
+    
+    Args:
+        audio_signal (AudioSignal): AudioSignal object to be played.
+    """
+    with NamedTemporaryFile(suffix='.wav', delete=True) as tmp_wav:
+        audio_signal.write_audio_to_file(tmp_wav.name)
+        subprocess.call(["ffplay", "-nodisp", "-autoexit", tmp_wav.name])

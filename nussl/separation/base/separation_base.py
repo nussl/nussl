@@ -70,7 +70,7 @@ class SeparationBase(object):
         Args:
             input_audio_signal ([type]): [description]
         """
-        self._audio_signal = copy.copy(input_audio_signal)
+        self._audio_signal = copy.deepcopy(input_audio_signal)
 
         if self.audio_signal is not None:
             if not self.audio_signal.has_data:

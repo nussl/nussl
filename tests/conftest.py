@@ -9,6 +9,7 @@ import random
 import glob
 import nussl
 from nussl.datasets import transforms
+from nussl import datasets
 import numpy as np
 import torch
 
@@ -119,6 +120,12 @@ def scaper_folder(toy_datasets):
             sc.generate(audio_path, jams_path, save_isolated_events=True)
             
         yield _dir
+
+@pytest.fixture(scope="module")
+def mix_and_sources(scaper_folder):
+    dataset = datasets.Scaper(scaper_folder)
+    item = dataset[0]
+    return item['mix'], item['sources']
 
 @pytest.fixture(scope="module")
 def bad_scaper_folder(toy_datasets):

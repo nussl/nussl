@@ -62,7 +62,7 @@ nussl/core/__init__.py                                    5      0   100%
 nussl/core/audio_signal.py                              444      0   100%
 nussl/core/constants.py                                  39      0   100%
 nussl/core/efz_utils.py                                 145      0   100%
-nussl/core/jupyter_utils.py                              33      0   100%
+nussl/core/play_utils.py                              33      0   100%
 nussl/core/masks/__init__.py                              4      0   100%
 nussl/core/masks/binary_mask.py                          23      0   100%
 nussl/core/masks/mask_base.py                            92      0   100%
