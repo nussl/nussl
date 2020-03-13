@@ -41,7 +41,7 @@ RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 25
-MAX_EPOCHS = 1
+MAX_EPOCHS = 100
 CACHE_POPULATED = True
 LEARNING_RATE = 5e-4
 
