@@ -24,13 +24,11 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
             self.load_model(model_path, device=device)
         super().__init__(input_audio_signal, **kwargs)
 
-    def run(self):
+    def forward(self):
         input_data = self._get_input_data_for_model()
-        self.result_masks = []
-
         with torch.no_grad():
             output = self.model(input_data)
-            if 'mask' not in output:
+            if 'mask' not in features:
                 raise SeparationException(
                     "This model is not a deep mask estimation model! "
                     "Did not find 'mask' key in output dictionary.")
@@ -40,6 +38,13 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
                 masks = masks.transpose(0, -2)
             masks = masks.squeeze(0).transpose(0, 1)
             masks = masks.cpu().data.numpy()
+        return masks
+
+    def run(self, masks=None):
+        self.result_masks = []
+
+        if output is None:
+            masks = self.forward()
 
         for i in range(masks.shape[-1]):
             mask_data = masks[..., i]

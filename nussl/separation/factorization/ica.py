@@ -4,10 +4,10 @@
 import numpy as np
 import sklearn
 
-from . import separation_base
-from ..core import constants
-from ..core.audio_signal import AudioSignal
-from ..core import utils
+from .. import SeparationBase, SeparationException
+from ...core import constants
+from ... import AudioSignal
+from ... import utils
 
 
 class ICA(separation_base.SeparationBase):

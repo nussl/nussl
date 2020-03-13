@@ -1,15 +1,28 @@
 """
-This recipe trains and evaluates a deep clustering model
-on the clean data from the WHAM dataset with 8k.
+This recipe trains and evaluates a mask inference model
+on the clean data from the WHAM dataset with 8k. It's divided into 
+three big chunks: data preparation, training, and evaluation.
+Final output of this script:
 """
-from nussl import ml, datasets, utils
+import nussl
+from nussl import ml, datasets, utils, separation, evaluation
 import os
 import torch
-from multiprocessing import cpu_count
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from torch import optim
 import logging
 import matplotlib.pyplot as plt
 import shutil
+import json
+import tqdm
+import glob
+import numpy as np
+import termtables
+
+# ----------------------------------------------------
+# ------------------- SETTING UP ---------------------
+# ----------------------------------------------------
 
 # seed this recipe for reproducibility
 utils.seed(0)
@@ -22,13 +35,19 @@ logging.basicConfig(
 # make sure this is set to WHAM root directory
 WHAM_ROOT = os.getenv("WHAM_ROOT")
 CACHE_ROOT = os.getenv("CACHE_ROOT")
-NUM_WORKERS = cpu_count() // 2
+NUM_WORKERS = multiprocessing.cpu_count() // 4
 OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_chimera/')
+RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
+MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-BATCH_SIZE = 20
-MAX_EPOCHS = 80
+BATCH_SIZE = 25
+MAX_EPOCHS = 1
 CACHE_POPULATED = True
-LEARNING_RATE = 2e-4
+LEARNING_RATE = 5e-4
+
+shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
+os.makedirs(RESULTS_DIR, exist_ok=True)
+shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
@@ -60,6 +79,10 @@ if not CACHE_POPULATED:
     cache_dataset(dataset)
     cache_dataset(val_dataset)
 
+# ----------------------------------------------------
+# -------------------- TRAINING ----------------------
+# ----------------------------------------------------
+
 # reload after caching
 dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
     batch_size=BATCH_SIZE)
@@ -70,8 +93,9 @@ n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_chimera(
-    n_features, 600, 4, True, 0.3, 20, ['sigmoid'], 2, ['softmax'],  
-    normalization_class='InstanceNorm')
+    n_features, 600, 4, True, 0.3, 20, ['sigmoid', 'unit_norm'], 
+    2, ['sigmoid'], normalization_class='BatchNorm'
+)
 model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)
 
@@ -80,13 +104,8 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
 # set up the loss function
 loss_dictionary = {
-    'DeepClusteringLoss': {
-        'weight': 0.2
-    },
-    'PermutationInvariantLoss': {
-        'args': ['L1Loss'],
-        'weight': 0.8
-    }
+    'PermutationInvariantLoss': {'args': ['L1Loss'], 'weight': 0.8},
+    'DeepClusteringLoss': {'weight': 0.2}
 }
 
 # set up closures for the forward and backward pass on one batch
@@ -106,8 +125,6 @@ ml.train.add_validate_and_checkpoint(
     trainer, val_data=val_dataloader, validator=validator)
 ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 
-shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
-
 # add a handler to set up patience
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
 def step_scheduler(trainer):
@@ -116,3 +133,50 @@ def step_scheduler(trainer):
 
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)
+
+# ----------------------------------------------------
+# ------------------- EVALUATION ---------------------
+# ----------------------------------------------------
+
+test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
+# make a deep clustering separator with an empty audio signal initially
+# this one will live on gpu and be used in a threadpool for speed
+dme = separation.deep.DeepMaskEstimation(
+    nussl.AudioSignal(), model_path=MODEL_PATH, device='cuda')
+
+def forward_on_gpu(audio_signal):
+    # set the audio signal of the object to this item's mix
+    dme.audio_signal = audio_signal
+    masks = dme.forward()
+    return masks
+
+def separate_and_evaluate(item, masks):
+    separator = separation.deep.DeepMaskEstimation(item['mix'])
+    estimates = separator(masks)
+
+    evaluator = evaluation.BSSEvalScale(
+        list(item['sources'].values()), estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+    output_path = os.path.join(RESULTS_DIR, f"{item['mix'].file_name}.json")
+    with open(output_path, 'w') as f:
+        json.dump(scores, f)
+
+pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
+for i, item in enumerate(tqdm.tqdm(test_dataset)):
+    features = forward_on_gpu(item['mix'])
+    if i == 0:
+        separate_and_evaluate(item, masks)
+    else:
+        pool.submit(separate_and_evaluate, item, masks)
+pool.shutdown(wait=True)
+
+json_files = glob.glob(f"{RESULTS_DIR}/*.json")
+df = evaluation.aggregate_score_files(json_files)
+
+overall = df.mean()
+headers = ["", f"OVERALL (N = {df.shape[0]})", ""]
+metrics = ["SAR", "SDR", "SIR"]
+data = np.array(df.mean()).T
+
+data = [metrics, data]
+termtables.print(data, header=headers, padding=(0, 1), alignment="ccc")
