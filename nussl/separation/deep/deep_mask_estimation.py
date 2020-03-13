@@ -28,7 +28,7 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
         input_data = self._get_input_data_for_model()
         with torch.no_grad():
             output = self.model(input_data)
-            if 'mask' not in features:
+            if 'mask' not in output:
                 raise SeparationException(
                     "This model is not a deep mask estimation model! "
                     "Did not find 'mask' key in output dictionary.")
