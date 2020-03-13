@@ -9,8 +9,8 @@ import pytest
 import os
 
 fix_dir = 'tests/local/trainer'
-EPOCH_LENGTH = 1 # use 1 for quick testing, 500 for actual testing
-SDR_CUTOFF = -10 # use -10 for quick testing, 5 for actual testing
+EPOCH_LENGTH = 500 # use 1 for quick testing, 500 for actual testing
+SDR_CUTOFF = 5 # use -10 for quick testing, 5 for actual testing
 
 @pytest.fixture(scope="module")
 def overfit_model(scaper_folder):
@@ -130,3 +130,27 @@ def test_separation_deep_clustering(overfit_model):
 
     dpcl.model.output_keys = []
     pytest.raises(SeparationException, dpcl.extract_features)
+
+def test_separation_deep_mask_estimation(overfit_model):
+    model_path, item = overfit_model
+    dme = separation.deep.DeepMaskEstimation(
+        item['mix'], model_path, mask_type='soft')
+
+    item['mix'].write_audio_to_file('tests/local/dme_mix.wav')
+    sources = item['sources']
+    estimates = dme()
+    for i, e in enumerate(estimates):
+        e.write_audio_to_file(f'tests/local/dme_overfit{i}.wav')
+
+    evaluator = evaluation.BSSEvalScale(
+        list(sources.values()), estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+
+    for key in evaluator.source_labels:
+        for metric in ['SDR', 'SIR']:
+            _score = scores[key][metric]  
+            for val in _score:
+                assert val > SDR_CUTOFF
+
+    dme.model.output_keys = []
+    pytest.raises(SeparationException, dme.run)

@@ -20,6 +20,9 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
           so that you can initialize a class and load the model later.  
           Defaults to None.
         device (str, optional): Device to put the model on. Defaults to 'cpu'.
+        **kwargs (dict): Keyword arguments for ClusteringSeparationBase and the 
+          clustering object used for clustering (one of KMeans, GaussianMixture,
+          MiniBatchKmeans).
     
     Raises:
         SeparationException: If 'embedding' isn't in the output of the model.
@@ -37,7 +40,8 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             output = self.model(input_data)
             if 'embedding' not in output:
                 raise SeparationException(
-                    "This model is not a deep clustering model!")
+                    "This model is not a deep clustering model! "
+                    "Did not find 'estimates' key in output dictionary.")
             embedding = output['embedding']
             # swap back batch and sample dims
             if self.metadata['num_channels'] == 1:

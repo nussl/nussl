@@ -75,11 +75,9 @@ class ClusteringSeparationBase(MaskSeparationBase):
         """
         Preprocess the audio signal object - takes STFTs, sets features to None 
         (new audio signal means new features), finds the time frequency points above
-        the cutoff according to the percentile. 
+        the cutoff according to the percentile.
         """
         self.features = None
-        self.result_masks = []
-
         self.stft = self.audio_signal.stft()
 
         # get a cutoff using the percentile
@@ -151,6 +149,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
 
         responsibilities = self.cluster_features(features, self.clusterer)
         self.features = features
+        self.result_masks = []
 
         for i in range(responsibilities.shape[-1]):
             mask_data = responsibilities[..., i]
