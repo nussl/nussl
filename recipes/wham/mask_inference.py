@@ -161,7 +161,7 @@ def separate_and_evaluate(item, masks):
 
 pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
 for i, item in enumerate(tqdm.tqdm(test_dataset)):
-    features = forward_on_gpu(item['mix'])
+    masks = forward_on_gpu(item['mix'])
     if i == 0:
         separate_and_evaluate(item, masks)
     else:

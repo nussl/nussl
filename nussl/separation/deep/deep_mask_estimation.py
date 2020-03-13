@@ -43,7 +43,7 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
     def run(self, masks=None):
         self.result_masks = []
 
-        if output is None:
+        if masks is None:
             masks = self.forward()
 
         for i in range(masks.shape[-1]):
