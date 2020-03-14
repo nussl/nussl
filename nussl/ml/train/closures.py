@@ -2,6 +2,7 @@ import torch
 from . import loss
 from collections import namedtuple
 import copy
+from .trainer import BackwardsEvents
 
 class Closure(object):
     """
@@ -139,6 +140,7 @@ class TrainClosure(Closure):
 
         loss = self.compute_loss(output, data)
         loss['loss'].backward()
+        engine.fire_event(BackwardsEvents.BACKWARDS_COMPLETED)
         self.optimizer.step()
         loss = {key: loss[key].item() for key in loss}
 

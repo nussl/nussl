@@ -41,10 +41,11 @@ RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 25
-MAX_EPOCHS = 160
+MAX_EPOCHS = 100
 CACHE_POPULATED = True
 LEARNING_RATE = 5e-4
 PATIENCE = 10
+GRAD_NORM = 5
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -129,6 +130,11 @@ ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 def step_scheduler(trainer):
     val_loss = trainer.state.epoch_history['validation/loss'][-1]
     scheduler.step(val_loss)
+
+# add a handler to set up gradient clipping
+@trainer.on(ml.train.BackwardsEvents.BACKWARDS_COMPLETED)
+def clip_gradient(trainer):
+    torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_NORM)
 
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)

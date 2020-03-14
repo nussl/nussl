@@ -18,6 +18,12 @@ class ValidationEvents(Enum):
     VALIDATION_STARTED = 'validation_started'
     VALIDATION_COMPLETED = 'validation_completed'
 
+class BackwardsEvents(Enum):
+    """
+    Events based on validation running
+    """
+    BACKWARDS_COMPLETED = 'backwards_completed'
+
 def cache_dataset(dataset, log_frequency=.1):
     """
     Runs through an entire dataset and caches it if there nussl.datasets.transforms.Cache
@@ -79,6 +85,8 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
     # Set up engines for training and validation
     trainer = Engine(train_func)
     trainer.register_events(*ValidationEvents)
+    trainer.register_events(*BackwardsEvents)
+    
     validator = None if val_func is None else Engine(val_func)
 
     # Before a batch starts, the items should be float and moved to the 

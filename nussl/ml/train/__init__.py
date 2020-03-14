@@ -4,7 +4,8 @@ from .trainer import (
     cache_dataset,
     add_validate_and_checkpoint,
     add_stdout_handler,
-    ValidationEvents
+    ValidationEvents,
+    BackwardsEvents
 )
 
 from . import loss

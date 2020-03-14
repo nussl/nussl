@@ -1113,8 +1113,10 @@ class AudioSignal(object):
                     'Input mask and self.stft_data are not the same shape! mask:'
                     f' {mask.shape}, self.stft_data: {self.stft_data.shape}'
                 )
-
-        masked_stft = self.stft_data * mask.mask
+        
+        magnitude, phase = np.abs(self.stft_data), np.angle(self.stft_data)
+        masked_abs = magnitude * mask.mask
+        masked_stft = masked_abs * np.exp(1j * phase)
 
         if overwrite:
             self.stft_data = masked_stft
