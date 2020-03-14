@@ -32,8 +32,8 @@ class IdealBinaryMask(MaskSeparationBase):
             'sources': self.sources
         }
 
-        psa = transforms.PhaseSensitiveSpectrumApproximation()
-        ibm = psa(data)['ideal_binary_mask'] > self.mask_threshold
+        msa = transforms.MagnitudeSpectrumApproximation()
+        ibm = msa(data)['ideal_binary_mask']
 
         masks = []
 

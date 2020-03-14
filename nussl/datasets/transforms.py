@@ -321,7 +321,15 @@ class PhaseSensitiveSpectrumApproximation(object):
           Defaults to 'mix'.
         source_key (str, optional): The key to look for in the data containing the list of
           source AudioSignals. Defaults to 'sources'.
-    
+        range_min (float, optional): The lower end to use when truncating the source 
+          magnitudes in the phase sensitive spectrum approximation. Defaults to 0.0 (construct
+          non-negative masks). Use -np.inf for untruncated source magnitudes.
+        range_max (float, optional): The higher end of the truncated spectrum. This gets
+          multiplied by the magnitude of the mixture. Use 1.0 to truncate the source 
+          magnitudes to `max(source_magnitudes, mix_magnitude)`. Use np.inf for untruncated
+          source magnitudes (best performance for an oracle mask but may be beyond what a
+          neural network is capable of masking). Defaults to 1.0.
+          
     Raises:
             TransformException: if the expected keys are not in the dictionary, an
               Exception is raised.
@@ -330,9 +338,12 @@ class PhaseSensitiveSpectrumApproximation(object):
         data: Modified version of the input dictionary.
     """
 
-    def __init__(self, mix_key='mix', source_key='sources'):
+    def __init__(self, mix_key='mix', source_key='sources',
+      range_min=0.0, range_max=1.0):
         self.mix_key = mix_key
         self.source_key = source_key
+        self.range_min = range_min
+        self.range_max = range_max
 
     def __call__(self, data):
         if self.mix_key not in data:
@@ -369,14 +380,16 @@ class PhaseSensitiveSpectrumApproximation(object):
 
         source_magnitudes = np.stack(source_magnitudes, axis=-1)
         source_angles = np.stack(source_angles, axis=-1)
+        range_min = self.range_min
+        range_max = self.range_max * mix_magnitude[..., None]
 
         # Section 3.1: https://arxiv.org/pdf/1909.08494.pdf
         source_magnitudes = np.minimum(
             np.maximum(
                 source_magnitudes * np.cos(source_angles - mix_angle[..., None]),
-                0
+                range_min
             ),
-            mix_magnitude[..., None]
+            range_max
         )
         
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)

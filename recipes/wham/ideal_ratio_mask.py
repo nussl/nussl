@@ -1,6 +1,16 @@
 """
 This recipe evaluates an oracle ideal ratio mask on the WHAM dataset
-using phase sensitive spectrum approximation.
+using phase sensitive spectrum approximation. Output of this script:
+
+┌────────────────────┬────────────────────┬────────────────────┐
+│                    │ OVERALL (N = 6000) │                    │
+╞════════════════════╪════════════════════╪════════════════════╡
+│        SAR         │        SDR         │        SIR         │
+├────────────────────┼────────────────────┼────────────────────┤
+│ 16.757153130968412 │ 16.43300506403049  │ 28.393687409361203 │
+└────────────────────┴────────────────────┴────────────────────┘
+
+Last run on 3/14/2020
 """
 import nussl
 from nussl import ml, datasets, utils, separation, evaluation
@@ -28,11 +38,12 @@ RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=16000, split='tt')
+test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
 
 def separate_and_evaluate(item):
     separator = separation.benchmark.IdealRatioMask(
-        item['mix'], item['sources'], approach='psa', mask_type='soft')
+        item['mix'], item['sources'], approach='psa', 
+        mask_type='soft', range_min=-np.inf, range_max=np.inf)
     estimates = separator()
 
     evaluator = evaluation.BSSEvalScale(

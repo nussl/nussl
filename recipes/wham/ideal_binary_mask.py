@@ -1,6 +1,16 @@
 """
-This recipe evaluates an oracle ideal ratio mask on the WHAM dataset
-using phase sensitive spectrum approximation.
+This recipe evaluates an oracle ideal binary mask on the WHAM dataset
+using phase sensitive spectrum approximation. Output of this script:
+
+┌───────────────────┬────────────────────┬───────────────────┐
+│                   │ OVERALL (N = 6000) │                   │
+╞═══════════════════╪════════════════════╪═══════════════════╡
+│        SAR        │        SDR         │        SIR        │
+├───────────────────┼────────────────────┼───────────────────┤
+│ 13.66373682051897 │ 13.477636878391108 │ 28.69337110698223 │
+└───────────────────┴────────────────────┴───────────────────┘
+
+Last run on 3/14/2020
 """
 import nussl
 from nussl import ml, datasets, utils, separation, evaluation

@@ -13,10 +13,13 @@ class IdealRatioMask(MaskSeparationBase):
         approach (str): Either 'psa' (phase sensitive spectrum approximation) or 'msa'
           (magnitude spectrum approximation). Generally 'psa' does better.
         mask_type (str, optional): Mask type. Defaults to 'soft'.
+        mask_threshold (float, optional): Masking threshold. Defaults to 0.5. 
+        kwargs (dict): Extra keyword arguments are passed to the transform classes at
+          initialization.
     """
 
     def __init__(self, input_audio_signal, sources, approach='psa', mask_type='soft', 
-      mask_threshold=.5):
+      mask_threshold=.5, **kwargs):
         if isinstance(sources, list):
             sources = {i: sources[i] for i in range(len(sources))}
         elif not isinstance(sources, dict):
@@ -24,6 +27,12 @@ class IdealRatioMask(MaskSeparationBase):
 
         self.sources = sources
         self.approach = approach
+        if self.approach == 'psa':
+            tfm = transforms.PhaseSensitiveSpectrumApproximation(**kwargs)
+        elif self.approach == 'msa':
+            tfm = transforms.MagnitudeSpectrumApproximation(**kwargs)
+        self.tfm = tfm
+
         super().__init__(
             input_audio_signal=input_audio_signal, mask_type=mask_type,
             mask_threshold=mask_threshold)
@@ -34,21 +43,12 @@ class IdealRatioMask(MaskSeparationBase):
             'mix': self.audio_signal,
             'sources': self.sources
         }
-
-        if self.approach == 'psa':
-            tfm = transforms.PhaseSensitiveSpectrumApproximation()
-        elif self.approach == 'msa':
-            tfm = transforms.MagnitudeSpectrumApproximation()
             
-        output = tfm(data)
-
+        output = self.tfm(data)
         masks = []
-
         mask_data = (
             output['source_magnitudes'] / 
-            (np.maximum(
-                output['mix_magnitude'][..., None], 
-                output['source_magnitudes']) + 1e-8)
+            (output['source_magnitudes'].sum(axis=-1, keepdims=True) + 1e-8)
         )
 
         for i in range(mask_data.shape[-1]):            
