@@ -28,10 +28,9 @@ def scale_bss_eval(references, estimate, idx, scaling=True):
     """
     references_projection = references.T @ references
     source = references[..., idx]
-
-    source_energy = np.sum(source ** 2, axis=-1, keepdims=True)
     scale = (
-        np.sum(source * estimate, axis=-1, keepdims=True) / source_energy 
+        (source @ estimate) / 
+        references_projection[idx, idx] 
         if scaling else 1
     )
 
