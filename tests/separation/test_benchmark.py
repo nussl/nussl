@@ -52,18 +52,21 @@ def test_ideal_ratio_mask(
 ):
     mix, sources = music_mix_and_sources
     irm = nussl.separation.benchmark.IdealRatioMask(mix, sources)
-
     sources = list(sources.values())
-    irm = nussl.separation.benchmark.IdealRatioMask(mix, sources)
-    estimates = irm()
 
-    evaluator = nussl.evaluation.BSSEvalScale(
-       sources, estimates, compute_permutation=True)
-    scores = evaluator.evaluate()
+    for approach in ['psa', 'msa']:
+        irm = nussl.separation.benchmark.IdealRatioMask(
+            mix, sources, approach=approach)
+        estimates = irm()
 
-    reg_path = os.path.join(REGRESSION_PATH, 'ideal_ratio_mask.json')
-    check_against_regression_data(scores, reg_path)
+        evaluator = nussl.evaluation.BSSEvalScale(
+        sources, estimates, compute_permutation=True)
+        scores = evaluator.evaluate()
 
-    pytest.raises(SeparationException, nussl.separation.benchmark.IdealRatioMask, 
-        mix, 'not a list or dict')
+        reg_path = os.path.join(
+            REGRESSION_PATH, f'ideal_ratio_mask_{approach}.json')
+        check_against_regression_data(scores, reg_path)
+
+        pytest.raises(SeparationException, nussl.separation.benchmark.IdealRatioMask, 
+            mix, 'not a list or dict')
 
