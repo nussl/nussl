@@ -1,6 +1,7 @@
 """
-This recipe evaluates an oracle ideal ratio mask on the WHAM dataset
-using phase sensitive spectrum approximation. Output of this script:
+This recipe evaluates an oracle ideal ratio mask on the mix_clean 
+and min subset in the WHAM dataset using phase sensitive spectrum 
+approximation. Output of this script:
 
 ┌────────────────────┬────────────────────┬────────────────────┐
 │                    │ OVERALL (N = 6000) │                    │
