@@ -17,6 +17,7 @@ def compute_ideal_binary_mask(source_magnitudes):
     ).astype(float)
 
     ibm = ibm / np.sum(ibm, axis=-1, keepdims=True)
+    ibm[ibm <= .5] = 0
     return ibm
 
 # Keys that correspond to the time-frequency representations after being passed through
@@ -236,9 +237,6 @@ class MagnitudeSpectrumApproximation(object):
             source_magnitudes.append(s.magnitude_spectrogram_data)
 
         source_magnitudes = np.stack(source_magnitudes, axis=-1)
-
-        source_magnitudes = np.minimum(
-            mix_magnitude[..., None], source_magnitudes)
         
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)
         data['source_magnitudes'] = source_magnitudes
@@ -380,15 +378,6 @@ class PhaseSensitiveSpectrumApproximation(object):
             ),
             mix_magnitude[..., None]
         )
-
-        assignments = (
-            source_magnitudes == np.max(source_magnitudes, axis=-1, keepdims=True)
-        ).astype(float)
-
-        assignments = (
-            assignments / 
-            np.sum(assignments, axis=-1, keepdims=True)
-        )
         
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)
         data['source_magnitudes'] = source_magnitudes
@@ -402,6 +391,45 @@ class PhaseSensitiveSpectrumApproximation(object):
             f"source_key = {self.source_key}"
             f")"
         )
+
+class IndexSources(object):
+    """
+    Takes in a dictionary containing Torch tensors or numpy arrays and extracts the 
+    indexed sources from the `source_magnitudes` or the `ideal_binary_mask` key. Can
+    be used to train single-source separation models. 
+    
+    You need to know which slice of the source magnitudes or ideal binary mask arrays 
+    to extract. The order of the sources in the source magnitudes array will be in 
+    alphabetical order according to their source labels. 
+
+    For example, if source magnitudes has shape `(257, 400, 1, 4)`, and the data is
+    from MUSDB, then the four possible source labels are bass, drums, other, and vocals.
+    The data in source magnitudes is in alphabetical order, so:
+
+    .. code-block:: python
+
+        # source_magnitudes is an array returned by either MagnitudeSpectrumApproximation
+        # or PhaseSensitiveSpectrumApproximation
+        source_magnitudes[..., 0] # bass spectrogram
+        source_magnitudes[..., 1] # drums spectrogram
+        source_magnitudes[..., 2] # other spectrogram
+        source_magnitudes[..., 3] # vocals spectrogram
+
+        # ideal_binary_mask is an array returned by either MagnitudeSpectrumApproximation
+        # or PhaseSensitiveSpectrumApproximation
+        ideal_binary_mask[..., 0] # bass ibm mask
+        ideal_binary_mask[..., 1] # drums ibm mask
+        ideal_binary_mask[..., 2] # other ibm mask
+        ideal_binary_mask[..., 3] # vocals ibm mask
+
+    You can apply this transform to either the `source_magnitudes` or the
+    `ideal_binary_mask` or both.
+
+    
+    Args:
+        object ([type]): [description]
+    """
+    pass
 
 class GetExcerpt(object):
     """

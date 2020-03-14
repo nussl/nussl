@@ -51,9 +51,10 @@ RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 25
-MAX_EPOCHS = 100
+MAX_EPOCHS = 160
 CACHE_POPULATED = True
 LEARNING_RATE = 5e-4
+PATIENCE = 10
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -109,7 +110,7 @@ model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)
 
 optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=PATIENCE)
 
 # set up the loss function
 loss_dictionary = {
