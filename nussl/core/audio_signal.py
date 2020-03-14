@@ -1087,7 +1087,9 @@ class AudioSignal(object):
     def apply_mask(self, mask, overwrite=False):
         """
         Applies the input mask to the time-frequency representation in this `AudioSignal` 
-        object and returns a new `AudioSignal` object with the mask applied.
+        object and returns a new `AudioSignal` object with the mask applied. The mask
+        is applied to the magnitude of audio signal. The phase of the original audio
+        signal is then applied to construct the masked STFT.
         
         Args:
             mask (:obj:`MaskBase`-derived object): A ``MaskBase``-derived object 
