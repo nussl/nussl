@@ -168,13 +168,13 @@ def test_train_and_validate_closure():
     closure = ml.train.closures.TrainClosure(
         loss_dictionary, optimizer, model)
     
-    # need a hack here to put "None" since closure expects an
-    # engine within an ignite object, but we're not using
-    # ignite in the tests
-    init_loss = closure(None, data)
+    # since closure expects an
+    # engine within an ignite object, make a fake one
+    engine = ml.train.create_train_and_validation_engines(closure)[0]
+    init_loss = closure(engine, data)
 
     for i in range(100):
-        loss = closure(None, data)
+        loss = closure(engine, data)
     
     last_loss = loss
 
@@ -185,7 +185,7 @@ def test_train_and_validate_closure():
         loss_dictionary, model)
 
     for i in range(1):
-        loss = closure(None, data)
+        loss = closure(engine, data)
 
     for key in loss:
         assert np.allclose(loss[key], last_loss[key], 1e-1)
