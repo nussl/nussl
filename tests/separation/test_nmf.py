@@ -12,6 +12,7 @@ def test_nmf_mixin(
     drum_and_vocals, 
     check_against_regression_data
 ):
+    np.random.seed(0)
     drum, vocals = drum_and_vocals
     drum.resample(16000)
     vocals.resample(16000)
@@ -20,9 +21,10 @@ def test_nmf_mixin(
     src = drum
     mix = drum + vocals
 
-    model, components, activations = nmf.fit(src, 20)
+    model, components, activations = nmf.fit(src, 30)
     tf_components, tf_activations = nmf.transform(src, model)
 
+    np.random.seed(0)
     reconstruction = nmf.inverse_transform(
         components, activations)
 
