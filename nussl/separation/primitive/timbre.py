@@ -2,7 +2,6 @@ import numpy as np
 from ..base import ClusteringSeparationBase, SeparationException, NMFMixin
 import librosa
 import inspect
-from sklearn import preprocessing
 
 class TimbreClustering(ClusteringSeparationBase, NMFMixin):
     """
