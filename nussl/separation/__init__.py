@@ -8,5 +8,6 @@ from .base import (
 from . import (
     deep, 
     spatial, 
-    benchmark
+    benchmark,
+    primitive
 )

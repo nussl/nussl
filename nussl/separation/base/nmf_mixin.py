@@ -68,7 +68,7 @@ class NMFMixin():
         activations = activations.T.reshape(n_components, -1, n_spectrograms)
         return model, model.components_, activations
     
-    def transform(self, audio_signal, model, **kwargs):
+    def transform(self, audio_signal, model):
         """
         Use an already fit model to transform the magnitude spectrogram of an 
         audio signal into components and activations. These can be multiplied to 
@@ -99,7 +99,7 @@ class NMFMixin():
     def inverse_transform(self, components, activations):
         """
         Reconstructs the magnitude spectrogram by matrix multiplying the components 
-        with the activations. Components and activations iare considered to be 2D matrices, 
+        with the activations. Components and activations are considered to be 2D matrices, 
         but if they are more, then the first dimension is interpreted to be the batch 
         dimension.
         
