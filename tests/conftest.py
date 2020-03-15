@@ -139,6 +139,14 @@ def music_mix_and_sources(musdb_tracks):
     return item['mix'], item['sources']
 
 @pytest.fixture(scope="module")
+def drum_and_vocals(musdb_tracks):
+    dataset = datasets.MUSDB18(
+        folder=musdb_tracks.root, download=False)
+    item = dataset[0]
+    return item['sources']['drums'], item['sources']['vocals']
+
+
+@pytest.fixture(scope="module")
 def bad_scaper_folder(toy_datasets):
     wsj_sources = toy_datasets['babywsj_oW0F0H9.zip']
     fg_path = os.path.join(

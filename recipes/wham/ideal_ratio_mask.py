@@ -36,6 +36,10 @@ WHAM_ROOT = os.getenv("WHAM_ROOT")
 NUM_WORKERS = multiprocessing.cpu_count() // 4
 OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/ideal_ratio_mask/')
 RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
+
+#APPROACH, KWARGS = 'psa', {'range_min': -np.inf, 'range_max':np.inf}
+APPROACH, KWARGS = 'msa', {}
+
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
@@ -43,8 +47,8 @@ test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
 
 def separate_and_evaluate(item):
     separator = separation.benchmark.IdealRatioMask(
-        item['mix'], item['sources'], approach='psa', 
-        mask_type='soft', range_min=-np.inf, range_max=np.inf)
+        item['mix'], item['sources'], approach=APPROACH, 
+        mask_type='soft', **KWARGS)
     estimates = separator()
 
     evaluator = evaluation.BSSEvalScale(
