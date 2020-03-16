@@ -41,11 +41,11 @@ RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 25
-MAX_EPOCHS = 100
+MAX_EPOCHS = 150
 CACHE_POPULATED = True
 LEARNING_RATE = 5e-4
-PATIENCE = 10
-GRAD_NORM = 5
+PATIENCE = 5
+GRAD_NORM = 100
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -96,7 +96,7 @@ n_features = dataset[0]['mix_magnitude'].shape[1]
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_chimera(
     n_features, 600, 4, True, 0.3, 20, ['sigmoid', 'unit_norm'], 
-    2, ['sigmoid'], normalization_class='BatchNorm'
+    2, ['sigmoid'], normalization_class='InstanceNorm'
 )
 model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)

@@ -2,6 +2,8 @@ import torch
 from nussl import ml
 from torch import nn
 import numpy as np
+from itertools import permutations
+import random
 
 def test_register_loss():
     class ExampleLoss(nn.Module):
@@ -38,7 +40,7 @@ def test_deep_clustering_loss():
     assert _loss_b <= 1
 
 def test_permutation_invariant_loss_tf():
-    n_batch = 40
+    n_batch = 2
     n_time = 400
     n_freq = 129
     n_sources = 4
@@ -48,16 +50,21 @@ def test_permutation_invariant_loss_tf():
     LossPIT = ml.train.loss.PermutationInvariantLoss(
         loss_function=nn.L1Loss())
     LossL1 = nn.L1Loss()
-    
-    _loss_a = LossL1(sources, sources).item()
+    noise_amount = [0.001, .01, .05, 1.0]
 
-    for shift in range(n_sources):
-        sources_a = sources[:, :, :, shift:]
-        sources_b = sources[:, :, :, :shift]
-        shifted_sources = torch.cat(
-            [sources_a, sources_b], dim=-1)
-        _loss_b = LossPIT(shifted_sources, sources).item()
-        assert _loss_a == _loss_b
+    for n in noise_amount:
+        permuted = []
+        noisy = sources + n * torch.randn_like(sources)
+        _loss_a = LossL1(noisy, sources).item()
+
+        for i in range(n_batch):
+            p = random.choice(list(permutations(range(n_sources))))
+            permuted_batch = noisy[i, ..., list(p)].unsqueeze(0)
+            permuted.append(permuted_batch)
+
+        permuted = torch.cat(permuted, dim=0)
+        _loss_b = LossPIT(permuted, sources).item()
+        assert np.allclose(_loss_a, _loss_b, atol=1e-6)
 
 def test_combination_invariant_loss_tf():
     n_batch = 40

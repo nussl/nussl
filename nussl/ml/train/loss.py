@@ -130,19 +130,20 @@ class PermutationInvariantLoss(nn.Module):
     def forward(self, estimates, targets):
         num_batch = estimates.shape[0]
         num_sources = estimates.shape[-1]
-        estimates = estimates.view(num_batch, -1, num_sources)
+        estimates = estimates.view(num_batch, -1)
         targets = targets.view(num_batch, -1, num_sources)
         
         losses = []
         for p in permutations(range(num_sources)):
-            loss = self.loss_function(estimates[:, :, list(p)], targets)
-            loss = loss.mean(dim=1).mean(dim=-1)
+            _targets = targets[..., list(p)].reshape(num_batch, -1)
+            loss = self.loss_function(estimates, _targets)
+            loss = loss.sum(dim=-1)
             losses.append(loss)
         
-        losses = torch.stack(losses,dim=-1)
+        losses = torch.stack(losses, dim=-1)
         losses = torch.min(losses, dim=-1)[0]
-        loss = torch.mean(losses)
-        return loss
+        loss = torch.sum(losses)
+        return loss / torch.numel(estimates)
 
 class CombinationInvariantLoss(nn.Module):
     """
