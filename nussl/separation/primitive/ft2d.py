@@ -1,112 +1,165 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import numpy as np
-import copy
 from scipy.ndimage.filters import maximum_filter, minimum_filter, uniform_filter
-
-from ..core.audio_signal import AudioSignal
-from ..core import constants
-from . import mask_separation_base
-from . import masks
+from .. import MaskSeparationBase, SeparationException
+from ..benchmark import HighLowPassFilter
 
 
-class FT2D(mask_separation_base.MaskSeparationBase):
-    """Implements foreground/background separation using the 2D Fourier Transform
+class FT2D(MaskSeparationBase):
+    """
+    This separation method is based on using 2DFT image processing for source
+    separation [1].
 
-    Parameters:
-        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that REPET will be run on.
-        high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
-        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm
-            (does not effect the input AudioSignal object)
-        use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
+    The algorithm has five main steps:
+
+    1. Take the 2DFT of Magnitude STFT.
+    2. Identify peaks in the 2DFT (these correspond to repeating patterns).
+    3. Mask everything but the peaks and invert the masked 2DFT back to a magnitude STFT.
+    4. Take the residual peakless 2DFT and invert that to a magnitude STFT.
+    5. Compare the two magnitude STFTs to construct masks for the foreground and
+       the background.
+
+    The algorithm runs on each channel independently. The masks can be constructed
+    in two ways: either using the background (peaky) 2DFT as the reference for making 
+    masks, or using the foreground (peakless) 2DFT as the reference for making masks.
+    This behavior can be toggled via `use_bg_2dft=[True, False]`. Using the background
+    biases the algorithm towards separating repeating patterns whereas using
+    the foreground biases it towards preserving micromodulation in the foreground.
+
+    There are two ways to identify peaks: either using the `original` method, as
+    laid out in the paper which identifies peaks in a binary way as being above
+    some threshold, or by using the `local_std` way, which was developed and investigated
+    in Chapter 2 in [2]. This method identifies peaks in a soft way and can thus
+    be used to construct soft masks. It generally performs better.
+
+    The main hyperparameter to consider is the `neighborhood_size`, which determines
+    how big of a filter to apply when looking for peaks. It is two dimensional, but
+    generally keeping 1D horizontal filters is the way to go.
+
+    References:
+
+    [1] Seetharaman, Prem, Fatemeh Pishdadian, and Bryan Pardo.
+        "Music/Voice Separation Using the 2D Fourier Transform." 
+        2017 IEEE Workshop on Applications of Signal Processing to 
+        Audio and Acoustics (WASPAA). IEEE, 2017.
+
+    [2] Seetharaman, Prem. Bootstrapping the Learning Process for Computer Audition. 
+        Diss. Northwestern University, 2019.
+
+    Args:
+        input_audio_signal (AudioSignal): Signal to separate.
+
+        neighborhood_size (tuple, optional): 2-tuple of ints telling the filter size to look for
+          peaks in frequency and time: `(f, t)`. Defaults to (1, 25).
+
+        high_pass_cutoff (float, optional): Time-frequency bins below this cutoff will be
+          assigned to the background. Defaults to 100.0.
+
+        quadrants_to_keep (tuple, optional): Each quadrant of the 2DFT can be filtered out
+          when separating. Can be used for separating out upward spectro-temporal patterns
+          (via `(0, 2)` from downward ones `(1, 3)`. Defaults to (0,1,2,3).
+
+        filter_approach (str, optional): One of 'original' or 'local_std'. Which 
+          filtering approach to apply to identify peaks. Defaults to 'local_std'.
+
+        use_bg_2dft (bool, optional): Whether to use the background or foreground 2DFT
+          as the reference for constructing masks. Defaults to True.
+
+        mask_type (str, optional): Mask type. Defaults to 'soft'.
+
+        mask_threshold (float, optional): Masking threshold. Defaults to 0.5.
 
     """
-    def __init__(self, input_audio_signal, high_pass_cutoff=100.0, neighborhood_size=(1, 25),
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT, quadrants_to_keep=(0,1,2,3),
-                 use_background_fourier_transform=True, mask_alpha=1.0,
-                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK,
-                 filter_approach='local_std'):
-        super(FT2D, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
-        self.high_pass_cutoff = high_pass_cutoff
-        self.background = None
-        self.foreground = None
-        self.use_librosa_stft = use_librosa_stft
+    def __init__(self, input_audio_signal, neighborhood_size=(1, 25), high_pass_cutoff=100.0,
+      quadrants_to_keep=(0,1,2,3), filter_approach='local_std', use_bg_2dft=True, 
+      mask_type='soft', mask_threshold=0.5):
+
+        super().__init__(
+            input_audio_signal=input_audio_signal, 
+            mask_type=mask_type, 
+            mask_threshold=mask_threshold)
+
         self.neighborhood_size = neighborhood_size
         self.result_masks = None
         self.quadrants_to_keep = quadrants_to_keep
-        self.use_background_fourier_transform = use_background_fourier_transform
-        self.mask_alpha = mask_alpha
+        self.use_bg_2dft = use_bg_2dft
+        self.high_pass_cutoff = high_pass_cutoff
 
-        self.stft = None
         allowed_filter_approaches = ['original', 'local_std']
         if filter_approach not in allowed_filter_approaches:
-            raise ValueError(f'filter approach must be one of {allowed_filter_approaches}')
+            raise SeparationException(
+                f'filter approach must be one of {allowed_filter_approaches}')
 
         self.filter_approach = filter_approach
 
-        if do_mono:
-            self.audio_signal.to_mono(overwrite=True)
-
     def run(self):
-        """
+        high_low = HighLowPassFilter(self.audio_signal, self.high_pass_cutoff)
+        high_pass_masks = high_low.run()
 
-        Returns:
-            background (AudioSignal): An AudioSignal object with repeating background in
-            background.audio_data
-            (to get the corresponding non-repeating foreground run self.make_audio_signals())
-
-        Example:
-             ::
-
-        """
-        # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
-        self.high_pass_cutoff = int(np.ceil(self.high_pass_cutoff * (self.stft_params.n_fft_bins - 1) /
-                                            self.audio_signal.sample_rate)) + 1
-
-        self._compute_spectrograms()
-
-        # separate the mixture background by masking
         background_masks = []
         foreground_masks = []
+
         for ch in range(self.audio_signal.num_channels):
-            background_mask, foreground_mask = self.compute_ft2d_mask(self.ft2d, ch)
-            background_mask[0:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
-            foreground_mask[0:self.high_pass_cutoff, :] = 0
+            background_mask, foreground_mask = self.compute_ft2d_mask(
+                self.ft2d, ch)
             background_masks.append(background_mask)
             foreground_masks.append(foreground_mask)
 
-        background_masks = np.array(background_masks).transpose((1, 2, 0)).astype('float')
-        foreground_masks = np.array(foreground_masks).transpose((1, 2, 0)).astype('float')
+        background_masks = np.stack(background_masks, axis=-1)
+        foreground_masks = np.stack(foreground_masks, axis=-1)
 
-        _masks = [background_masks, foreground_masks]
+        _masks = np.stack([background_masks, foreground_masks], axis=-1)
+
         self.result_masks = []
 
-        for mask in _masks:
-            mask = masks.SoftMask(mask)
-            if self.mask_type == self.BINARY_MASK:
-                mask = mask.mask_to_binary()
+        for i in range(_masks.shape[-1]):
+            mask_data = _masks[..., i]
+            if self.mask_type == self.MASKS['binary']:
+                mask_data = _masks[..., i] == np.max(_masks, axis=-1)
+            
+            if i == 0:
+                mask_data = np.maximum(mask_data, high_pass_masks[i].mask)
+            elif i == 1:
+                mask_data = np.minimum(mask_data, high_pass_masks[i].mask)
+            
+            mask = self.mask_type(mask_data)
             self.result_masks.append(mask)
 
         return self.result_masks
 
-    
-    def _compute_spectrograms(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
-                                           use_librosa=self.use_librosa_stft)
-        self.ft2d = np.stack([np.fft.fft2(np.abs(self.stft[:, :, i]))
-                              for i in range(self.audio_signal.num_channels)], 
-                              axis = -1)
 
-    def filter_quadrants(self, data):
-        # 1: shape[0] // 2:, :shape[1] // 2
-        # 2: :shape[0] // 2, :shape[1] // 2
-        # 3: :shape[0] // 2, shape[1] // 2:
-        # 4: shape[0] // 2:, shape[1] // 2:
+    def _preprocess_audio_signal(self):
+        super()._preprocess_audio_signal()
+
+        self.ft2d = np.stack([
+            np.fft.fft2(np.abs(self.stft[:, :, i]))
+            for i in range(self.audio_signal.num_channels)],
+            axis=-1
+        )
+
+    def filter_quadrants(self, data, quadrants_to_keep):
+        """
+        Filters the quadrants of the incoming 2DFT, deleting the ones not in 
+        `quadrants_to_keep`. Those are zero'd out. This can be used to separate
+        upward moving from downward moving spectro-temporal patterns.
+        
+        .. code-block:: none
+        
+            1: shape[0] // 2:, :shape[1] // 2
+            2: :shape[0] // 2, :shape[1] // 2
+            3: :shape[0] // 2, shape[1] // 2:
+            4: shape[0] // 2:, shape[1] // 2:
+        
+        Args:
+            data ([type]): [description]
+            quadrants_to_keep ([type]): [description]
+        
+        Returns:
+            [type]: [description]
+        """
+        
         shape = data.shape
         for quadrant in range(4):
-            if quadrant not in self.quadrants_to_keep:
+            if quadrant not in quadrants_to_keep:
                 if quadrant == 0:
                     data[shape[0] // 2:, :shape[1] // 2] = 0
                 elif quadrant == 1:
@@ -123,21 +176,24 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         elif self.filter_approach == 'local_std':
             bg_ft2d, fg_ft2d = self.filter_local_maxima_with_std(ft2d[:, :, ch])
         
-        self.bg_ft2d = self.filter_quadrants(bg_ft2d)
-        self.fg_ft2d = self.filter_quadrants(fg_ft2d)
+        self.bg_ft2d = self.filter_quadrants(
+            bg_ft2d, self.quadrants_to_keep)
+        self.fg_ft2d = self.filter_quadrants(
+            fg_ft2d, self.quadrants_to_keep)
+
         _stft = np.abs(self.stft)[:, :, ch] + 1e-7
         _stft = _stft
 
-        if self.use_background_fourier_transform:
+        if self.use_bg_2dft:
             ft2d_used = self.bg_ft2d
         else:
             ft2d_used = self.fg_ft2d
 
         est_stft = np.minimum(np.abs(np.fft.ifft2(ft2d_used)), _stft)
-        est_mask = (est_stft / _stft) ** self.mask_alpha
+        est_mask = est_stft / _stft
         est_mask /= (est_mask + 1e-7).max()
 
-        if self.use_background_fourier_transform:
+        if self.use_bg_2dft:
             bg_mask = est_mask
             fg_mask = 1 - bg_mask
         else:
@@ -167,6 +223,7 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         
         background_ft2d = np.multiply(maxima, ft2d)
         foreground_ft2d = np.multiply(1 - maxima, ft2d)
+
         return background_ft2d, foreground_ft2d
 
 
@@ -185,27 +242,5 @@ class FT2D(mask_separation_base.MaskSeparationBase):
         
         background_ft2d = np.multiply(maxima, ft2d)
         foreground_ft2d = np.multiply(1 - maxima, ft2d)
+
         return background_ft2d, foreground_ft2d
-
-    def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run FT2D.run() prior
-        to calling this function. This function will return None if run() has not been called.
-
-        Returns:
-            Audio Signals (List): 2 element list.
-
-                * bkgd: Audio signal with the calculated background track
-                * fkgd: Audio signal with the calculated foreground track
-
-        EXAMPLE:
-             ::
-        """
-        sources = []
-        for mask in self.result_masks:
-            source = self.audio_signal.apply_mask(mask)
-            source.istft(
-                overwrite=True,
-                truncate_to_length=self.audio_signal.signal_length
-            )
-            sources.append(source)
-        return sources

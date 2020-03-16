@@ -1,16 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import numpy as np
-from . import mask_separation_base
-from . import masks
-from ..core import constants
 import librosa
-import copy
+from .. import MaskSeparationBase
 
-
-class HPSS(mask_separation_base.MaskSeparationBase):
-    """Implements harmonic/percussive source separation based on:
+class HPSS(MaskSeparationBase):
+    """
+    Implements harmonic/percussive source separation based on:
     
     1. Fitzgerald, Derry. “Harmonic/percussive separation using median filtering.” 
     13th International Conference on Digital Audio Effects (DAFX10), Graz, Austria, 2010.
@@ -22,110 +16,51 @@ class HPSS(mask_separation_base.MaskSeparationBase):
     This is a wrapper around the librosa implementation.
 
     Parameters:
-        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that REPET will be run on.
-        kernel_size: int or tuple (kernel_harmonic, kernel_percussive) kernel size(s) for the
-            median filters.
-        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm
-            (does not effect the input AudioSignal object)
-        use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
+        input_audio_signal (AudioSignal): signal to separate.
+
+        kernel_size (int or tuple (kernel_harmonic, kernel_percussive)) kernel size(s) for the
+          median filters.
+
+        mask_type (str, optional): Mask type. Defaults to 'soft'.
+
+        mask_threshold (float, optional): Masking threshold. Defaults to 0.5.
 
     """
-    def __init__(self, input_audio_signal, kernel_size=31,
-                 do_mono=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
-                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK):
-        super(HPSS, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
-        self.harmonic = None
-        self.percussive = None
-        self.use_librosa_stft = use_librosa_stft
-        self.kernel_size = kernel_size
-        self.stft = None
-        self.masks = None
+    def __init__(self, input_audio_signal, kernel_size=31, mask_type='soft', 
+      mask_threshold=0.5):
+        super().__init__(
+            input_audio_signal=input_audio_signal, 
+            mask_type=mask_type,
+            mask_threshold=mask_threshold
+        )
 
-        if do_mono:
-            self.audio_signal.to_mono(overwrite=True)
+        self.kernel_size = kernel_size
 
     def run(self):
-        """
-
-        Returns:
-
-        Example:
-             ::
-
-        """
-        self._compute_spectrograms()
-
         # separate the mixture background by masking
         harmonic_masks = []
         percussive_masks = []
-        for i in range(self.audio_signal.num_channels):
+
+        for ch in range(self.audio_signal.num_channels):
             # apply mask
-            harmonic_mask, percussive_mask = librosa.decompose.hpss(self.stft[:, :, i],
-                                                                    kernel_size=self.kernel_size,
-                                                                    mask=True)
+            harmonic_mask, percussive_mask = librosa.decompose.hpss(
+                self.stft[:, :, ch], kernel_size=self.kernel_size, mask=True)
             harmonic_masks.append(harmonic_mask)
             percussive_masks.append(percussive_mask)
 
-        # make a new audio signal for the background
-
         # make a mask and return
-        harmonic_mask = np.array(harmonic_masks).transpose((1, 2, 0))
-        percussive_mask = np.array(percussive_masks).transpose((1, 2, 0))
-        both_masks = [harmonic_mask, percussive_mask]
+        harmonic_masks = np.stack(harmonic_masks, axis=-1)
+        percussive_masks = np.stack(percussive_masks, axis=-1)
+
+        _masks = np.stack([harmonic_masks, percussive_masks], axis=-1)
         
-        self.masks = []
+        self.result_masks = []
         
-        for mask in both_masks:
-            if self.mask_type == self.BINARY_MASK:
-                mask = np.round(mask)
-                mask_object = masks.BinaryMask(mask)
-            elif self.mask_type == self.SOFT_MASK:
-                mask_object = masks.SoftMask(mask)
-            else:
-                raise ValueError('Unknown mask type {self.mask_type}!')
-            self.masks.append(mask_object)
-        self.result_masks = self.masks
-        return self.masks
-    
-    def _compute_spectrograms(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
-                                           use_librosa=self.use_librosa_stft)
+        for i in range(_masks.shape[-1]):
+            mask_data = _masks[..., i]
+            if self.mask_type == self.MASKS['binary']:
+                mask_data = _masks[..., i] == np.max(_masks, axis=-1)
+            mask = self.mask_type(mask_data)
+            self.result_masks.append(mask)
 
-    def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run :func:`run()` prior
-        to calling this function. This function will return ``None`` if :func:`run()` has not been
-        called.
-        
-        Order of the list is ``[self.background, self.foreground]`` 
-
-        Returns:
-            (list): List containing two :class:`audio_signal.AudioSignal` objects, one for the
-            calculated background
-            and the next for the remaining foreground, in that order.
-
-        Example:
-            
-        .. code-block:: python
-            :linenos:
-            
-            # set up AudioSignal object
-            signal = nussl.AudioSignal('path_to_file.wav')
-
-            # set up and run repet
-            hpss = nussl.HPSS(signal)
-            hpss.run()
-
-            # get audio signals (AudioSignal objects)
-            harmonic, percussive = ft2d.make_audio_signals()
-            
-        """
-        self.sources = []
-        for mask in self.masks: 
-            source = copy.deepcopy(self.audio_signal)
-            source = source.apply_mask(mask)
-            source.stft_params = self.stft_params
-            source.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
-            self.sources.append(source)
-        # self.sources[0] -> harmonic, self.sources[1] -> percussive
-        return self.sources
+        return self.result_masks

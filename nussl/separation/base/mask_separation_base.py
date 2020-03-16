@@ -48,9 +48,7 @@ class MaskSeparationBase(SeparationBase):
     def __init__(self, input_audio_signal, mask_type='soft', mask_threshold=0.5):
         super().__init__(input_audio_signal=input_audio_signal)
 
-        self._mask_type = None
         self.mask_type = mask_type
-        self._mask_threshold = None
         self.mask_threshold = mask_threshold
         self.result_masks = []
 
