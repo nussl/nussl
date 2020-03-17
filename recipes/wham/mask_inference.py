@@ -41,11 +41,11 @@ RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BATCH_SIZE = 25
-MAX_EPOCHS = 150
+MAX_EPOCHS = 100
 CACHE_POPULATED = True
-LEARNING_RATE = 5e-4
-PATIENCE = 5
-GRAD_NORM = 100
+LEARNING_RATE = 1e-3
+PATIENCE = 10
+GRAD_NORM = 200
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -87,16 +87,16 @@ if not CACHE_POPULATED:
 
 # reload after caching
 dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
-    batch_size=BATCH_SIZE)
+    batch_size=BATCH_SIZE, shuffle=True)
 val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS,
-    batch_size=BATCH_SIZE)
+    batch_size=BATCH_SIZE, shuffle=True)
 
 n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_mask_inference(
     n_features, 600, 4, True, 0.3, 2, ['sigmoid'], 
-    normalization_class='InstanceNorm'
+    normalization_class='BatchNorm'
 )
 model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)

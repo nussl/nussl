@@ -1,5 +1,6 @@
 import pytest
 import nussl
+from nussl.separation import SeparationException
 import numpy as np
 import os
 
@@ -34,3 +35,61 @@ def test_spatial_clustering(mix_and_sources, check_against_regression_data):
     reg_path = os.path.join(REGRESSION_PATH, 'spatial_clustering.json')
     check_against_regression_data(scores, reg_path)
 
+
+def test_projet(
+    drum_and_vocals,
+    check_against_regression_data
+):
+    nussl.utils.seed(0)
+
+    drum, vocals = drum_and_vocals
+    drum = nussl.mixing.pan_audio_signal(drum, 30)
+    vocals = nussl.mixing.pan_audio_signal(vocals, -30)
+
+    mix = drum + vocals
+
+    sep = nussl.separation.spatial.Projet(mix, 2)
+    estimates = sep()
+
+    evaluator = nussl.evaluation.BSSEvalScale(
+        [drum, vocals], estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+
+    reg_path = os.path.join(REGRESSION_PATH, 'projet_pan.json')
+    check_against_regression_data(scores, reg_path)
+
+    # now put some delays
+    delays = [np.random.randint(1, 20) for _ in range(drum.num_channels)]
+    drum = nussl.mixing.delay_audio_signal(drum, delays)
+    delays = [np.random.randint(1, 20) for _ in range(vocals.num_channels)]
+    vocals = nussl.mixing.delay_audio_signal(vocals, delays)
+
+    mix = drum + vocals
+
+    sep = nussl.separation.spatial.Projet(mix, 2)
+    estimates = sep()
+
+    evaluator = nussl.evaluation.BSSEvalScale(
+        [drum, vocals], estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+
+    reg_path = os.path.join(REGRESSION_PATH, 'projet_delay.json')
+    check_against_regression_data(scores, reg_path)
+
+    # now do some initialization of the PSDs
+
+    ft2d = nussl.separation.primitive.FT2D(mix)
+    ft2d_estimates = ft2d()
+
+    pytest.raises(SeparationException, nussl.separation.spatial.Projet, 
+        mix, 2, estimates=[ft2d_estimates[0]])
+
+    sep = nussl.separation.spatial.Projet(mix, 2, estimates=ft2d_estimates)
+    estimates = sep()
+
+    evaluator = nussl.evaluation.BSSEvalScale(
+        [drum, vocals], estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+
+    reg_path = os.path.join(REGRESSION_PATH, 'projet_with_init.json')
+    check_against_regression_data(scores, reg_path)
