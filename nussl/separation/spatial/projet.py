@@ -18,6 +18,8 @@ class Projet(SeparationBase):
     4. Use the discovered parameters to isolate the sources via spatial cues.
 
     This implementation considers BOTH panning and delays when isolating sources.
+    PROJET is not a masking based method, it estimates the sources directly by
+    projecting the complex STFT.
 
     Args:
           input_audio_signal (AudioSignal): Audio signal to separate.
