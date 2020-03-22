@@ -1113,7 +1113,7 @@ class AudioSignal(object):
             raise AudioSignalException('There is no STFT data to apply a mask to!')
         
         if mask.shape != self.stft_data.shape:
-            if not mask.shape[:-1] == self.stft_data.shape:
+            if not mask.shape[:-1] == self.stft_data.shape[:-1]:
                 raise AudioSignalException(
                     'Input mask and self.stft_data are not the same shape! mask:'
                     f' {mask.shape}, self.stft_data: {self.stft_data.shape}'

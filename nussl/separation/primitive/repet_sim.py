@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 
 from .. import MaskSeparationBase, SeparationException
@@ -23,9 +21,19 @@ class RepetSim(MaskSeparationBase):
         13th International Society on Music Information Retrieval, 
         Porto, Portugal, October 8-12, 2012.
 
-    Arguments:
-        
-
+    Args:
+        input_audio_signal (AudioSignal): Audio signal to be separated.
+        similarity_threshold (int, optional): Threshold for considering two
+          frames to be similar. Defaults to 0.
+        min_distance_between_frames (float, optional): Number of seconds two frames
+          must be apart to be considered neighbors. Defaults to 1.
+        max_repeating_frames (int, optional): Max number of frames to consider as
+          neighbors. Defaults to 100.
+        high_pass_cutoff (float, optional): Cutoff for high pass filters. Bins below
+          this cutoff will be given to the background. Defaults to 100.
+        mask_type (str, optional): Mask type to use.. Defaults to 'soft'.
+        mask_threshold (float, optional): Threshold for mask converting to binary. 
+          Defaults to 0.5.
     """
 
     def __init__(self, input_audio_signal, similarity_threshold=0, 

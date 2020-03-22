@@ -1,86 +1,115 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-An implementation of the Degenerate Unmixing Estimation Technique (DUET) algorithm.
-"""
-
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
-from . import mask_separation_base
-from . import masks
-from ..core import utils
-from ..core import constants
-from ..core.audio_signal import AudioSignal
+from .. import MaskSeparationBase
+from ...core import utils
+from ...core import constants
 
 
-class Duet(mask_separation_base.MaskSeparationBase):
+class Duet(MaskSeparationBase):
     """
-    The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA estimation
-    and further developed for BSS and demixing by A.Jourjine, S.Rickard, and O. Yilmaz. DUET extracts
-    sources using the symmetric attenuation and relative delay between two channels. The symmetric
-    attenuation is calculated from the ratio of the two channels' stft amplitudes, and the delay is the arrival delay
-    between the two sensors used to record the audio signal. These two values are clustered as peaks on a
-    histogram to determine where each source occurs. This implementation of DUET creates and returns Mask objects after
-    the run() function, which can then be applied to the original audio signal to extract each individual source.
+    The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA 
+    estimation and further developed for BSS and demixing by A. Jourjine, S.Rickard, 
+    and O. Yilmaz. 
+    
+    DUET extracts sources using the symmetric attenuation and relative delay between 
+    two channels. The symmetric attenuation is calculated from the ratio of the two 
+    channels' stft amplitudes, and the delay is the arrival delay between the two 
+    sensors used to record the audio signal. These two values are clustered as peaks on 
+    a histogram to determine where each source occurs. This implementation of DUET 
+    creates and returns Mask objects after the run() function, which can then be 
+    applied to the original audio signal to extract each individual source.
 
     References:
 
-        * Rickard, Scott. "The DUET blind source separation algorithm." Blind Speech Separation. Springer Netherlands,
-          2007. 217-241.
-        * Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures via time-frequency masking." Signal
-          Processing, IEEE transactions on 52.7 (2004): 1830-1847.
+    [1] Rickard, Scott. "The DUET blind source separation algorithm." 
+        Blind Speech Separation. Springer Netherlands, 2007. 217-241.
 
-    Parameters:
-        input_audio_signal (np.array): a 2-row Numpy matrix containing samples of the two-channel mixture.
+    [2] Yilmaz, Ozgur, and Scott Rickard. "Blind separation of speech mixtures 
+        via time-frequency masking." 
+        Signal Processing, IEEE transactions on 52.7 (2004): 1830-1847.
+
+    Args:
+        input_audio_signal (np.array): a 2-row Numpy matrix containing samples of the
+          two-channel mixture.
+
         num_sources (int): Number of sources to find.
-        attenuation_min (int): Minimum distance in utils.find_peak_indices, change if not enough peaks are identified.
+
+        attenuation_min (int): Minimum distance in utils.find_peak_indices, change if 
+          not enough peaks are identified.
+
         attenuation_max (int): Used for creating a histogram without outliers.
+
         num_attenuation_bins (int): Number of bins for attenuation. 
-        delay_min (int): Lower bound on delay, used as minimum distance in utils.find_peak_indices.
-        delay_max (int): Upper bound on delay, used for creating a histogram without outliers.
+
+        delay_min (int): Lower bound on delay, used as minimum distance in 
+          utils.find_peak_indices.
+
+        delay_max (int): Upper bound on delay, used for creating a histogram without 
+          outliers.
+
         num_delay_bins (int): Number of bins for delay. 
+
         peak_threshold (float): Value in [0, 1] for peak picking. 
-        attenuation_min_distance (int): Minimum distance between peaks wrt attenuation. 
+
+        attenuation_min_distance (int): Minimum distance between peaks wrt attenuation.
+
         delay_min_distance (int): Minimum distance between peaks wrt delay.
+
         p (int): Weight the histogram with the symmetric attenuation estimator.
-        q (int): Weight the histogram with the delay estimator
-        On page 8 of his paper, Rickard recommends p=1 and q=0 as a default starting point and p=.5, q=0 if one
-        source is more dominant.
+
+        q (int): Weight the histogram with the delay estimato
+        
+    Notes:
+
+        On page 8 of his paper, Rickard recommends p=1 and q=0 as a default starting 
+        point and p=.5, q=0 if one source is more dominant.
 
     Attributes:
+
         stft_ch0 (np.array): A Numpy matrix containing the stft data of channel 0.
+
         stft_ch1 (np.array): A Numpy matrix containing the stft data of channel 1.
-        frequency_matrix (np.array): A Numpy matrix containing the frequencies of analysis.
-        symmetric_atn (np.array): A Numpy matrix containing the symmetric attenuation between the two channels.
+
+        frequency_matrix (np.array): A Numpy matrix containing the frequencies of 
+          analysis.
+
+        symmetric_atn (np.array): A Numpy matrix containing the symmetric attenuation 
+          between the two channels.
+
         delay (np.array): A Numpy matrix containing the delay between the two channels.
-        num_time_bins (np.array): The number of time bins for the frequency matrix and mask arrays.
+
+        num_time_bins (np.array): The number of time bins for the frequency matrix and 
+          mask arrays.
+
         num_frequency_bins (int): The number of frequency bins for the mask arrays.
-        attenuation_bins (int): A Numpy array containing the attenuation bins for the histogram.
+
+        attenuation_bins (int): A Numpy array containing the attenuation bins for the 
+          histogram.
+
         delay_bins (np.array): A Numpy array containing the delay bins for the histogram.
-        normalized_attenuation_delay_histogram (np.array): A normalized Numpy matrix containing the
-                                                           attenuation delay histogram, which has peaks for each source.
-        attenuation_delay_histogram (np.array): A non-normalized Numpy matrix containing the
-                                                attenuation delay histogram, which has peaks for each source.
-        peak_indices (np.array): A Numpy array containing the indices of the peaks for the histogram.
-        separated_sources (np.array): A Numpy array of arrays containing each separated source.
 
-    Examples:
-        :ref:`The DUET Demo Example <duet_demo>`
+        normalized_attenuation_delay_histogram (np.array): A normalized Numpy matrix 
+          containing the attenuation delay histogram, which has peaks for each source.
 
+        attenuation_delay_histogram (np.array): A non-normalized Numpy matrix containing 
+          the attenuation delay histogram, which has peaks for each source.
+
+        peak_indices (np.array): A Numpy array containing the indices of the peaks for 
+          the histogram.
+
+        separated_sources (np.array): A Numpy array of arrays containing each 
+          separated source.
     """
 
     def __init__(self, input_audio_signal, num_sources,
                  attenuation_min=-3, attenuation_max=3, num_attenuation_bins=50,
                  delay_min=-3, delay_max=3, num_delay_bins=50,
-                 peak_threshold=0.0, attenuation_min_distance=5, delay_min_distance=5, p=1, q=0):
-        super(Duet, self).__init__(input_audio_signal=input_audio_signal,
-                                   mask_type=mask_separation_base.MaskSeparationBase.BINARY_MASK)
-
-        if not self.audio_signal.is_stereo:
-            raise ValueError('Duet requires that the input_audio_signal has exactly 2 channels!')
+                 peak_threshold=0.0, attenuation_min_distance=5, delay_min_distance=5, 
+                 p=1, q=0, mask_type='binary'):
+        super().__init__(
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type)
 
         self.num_sources = num_sources
         self.attenuation_min = attenuation_min
@@ -94,8 +123,6 @@ class Duet(mask_separation_base.MaskSeparationBase):
         self.delay_min_distance = delay_min_distance
         self.p = p
         self.q = q
-        self.final_sources = []
-        self.result_masks = []
 
         self.stft_ch0 = None
         self.stft_ch1 = None
@@ -147,82 +174,35 @@ class Duet(mask_separation_base.MaskSeparationBase):
         """
         self.result_masks = []
 
-        if not self.audio_signal.is_stereo:  # double check this
-            raise ValueError('Cannot run Duet on audio signal without exactly 2 channels!')
-
         # Calculate the stft of both channels and create the frequency matrix (the matrix containing the
         #  frequencies of analysis of the Fourier transform)
-        self.stft_ch0, self.stft_ch1, self.frequency_matrix = self._compute_spectrogram(self.sample_rate)
+        self.stft_ch0, self.stft_ch1, self.frequency_matrix = self._compute_spectrogram(
+            self.sample_rate)
 
         # Calculate the symmetric attenuation (alpha) and delay (delta) for each
         # time-freq. point and return a matrix for each
-        self.symmetric_atn, self.delay = self._compute_atn_delay(self.stft_ch0, self.stft_ch1, self.frequency_matrix)
+        self.symmetric_atn, self.delay = self._compute_atn_delay(
+            self.stft_ch0, self.stft_ch1, self.frequency_matrix)
 
         # Make histogram of attenuation-delay values and get the center values for the bins in this histogram
-        self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = self._make_histogram()
+        self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = (
+            self._make_histogram()
+        )
 
         # Find the location of peaks in the attenuation-delay plane
-        self.peak_indices = utils.find_peak_indices(self.normalized_attenuation_delay_histogram, self.num_sources,
-                                                    threshold=self.peak_threshold,
-                                                    min_dist=[self.attenuation_min_distance,
-                                                              self.delay_min_distance])
+        self.peak_indices = utils.find_peak_indices(
+            self.normalized_attenuation_delay_histogram, self.num_sources,
+            threshold=self.peak_threshold, 
+            min_dist=[self.attenuation_min_distance, self.delay_min_distance])
 
         # compute delay_peak, attenuation peak, and attenuation/delay estimates
-        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks(self.peak_indices)
+        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks(
+            self.peak_indices)
 
         # compute masks for separation
         computed_masks = self._compute_masks()
 
         return computed_masks
-
-    def get_atn_delay_histogram(self, recompute=False, normalized=False):
-        """
-        Computes the 2D attenuation/delay histogram for the given input signal.
-        Args:
-            recompute (bool): If `True`, this will recompute everything required to calculate the histogram
-            (i.e., spectrograms). If `False`, then this will use previously calculated values if available.
-            normalized (bool): Will normalize the histogram
-
-        Returns:
-
-        """
-
-        if not self.audio_signal.is_stereo:  # double check this
-            raise ValueError('Cannot run Duet on audio signal without exactly 2 channels!')
-
-        if not np.all([self.stft_ch0, self.stft_ch1, self.frequency_matrix]) or recompute:
-            self.stft_ch0, self.stft_ch1, self.frequency_matrix = self._compute_spectrogram(self.sample_rate)
-
-        if not np.all([self.symmetric_atn, self.delay]) or recompute:
-            self.symmetric_atn, self.delay = self._compute_atn_delay(self.stft_ch0, self.stft_ch1,
-                                                                     self.frequency_matrix)
-
-        if self.normalized_attenuation_delay_histogram is None or recompute:
-            self.normalized_attenuation_delay_histogram, self.attenuation_bins, self.delay_bins = self._make_histogram()
-
-        if normalized:
-            return self.normalized_attenuation_delay_histogram
-        else:
-            return self.attenuation_delay_histogram
-
-    def convert_peaks_to_masks(self, peak_indices=None):
-        """
-
-        Args:
-            peak_indices:
-
-        Returns:
-
-        """
-        if peak_indices is None and self.peak_indices is None:
-            raise ValueError('Need peak_indices to make masks!')
-
-        if self.normalized_attenuation_delay_histogram is None:
-            self.get_atn_delay_histogram(recompute=True)
-
-        peak_indices = self.peak_indices if peak_indices is None else peak_indices
-        self.delay_peak, atn_delay_est, self.atn_peak = self._convert_peaks(peak_indices)
-        return self._compute_masks()
 
     def _compute_spectrogram(self, sample_rate):
         """ Creates the STFT matrices for channel 0 and 1, and computes the frequency matrix.
@@ -244,7 +224,9 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         # Compute the freq. matrix for later use in phase calculations
         n_time_bins = len(self.audio_signal.time_bins_vector)
-        wmat = np.array(np.tile(np.mat(self.audio_signal.freq_vector).T, (1, n_time_bins))) * (2 * np.pi / sample_rate)
+        wmat = np.array(np.tile(np.mat(
+            self.audio_signal.freq_vector).T, (1, n_time_bins))) * (
+            2 * np.pi / sample_rate)
         wmat += constants.EPSILON
         return stft_ch0, stft_ch1, wmat
 
@@ -317,15 +299,8 @@ class Duet(mask_separation_base.MaskSeparationBase):
             atn_delay_est (np.array): The estimated symmetric attenuation and delay values
             atn_peak (np.array): Attenuation converted from symmetric attenuation
         """
-
-        if peak_indices is None:
-            raise ValueError('No peak indices')
-
         atn_indices = [x[0] for x in peak_indices]
         delay_indices = [x[1] for x in peak_indices]
-
-        if any(a > len(self.attenuation_bins) for a in atn_indices):
-            raise ValueError('Attenuation index greater than length of bins')
 
         symmetric_atn_peak = self.attenuation_bins[atn_indices]
         delay_peak = self.delay_bins[delay_indices]
@@ -350,7 +325,7 @@ class Duet(mask_separation_base.MaskSeparationBase):
             score = np.abs(self.atn_peak[i] * phase * self.stft_ch0 - self.stft_ch1) ** 2 / (1 + self.atn_peak[i] ** 2)
             mask = (score < best_so_far)
             mask_array[mask] = True
-            background_mask = masks.BinaryMask(np.array(mask_array))
+            background_mask = self.mask_type(np.array(mask_array))
             self.result_masks.append(background_mask)
             self.result_masks[0].mask = np.logical_xor(self.result_masks[i].mask, self.result_masks[0].mask)
             best_so_far[mask] = score[mask]
@@ -377,20 +352,8 @@ class Duet(mask_separation_base.MaskSeparationBase):
 
         # check the dimensions of the Kernel matrix and set the values of the averaging
         # matrix, kernel_matrix
-        if np.prod(kernel.shape) == 1:
-            kernel_matrix = np.ones((kernel[0], kernel[0])) / kernel[0] ** 2
-        else:
-            kernel_matrix = kernel
-
-        # make kernel_matrix have odd dimensions
+        kernel_matrix = np.ones((kernel[0], kernel[0])) / kernel[0] ** 2
         krow, kcol = np.shape(kernel_matrix)
-        if np.mod(krow, 2) == 0:
-            kernel_matrix = signal.convolve2d(kernel_matrix, np.ones((2, 1))) / 2
-            krow += 1
-
-        if np.mod(kcol, 2) == 0:
-            kernel_matrix = signal.convolve2d(kernel_matrix, np.ones((1, 2))) / 2
-            kcol += 1
 
         # adjust the matrix dimension for convolution
         copy_row = int(np.floor(krow / 2))  # number of rows to copy on top and bottom
@@ -423,26 +386,3 @@ class Duet(mask_separation_base.MaskSeparationBase):
         smooted_matrix = signal.convolve2d(augmented_matrix, kernel_matrix[::-1, ::-1], mode='valid')
 
         return smooted_matrix
-
-    def make_audio_signals(self):
-        """Returns the extracted signals
-
-        Returns:
-            signals (List[AudioSignal]): List of AudioSignals extracted using DUET.
-
-        """
-        if len(self.result_masks) == 0:
-            raise ValueError('Cannot make audio signals with no masks to apply!')
-
-        signals = []
-        for i in range(self.num_sources):
-            # Apply masks to stft channels using equation 8.34 (pg. 11) provided by Rickard
-            stft_sources = ((self.stft_ch0 + self.atn_peak[i] * np.exp(1j * self.frequency_matrix * self.delay_peak[i])
-                             * self.stft_ch1) / (1 + self.atn_peak[i] ** 2))
-            new_sig = self.audio_signal.make_copy_with_stft_data(stft_sources, verbose=False)
-            new_sig = new_sig.apply_mask(self.result_masks[i])
-            new_sig.stft_params = self.stft_params
-            source_estimate = new_sig.istft(overwrite=True, truncate_to_length=self.audio_signal.signal_length)
-            cur_signal = AudioSignal(audio_data_array=source_estimate, sample_rate=self.sample_rate)
-            signals.append(cur_signal)
-        return signals
