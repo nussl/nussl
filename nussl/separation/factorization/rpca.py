@@ -1,111 +1,85 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import numpy as np
+from .. import MaskSeparationBase
+from ..benchmark import HighLowPassFilter
 
-from ..core import constants
-from . import masks
-from . import mask_separation_base
-from .. import AudioSignal
+class RPCA(MaskSeparationBase):
+    """
+    Implements foreground/background separation using RPCA.
 
+    Huang, Po-Sen, et al. "Singing-voice separation from monaural recordings using 
+    robust principal component analysis." Acoustics, Speech and Signal Processing 
+    (ICASSP), 2012 IEEE International Conference on. IEEE, 2012.
 
-class RPCA(mask_separation_base.MaskSeparationBase):
-    """Implements foreground/background separation using RPCA
-
-    Huang, Po-Sen, et al. "Singing-voice separation from monaural recordings using robust
-    principal component analysis." Acoustics, Speech and Signal Processing (ICASSP), 2012
-    IEEE International Conference on. IEEE, 2012.
-
-    Parameters:
-        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
-                            audio data that RPCA will be run on.
-        high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff filter.
-        num_iterations: (Optional) (int) how many iterations to run RPCA for, defaults to 100.
-        verbose: (Optional) (bool) prints out error rates and iteration count while running (defaults to False)
-        do_mono: (Optional) (bool) Flattens AudioSignal to mono before running the algorithm (does not effect the
-                        input AudioSignal object)
-        use_librosa_stft: (Optional) (bool) Calls librosa's stft function instead of nussl's
-
+    Args:
+        input_audio_signal (AudioSignal): The AudioSignal object that has the
+          audio data that RPCA will be run on.
+        high_pass_cutoff (float, optional): Value (in Hz) for the high pass cutoff 
+          filter. Defaults to 100.
+        num_iterations (int, optional): how many iterations to run RPCA for. 
+          Defaults to 100.
+        epsilon (float, optional): Stopping criterion for RPCA convergence. 
+          Defaults to 1e-7.
+        mask_type (str, optional): Type of mask to use. Defaults to 'soft'.
+        mask_threshold (float, optional): Threshold for mask. Defaults to 0.5.
     """
 
-    def __init__(self, input_audio_signal, high_pass_cutoff=None, num_iterations=None, epsilon=None,
-                 do_mono=False, verbose=False, use_librosa_stft=constants.USE_LIBROSA_STFT,
-                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
-        super(RPCA, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
-        self.high_pass_cutoff = 100.0 if high_pass_cutoff is None else float(high_pass_cutoff)
-        self.use_librosa_stft = use_librosa_stft
+    def __init__(self, input_audio_signal, high_pass_cutoff=100, num_iterations=100, 
+                 epsilon=1e-7, mask_type='soft', mask_threshold=0.5):
+        super().__init__(
+            input_audio_signal=input_audio_signal, 
+            mask_type=mask_type,
+            mask_threshold=mask_threshold)
+        self.high_pass_cutoff = high_pass_cutoff
 
-        self.epsilon = 1e-7 if epsilon is None else epsilon
-        self.num_iterations = 100 if num_iterations is None else num_iterations
+        self.epsilon = epsilon
+        self.num_iterations = num_iterations
         self.gain = 1
-        self.verbose = verbose
 
         self.error = None
-        self.stft = None
-        self.magnitude_spectrogram = None
-        self.background = None
-        self.foreground = None
-        self.result_masks = None
-
-        if do_mono:
-            self.audio_signal.to_mono(overwrite=True)
 
     def run(self):
-        """
+        high_low = HighLowPassFilter(self.audio_signal, self.high_pass_cutoff)
+        high_pass_masks = high_low.run()
 
-        Returns:
-            background (AudioSignal): An AudioSignal object with repeating background in background.audio_data
-            (to get the corresponding non-repeating foreground run self.make_audio_signals())
+        self.magnitude_spectrogram = np.abs(self.stft)
 
-        Example:
-             ::
+        background_masks = []
+        foreground_masks = []
 
-        """
-        # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
-        self.high_pass_cutoff = int(
-            np.ceil(self.high_pass_cutoff * (self.stft_params.n_fft_bins - 1) /
-                    self.audio_signal.sample_rate)) + 1
+        for ch in range(self.audio_signal.num_channels):
+            background_mask = self._compute_rpca_mask(
+                self.magnitude_spectrogram[..., ch])
+            foreground_mask = 1 - background_mask
+            
+            background_masks.append(background_mask)
+            foreground_masks.append(foreground_mask)
 
-        self._compute_spectrum()
+        background_masks = np.stack(background_masks, axis=-1)
+        foreground_masks = np.stack(foreground_masks, axis=-1)
 
-        # separate the mixture background by masking
-        background_stft = []
-        background_mask = []
-        for i in range(self.audio_signal.num_channels):
-            background = self.compute_rpca_mask(self.magnitude_spectrogram[:, :, i])
-            background[0:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
-            background_mask.append(background)
+        _masks = np.stack([background_masks, foreground_masks], axis=-1)
 
-            # apply mask
-            stft_with_mask = background * self.stft[:, :, i]
-            background_stft.append(stft_with_mask)
+        self.result_masks = []
 
-        background_stft = np.array(background_stft).transpose((1, 2, 0))
-        self.background = AudioSignal(stft=background_stft,
-                                      sample_rate=self.audio_signal.sample_rate)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length,
-                              self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft,
-                              truncate_to_length=self.audio_signal.signal_length)
-
-        background_mask = np.array(background_mask).transpose((1, 2, 0)).astype('float')
-        background_mask = masks.SoftMask(background_mask)
-        if self.mask_type == self.BINARY_MASK:
-            background_mask = background_mask.mask_to_binary(self.mask_threshold)
-
-        self.result_masks = [background_mask, background_mask.inverse_mask()]
+        for i in range(_masks.shape[-1]):
+            mask_data = _masks[..., i]
+            if self.mask_type == self.MASKS['binary']:
+                mask_data = _masks[..., i] == np.max(_masks, axis=-1)
+            
+            if i == 0:
+                mask_data = np.maximum(mask_data, high_pass_masks[i].mask)
+            elif i == 1:
+                mask_data = np.minimum(mask_data, high_pass_masks[i].mask)
+            
+            mask = self.mask_type(mask_data)
+            self.result_masks.append(mask)
 
         return self.result_masks
 
-    def _compute_spectrum(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True,
-                                           use_librosa=self.use_librosa_stft)
-        self.magnitude_spectrogram = np.abs(self.stft)
-
-    def compute_rpca_mask(self, magnitude_spectrogram):
+    def _compute_rpca_mask(self, magnitude_spectrogram):
         low_rank, sparse_matrix = self.decompose(magnitude_spectrogram)
         bg_mask = self.gain * np.abs(sparse_matrix) <= np.abs(low_rank)
-        return bg_mask
+        return bg_mask.astype(float)
 
     def decompose(self, magnitude_spectrogram):
         # compute rule of thumb values of lagrange multiplier and svd-threshold
@@ -131,9 +105,6 @@ class RPCA(mask_separation_base.MaskSeparationBase):
         num_iteration = 0
 
         while not converged and num_iteration < self.num_iterations:
-            if self.verbose:
-                print(f'Iteration: {num_iteration}, Error: {error}')
-
             num_iteration += 1
             low_rank = self.svd_threshold(magnitude_spectrogram - sparse_matrix + residuals / mu,
                                           1 / mu)
@@ -156,28 +127,3 @@ class RPCA(mask_separation_base.MaskSeparationBase):
         shrunk = self.shrink(sigma, tau)
         thresholded_singular_values = np.dot(u, np.dot(np.diag(shrunk), v))
         return thresholded_singular_values
-
-    def reduced_rank_svd(self, matrix, k):
-        u, sigma, v = np.linalg.svd(matrix, full_matrices=False)
-        matrix_reduced = np.dot(u[:, 0:k], np.dot(sigma[0:k], v[0:k, :]))
-        return matrix_reduced
-
-    def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run FT2D.run() prior
-        to calling this function. This function will return None if run() has not been called.
-
-        Returns:
-            Audio Signals (List): 2 element list.
-
-                * bkgd: Audio signal with the calculated background track
-                * fkgd: Audio signal with the calculated foreground track
-
-        EXAMPLE:
-             ::
-        """
-        if self.background is None:
-            raise ValueError('Cannot make audio signals prior to running algorithm!')
-
-        foreground_array = self.audio_signal.audio_data - self.background.audio_data
-        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
-        return [self.background, self.foreground]

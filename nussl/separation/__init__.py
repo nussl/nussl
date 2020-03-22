@@ -9,5 +9,6 @@ from . import (
     deep, 
     spatial, 
     benchmark,
-    primitive
+    primitive,
+    factorization
 )

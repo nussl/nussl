@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import numpy as np
 import sklearn
 
@@ -113,18 +110,9 @@ class ICA(separation_base.SeparationBase):
             return None
 
     def run(self):
-        """
-
-        Returns:
-            background (AudioSignal): An AudioSignal object with repeating background in background.audio_data
-            (to get the corresponding non-repeating foreground run self.make_audio_signals())
-
-        Example:
-             ::
-
-        """
-        ica = sklearn.decomposition.FastICA(n_components=self.num_components, random_state=self.random_seed,
-                                            max_iter=self.max_iters, **self.fast_ica_kwargs)
+        ica = sklearn.decomposition.FastICA(
+            n_components=self.num_components, random_state=self.random_seed,
+            max_iter=self.max_iters, **self.fast_ica_kwargs)
 
         # save for normalizing the estimated signals
         max_input_amplitude = np.max(np.abs(self.audio_signal.audio_data))
@@ -147,16 +135,4 @@ class ICA(separation_base.SeparationBase):
         return self.estimated_sources
 
     def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run ICA.run() prior
-        to calling this function. This function will return None if run() has not been called.
-
-        Returns:
-            Audio Signals (list): list
-
-        EXAMPLE:
-             ::
-        """
-        if self.estimated_sources is None:
-            raise ValueError('ICA.run() must be run prior to calling ICA.make_audio_signals()!')
-
         return self.estimated_sources
