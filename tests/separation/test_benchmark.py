@@ -70,3 +70,38 @@ def test_ideal_ratio_mask(
         pytest.raises(SeparationException, nussl.separation.benchmark.IdealRatioMask, 
             mix, 'not a list or dict')
 
+
+def test_wiener_filter(
+    music_mix_and_sources, 
+    check_against_regression_data
+):
+    nussl.utils.seed(0)
+    mix, sources = music_mix_and_sources
+    irm = nussl.separation.benchmark.IdealRatioMask(mix, sources)
+    sources = list(sources.values())
+
+    # get initial estimates
+    ibm = nussl.separation.benchmark.IdealBinaryMask(mix, sources)
+    _estimates = ibm()
+
+    configs = [
+        ({'mask_type': 'binary'}, 'binary'),
+        ({'mask_type': 'soft'}, 'soft')
+    ]
+
+    for kwargs, name in configs:
+        # refine them with a wiener filter
+        wf = nussl.separation.benchmark.WienerFilter(
+            mix, _estimates, **kwargs)
+        estimates = wf()
+
+        evaluator = nussl.evaluation.BSSEvalScale(
+            sources, estimates, compute_permutation=True)
+        scores = evaluator.evaluate()
+
+        reg_path = os.path.join(
+            REGRESSION_PATH, f'wiener_ibm_{name}.json')
+        check_against_regression_data(scores, reg_path)
+
+    pytest.raises(SeparationException, nussl.separation.benchmark.WienerFilter, 
+        mix, 'not a list or dict')

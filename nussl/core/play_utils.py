@@ -24,19 +24,23 @@ def _check_imports():
 
 def embed_audio(audio_signal, ext='.mp3', display=True):
     """
-	Write a numpy array to a temporary mp3 file using ffmpy, then embeds the mp3 into the notebook.
+	Write a numpy array to a temporary mp3 file using ffmpy, then embeds the mp3 
+    into the notebook.
 
-	Parameters:
-	   audio_signal: AudioSignal object containing the data
-       ext: What extension to use when embedding. mp3 is more lightweight leading to smaller notebook sizes.
+    Args:
+        audio_signal (AudioSignal): AudioSignal object containing the data
+
+        ext (str): What extension to use when embedding. '.mp3' is more lightweight 
+        leading to smaller notebook sizes.
 
     Example:
         >>> import nussl
         >>> audio_file = nussl.efz_utils.download_audio_file('schoolboy_fascination_excerpt.wav')
         >>> audio_signal = nussl.AudioSignal(audio_file)
-        >>> nussl.play_utils.embed_audio(audio_signal)
+        >>> audio_signal.embed_audio()
 
-        This will show a little audio player where you can play the audio inline in the notebook.
+    This will show a little audio player where you can play the audio inline in 
+    the notebook.      
 	"""
     audio_signal = deepcopy(audio_signal)
     ffmpy, IPython = _check_imports()

@@ -14,6 +14,8 @@ def test_jupyter_embed_audio(benchmark_audio):
         audio_element = nussl.play_utils.embed_audio(s1, ext='.wav')
         assert os.path.splitext(audio_element.filename)[-1] == '.wav'
 
+        s1.embed_audio()
+
 
 def test_jupyter_no_ffmpy(benchmark_audio, monkeypatch):
     import_orig = builtins.__import__
@@ -48,4 +50,5 @@ def test_play_audio():
     audio_signal = nussl.AudioSignal(
         audio_data_array=np.zeros(100), sample_rate=1000)
     nussl.play_utils.play(audio_signal)
+    audio_signal.play()
     

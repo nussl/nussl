@@ -23,9 +23,6 @@ class SeparationBase(object):
     """
 
     def __init__(self, input_audio_signal):
-        if not isinstance(input_audio_signal, AudioSignal):
-            raise ValueError('input_audio_signal is not an AudioSignal object!')
-
         self.audio_signal = input_audio_signal
 
     @property
@@ -70,6 +67,9 @@ class SeparationBase(object):
         Args:
             input_audio_signal ([type]): [description]
         """
+        if not isinstance(input_audio_signal, AudioSignal):
+            raise ValueError('input_audio_signal is not an AudioSignal object!')
+        
         self._audio_signal = copy.deepcopy(input_audio_signal)
 
         if self.audio_signal is not None:

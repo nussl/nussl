@@ -1579,7 +1579,49 @@ class AudioSignal(object):
         return mono
 
     ##################################################
-    #              Operator overloading
+    #                 Utility hooks                  #
+    ##################################################
+
+    def play(self):
+        """
+        Plays this audio signal, using `nussl.play_utils.play`.
+
+        Plays an audio signal if ffplay from the ffmpeg suite of tools is installed.
+        Otherwise, will fail. The audio signal is written to a temporary file
+        and then played with ffplay.
+        """
+        # lazy load
+        from . import play_utils
+        play_utils.play(self)
+
+    def embed_audio(self, ext='.mp3', display=True):
+        """
+        Embeds the audio signal into a notebook, using `nussl.play_utils.embed_audio`.
+        
+        Write a numpy array to a temporary mp3 file using ffmpy, then embeds the mp3 
+        into the notebook.
+
+        Args:
+            audio_signal (AudioSignal): AudioSignal object containing the data
+
+            ext (str): What extension to use when embedding. '.mp3' is more lightweight 
+            leading to smaller notebook sizes.
+
+        Example:
+            >>> import nussl
+            >>> audio_file = nussl.efz_utils.download_audio_file('schoolboy_fascination_excerpt.wav')
+            >>> audio_signal = nussl.AudioSignal(audio_file)
+            >>> audio_signal.embed_audio()
+
+        This will show a little audio player where you can play the audio inline in 
+        the notebook.        
+        """
+        # lazy load
+        from . import play_utils
+        return play_utils.embed_audio(self, ext=ext, display=display)
+
+    ##################################################
+    #              Operator overloading              #
     ##################################################
 
     def __add__(self, other):
