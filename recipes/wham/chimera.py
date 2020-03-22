@@ -36,7 +36,7 @@ logging.basicConfig(
 WHAM_ROOT = os.getenv("WHAM_ROOT")
 CACHE_ROOT = os.getenv("CACHE_ROOT")
 NUM_WORKERS = multiprocessing.cpu_count() // 4
-OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_chimera/run7')
+OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_chimera/run9_2e-4_.975_.025')
 RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -45,7 +45,7 @@ MAX_EPOCHS = 100
 CACHE_POPULATED = True
 LEARNING_RATE = 1e-3
 PATIENCE = 5
-GRAD_NORM = 1e-4
+GRAD_NORM = 2e-4
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)

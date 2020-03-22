@@ -170,3 +170,33 @@ def test_melodia(
         reg_path = os.path.join(
             REGRESSION_PATH, f'melodia_{name}.json')
         check_against_regression_data(scores, reg_path)
+
+def test_repet_sim(
+    music_mix_and_sources, 
+    check_against_regression_data
+):
+    mix, sources = music_mix_and_sources
+    mix = copy.deepcopy(mix)
+    vox = copy.deepcopy(sources['vocals'])
+    acc = copy.deepcopy(sources['group0'])
+
+    config = [
+        ({}, 'defaults'),
+        ({'mask_type': 'binary'}, 'binary'),
+        ({'similarity_threshold': .5}, 'high_similarity_threshold')
+    ]
+
+    for kwargs, name in config:
+        repet_sim = primitive.RepetSim(mix, **kwargs)
+        estimates = repet_sim()
+        
+        evaluator = nussl.evaluation.BSSEvalScale(
+            [acc, vox], estimates, 
+            source_labels=['acc', 'vocals'], 
+        )
+
+        scores = evaluator.evaluate()
+
+        reg_path = os.path.join(
+            REGRESSION_PATH, f'repet_sim_{name}.json')
+        check_against_regression_data(scores, reg_path)

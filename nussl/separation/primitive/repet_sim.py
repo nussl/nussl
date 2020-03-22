@@ -1,134 +1,99 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-The REpeating Pattern Extraction Technique using the Similarity Matrix (REPET-SIM)
-"""
-
 import warnings
 
 import numpy as np
 
-from . import mask_separation_base
-from . import masks
-from ..core import utils
-from ..core import constants
+from .. import MaskSeparationBase, SeparationException
+from ..benchmark import HighLowPassFilter
+from ...core import utils
+from ...core import constants
 
+class RepetSim(MaskSeparationBase):
+    """
+    Implements the REpeating Pattern Extraction Technique algorithm using 
+    the Similarity Matrix (REPET-SIM).
 
-class RepetSim(mask_separation_base.MaskSeparationBase):
-    """Implements the REpeating Pattern Extraction Technique algorithm using the Similarity Matrix (REPET-SIM).
-
-    REPET is a simple method for separating the repeating background from the non-repeating foreground in a piece of
-    audio mixture. REPET-SIM is a generalization of REPET, which looks for similarities instead of periodicities.
+    REPET is a simple method for separating the repeating background from the 
+    non-repeating foreground in a piece of audio mixture. REPET-SIM is a generalization 
+    of REPET, which looks for similarities instead of periodicities.
 
     References:
 
-        * Zafar Rafii and Bryan Pardo. "Audio Separation System and Method," US20130064379 A1, US 13/612,413, March 14,
-          2013
-        * Zafar Rafii and Bryan Pardo. "Music/Voice Separation using the Similarity Matrix," 13th International Society
-          on Music Information Retrieval, Porto, Portugal, October 8-12, 2012.
+    [1] Zafar Rafii and Bryan Pardo. 
+        "Music/Voice Separation using the Similarity Matrix," 
+        13th International Society on Music Information Retrieval, 
+        Porto, Portugal, October 8-12, 2012.
 
-    See Also:
-        http://music.eecs.northwestern.edu/research.php?project=repet
+    Arguments:
+        
 
-    Parameters:
-
-    Examples:
-        :ref:`The RepetSim Demo Example <repet_sim_demo>`
     """
 
-    def __init__(self, input_audio_signal, similarity_threshold=None, min_distance_between_frames=None,
-                 max_repeating_frames=None, high_pass_cutoff=None, do_mono=False,
-                 use_librosa_stft=constants.USE_LIBROSA_STFT, matlab_fidelity=False,
-                 mask_type=mask_separation_base.MaskSeparationBase.SOFT_MASK, mask_threshold=0.5):
-        super(RepetSim, self).__init__(input_audio_signal=input_audio_signal, mask_type=mask_type,
-                                       mask_threshold=mask_threshold)
+    def __init__(self, input_audio_signal, similarity_threshold=0, 
+                 min_distance_between_frames=1, max_repeating_frames=100, 
+                 high_pass_cutoff=100, mask_type='soft', mask_threshold=0.5):
+        super().__init__(
+            input_audio_signal=input_audio_signal, 
+            mask_type=mask_type,
+            mask_threshold=mask_threshold)
 
-        self.high_pass_cutoff = 100 if high_pass_cutoff is None else high_pass_cutoff
-        self.similarity_threshold = 0 if similarity_threshold is None else similarity_threshold
-        self.min_distance_between_frames = 1 if min_distance_between_frames is None else min_distance_between_frames
-        self.max_repeating_frames = 100 if max_repeating_frames is None else max_repeating_frames
+        self.high_pass_cutoff = high_pass_cutoff
+        self.similarity_threshold = similarity_threshold
+        self.min_distance_between_frames = min_distance_between_frames
+        self.max_repeating_frames = max_repeating_frames
 
         self._min_distance_converted_to_hops = False
 
-        self.verbose = False
         self.similarity_matrix = None
-        self.background = None
-        self.foreground = None
         self.similarity_indices = None
-        self.magnitude_spectrogram = None
-        self.stft = None
-        self.result_masks = None
-        self.use_librosa_stft = use_librosa_stft
-        self.matlab_fidelity = matlab_fidelity
-
-        if self.matlab_fidelity:
-            self.use_librosa_stft = False
-
-        self.do_mono = do_mono
-
-        if self.do_mono:
-            self.audio_signal.to_mono(overwrite=True)
 
     def run(self):
-        """
-        Runs REPET-SIM, a variant of REPET using the cosine similarity matrix to find similar
-        frames to do median filtering.
+        high_low = HighLowPassFilter(self.audio_signal, self.high_pass_cutoff)
+        high_pass_masks = high_low.run()
 
-        Returns:
+        self.magnitude_spectrogram = np.abs(self.stft)
 
-        """
-        # High pass filter cutoff freq. (in # of freq. bins), +1 to match MATLAB implementation
-        self.high_pass_cutoff = int(np.ceil(float(self.high_pass_cutoff) *
-                                            (self.stft_params.n_fft_bins - 1) /
-                                            self.audio_signal.sample_rate) + 1)
-        low = 1 if self.matlab_fidelity else 0
-        self._compute_spectrograms()
+        background_masks = []
+        foreground_masks = []
+
         self.similarity_indices = self._get_similarity_indices()
 
-        background_stft = []
-        background_mask = []
-        for i in range(self.audio_signal.num_channels):
-            repeating_mask = self._compute_mask(self.magnitude_spectrogram[:, :, i])
+        for ch in range(self.audio_signal.num_channels):
+            background_mask = self._compute_mask(
+                self.magnitude_spectrogram[..., ch])
+            foreground_mask = 1 - background_mask
+            
+            background_masks.append(background_mask)
+            foreground_masks.append(foreground_mask)
 
-            repeating_mask[low:self.high_pass_cutoff, :] = 1  # high-pass filter the foreground
-            background_mask.append(repeating_mask)
+        background_masks = np.stack(background_masks, axis=-1)
+        foreground_masks = np.stack(foreground_masks, axis=-1)
 
-            stft_with_mask = repeating_mask * self.stft[:, :, i]
-            background_stft.append(stft_with_mask)
+        _masks = np.stack([background_masks, foreground_masks], axis=-1)
 
-        # Set STFT in correct order
-        background_stft = np.array(background_stft).transpose((1, 2, 0))
-        self._make_background_signal(background_stft)
+        self.result_masks = []
 
-        # make a mask and return
-        background_mask = np.array(background_mask).transpose((1, 2, 0))
-        background_mask = masks.SoftMask(background_mask)
-        if self.mask_type == self.BINARY_MASK:
-            background_mask = background_mask.mask_to_binary(self.mask_threshold)
-
-        self.result_masks = [background_mask, background_mask.inverse_mask()]
+        for i in range(_masks.shape[-1]):
+            mask_data = _masks[..., i]
+            if self.mask_type == self.MASKS['binary']:
+                mask_data = _masks[..., i] == np.max(_masks, axis=-1)
+            
+            if i == 0:
+                mask_data = np.maximum(mask_data, high_pass_masks[i].mask)
+            elif i == 1:
+                mask_data = np.minimum(mask_data, high_pass_masks[i].mask)
+            
+            mask = self.mask_type(mask_data)
+            self.result_masks.append(mask)
 
         return self.result_masks
 
-    def _make_background_signal(self, background_stft):
-        self.background = self.audio_signal.make_copy_with_stft_data(background_stft, verbose=False)
-        self.background.istft(self.stft_params.window_length, self.stft_params.hop_length, self.stft_params.window_type,
-                              overwrite=True, use_librosa=self.use_librosa_stft,
-                              truncate_to_length=self.audio_signal.signal_length)
-
-    def _compute_spectrograms(self):
-        self.stft = self.audio_signal.stft(overwrite=True, remove_reflection=True, use_librosa=self.use_librosa_stft)
-        self.magnitude_spectrogram = np.abs(self.stft)
-
     def _get_similarity_indices(self):
-        if self.magnitude_spectrogram is None:
-            self._compute_spectrograms()
-
         self.similarity_matrix = self.get_similarity_matrix()
 
         if not self._min_distance_converted_to_hops:
-            self.min_distance_between_frames *= self.audio_signal.sample_rate / self.stft_params.window_overlap
+            self.min_distance_between_frames *= (
+                self.audio_signal.sample_rate / self.stft_params.hop_length
+            )
             self._min_distance_converted_to_hops = True
 
         return self._find_similarity_indices()
@@ -142,8 +107,6 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         Returns:
             S (np.array): 2D similarity matrix
         """
-        assert (type(matrix) == np.ndarray)
-
         # ignore the 'divide by zero' warning
         with np.errstate(divide='ignore'):
             # Code below is adopted from http://stackoverflow.com/a/20687984/5768001
@@ -172,14 +135,12 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
         Returns:
             similarity_indices (list of lists): similarity indices for all time frames
         """
-        if self.similarity_matrix is None:
-            raise Exception('self.similarity_matrix cannot be None')
-
         similarity_indices = []
         for i in range(self.audio_signal.stft_length):
-            cur_indices = utils.find_peak_indices(self.similarity_matrix[i, :], self.max_repeating_frames,
-                                                  min_dist=self.min_distance_between_frames,
-                                                  threshold=self.similarity_threshold)
+            cur_indices = utils.find_peak_indices(
+                self.similarity_matrix[i, :], self.max_repeating_frames,
+                min_dist=self.min_distance_between_frames,
+                threshold=self.similarity_threshold)
 
             # the first peak is always itself so we throw it out
             # we also want only self.max_repeating_frames peaks
@@ -187,29 +148,9 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
             cur_indices = cur_indices[1:self.max_repeating_frames + 2]
             similarity_indices.append(cur_indices)
 
-        if all(not idx for idx in similarity_indices):
-            raise RuntimeError('No similarity indices!')
-
-        if any(not idx for idx in similarity_indices):
-            warnings.warn('Not all indices have similarities above threshold!')
-
         return similarity_indices
 
     def _compute_mask(self, magnitude_spectrogram_channel):
-        """
-
-        Args:
-            magnitude_spectrogram_channel:
-
-        Returns:
-
-        """
-        if self.magnitude_spectrogram is None:
-            self._compute_spectrograms()
-
-        if self.similarity_indices is None:
-            self._get_similarity_indices()
-
         mask = np.zeros_like(magnitude_spectrogram_channel)
 
         for i in range(self.audio_signal.stft_length):
@@ -246,57 +187,5 @@ class RepetSim(mask_separation_base.MaskSeparationBase):
             sim_mat = repet_sim.get_similarity_matrix()
 
         """
-        if self.magnitude_spectrogram is None:
-            self._compute_spectrograms()
         mean_magnitude_spectrogram = np.mean(self.magnitude_spectrogram, axis=2)
         return self.compute_similarity_matrix(mean_magnitude_spectrogram.T)
-
-    def make_audio_signals(self):
-        """ Returns the background and foreground audio signals. You must have run Repet.run() prior
-        to calling this function. This function will return None if run() has not been called.
-
-        Returns:
-            Audio Signals (List): 2 element list.
-
-                * bkgd: Audio signal with the calculated background track
-                * fkgd: Audio signal with the calculated foreground track
-
-        Example:
-            
-        .. code-block:: python
-            :linenos:
-            
-            # set up AudioSignal object
-            signal = nussl.AudioSignal('path_to_file.wav')
-
-            # set up and run RepetSim
-            repet_sim = nussl.RepetSim(signal)
-            repet_sim.run()
-
-            # get audio signals (AudioSignal objects)
-            background, foreground = repet_sim.make_audio_signals()
-        """
-        if self.background is None:
-            return None
-
-        foreground_array = self.audio_signal.audio_data - self.background.audio_data
-        self.foreground = self.audio_signal.make_copy_with_audio_data(foreground_array)
-        return [self.background, self.foreground]
-
-    def plot(self, **kwargs):
-        import matplotlib.pyplot as plt
-
-        title = None
-
-        if len(kwargs) != 0:
-            if 'title' in kwargs:
-                title = kwargs['title']
-
-        sim_mat = self.get_similarity_matrix()
-        plt.pcolormesh(sim_mat)
-        title = title if title else 'Similarity Matrix for {self.audio_signal.file_name}'
-        plt.xlabel('Time (s)')
-        plt.ylabel('Time (s)')
-        plt.title(title)
-
-        plt.axis('tight')
