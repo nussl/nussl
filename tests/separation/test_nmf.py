@@ -4,6 +4,7 @@ import nussl
 import pytest
 import numpy as np
 import os
+import copy
 
 REGRESSION_PATH = 'tests/separation/regression/nmf/'
 os.makedirs(REGRESSION_PATH, exist_ok=True)
@@ -14,6 +15,9 @@ def test_nmf_mixin(
 ):
     np.random.seed(0)
     drum, vocals = drum_and_vocals
+    drum = copy.deepcopy(drum)
+    vocals = copy.deepcopy(vocals)
+    
     drum.resample(16000)
     vocals.resample(16000)
     nmf = NMFMixin()

@@ -65,8 +65,7 @@ class Closure(object):
             if key in ['CombinationInvariantLoss', 'PermutationInvariantLoss']:
                 args[0] = getattr(loss, args[0])()
 
-            _loss = (
-                loss_class(*args, **kwargs), weight, keys, key)
+            _loss = (loss_class(*args, **kwargs), weight, keys, key)
             self.losses.append(_loss)
 
     def _validate_loss_dictionary(self, loss_dictionary):

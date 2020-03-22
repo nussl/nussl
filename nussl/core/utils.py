@@ -359,7 +359,8 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
     Can be used for checking for possible gradient vanishing / exploding problems.
 
     Usage: Plug this function in Trainer class after loss.backwards() as 
-    "plot_grad_flow(self.model.named_parameters())" to visualize the gradient flow
+    "visualize_gradient_flow(self.model.named_parameters())" to visualize 
+    the gradient flow
     
     Args:
         named_parameters (generator): Generator object yielding name and parameters
@@ -375,6 +376,7 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
             upper = np.percentile(_data, 90)
             _data = _data[_data >= lower]
             _data = _data[_data <= upper]
+            n = n.split('layers.')[-1]
             data.append((n, _data, np.abs(_data).mean()))
     
     _data = [d[1] for d in sorted(data, key=lambda x: x[-1])]
@@ -382,4 +384,5 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
 
     plt.hist(_data, len(_data) * n_bins, histtype='step', fill=False, 
         stacked=True, label=_names)
-    plt.legend(loc="upper right")
+
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)

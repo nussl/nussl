@@ -1,0 +1,67 @@
+MUSIC TECHNOLOGY GROUP - UNIVERSITAT POMPEU FABRA 
+
+Free Non Commercial Binary License Agreement
+
+UNIVERSITAT POMPEU FABRA ("UPF") LICENSES THE SOFTWARE IDENTIFIED BELOW TO YOU ONLY UPON THE CONDITION THAT YOU ACCEPT ALL OF THE TERMS CONTAINED IN THIS FREE BINARY CODE LICENSE AGREEMENT ("LICENSE"). PLEASE READ THE LICENSE TERMS CAREFULLY. BY DOWNLOADING OR INSTALLING THIS SOFTWARE, OR INDICATING ACCEPTANCE BY SELECTING THE "ACCEPT" BUTTON ON ANY DOWNLOAD OR INSTALL FUNCTION, YOU ACCEPT THE TERMS OF THE LICENSE.
+
+SUMMARY TABLE
+
+Software	 	MELODIA - Melody Extraction vamp plug-in
+Licensor 	 	Music Technology Group - Universitat Pompeu Fabra, Plaça de la Mercè", 10-12, 08002 Barcelona, Spain
+Permitted purposes	Non-commercial internal research and development, testing, validation and educational purposes only. All commercial uses in a production environment, either internal or external, are prohibited by this license and require an additional commercial exploitation license.
+ 
+
+TERMS AND CONDITIONS
+
+1. SOFTWARE. "Software" means the software programs identified herein in binary form, any other machine readable materials (including, but not limited to, libraries, source files, header files, and data files), any updates or error corrections provided by UPF, and any user manuals, APIs, programming guides and other documentation provided to you by UPF under this Agreement.
+
+2. LICENSE. Subject to the terms and conditions of this License, UPF grants you a royalty-free, non-exclusive, non-transferable, non-sublicensable, limited license, for the specified duration in Clause 7, to reproduce and use internally Software complete and unmodified for the purposes indicated in the Summary Table.
+
+3. CONDITIONS. The Software is confidential and copyrighted. You may make one backup copy. Unless enforcement is prohibited by applicable law and other than as expressly provided in the Table above, you may not:
+(a) use the Software for any purpose other than as indicated;
+(b) disclose, distribute or communicate the Software in any way or otherwise make it available to third parties, including uploading to Internet;
+(c) cause or permit anyone to modify, decompile or reverse engineer the Software; or
+(d) export, directly, or indirectly, the Software in violation of any applicable export control laws in any jurisdiction.
+Except as provided by mandatorily applicable law, UPF has no obligation to provide you with source code to the Software. In the event Software contains any source code, unless expressly licensed for other purposes, it is provided solely for reference purposes pursuant to the terms of this License. Source code may not be redistributed unless expressly provided for in this License.
+
+4. INTELLECTUAL AND INDUSTRIAL PROPERTY RIGHTS. Title to Software and all associated intellectual and industrial property rights is retained by UPF and/or its licensors. UPF warrants that the copyright in the Software is owned by it or licensed to it and that it has the power and authority to grant the Licence. You shall keep intact all authorship, copyright, patent or trademark notices and all notices that refer to the Software and the Licence and to the disclaimer of warranties.
+
+5. DISCLAIMER OF WARRANTY. This Software is a work in progress. It is not a finished work and may therefore contain defects or "bugs" inherent to this type of software development. For this reason, to the maximum extent permitted by obligatorily applicable law, the Software is provided on an "as is" basis and without warranties of any kind, including without limitation satisfactory quality and conformity, merchantability, fitness for a particular purpose, absence of defects or errors, accuracy, or non-infringement of intellectual or industrial property rights other than copyright as stated in Article 4 of this Licence. This disclaimer of warranty is an essential part of the Licence and a condition for the grant of any rights to the Software.
+
+6. LIMITATION OF LIABILITY. Except in the cases of wilful misconduct or damages directly caused to natural persons, and to the maximum extent permitted by obligatorily applicable law, in no event will UPF or its licensors be liable for any direct or for indirect or consequential damages, however caused, arising out of or related to the use of or inability to use Software; including without limitation, damages for loss of goodwill, work stoppage, computer failure or malfunction, loss of data or any commercial damage and lost revenue or profit, even if the UPF has been advised of the possibility of such damage. However, the UPF will be liable under statutory product liability laws as far such laws apply to the Software. The foregoing limitations will apply even if the above stated warranty disclaimer fails of its essential purpose. Some jurisdictions do not allow the exclusion of indirect or consequential damages, so some of the terms above may not be applicable to you.
+
+7. AUDIT. Upon 5 days written notice, UPF or a professional designated by UPF may audit your use of the Software. You agree to cooperate with UPF's audit and provide reasonable assistance and access to information. You agree to pay within 30 days of written notification any fees applicable to your use of the Software in breach of your license rights. If you do not pay, UPF can end your license. You agree that UPF shall not be responsible for any of your costs incurred in cooperating with the audit.
+
+8. TERMINATION. This Agreement is effective until terminated. You may terminate this Agreement at any time by destroying all copies of Software. This Agreement will terminate immediately without notice from UPF if you fail to comply with any provision of this Agreement. Either party may terminate this Agreement immediately should any Software become, or in either party's opinion be likely to become, the subject of a claim of infringement of any intellectual or industrial property right. Upon Termination, you must destroy all copies of Software. Provisions that survive termination or expiration include those relating to limitation of liability limitation and others which by their nature are intended to survive, and apply to both parties' respective successors and assignees.
+
+9. EXPORT REGULATIONS. Software and technical data delivered under this Agreement may be subject to export or import regulations. You agree to comply strictly with all such laws and regulations and acknowledge that you have the responsibility to obtain such licenses to export, re-export, or import as may be required after delivery to you.
+
+10. TRADEMARKS. This Licence does not grant permission to use the trade names, trademarks, service marks, or names of the UPF, except as required for reasonable and customary use in describing the origin of the Software and reproducing the content of the copyright notice.
+
+11. GOVERNING LAW / JURISDICTION. Any action related to this Agreement will be governed by Spanish law. No choice of law rules of any jurisdiction will apply. Any action, conflict or dispute resulting from this License and use of the Software will be subject to the exclusive jurisdiction of the courts of the City of Barcelona, Spain.
+
+12. SEVERABILITY If any provision of the Licence is invalid or unenforceable under applicable law, this will not affect the validity or enforceability of the Licence as a whole. Such provision will be construed and/or reformed so as necessary to make it valid and enforceable. If this is not possible, the License will terminate.
+
+13. ASSIGNMENT. You may not assign this agreement or give or transfer the Software or an interest in it to another individual or entity. If you grant a security interest in the Software, the secured party has no right to use or transfer the Software.
+
+14. FORCE MAJEURE: Neither party shall be responsible for failure to fulfil any obligation due to causes beyond its control. This section does not excuse either party's obligation to take reasonable steps to follow its normal disaster recovery procedures.
+
+15. NO THIRD PARTY RIGHTS. No right or cause of action for any third party is created by this Agreement, nor is UPF responsible for any third party claims against Licensee.
+
+16. PRIVACY POLICY: Personal data of users provided through using the Download form is processed in accordance with the following policy: 
+Responsibility. The personal data provided will be stored in file called "Projectes de recerca, desenvolupament i innovació", under the responsibility of Universitat Pompeu Fabra. 
+Purposes: The data is processed for the general purpose of carrying out research development and innovation studies, works or projects. In particular, but without limitation, the data is processed for the purpose of communicating with Licensee regarding any administrative and legal / judicial purposes.
+Collection. We collect personal data including name, surname, affiliation and email address. Only the data marked with a star is obligatory. Users must provide true and accurate personal profile data. Users must NOT upload any sensitive data regarding racial origin, trade union membership, religion, ideology and sexual life, the user's or third party's health, or relative to the commission of criminal offences or proceedings and associated penalties or fines. 
+Disclosure. The data is kept confidential and not communicated to anyone. 
+Confidentiality. Technical and organizational measures have been adopted to preserve and protect users' personal information from unauthorized use or access and from being altered, lost or misused, taking into account the technological state of art, the features of the information stored and the risks to which information is exposed. 
+User rights. Rights to access, correct, cancel or object to data in these files may be exercised by applying in writing, including a photocopy of your identity card or equivalent to: Gerent. Universitat Pompeu Fabra. Pl. de la Mercè, 12. 08002 - Barcelona. 
+Consent. By sending a contact form, users expressly agree to this policy, including the sending of electronic communications.
+
+17. INTEGRITY. This Agreement is the entire agreement between you and UPF relating to its subject matter. It supersedes all prior or contemporaneous oral or written communications, proposals, representations and warranties and prevails over any conflicting or additional terms of any quote, order, acknowledgment, or other communication between the parties relating to its subject matter during the term of this Agreement. No modification of this Agreement will be binding, unless in writing and signed by an authorised representative of each party.
+
+NOTICE: Third Party Code. Additional copyright notices and license terms applicable to portions of the Software are set forth in the OOURA FFT (Fast Fourier/Cosine/Sine Transform) Package website http://www.kurims.kyoto-u.ac.jp/~ooura/fft.html.
+
+For inquiries, please contact us at:
+Music Technology Group, Universitat Pompeu Fabra
+Roc Boronat 138, 08018 Barcelona
+mtg-info@llista.upf.edu

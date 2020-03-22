@@ -4,22 +4,24 @@ from .. import MaskSeparationBase
 
 class HPSS(MaskSeparationBase):
     """
-    Implements harmonic/percussive source separation based on:
+    Implements harmonic/percussive source separation based on [1]. This is a 
+    wrapper around the librosa implementation.
+
+    References:
     
-    1. Fitzgerald, Derry. “Harmonic/percussive separation using median filtering.” 
-    13th International Conference on Digital Audio Effects (DAFX10), Graz, Austria, 2010.
+    [1] Fitzgerald, Derry. “Harmonic/percussive separation using median filtering.” 
+        13th International Conference on Digital Audio Effects (DAFX10), Graz, 
+        Austria, 2010.
     
-    2. Driedger, Müller, Disch. “Extending harmonic-percussive separation of audio.” 
-    15th International Society for Music Information Retrieval Conference (ISMIR 2014),
-    Taipei, Taiwan, 2014.
-    
-    This is a wrapper around the librosa implementation.
+    [2] Driedger, Müller, Disch. “Extending harmonic-percussive separation of audio.” 
+        15th International Society for Music Information Retrieval Conference 
+        (ISMIR 2014) Taipei, Taiwan, 2014.
 
     Parameters:
         input_audio_signal (AudioSignal): signal to separate.
 
-        kernel_size (int or tuple (kernel_harmonic, kernel_percussive)) kernel size(s) for the
-          median filters.
+        kernel_size (int or tuple (kernel_harmonic, kernel_percussive)): 
+          kernel size(s) for the median filters.
 
         mask_type (str, optional): Mask type. Defaults to 'soft'.
 

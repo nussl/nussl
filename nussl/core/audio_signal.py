@@ -588,8 +588,8 @@ class AudioSignal(object):
     def time_vector(self):
         """
         Returns:
-            (:obj:`np.ndarray`): A 1D :obj:`np.ndarray` with timestamps (in seconds) for each sample
-            in :attr:`audio_data`.
+            (:obj:`np.ndarray`): A 1D :obj:`np.ndarray` with timestamps (in seconds) 
+            for each sample in :attr:`audio_data`.
         """
         if self.signal_duration is None:
             return None
@@ -599,18 +599,20 @@ class AudioSignal(object):
     def freq_vector(self):
         """
         Raises:
-            :class:`AudioSignalException`: If :attr:`stft_data` is ``None``. Run :func:`stft` before
-                accessing this.
+            :class:`AudioSignalException`: If :attr:`stft_data` is ``None``. 
+                Run :func:`stft` before accessing this.
 
         Returns:
             (:obj:`np.ndarray`): A 1D numpy array with frequency values that correspond
-            to each frequency bin (vertical axis) for :attr:`stft_data`. Assumes linearly spaced
-            frequency bins.
+            to each frequency bin (vertical axis) for :attr:`stft_data`. Assumes 
+            linearly spaced frequency bins.
         """
         if self.stft_data is None:
-            raise AudioSignalException('Cannot calculate freq_vector until self.stft() is run')
-        return np.linspace(0.0, self.sample_rate // 2,
-                           num=self.stft_data.shape[constants.STFT_VERT_INDEX])
+            raise AudioSignalException(
+                'Cannot calculate freq_vector until self.stft() is run')
+        return np.linspace(
+            0.0, self.sample_rate // 2,
+            num=self.stft_data.shape[constants.STFT_VERT_INDEX])
 
     @property
     def time_bins_vector(self):
@@ -624,7 +626,8 @@ class AudioSignal(object):
             to each time bin (horizontal/time axis) for :attr:`stft_data`.
         """
         if self.stft_data is None:
-            raise AudioSignalException('Cannot calculate time_bins_vector until self.stft() is run')
+            raise AudioSignalException(
+                'Cannot calculate time_bins_vector until self.stft() is run')
         return np.linspace(0.0, self.signal_duration,
                            num=self.stft_data.shape[constants.STFT_LEN_INDEX])
 

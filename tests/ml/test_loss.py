@@ -40,7 +40,7 @@ def test_deep_clustering_loss():
     assert _loss_b <= 1
 
 def test_permutation_invariant_loss_tf():
-    n_batch = 2
+    n_batch = 10
     n_time = 400
     n_freq = 129
     n_sources = 4
@@ -48,8 +48,8 @@ def test_permutation_invariant_loss_tf():
     sources = torch.randn(n_batch, n_time, n_freq, n_sources)
 
     LossPIT = ml.train.loss.PermutationInvariantLoss(
-        loss_function=nn.L1Loss())
-    LossL1 = nn.L1Loss()
+        loss_function=ml.train.loss.L1Loss())
+    LossL1 = ml.train.loss.L1Loss()
     noise_amount = [0.001, .01, .05, 1.0]
 
     for n in noise_amount:

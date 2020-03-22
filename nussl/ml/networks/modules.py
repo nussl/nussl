@@ -22,11 +22,10 @@ class AmplitudeToDB(nn.Module):
         [type]: [description]
     """
     def forward(self, data, ref=1.0, amin=1e-4):
-        data = torch.abs(data) ** 2
+        data = data ** 2
         amin = amin ** 2
-        ref = ref ** 2
-        data = 10.0 * torch.log10(torch.clamp(data, min=amin))
-        data -= 10.0 * np.log10(np.maximum(amin, ref))
+        ref = np.log10(np.maximum(amin, ref ** 2))
+        data = 10.0 * (torch.log10(torch.clamp(data, min=amin)) - ref)
         return data
 
 class BatchNorm(nn.Module):

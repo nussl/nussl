@@ -59,7 +59,7 @@ def cache_dataset(dataset, log_frequency=.1):
 def create_train_and_validation_engines(train_func, val_func=None, device='cpu'):
     """
     Helper function for creating an ignite Engine object with helpful defaults.
-    This sets up an Engine that has two handlers attached to it:
+    This sets up an Engine that has four handlers attached to it:
 
     - prepare_batch: before a batch is passed to train_func or val_func, this
       function runs, moving every item in the batch (which is a dictionary) to
@@ -101,7 +101,7 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
         for key in batch:
             if torch.is_tensor(batch[key]):
                 batch[key] = batch[key].float().to(device)
-        engine.state.batch = batch      
+        engine.state.batch = batch
     
     # Set up stuff for bookkeeping as training progresses.
     def book_keeping(engine):
@@ -132,8 +132,7 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
     trainer.add_event_handler(
         Events.ITERATION_COMPLETED, add_to_iter_history)
     trainer.add_event_handler(
-        Events.EPOCH_STARTED, clear_iter_history
-    )
+        Events.EPOCH_STARTED, clear_iter_history)
 
     if validator is not None:
         validator.add_event_handler(
@@ -143,8 +142,7 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
         validator.add_event_handler(
             Events.ITERATION_COMPLETED, add_to_iter_history)
         validator.add_event_handler(
-            Events.EPOCH_STARTED, clear_iter_history
-        )
+            Events.EPOCH_STARTED, clear_iter_history)
 
     return trainer, validator
 

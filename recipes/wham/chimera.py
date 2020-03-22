@@ -36,7 +36,7 @@ logging.basicConfig(
 WHAM_ROOT = os.getenv("WHAM_ROOT")
 CACHE_ROOT = os.getenv("CACHE_ROOT")
 NUM_WORKERS = multiprocessing.cpu_count() // 4
-OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_chimera/')
+OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_chimera/run7')
 RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -44,8 +44,8 @@ BATCH_SIZE = 25
 MAX_EPOCHS = 100
 CACHE_POPULATED = True
 LEARNING_RATE = 1e-3
-PATIENCE = 10
-GRAD_NORM = 200
+PATIENCE = 5
+GRAD_NORM = 1e-4
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -86,10 +86,13 @@ if not CACHE_POPULATED:
 # ----------------------------------------------------
 
 # reload after caching
+train_sampler = torch.utils.data.sampler.RandomSampler(dataset)
+val_sampler = torch.utils.data.sampler.RandomSampler(val_dataset)
+
 dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
-    batch_size=BATCH_SIZE, shuffle=True)
+    batch_size=BATCH_SIZE, sampler=train_sampler)
 val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS,
-    batch_size=BATCH_SIZE, shuffle=True)
+    batch_size=BATCH_SIZE, sampler=val_sampler)
 
 n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
@@ -102,12 +105,13 @@ model = ml.SeparationModel(config).to(DEVICE)
 logging.info(model)
 
 optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=PATIENCE)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, factor=0.5, patience=PATIENCE)
 
 # set up the loss function
 loss_dictionary = {
-    'PermutationInvariantLoss': {'args': ['L1Loss'], 'weight': 0.8},
-    'DeepClusteringLoss': {'weight': 0.2}
+    'PermutationInvariantLoss': {'args': ['L1Loss'], 'weight': 0.975},
+    'DeepClusteringLoss': {'weight': 0.025}
 }
 
 # set up closures for the forward and backward pass on one batch

@@ -87,8 +87,9 @@ def test_gradients(mix_source_folder):
         # do a backward pass in batched mode
         _loss['loss'].backward()
 
-        plt.figure()
+        plt.figure(figsize=(10,10))
         utils.visualize_gradient_flow(model_grad.named_parameters()) 
+        plt.tight_layout()
         plt.savefig(f'tests/local/{name}:batch_gradient.png')
 
         utils.seed(0, set_cudnn=True)
@@ -114,8 +115,9 @@ def test_gradients(mix_source_folder):
             _loss['loss'] = _loss['loss'] / len(dataset)
             _loss['loss'].backward()
 
-        plt.figure()
+        plt.figure(figsize=(10,10))
         utils.visualize_gradient_flow(model_acc.named_parameters()) 
+        plt.tight_layout()
         plt.savefig(f'tests/local/{name}:accumulated_gradient.png')
 
         # make sure the gradients match between batched and accumulated gradients

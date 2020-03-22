@@ -3,6 +3,7 @@ from nussl.separation import primitive, SeparationException
 import numpy as np
 import os
 import nussl
+import copy
 
 REGRESSION_PATH = 'tests/separation/regression/primitive/'
 os.makedirs(REGRESSION_PATH, exist_ok=True)
@@ -13,6 +14,9 @@ def test_timbre_clustering(
 ):
     np.random.seed(0)
     drum, vocals = drum_and_vocals
+    drum = copy.deepcopy(drum)
+    vocals = copy.deepcopy(vocals)
+
     drum.resample(16000)
     vocals.resample(16000)
 
@@ -70,7 +74,7 @@ def test_ft2d(
 def test_hpss(
     drum_and_vocals, 
     check_against_regression_data
-):
+):    
     drum, vocals = drum_and_vocals
     mix = drum + vocals
 
@@ -87,4 +91,82 @@ def test_hpss(
 
         reg_path = os.path.join(
             REGRESSION_PATH, f'hpss_{mask_type}.json')
+        check_against_regression_data(scores, reg_path)
+
+def test_repet(
+    music_mix_and_sources, 
+    check_against_regression_data
+):
+    mix, sources = music_mix_and_sources
+    vox = sources['vocals']
+    acc = sources['group0']
+
+    pytest.raises(
+        SeparationException, primitive.Repet, mix, min_period=.8, 
+            max_period=8, period=3)
+
+    pytest.raises(SeparationException, 
+        primitive.Repet.find_repeating_period_simple,
+        np.random.rand(100), 101, 5)
+
+    config = [
+        ({}, 'defaults'),
+        ({'mask_type': 'binary'}, 'binary'),
+        ({'period': 3}, 'period_set'),
+    ]
+
+    for kwargs, name in config:
+        repet = primitive.Repet(mix, **kwargs)
+        estimates = repet()
+
+        evaluator = nussl.evaluation.BSSEvalScale(
+            [acc, vox], estimates, 
+            source_labels=['acc', 'vocals'], 
+        )
+
+        scores = evaluator.evaluate()
+
+        reg_path = os.path.join(
+            REGRESSION_PATH, f'repet_{name}.json')
+        check_against_regression_data(scores, reg_path)
+
+def test_melodia(
+    drum_and_vocals, 
+    check_against_regression_data,
+):
+    drum, vocals = drum_and_vocals
+    mix = drum + vocals
+    
+    nussl.vamp_imported = False
+    pytest.raises(
+        SeparationException, primitive.Melodia, mix)
+    
+    nussl.vamp_imported = True
+    melodia = primitive.Melodia(mix, mask_type='soft')
+    pytest.raises(
+        SeparationException, melodia)
+    
+    os.environ['VAMP_PATH'] = (
+        f"{os.path.abspath('tests/vamp/melodia_osx')}:"
+        f"{os.path.abspath('tests/vamp/melodia_linux')}"
+    )
+
+    config = [
+        ({'mask_type': 'binary'}, 'binary'),
+        ({'mask_type': 'soft'}, 'soft'),
+    ]
+
+    for kwargs, name in config:
+        melodia = primitive.Melodia(mix, **kwargs)
+        estimates = melodia()
+
+        evaluator = nussl.evaluation.BSSEvalScale(
+            [drum, vocals], estimates, 
+            source_labels=['drum', 'vocals'], 
+        )
+
+        scores = evaluator.evaluate()
+
+        reg_path = os.path.join(
+            REGRESSION_PATH, f'melodia_{name}.json')
         check_against_regression_data(scores, reg_path)

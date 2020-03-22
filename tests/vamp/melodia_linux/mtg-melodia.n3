@@ -1,0 +1,199 @@
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix vamp:     <http://purl.org/ontology/vamp/> .
+@prefix plugbase: <http://vamp-plugins.org/rdf/plugins/mtg-melodia#> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix dc:       <http://purl.org/dc/elements/1.1/> .
+@prefix af:       <http://purl.org/ontology/af/> .
+@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix cc:       <http://web.resource.org/cc/> .
+@prefix :         <#> .
+
+<>  a   vamp:PluginDescription ;
+    foaf:maker          <http://www.vamp-plugins.org/doap.rdf#template-generator> ;
+    foaf:primaryTopic   <http://vamp-plugins.org/rdf/plugins/mtg-melodia> .
+
+:mtg-melodia a  vamp:PluginLibrary ;
+    vamp:identifier "mtg-melodia"  ; 
+    vamp:available_plugin plugbase:melodia ; 
+    vamp:available_plugin plugbase:melodiaviz ; 
+    foaf:page <http://mtg.upf.edu/technologies/melodia> ;
+    .
+
+plugbase:melodia a   vamp:Plugin ;
+    dc:title              "MELODIA - Melody Extraction" ;
+    vamp:name             "MELODIA - Melody Extraction" ;
+    dc:description        """Estimates the melody pitch in polyphonic music (also good for homophonic and monophonic music). Segments without melody are indicated by zero or negative values. For further details please read:
+
+J. Salamon and E. Gomez, "Melody Extraction from Polyphonic Music Signals using Pitch Contour Characteristics", IEEE Transactions on Audio, Speech and Language Processing, 20(6):1759-1770, 2012.
+
+We would highly appreciate the above reference being cited in publications of work in which this plug-in was used.""" ;
+    foaf:maker            [ foaf:name "Music Technology Group, Universitat Pompeu Fabra" ] ; # FIXME could give plugin author's URI here
+    dc:rights             """Plugin by Justin Salamon. Copyright (c) Music Technology Group, Universitat Pompeu Fabra - All Rights Reserved""" ;
+#   cc:license            <Place plugin license URI here and uncomment> ; 
+    vamp:identifier       "melodia" ;
+    vamp:vamp_API_version vamp:api_version_2 ;
+    owl:versionInfo       "1" ;
+    vamp:input_domain     vamp:TimeDomain ;
+
+    vamp:parameter   plugbase:melodia_param_minfqr ;
+    vamp:parameter   plugbase:melodia_param_maxfqr ;
+    vamp:parameter   plugbase:melodia_param_voicing ;
+    vamp:parameter   plugbase:melodia_param_minpeaksalience ;
+
+    vamp:output      plugbase:melodia_output_melody ;
+    .
+plugbase:melodia_param_minfqr a  vamp:Parameter ;
+    vamp:identifier     "minfqr" ;
+    dc:title            "Min Frequency" ;
+    dc:format           "Hz" ;
+    vamp:min_value       55 ;
+    vamp:max_value       1760 ;
+    vamp:unit           "Hz"  ;
+    vamp:default_value   55 ;
+    vamp:value_names     ();
+    .
+plugbase:melodia_param_maxfqr a  vamp:Parameter ;
+    vamp:identifier     "maxfqr" ;
+    dc:title            "Max Frequency" ;
+    dc:format           "Hz" ;
+    vamp:min_value       55 ;
+    vamp:max_value       1760 ;
+    vamp:unit           "Hz"  ;
+    vamp:default_value   1760 ;
+    vamp:value_names     ();
+    .
+plugbase:melodia_param_voicing a  vamp:QuantizedParameter ;
+    vamp:identifier     "voicing" ;
+    dc:title            "Voicing Tolerance" ;
+    dc:format           "" ;
+    vamp:min_value       -2.6 ;
+    vamp:max_value       3 ;
+    vamp:unit           "" ;
+    vamp:quantize_step   0.01  ;
+    vamp:default_value   0.2 ;
+    vamp:value_names     ();
+    .
+plugbase:melodia_param_minpeaksalience a  vamp:QuantizedParameter ;
+    vamp:identifier     "minpeaksalience" ;
+    dc:title            "Monophonic Noise Filter" ;
+    dc:format           "" ;
+    vamp:min_value       0 ;
+    vamp:max_value       100 ;
+    vamp:unit           "" ;
+    vamp:quantize_step   1  ;
+    vamp:default_value   0 ;
+    vamp:value_names     ();
+    .
+plugbase:melodia_output_melody a  vamp:DenseOutput ;
+    vamp:identifier       "melody" ;
+    dc:title              "Melody" ;
+    dc:description        """Estimated melody frequency in Hertz. Non-voiced segments indicated by negative values."""  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:unit             "Hz" ;
+    vamp:bin_count        1 ;
+#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
+#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
+#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    .
+plugbase:melodiaviz a   vamp:Plugin ;
+    dc:title              "MELODIA - Melody Extraction (intermediate steps)" ;
+    vamp:name             "MELODIA - Melody Extraction (intermediate steps)" ;
+    dc:description        """Provides visualisations of the intermediate steps calculated by the melody extraction algorithm implemented in the MELODIA - Melody Extraction plug-in. For further details please read:
+
+J. Salamon and E. Gomez, "Melody Extraction from Polyphonic Music Signals using Pitch Contour Characteristics", IEEE Transactions on Audio, Speech and Language Processing, 20(6):1759-1770, 2012.
+
+We would highly appreciate the above reference being cited in publications of work in which this plug-in was used.""" ;
+    foaf:maker            [ foaf:name "Music Technology Group, Universitat Pompeu Fabra" ] ; # FIXME could give plugin author's URI here
+    dc:rights             """Plugin by Justin Salamon. Copyright (c) Music Technology Group, Universitat Pompeu Fabra - All Rights Reserved""" ;
+#   cc:license            <Place plugin license URI here and uncomment> ; 
+    vamp:identifier       "melodiaviz" ;
+    vamp:vamp_API_version vamp:api_version_2 ;
+    owl:versionInfo       "1" ;
+    vamp:input_domain     vamp:TimeDomain ;
+
+    vamp:parameter   plugbase:melodiaviz_param_minfqr ;
+    vamp:parameter   plugbase:melodiaviz_param_maxfqr ;
+    vamp:parameter   plugbase:melodiaviz_param_voicing ;
+    vamp:parameter   plugbase:melodiaviz_param_minpeaksalience ;
+
+    vamp:output      plugbase:melodiaviz_output_saliencefunction ;
+    vamp:output      plugbase:melodiaviz_output_contoursall ;
+    vamp:output      plugbase:melodiaviz_output_contoursmelody ;
+    .
+plugbase:melodiaviz_param_minfqr a  vamp:Parameter ;
+    vamp:identifier     "minfqr" ;
+    dc:title            "Min Frequency" ;
+    dc:format           "Hz" ;
+    vamp:min_value       55 ;
+    vamp:max_value       1760 ;
+    vamp:unit           "Hz"  ;
+    vamp:default_value   55 ;
+    vamp:value_names     ();
+    .
+plugbase:melodiaviz_param_maxfqr a  vamp:Parameter ;
+    vamp:identifier     "maxfqr" ;
+    dc:title            "Max Frequency" ;
+    dc:format           "Hz" ;
+    vamp:min_value       55 ;
+    vamp:max_value       1760 ;
+    vamp:unit           "Hz"  ;
+    vamp:default_value   1760 ;
+    vamp:value_names     ();
+    .
+plugbase:melodiaviz_param_voicing a  vamp:QuantizedParameter ;
+    vamp:identifier     "voicing" ;
+    dc:title            "Voicing Tolerance" ;
+    dc:format           "" ;
+    vamp:min_value       -2.6 ;
+    vamp:max_value       3 ;
+    vamp:unit           "" ;
+    vamp:quantize_step   0.01  ;
+    vamp:default_value   0.2 ;
+    vamp:value_names     ();
+    .
+plugbase:melodiaviz_param_minpeaksalience a  vamp:QuantizedParameter ;
+    vamp:identifier     "minpeaksalience" ;
+    dc:title            "Monophonic Noise Filter" ;
+    dc:format           "" ;
+    vamp:min_value       0 ;
+    vamp:max_value       100 ;
+    vamp:unit           "" ;
+    vamp:quantize_step   1  ;
+    vamp:default_value   0 ;
+    vamp:value_names     ();
+    .
+plugbase:melodiaviz_output_saliencefunction a  vamp:DenseOutput ;
+    vamp:identifier       "saliencefunction" ;
+    dc:title              "Salience Function" ;
+    dc:description        """Estimate of pitch salience over time"""  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:unit             "" ;
+    vamp:bin_count        600 ;
+#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
+#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
+#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    .
+plugbase:melodiaviz_output_contoursall a  vamp:DenseOutput ;
+    vamp:identifier       "contoursall" ;
+    dc:title              "Pitch Contours: All" ;
+    dc:description        """All pitch contours generated from the salience fucntion"""  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:unit             "" ;
+    vamp:bin_count        600 ;
+#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
+#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
+#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    .
+plugbase:melodiaviz_output_contoursmelody a  vamp:DenseOutput ;
+    vamp:identifier       "contoursmelody" ;
+    dc:title              "Pitch Contours: Melody" ;
+    dc:description        """Final set of pitch contours from which the melody is obtained"""  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:unit             "" ;
+    vamp:bin_count        600 ;
+#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
+#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
+#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    .
+

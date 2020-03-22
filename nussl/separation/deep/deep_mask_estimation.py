@@ -38,6 +38,7 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
                 masks = masks.transpose(0, -2)
             masks = masks.squeeze(0).transpose(0, 1)
             masks = masks.cpu().data.numpy()
+        self.model_output = output
         return masks
 
     def run(self, masks=None):

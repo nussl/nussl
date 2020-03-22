@@ -408,8 +408,9 @@ class PhaseSensitiveSpectrumApproximation(object):
 class IndexSources(object):
     """
     Takes in a dictionary containing Torch tensors or numpy arrays and extracts the 
-    indexed sources from the `source_magnitudes` or the `ideal_binary_mask` key. Can
-    be used to train single-source separation models. 
+    indexed sources from the set key (usually either `source_magnitudes` or 
+    `ideal_binary_mask`). Can be used to train single-source separation models 
+    (e.g. mix goes in, vocals come out).
     
     You need to know which slice of the source magnitudes or ideal binary mask arrays 
     to extract. The order of the sources in the source magnitudes array will be in 
@@ -442,7 +443,20 @@ class IndexSources(object):
     Args:
         object ([type]): [description]
     """
-    pass
+    def __init__(self, target_key, index):
+        self.target_key = target_key
+        self.index = index
+
+    def __call__(self, data):
+        if self.target_key not in data:
+            raise TransformException(
+                f"Expected {self.target_key} in dictionary, got {list(data.keys())}")
+        if self.index >= data[self.target_key].shape[-1]:
+            raise TransformException(
+                f"Shape of data[{self.target_key}] is {data[self.target_key].shape} "
+                f"but index =  {self.index} out of bounds bounds of last dim.")
+        data[self.target_key] = data[self.target_key][..., self.index]
+        return data
 
 class GetExcerpt(object):
     """

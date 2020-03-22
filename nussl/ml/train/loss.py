@@ -63,10 +63,12 @@ class DeepClusteringLoss(nn.Module):
     """
     Computes the deep clustering loss with weights. Equation (7) in [1].
 
+    References:
+
     [1] Wang, Z. Q., Le Roux, J., & Hershey, J. R. (2018, April).
-    Alternative Objective Functions for Deep Clustering.
-    In Proc. IEEE International Conference on Acoustics,  Speech
-    and Signal Processing (ICASSP).
+        Alternative Objective Functions for Deep Clustering.
+        In Proc. IEEE International Conference on Acoustics,  Speech
+        and Signal Processing (ICASSP).
     """
     DEFAULT_KEYS = {
         'embedding': 'embedding', 
@@ -113,11 +115,13 @@ class PermutationInvariantLoss(nn.Module):
 
     For when you're trying to match the estimates to the sources but you don't 
     know the order in which your model outputs the estimates.
+
+    References:
     
     [1] Yu, Dong, Morten Kolbæk, Zheng-Hua Tan, and Jesper Jensen. 
-    "Permutation invariant training of deep models for speaker-independent 
-    multi-talker speech separation." In 2017 IEEE International Conference on 
-    Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
+        "Permutation invariant training of deep models for speaker-independent 
+        multi-talker speech separation." In 2017 IEEE International Conference on 
+        Acoustics, Speech and Signal Processing (ICASSP), pp. 241-245. IEEE, 2017.
     """
     DEFAULT_KEYS = {'estimates': 'estimates', 'source_magnitudes': 'targets'}
 
@@ -130,20 +134,20 @@ class PermutationInvariantLoss(nn.Module):
     def forward(self, estimates, targets):
         num_batch = estimates.shape[0]
         num_sources = estimates.shape[-1]
-        estimates = estimates.view(num_batch, -1)
+        estimates = estimates.view(num_batch, -1, num_sources)
         targets = targets.view(num_batch, -1, num_sources)
         
         losses = []
         for p in permutations(range(num_sources)):
-            _targets = targets[..., list(p)].reshape(num_batch, -1)
+            _targets = targets[..., list(p)]
             loss = self.loss_function(estimates, _targets)
-            loss = loss.sum(dim=-1)
+            loss = loss.mean(dim=[-1, -2])
             losses.append(loss)
         
         losses = torch.stack(losses, dim=-1)
         losses = torch.min(losses, dim=-1)[0]
-        loss = torch.sum(losses)
-        return loss / torch.numel(estimates)
+        loss = torch.mean(losses)
+        return loss
 
 class CombinationInvariantLoss(nn.Module):
     """
@@ -169,16 +173,17 @@ class CombinationInvariantLoss(nn.Module):
         num_batch = estimates.shape[0]
         num_target_sources = targets.shape[-1]
         num_estimate_sources = estimates.shape[-1]
-
+        
         estimates = estimates.view(num_batch, -1, num_estimate_sources)
         targets = targets.view(num_batch, -1, num_target_sources)
         
         losses = []
         for c in combinations(range(num_estimate_sources), num_target_sources):
-            _estimates = estimates[:, :, list(c)]
+            _estimates = estimates[..., list(c)]
             for p in permutations(range(num_target_sources)):
-                loss = self.loss_function(_estimates[:, :, list(p)], targets)
-                loss = loss.mean(dim=1).mean(dim=-1)
+                _targets = targets[..., list(p)]
+                loss = self.loss_function(_estimates, _targets)
+                loss = loss.mean(dim=[-1, -2])
                 losses.append(loss)
         
         losses = torch.stack(losses,dim=-1)
