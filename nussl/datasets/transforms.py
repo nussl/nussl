@@ -455,7 +455,7 @@ class IndexSources(object):
             raise TransformException(
                 f"Shape of data[{self.target_key}] is {data[self.target_key].shape} "
                 f"but index =  {self.index} out of bounds bounds of last dim.")
-        data[self.target_key] = data[self.target_key][..., self.index]
+        data[self.target_key] = data[self.target_key][..., self.index, None]
         return data
 
 class GetExcerpt(object):

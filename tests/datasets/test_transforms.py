@@ -366,3 +366,26 @@ def test_transforms_magnitude_weights(mix_source_folder):
 
     assert item['weights'].shape == item['mix_magnitude'].shape
     assert np.allclose(item_from_mix['weights'], item['weights'])
+
+
+def test_transforms_index_sources(mix_source_folder):
+    dataset = nussl.datasets.MixSourceFolder(mix_source_folder)
+    item = dataset[0]
+
+    index = 1
+    tfm = transforms.IndexSources('source_magnitudes', index)
+
+    pytest.raises(TransformException, tfm, {'sources': []})
+    pytest.raises(TransformException, tfm, 
+        {'source_magnitudes': np.random.randn(100, 100, 1)})
+
+    msa = transforms.MagnitudeSpectrumApproximation()
+    msa_output = copy.deepcopy(msa(item))
+
+    item = tfm(msa(item))
+
+    assert (
+        np.allclose(
+            item['source_magnitudes'],
+            msa_output['source_magnitudes'][..., index, None])
+    )
