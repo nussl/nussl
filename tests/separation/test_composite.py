@@ -61,7 +61,8 @@ def test_ensemble_clustering(
         nussl.utils.seed(0)
         ensemble = composite.EnsembleClustering(
             mix, 2, separators, **kwargs)
-        ensemble.clusterer.cluster_centers_ = fixed_centers
+        if 'init' in kwargs:
+            ensemble.clusterer.cluster_centers_ = fixed_centers
         estimates = ensemble()
          
         evaluator = nussl.evaluation.BSSEvalScale(

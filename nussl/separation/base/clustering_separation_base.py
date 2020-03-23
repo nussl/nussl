@@ -19,25 +19,33 @@ class ClusteringSeparationBase(MaskSeparationBase):
     Args:
         input_audio_signal: (`AudioSignal`) An AudioSignal object containing the 
           mixture to be separated.
+          
         num_sources (int): Number of sources to cluster the features of and separate
           the mixture.
+
         clustering_type (str): One of 'KMeans', 'GaussianMixture', and 'MiniBatchKMeans'.
           The clustering approach to use on the features. Defaults to 'KMeans'.
+
         fit_clusterer (bool, optional): Whether or not to call fit on the clusterer.
           If False, then the clusterer should already be fit for this to work. Defaults
           to True.
+
         percentile (int, optional): Percentile of time-frequency points to consider by loudness. 
           Audio spectrograms are very high dimensional, and louder points tend to 
           matter more than quieter points. By setting the percentile high, one can more
           efficiently cluster an auditory scene by considering only points above
           that threshold. Defaults to 90 (which means the top 10 percentile of 
           time-frequency points will be used for clustering).
+
         beta (float, optional): When using KMeans, we use soft KMeans, which has an additional 
           parameter `beta`. `beta` controls how soft the assignments are. As beta 
           increases, the assignments become more binary (either 0 or 1). Defaults to 
           5.0, a value discovered through cross-validation.
+
         mask_type (str, optional): Masking approach to use. Passed up to MaskSeparationBase.
+
         mask_threshold (float, optional): Threshold for masking. Passed up to MaskSeparationBase.
+
         **kwargs (dict, optional): Additional keyword arguments that are passed to the clustering
           object (one of KMeans, GaussianMixture, or MiniBatchKMeans).
     
