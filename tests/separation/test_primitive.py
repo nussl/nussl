@@ -4,6 +4,8 @@ import numpy as np
 import os
 import nussl
 import copy
+from importlib import reload
+import vamp
 
 REGRESSION_PATH = 'tests/separation/regression/primitive/'
 os.makedirs(REGRESSION_PATH, exist_ok=True)
@@ -142,14 +144,13 @@ def test_melodia(
         SeparationException, primitive.Melodia, mix)
     
     nussl.vamp_imported = True
-    melodia = primitive.Melodia(mix, mask_type='soft')
-    pytest.raises(
-        SeparationException, melodia)
-    
+
     os.environ['VAMP_PATH'] = (
         f"{os.path.abspath('tests/vamp/melodia_osx')}:"
         f"{os.path.abspath('tests/vamp/melodia_linux')}"
     )
+
+    melodia = primitive.Melodia(mix, mask_type='soft')
 
     config = [
         ({'mask_type': 'binary'}, 'binary'),

@@ -5,3 +5,5 @@ exclude_lines =
     raise ImportError
     vamp_imported = True
     vamp_imported = False
+    except Exception:
+    vamp_imported = False

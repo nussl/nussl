@@ -4,45 +4,6 @@ nussl
 This branch is an update/refactor of ``nussl`` to update to Python 3 and have complete 
 code coverage via the tests.
 
-Current progress
-----------------
-A check below doesn't happen until full test coverage is achieved.
-
-- [x] Core AudioSignal functionality
-- [x] STFT/iSTFT via `scipy.signal`
-- [x] External file zoo functionality
-- [x] Hooks for common datasets
-  - [x] MUSDB
-  - [x] Scaper
-  - [x] MixSourceFolder 
-  - [x] WHAM! (simple subclass MixSourceFolder)
-  - [ ] MIR1K
-  - [ ] iKala (still support?)
-  - [ ] Slakh2100
-- [x] Evaluation  
-  - [x] SISDR
-  - [x] museval BSSEval
-  - [x] Precision/recall/f1-score on masks
-- [ ] Machine learning
-  - [x] Network modules
-  - [x] SeparationModel
-  - [x] PyTorch Gaussian Mixture model
-  - [x] Trainer via PyTorch ignite
-  - [ ] NMF (switch to sklearn NMF?)
-- [ ] Separation (will fill this in more soon)
-  - [x] SeparationBase
-  - [ ] Deep methods
-  - [ ] Existing methods
-  - [ ] Oracle methods, using `norbert`
-- [ ] Recipes
-  - [x] Deep clustering on WHAM
-  - [ ] Chimera on WHAM
-  - [ ] Mask inference on WHAM
-  - [ ] Deep clustering on MUSDB (for each instrument)
-  - [ ] Chimera on MUSDB
-  - [ ] Mask inference on MUSDB
-  - [ ] TasNet and ConvTasnet on MUSDB and WHAM
-
 Current test coverage
 ---------------------
 
@@ -58,42 +19,73 @@ pytest
 ---------- coverage: platform darwin, python 3.7.6-final-0 -----------
 Name                                                  Stmts   Miss  Cover   Missing
 -----------------------------------------------------------------------------------
-nussl/core/__init__.py                                    5      0   100%
-nussl/core/audio_signal.py                              444      0   100%
+nussl/__init__.py                                        11      0   100%
+nussl/core/__init__.py                                    6      0   100%
+nussl/core/audio_signal.py                              453      0   100%
 nussl/core/constants.py                                  39      0   100%
 nussl/core/efz_utils.py                                 145      0   100%
-nussl/core/play_utils.py                              33      0   100%
 nussl/core/masks/__init__.py                              4      0   100%
 nussl/core/masks/binary_mask.py                          23      0   100%
 nussl/core/masks/mask_base.py                            92      0   100%
 nussl/core/masks/soft_mask.py                            16      0   100%
-nussl/core/utils.py                                     136      0   100%
+nussl/core/mixing.py                                     32      0   100%
+nussl/core/play_utils.py                                 37      0   100%
+nussl/core/utils.py                                     138      0   100%
 nussl/datasets/__init__.py                                2      0   100%
-nussl/datasets/base_dataset.py                           78      0   100%
-nussl/datasets/hooks.py                                  83      0   100%
-nussl/datasets/transforms.py                            255      0   100%
-nussl/evaluation/__init__.py                              4      0   100%
+nussl/datasets/base_dataset.py                           80      0   100%
+nussl/datasets/hooks.py                                  87      0   100%
+nussl/datasets/transforms.py                            271      0   100%
+nussl/evaluation/__init__.py                              3      0   100%
 nussl/evaluation/bss_eval.py                             60      0   100%
-nussl/evaluation/evaluation_base.py                      64      0   100%
+nussl/evaluation/evaluation_base.py                      84      0   100%
 nussl/evaluation/precision_recall_fscore.py              34      0   100%
+nussl/ml/__init__.py                                     10      0   100%
+nussl/ml/cluster.py                                       2      0   100%
 nussl/ml/networks/__init__.py                             2      0   100%
 nussl/ml/networks/builders.py                            18      0   100%
-nussl/ml/networks/modules.py                            183      0   100%
-nussl/ml/networks/separation_model.py                    78      0   100%
+nussl/ml/networks/modules.py                            182      0   100%
+nussl/ml/networks/separation_model.py                    74      0   100%
 nussl/ml/train/__init__.py                                3      0   100%
-nussl/ml/train/closures.py                               77      0   100%
+nussl/ml/train/closures.py                               78      0   100%
 nussl/ml/train/loss.py                                   98      0   100%
-nussl/ml/train/trainer.py                               118      0   100%
+nussl/ml/train/trainer.py                               122      0   100%
 nussl/ml/unfold/__init__.py                               1      0   100%
 nussl/ml/unfold/gaussian_mixture.py                      74      0   100%
-nussl/separation/base/__init__.py                         2      0   100%
-nussl/separation/base/clustering_separation_base.py     276    276     0%   3-491
-nussl/separation/base/mask_separation_base.py            59     39    34%   48-54, 112, 116-150, 168, 172-175, 187-190, 201-204
-nussl/separation/base/separation_base.py                 45      0   100%
+nussl/separation/__init__.py                              2      0   100%
+nussl/separation/base/__init__.py                         5      0   100%
+nussl/separation/base/clustering_separation_base.py      56      0   100%
+nussl/separation/base/deep_mixin.py                      42      0   100%
+nussl/separation/base/mask_separation_base.py            56      0   100%
+nussl/separation/base/nmf_mixin.py                       35      0   100%
+nussl/separation/base/separation_base.py                 50      0   100%
+nussl/separation/benchmark/__init__.py                    4      0   100%
+nussl/separation/benchmark/high_low_pass_filter.py       13      0   100%
+nussl/separation/benchmark/ideal_binary_mask.py          21      0   100%
+nussl/separation/benchmark/ideal_ratio_mask.py           27      0   100%
+nussl/separation/benchmark/wiener_filter.py              25      0   100%
+nussl/separation/composite/__init__.py                    1      0   100%
+nussl/separation/composite/ensemble_clustering.py        71      0   100%
+nussl/separation/deep/__init__.py                         2      0   100%
+nussl/separation/deep/deep_clustering.py                 20      0   100%
+nussl/separation/deep/deep_mask_estimation.py            33      0   100%
+nussl/separation/factorization/__init__.py                2      0   100%
+nussl/separation/factorization/ica.py                    39      0   100%
+nussl/separation/factorization/rpca.py                   73      0   100%
+nussl/separation/primitive/__init__.py                    6      0   100%
+nussl/separation/primitive/ft2d.py                      109      0   100%
+nussl/separation/primitive/hpss.py                       25      0   100%
+nussl/separation/primitive/melodia.py                   123      0   100%
+nussl/separation/primitive/repet.py                     101      0   100%
+nussl/separation/primitive/repet_sim.py                  78      0   100%
+nussl/separation/primitive/timbre.py                     24      0   100%
+nussl/separation/spatial/__init__.py                      3      0   100%
+nussl/separation/spatial/duet.py                        106      0   100%
+nussl/separation/spatial/projet.py                      132      0   100%
+nussl/separation/spatial/spatial_clustering.py            9      0   100%
 -----------------------------------------------------------------------------------
-TOTAL                                                  2551    315    88%
+TOTAL                                                  3574      0   100%
 
-=============================================================================== 283 passed, 12 warnings in 338.84s (0:05:38) ===============================================================================
+============================================================================== 311 passed, 21 warnings in 1047.44s (0:17:27) 
 ```
 
 

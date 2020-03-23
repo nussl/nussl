@@ -55,7 +55,11 @@ class Melodia(MaskSeparationBase):
         # lazy load vamp to check if it exists
         from ... import vamp_imported
 
-        if not vamp_imported:
+        melodia_installed = False
+        if vamp_imported:
+            melodia_installed = 'mtg-melodia:melodia' in vamp.list_plugins()
+
+        if not vamp_imported or not melodia_installed:
             self._raise_vamp_melodia_error()
         
         super().__init__(
@@ -108,11 +112,9 @@ class Melodia(MaskSeparationBase):
             'minpeaksalience': self.minimum_peak_salience
         }
 
-        try:
-            data = vamp.collect(self.audio_signal.audio_data, self.sample_rate,
-                                "mtg-melodia:melodia", parameters=params)
-        except Exception as e:
-            self._raise_vamp_melodia_error()
+        
+        data = vamp.collect(self.audio_signal.audio_data, self.sample_rate,
+                            "mtg-melodia:melodia", parameters=params)
 
         _, melody = data['vector']
         hop = 128./44100. # hard coded hop in Melodia vamp plugin, converting it to frames.
