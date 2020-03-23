@@ -9,6 +9,12 @@ import librosa
 from .. import ImportErrorClass
 from copy import deepcopy
 import subprocess
+import random, string
+import importlib.resources as pkg_resources
+import os
+from . import templates
+
+multitrack_template = pkg_resources.read_text(templates, 'multitrack.html')
 
 def _check_imports():
     try:
@@ -28,10 +34,11 @@ def embed_audio(audio_signal, ext='.mp3', display=True):
     into the notebook.
 
     Args:
-        audio_signal (AudioSignal): AudioSignal object containing the data
-
+        audio_signal (AudioSignal): AudioSignal object containing the data.
         ext (str): What extension to use when embedding. '.mp3' is more lightweight 
-        leading to smaller notebook sizes.
+          leading to smaller notebook sizes. Defaults to '.mp3'.
+        display (bool): Whether or not to display the object immediately, or to return
+          the html object for display later by the end user. Defaults to True.
 
     Example:
         >>> import nussl
@@ -65,6 +72,51 @@ def embed_audio(audio_signal, ext='.mp3', display=True):
         tmp_converted.close()
     tmp_wav.close()
     return audio_element
+
+def multitrack(audio_signals, names=None, ext='.mp3', display=True):
+    """
+	Takes a bunch of audio sources, converts them to mp3 to make them smaller, and 
+    creates a multitrack audio player in the notebook that lets you 
+    toggle between the sources and the mixture. Heavily adapted 
+    from https://github.com/binarymind/multitrackHTMLPlayer,
+    designed by Bastien Liutkus.
+	
+    Args:
+	    audio_signals (list): List of AudioSignal objects that add up to the mixture.
+        names (list): List of names to give to each object (e.g. foreground, background).
+        ext (str): What extension to use when embedding. '.mp3' is more lightweight 
+          leading to smaller notebook sizes.
+        display (bool): Whether or not to display the object immediately, or to return
+          the html object for display later by the end user.
+	"""
+    ffmpy, IPython = _check_imports()
+    div_id = ''.join(random.choice(string.ascii_uppercase) for _ in range(20))
+
+    if names is not None:
+        if len(names) != len(audio_signals):
+            raise ValueError("len(names) must be equal to len(audio_signals)!")
+    else:
+        names = range(len(audio_signals))
+
+    template = (
+        f"<div id={div_id} class=audio-container "
+        f"preload=auto name={div_id}>")
+    
+    for name, signal in zip(names, audio_signals):
+        encoded_audio = embed_audio(signal, ext=ext, display=False).src_attr()
+        audio_element = (
+            f"<audio name='{name}' url={encoded_audio}></audio>")
+        template += audio_element
+        
+    template += "</div>"
+    template += multitrack_template
+    template = template.replace('NAME', div_id)
+
+    html = IPython.display.HTML(template)
+    if display:
+        IPython.display.display(html)
+    else:
+        return html
     
 def play(audio_signal):
     """

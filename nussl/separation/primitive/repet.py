@@ -25,7 +25,6 @@ class Repet(MaskSeparationBase):
         music/voice separation." IEEE transactions on audio, speech, 
         and language processing 21.1 (2012): 73-84.
 
-
     Args:
         input_audio_signal (AudioSignal): Signal to separate.
 

@@ -52,3 +52,38 @@ def test_play_audio():
     nussl.play_utils.play(audio_signal)
     audio_signal.play()
     
+def test_multitrack():
+    nussl.utils.seed(0)
+
+    audio_path = nussl.efz_utils.download_audio_file(
+        'marimba_timbre.mp3')
+    audio_signal = nussl.AudioSignal(audio_path, duration=1)
+    separator = nussl.separation.primitive.TimbreClustering(
+        audio_signal, 2, 1, mask_type='binary')
+
+    estimates = separator()
+
+    html = nussl.play_utils.multitrack(
+        estimates, ['Cluster 0', 'Cluster 1'], display=False)
+
+    os.makedirs('tests/core/regression/', exist_ok=True)
+    regression_path = 'tests/core/regression/multitrack_test.html'
+
+    if os.path.exists(regression_path):
+        with open(regression_path, 'r') as f:
+            html_reg = f.read()
+            assert html_reg == html.data
+    else:
+        with open(regression_path, 'w') as f:
+            f.write(html.data)
+    
+    # once more for coverage
+    html = nussl.play_utils.multitrack(
+        estimates, ['Cluster 0', 'Cluster 1'], display=True)
+
+    # names are optional
+    html = nussl.play_utils.multitrack(estimates,  display=False)
+
+    # names should match length
+    pytest.raises(ValueError, 
+        nussl.play_utils.multitrack, estimates, ['not enough names'])
