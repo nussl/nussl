@@ -23,19 +23,22 @@ class ClusteringSeparationBase(MaskSeparationBase):
           the mixture.
         clustering_type (str): One of 'KMeans', 'GaussianMixture', and 'MiniBatchKMeans'.
           The clustering approach to use on the features. Defaults to 'KMeans'.
-        percentile (int): Percentile of time-frequency points to consider by loudness. 
+        fit_clusterer (bool, optional): Whether or not to call fit on the clusterer.
+          If False, then the clusterer should already be fit for this to work. Defaults
+          to True.
+        percentile (int, optional): Percentile of time-frequency points to consider by loudness. 
           Audio spectrograms are very high dimensional, and louder points tend to 
           matter more than quieter points. By setting the percentile high, one can more
           efficiently cluster an auditory scene by considering only points above
           that threshold. Defaults to 90 (which means the top 10 percentile of 
           time-frequency points will be used for clustering).
-        beta (float): When using KMeans, we use soft KMeans, which has an additional 
+        beta (float, optional): When using KMeans, we use soft KMeans, which has an additional 
           parameter `beta`. `beta` controls how soft the assignments are. As beta 
           increases, the assignments become more binary (either 0 or 1). Defaults to 
           5.0, a value discovered through cross-validation.
-        mask_type (str): Masking approach to use. Passed up to MaskSeparationBase.
-        mask_threshold (float): Threshold for masking. Passed up to MaskSeparationBase.
-        **kwargs (dict): Additional keyword arguments that are passed to the clustering
+        mask_type (str, optional): Masking approach to use. Passed up to MaskSeparationBase.
+        mask_threshold (float, optional): Threshold for masking. Passed up to MaskSeparationBase.
+        **kwargs (dict, optional): Additional keyword arguments that are passed to the clustering
           object (one of KMeans, GaussianMixture, or MiniBatchKMeans).
     
     Raises:
@@ -44,7 +47,8 @@ class ClusteringSeparationBase(MaskSeparationBase):
           shape of the AudioSignal.
     """
     def __init__(self, input_audio_signal, num_sources, clustering_type='KMeans', 
-        percentile=90, beta=5.0, mask_type='soft', mask_threshold=0.5, **kwargs):
+                 fit_clusterer=True, percentile=90, beta=5.0, mask_type='soft',
+                 mask_threshold=0.5, **kwargs):
 
         if clustering_type not in dir(ml.cluster):
             raise SeparationException(
@@ -64,6 +68,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
         self.percentile = percentile
         self.features = None
         self.beta = beta
+        self.fit_clusterer = fit_clusterer
 
         super(ClusteringSeparationBase, self).__init__(
             input_audio_signal=input_audio_signal,
@@ -111,7 +116,8 @@ class ClusteringSeparationBase(MaskSeparationBase):
         shape = features.shape
         features_to_fit = features.reshape(-1, shape[-1])
         features_to_fit = features_to_fit[self.tf_point_over_cutoff.flatten(), :]
-        clusterer.fit(features_to_fit)
+        if self.fit_clusterer:
+            clusterer.fit(features_to_fit)
 
         if 'KMeans' in self.clustering_type:
             distances = clusterer.transform(features.reshape(-1, shape[-1]))

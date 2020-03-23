@@ -79,10 +79,10 @@ class Melodia(MaskSeparationBase):
 
     def _raise_vamp_melodia_error(self):
         raise SeparationException(
-                '\n**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**'
-                '\n*          Are Vamp and Melodia installed correctly?          *'
-                '\n* Check https://bit.ly/2DXbrAk for installation instructions! *'
-                '\n**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**')
+            '\n**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**'
+            '\n*          Are Vamp and Melodia installed correctly?          *'
+            '\n* Check https://bit.ly/2DXbrAk for installation instructions! *'
+            '\n**~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~**')
 
     def extract_melody(self):
         """

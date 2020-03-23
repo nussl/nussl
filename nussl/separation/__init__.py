@@ -10,5 +10,6 @@ from . import (
     spatial, 
     benchmark,
     primitive,
-    factorization
+    factorization,
+    composite
 )

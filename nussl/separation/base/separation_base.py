@@ -69,7 +69,7 @@ class SeparationBase(object):
         """
         if not isinstance(input_audio_signal, AudioSignal):
             raise ValueError('input_audio_signal is not an AudioSignal object!')
-        
+
         self._audio_signal = copy.deepcopy(input_audio_signal)
 
         if self.audio_signal is not None:
@@ -81,12 +81,6 @@ class SeparationBase(object):
                 self.audio_signal.stft_data = np.array([[]])
             else:
                 self._preprocess_audio_signal()
-
-    def plot(self, **kwargs):
-        """
-        Plots relevant data for separation algorithm
-        """
-        pass
 
     def run(self):
         """
@@ -106,7 +100,10 @@ class SeparationBase(object):
         """
         raise NotImplementedError('Cannot call base class.')
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, audio_signal=None, **kwargs):
+        if audio_signal is not None:
+            self.audio_signal = audio_signal
+        
         self.run(*args, **kwargs)
         return self.make_audio_signals()
 

@@ -13,7 +13,6 @@ def test_separation_base(mix_source_folder, monkeypatch):
     pytest.raises(ValueError, separation.SeparationBase, None)
 
     separator = separation.SeparationBase(mix)
-    separator.plot() # shouldn't error out
 
     assert separator.sample_rate == mix.sample_rate
     assert separator.stft_params == mix.stft_params
@@ -44,6 +43,15 @@ def test_separation_base(mix_source_folder, monkeypatch):
     diff_other.fake_array = np.zeros(100)
 
     assert separator != diff_other
+
+
+    separator = separation.SeparationBase(mix)
+    assert separator.audio_signal == mix
+
+    monkeypatch.setattr(separation.SeparationBase, 'make_audio_signals', dummy_run)
+
+    separator(audio_signal=sources['s1'])
+    assert separator.audio_signal == sources['s1']
 
 def test_mask_separation_base(mix_source_folder, monkeypatch):
     dataset = datasets.MixSourceFolder(mix_source_folder)
