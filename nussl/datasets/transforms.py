@@ -581,6 +581,7 @@ class Cache(object):
     def __init__(self, location, cache_size=1, overwrite=False):
         self.location = location
         self.cache_size = cache_size
+        self.cache = None
         self.overwrite = overwrite
 
     @property
@@ -611,9 +612,10 @@ class Cache(object):
                 chunks=(1,), dtype=object, object_codec=numcodecs.Pickle(), 
                 synchronizer=zarr.ThreadSynchronizer())
         else:
-            self.cache = zarr.open(location, mode='r', 
-                object_codec=numcodecs.Pickle(), 
-                synchronizer=zarr.ThreadSynchronizer())
+            if os.path.exists(location):
+                self.cache = zarr.open(location, mode='r', 
+                    object_codec=numcodecs.Pickle(), 
+                    synchronizer=zarr.ThreadSynchronizer())
 
     def __call__(self, data):
         if 'index' not in data:

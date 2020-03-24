@@ -9,7 +9,8 @@ import time
 from enum import Enum
 import os
 import numpy as np
-from nussl import STFTParams
+from nussl import STFTParams, datasets
+import copy
 
 class ValidationEvents(Enum):
     """
@@ -215,12 +216,19 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                 output_folder, 'checkpoints', 'best.model.pth'
             ))
 
+        _transform = copy.deepcopy(train_data.transform)
+
+        if isinstance(_transform, datasets.transforms.Compose):
+            for t in _transform.transforms:
+                if isinstance(t, datasets.transforms.Cache):
+                    _transform.transforms.remove(t)
+
         metadata = {
             'stft_params': train_data.stft_params,
             'sample_rate': train_data.sample_rate,
             'num_channels': train_data.num_channels,
             'folder': train_data.folder,
-            'transforms': train_data.transform,
+            'transforms': _transform,
             'trainer.state_dict': {
                 'epoch': trainer.state.epoch,
                 'epoch_length': trainer.state.epoch_length,

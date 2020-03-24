@@ -19,7 +19,8 @@ def test_create_engine(mix_source_folder):
     # load dataset with transforms
     tfms = datasets.transforms.Compose([
         datasets.transforms.PhaseSensitiveSpectrumApproximation(),
-        datasets.transforms.ToSeparationModel()])
+        datasets.transforms.ToSeparationModel(),
+        datasets.transforms.Cache(os.path.join(fix_dir, 'cache'))])
     dataset = datasets.MixSourceFolder(
         mix_source_folder, transform=tfms)
 
@@ -84,6 +85,12 @@ def test_create_engine(mix_source_folder):
         
         optimizer.load_state_dict(opt_state_dict)
         model.load_state_dict(state_dict['state_dict'])
+
+        # make sure the cache got removed in saved transforms as it is not a portable
+        # transform
+
+        for t in state_dict['metadata']['transforms'].transforms:
+            assert not isinstance(t, datasets.transforms.Cache)
 
         new_trainer, new_validator = (
             ml.train.create_train_and_validation_engines(train_batch)
