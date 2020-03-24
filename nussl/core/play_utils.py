@@ -96,7 +96,10 @@ def multitrack(audio_signals, names=None, ext='.mp3', display=True):
         if len(names) != len(audio_signals):
             raise ValueError("len(names) must be equal to len(audio_signals)!")
     else:
-        names = range(len(audio_signals))
+        names = [
+            f"{i}:{s.path_to_input_file}"
+            for i, s in enumerate(audio_signals)
+        ]
 
     template = (
         f"<div id={div_id} class=audio-container "
