@@ -50,8 +50,8 @@ class Melodia(MaskSeparationBase):
     """
     def __init__(self, input_audio_signal, high_pass_cutoff=100, minimum_frequency=55.0,
                  maximum_frequency=1760.0, voicing_tolerance=0.2, minimum_peak_salience=0.0,
-                 num_overtones=120, smooth_length=5, mask_type='soft', mask_threshold=0.5):
-    
+                 compression=0.5, num_overtones=120, smooth_length=5, mask_type='soft', 
+                 mask_threshold=0.5):
         # lazy load vamp to check if it exists
         from ... import vamp_imported
 
@@ -73,6 +73,7 @@ class Melodia(MaskSeparationBase):
         self.maximum_frequency = float(maximum_frequency)
         self.voicing_tolerance = float(voicing_tolerance)
         self.minimum_peak_salience = float(minimum_peak_salience)
+        self.compression = compression
 
         self.melody = None
         self.melody_signal = None
@@ -123,6 +124,16 @@ class Melodia(MaskSeparationBase):
         self.melody = melody
         self.timestamps = timestamps
 
+    def get_overtone_weights(self):
+        overtone_weights = (
+            np.abs(np.cos(.33 * np.arange(self.num_overtones))) *
+            np.linspace(1.0, 0.0, self.num_overtones) + 
+            np.linspace(2.0, 0.0, self.num_overtones) 
+        )
+        overtone_weights = np.exp(overtone_weights)
+        overtone_weights /= overtone_weights.sum()
+        return overtone_weights
+
     def create_melody_signal(self, num_overtones):
         """
         Adapted from Melosynth by Justin Salamon: https://github.com/justinsalamon/melosynth. 
@@ -152,6 +163,8 @@ class Melodia(MaskSeparationBase):
         previous_frequency = 0
         previous_time = 0
 
+        overtone_weights = self.get_overtone_weights()
+
         for time, frequency in zip(self.timestamps, self.melody):
             num_samples = int(np.round((time - previous_time) * sample_rate))
             if num_samples > 0:
@@ -172,8 +185,7 @@ class Melodia(MaskSeparationBase):
                     overtone_num = overtone + 1
                     phasors = 2 * np.pi * overtone_num * frequency_series / float(sample_rate)
                     phases = phase[overtone] + np.cumsum(phasors)
-                    weight = np.exp(-overtone)
-                    samples += weight * np.sin(phases)
+                    samples += overtone_weights[overtone] * np.sin(phases)
                     phase[overtone] = phases[-1]
 
                 if previous_frequency == 0 and frequency > 0:
@@ -211,7 +223,7 @@ class Melodia(MaskSeparationBase):
 
         # Need to threshold the melody stft since the synthesized
         # F0 sequence overtones are at different weights.
-        stft = stft ** 2
+        stft = stft ** self.compression
         stft /= np.maximum(np.max(stft, axis=1, keepdims=True), 1e-7)
 
         mask = np.empty(self.stft.shape)
@@ -221,8 +233,6 @@ class Melodia(MaskSeparationBase):
         kernel =  np.full((1, self.smooth_length), 1/self.smooth_length)
         for ch in range(self.audio_signal.num_channels):
             mask[..., ch] = convolve(stft[..., ch], kernel)
-            mask[..., ch] = maximum_filter(mask[..., ch], size=(5, 1))
-            mask[..., ch] = gaussian_filter(mask[..., ch], sigma=1)
         return mask
 
     def run(self):
@@ -236,10 +246,6 @@ class Melodia(MaskSeparationBase):
 
         foreground_mask = self.create_harmonic_mask(self.melody_signal)
         foreground_mask = self.MASKS['soft'](foreground_mask)
-
-        if self.mask_type == self.MASKS['binary']:
-            foreground_mask = foreground_mask.mask_to_binary(
-                self.mask_threshold)
 
         foreground_mask = foreground_mask
         background_mask = foreground_mask.invert_mask()

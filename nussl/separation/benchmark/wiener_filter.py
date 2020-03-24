@@ -25,6 +25,7 @@ class WienerFilter(MaskSeparationBase):
 
         self.estimates = estimates
         self.iterations = iterations
+        self.kwargs = kwargs
 
         super().__init__(
             input_audio_signal=input_audio_signal, 
@@ -35,12 +36,12 @@ class WienerFilter(MaskSeparationBase):
         source_magnitudes = np.stack([
             np.abs(e.stft()) for e in self.estimates], axis=-1)
         source_magnitudes = np.transpose(source_magnitudes, (1, 0, 2, 3))
-        mix_magnitude = np.transpose(self.audio_signal.stft(), (1, 0, 2))
+        mix_stft = np.transpose(self.audio_signal.stft(), (1, 0, 2))
 
-        enhanced = np.abs(norbert.wiener(
-            source_magnitudes, mix_magnitude, iterations=self.iterations))
-        _masks = enhanced / np.maximum(
-            enhanced, np.abs(mix_magnitude[..., None]) + 1e-7)
+        enhanced = norbert.wiener(
+            source_magnitudes, mix_stft, 
+            iterations=self.iterations, **self.kwargs)
+        _masks = np.abs(enhanced) / np.maximum(1e-7, np.abs(mix_stft[..., None]))
         _masks = np.transpose(_masks, (1, 0, 2, 3))
 
         self.result_masks = []
