@@ -154,6 +154,7 @@ def test_melodia(
     config = [
         ({'mask_type': 'binary'}, 'binary'),
         ({'mask_type': 'binary', 'apply_vowel_filter': True}, 'vf_binary'),
+         ({'mask_type': 'binary', 'add_lower_octave': True}, 'octave_binary'),
         ({'mask_type': 'soft'}, 'soft'),
     ]
 

@@ -170,8 +170,12 @@ class Melodia(MaskSeparationBase):
         apply_vowel_filter (optional, bool): Whether or not to apply a vowel filter
           on the resynthesized melody signal when masking.
 
-        smooth_length (optional, int): number of frames to smooth discontinuities in the
+        smooth_length (optional, int): Number of frames to smooth discontinuities in the
           mask.
+
+        add_lower_octave (optional, fool): Use octave below fundamental frequency as well
+          to take care of octave errors in pitch tracking, since we only care about
+          the mask. Defaults to False.
         
         mask_type (optional, str): Type of mask to use.
 
@@ -181,7 +185,7 @@ class Melodia(MaskSeparationBase):
     def __init__(self, input_audio_signal, high_pass_cutoff=100, minimum_frequency=55.0,
                  maximum_frequency=1760.0, voicing_tolerance=0.2, minimum_peak_salience=0.0,
                  compression=0.5, num_overtones=40, apply_vowel_filter=False, smooth_length=5, 
-                 mask_type='soft', mask_threshold=0.5):
+                 add_lower_octave=False, mask_type='soft', mask_threshold=0.5):
         # lazy load vamp to check if it exists
         from ... import vamp_imported
 
@@ -205,6 +209,7 @@ class Melodia(MaskSeparationBase):
         self.minimum_peak_salience = float(minimum_peak_salience)
         self.compression = compression
         self.apply_vowel_filter = apply_vowel_filter
+        self.add_lower_octave = add_lower_octave
 
         self.melody = None
         self.melody_signal = None
@@ -286,6 +291,9 @@ class Melodia(MaskSeparationBase):
         overtone_weights = np.ones(num_overtones)
 
         for time, frequency in zip(self.timestamps, self.melody):
+            if self.add_lower_octave:
+                frequency = frequency / 2 
+            # taking care of octave errors since we only care about masking
             num_samples = int(np.round((time - previous_time) * sample_rate))
             if num_samples > 0:
                 num_transition_samples = float(

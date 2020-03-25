@@ -23,20 +23,14 @@ def test_ensemble_clustering(
     vox = copy.deepcopy(sources['vocals'])
     acc = copy.deepcopy(sources['group0'])
 
-    os.environ['VAMP_PATH'] = (
-        f"{os.path.abspath('tests/vamp/melodia_osx')}:"
-        f"{os.path.abspath('tests/vamp/melodia_linux')}"
-    )
-
     separators = [
         primitive.FT2D(mix),
         factorization.RPCA(mix),
-        primitive.Melodia(mix, voicing_tolerance=0.2),
         primitive.HPSS(mix),
     ]
 
-    weights = [3, 3, 1, 1]
-    returns = [[1], [1], [1], [0]]
+    weights = [3, 3, 1]
+    returns = [[1], [1], [0]]
 
     fixed_centers = np.array([
         [0 for i in range(sum(weights))],
