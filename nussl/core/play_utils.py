@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 These are optional utilities included in nussl that allow one to embed an AudioSignal
 as a playable object in a Jupyter notebook, or to play audio from

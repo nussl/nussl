@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import numpy as np
 from scipy.ndimage.filters import maximum_filter, minimum_filter, uniform_filter
 

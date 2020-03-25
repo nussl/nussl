@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import numpy as np
 from scipy.ndimage.filters import convolve
 from scipy.ndimage import maximum_filter, gaussian_filter

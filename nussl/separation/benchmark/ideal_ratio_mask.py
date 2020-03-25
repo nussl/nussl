@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 from ..base import MaskSeparationBase, SeparationException
 from ...datasets import transforms
 

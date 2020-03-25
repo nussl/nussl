@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Provides utilities for running nussl algorithms that do not belong to
 any specific algorithm or that are shared between algorithms.

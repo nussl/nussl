@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Small collection of utilities for altering and remixing
 AudioSignal objects. 

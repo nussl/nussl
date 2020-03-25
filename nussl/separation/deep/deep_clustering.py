@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import torch
 
 from ..base import ClusteringSeparationBase, DeepMixin, SeparationException

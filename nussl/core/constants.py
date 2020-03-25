@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 A repository containing all of the constants frequently used in
 this wacky, mixed up source separation stuff.

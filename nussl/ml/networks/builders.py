@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Functions that make it easy to build commonly used source separation architectures.
 Currently contains mask inference, deep clustering, and chimera networks that are

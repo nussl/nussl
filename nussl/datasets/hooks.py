@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 While *nussl* does not come with any data sets, it does have the capability to interface with
 many common source separation data sets used within the MIR and speech separation communities.

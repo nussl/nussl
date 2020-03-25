@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 Base class for separation algorithms that make masks. Most algorithms in 
 nussl are derived from MaskSeparationBase. 

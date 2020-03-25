@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 The :class:`BinaryMask` class is for creating a time-frequency mask with binary values. Like all 
 :class:`separation.masks.mask_base.MaskBase` objects, :class:`BinaryMask` is initialized with a 2D or 3D numpy array
