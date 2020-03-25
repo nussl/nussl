@@ -126,6 +126,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
         features_to_fit = features_to_fit[self.tf_point_over_cutoff.flatten(), :]
         if self.fit_clusterer:
             clusterer.fit(features_to_fit)
+        responsibilities = None
 
         if 'KMeans' in self.clustering_type:
             distances = clusterer.transform(features.reshape(-1, shape[-1]))

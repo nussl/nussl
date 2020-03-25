@@ -5,7 +5,6 @@ import os
 import nussl
 import copy
 from importlib import reload
-import vamp
 
 REGRESSION_PATH = 'tests/separation/regression/primitive/'
 os.makedirs(REGRESSION_PATH, exist_ok=True)
@@ -154,6 +153,7 @@ def test_melodia(
 
     config = [
         ({'mask_type': 'binary'}, 'binary'),
+        ({'mask_type': 'binary', 'apply_vowel_filter': True}, 'vf_binary'),
         ({'mask_type': 'soft'}, 'soft'),
     ]
 
@@ -167,7 +167,6 @@ def test_melodia(
         )
 
         scores = evaluator.evaluate()
-
         reg_path = os.path.join(
             REGRESSION_PATH, f'melodia_{name}.json')
         check_against_regression_data(scores, reg_path)

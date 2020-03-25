@@ -6,10 +6,130 @@ from .. import MaskSeparationBase, SeparationException
 from ..benchmark import HighLowPassFilter
 from ... import AudioSignal
 from ... import vamp_imported
+import numpy as np
+import scipy.signal
 
 if vamp_imported:
     import vamp
 
+# function for generating the vocal chord impulse response
+def rosenmodel(t1, t2, fs):
+    """
+    This model for generating singing vowel sounds from sine tones comes
+    from:
+
+    https://simonl02.users.greyc.fr/files/Documents/Teaching/SignalProcessingLabs/lab3.pdf
+
+    The above will be referred to throughout these docstrings as THE DOCUMENT.
+
+    Original author: Fatemeh Pishdadian
+
+    The arguments to the fucntions throughout this text follow the 
+    signatures laid out in THE DOCUMENT.
+
+    This is used in Melodia to generate the melody signal to produce a 
+    mask.
+
+    Equation 2 in THE DOCUMENT.
+    """
+
+    N1 = np.floor(t1 * fs)
+    N2 = np.floor(t2 * fs)
+
+    samp_vec1 = np.arange(N1+1)
+    samp_vec2 = np.arange(N1,N1+N2+1)
+
+    ir_func1 =  0.5 * (1 - np.cos((np.pi * samp_vec1)/N1))
+    ir_func2 = np.cos(np.pi * (samp_vec2 - N1)/(2 * N2))
+
+    vchord_filt = np.concatenate((ir_func1,ir_func2))
+
+    return vchord_filt
+
+
+# function for computing the denominator coeffs of the vocal cavity filter transfer function
+def oral_cavity_filt(pole_amps, pole_freqs,fs):
+    """
+    This model for generating singing vowel sounds from sine tones comes
+    from:
+
+    https://simonl02.users.greyc.fr/files/Documents/Teaching/SignalProcessingLabs/lab3.pdf
+
+    The above will be referred to throughout these docstrings as THE DOCUMENT.
+
+    Original author: Fatemeh Pishdadian
+
+    The arguments to the fucntions throughout this text follow the 
+    signatures laid out in THE DOCUMENT.
+
+    This is used in Melodia to generate the melody signal to produce a 
+    mask.
+
+    Solves "Q. Write a function to synthesize filter H(z)" in 
+    THE DOCUMENT
+    """
+    num_pole_pair = len(pole_amps)
+    poles = pole_amps * np.exp(1j * 2 * np.pi * pole_freqs / fs)
+    poles_conj = np.conj(poles)
+
+    denom_coeffs = 1
+    for i in range(num_pole_pair):
+        pole_temp = poles[i]
+        pole_conj_temp = poles_conj[i]
+        pole_pair_coeffs = np.convolve(np.array([1,-pole_temp]),np.array([1,-pole_conj_temp]))
+
+        denom_coeffs = np.convolve(denom_coeffs, pole_pair_coeffs)
+    return denom_coeffs
+
+def _apply_vowel_filter(impulse_train, fs, t1=0.0075, t2=.013,
+                     pole_amps=None, pole_freqs=None):
+    """
+    This model for generating singing vowel sounds from sine tones comes
+    from:
+
+    https://simonl02.users.greyc.fr/files/Documents/Teaching/SignalProcessingLabs/lab3.pdf
+
+    The above will be referred to throughout these docstrings as THE DOCUMENT.
+
+    Original author: Fatemeh Pishdadian
+
+    The arguments to the fucntions throughout this text follow the 
+    signatures laid out in THE DOCUMENT.
+
+    This is used in Melodia to generate the melody signal to produce a 
+    mask.
+    
+    Args:
+        impulse_train (np.ndarray): Numpy array with data to be filtered
+        fs (int): Sample rate of audio.
+        t1 (float, optional): N1 in Equation 2 in THE DOCUMENT. Defaults to 0.0075.
+        t2 (float, optional): N2 in Equation 2 in THE DOCUMENT. Defaults to .013.
+        pole_amps (np.ndarray, optional): Pole amplitudes, see Figures 2-4 in THE DOCUMENT. 
+          Defaults to None, which maps to E vowel.
+        pole_freqs (np.ndarray, optional): Pole frequencies, see Figures 2-4 in THE DOCUMENT. 
+          Defaults to None, which maps to E vowel
+    
+    Returns:
+        np.ndarray: Filtered impulse train that should sound sort of like the desired 
+          vowel.
+    """
+    if pole_amps is None:
+        pole_amps = np.array([0.99,0.98,0.9,0.9])
+    if pole_freqs is None:
+        pole_freqs = np.array([800,1200,2800,3600])
+        
+    vchord_filt = rosenmodel(t1, t2, fs)
+    vchord_out = np.convolve(impulse_train, vchord_filt)
+        
+    denom_coeffs = oral_cavity_filt(pole_amps, pole_freqs, fs)
+    oral_out = scipy.signal.lfilter(
+        np.array([1]), denom_coeffs, vchord_out)
+    lip_out = np.real(scipy.signal.lfilter(
+        np.array([1,-1]), np.array([1]), oral_out))
+    
+    lip_out = lip_out[:impulse_train.shape[0]]
+    
+    return np.real(lip_out)
 
 class Melodia(MaskSeparationBase):
     """
@@ -26,32 +146,42 @@ class Melodia(MaskSeparationBase):
         Language Processing, 20(6):1759-1770, Aug. 2012.
 
     Args:
-        input_audio_signal: (AudioSignal object) The AudioSignal object that has the
+        input_audio_signal (AudioSignal object): The AudioSignal object that has the
           audio data that Melodia will be run on.
 
-        high_pass_cutoff: (Optional) (float) value (in Hz) for the high pass cutoff 
+        high_pass_cutoff (optional, float): value (in Hz) for the high pass cutoff 
           filter.
         
-        minimum_frequency: (float) minimum frequency in Hertz (default 55.0)
+        minimum_frequency (optional, float): minimum frequency in Hertz (default 55.0)
 
-        maximum_frequency: (float) maximum frequency in Hertz (default 1760.0)
+        maximum_frequency (optional, float): maximum frequency in Hertz (default 1760.0)
 
-        voicing_tolerance: (float) Greater values will result in more pitch contours 
+        voicing_tolerance (optional, float): Greater values will result in more pitch contours 
           included in the final melody. Smaller values will result in less pitch 
           contours included in the final melody (default 0.2).
 
-        minimum_peak_salience: (float) a hack to avoid silence turning into junk 
+        minimum_peak_salience (optional, float): a hack to avoid silence turning into junk 
           contours when analyzing monophonic recordings (e.g. solo voice with 
           no accompaniment). Generally you want to leave this untouched (default 0.0).
 
-        num_overtones: (Optional) (int) Number of overtones to use when creating 
+        num_overtones (optional, int): Number of overtones to use when creating 
           melody mask.
+
+        apply_vowel_filter (optional, bool): Whether or not to apply a vowel filter
+          on the resynthesized melody signal when masking.
+
+        smooth_length (optional, int): number of frames to smooth discontinuities in the
+          mask.
+        
+        mask_type (optional, str): Type of mask to use.
+
+        mask_threshold (optional, float): Threshold for mask to convert to binary.
     """
 
     def __init__(self, input_audio_signal, high_pass_cutoff=100, minimum_frequency=55.0,
                  maximum_frequency=1760.0, voicing_tolerance=0.2, minimum_peak_salience=0.0,
-                 compression=0.5, num_overtones=120, smooth_length=5, mask_type='soft',
-                 mask_threshold=0.5):
+                 compression=0.5, num_overtones=40, apply_vowel_filter=False, smooth_length=5, 
+                 mask_type='soft', mask_threshold=0.5):
         # lazy load vamp to check if it exists
         from ... import vamp_imported
 
@@ -74,6 +204,7 @@ class Melodia(MaskSeparationBase):
         self.voicing_tolerance = float(voicing_tolerance)
         self.minimum_peak_salience = float(minimum_peak_salience)
         self.compression = compression
+        self.apply_vowel_filter = apply_vowel_filter
 
         self.melody = None
         self.melody_signal = None
@@ -123,16 +254,6 @@ class Melodia(MaskSeparationBase):
         self.melody = melody
         self.timestamps = timestamps
 
-    def get_overtone_weights(self):
-        overtone_weights = (
-            np.abs(np.cos(.33 * np.arange(self.num_overtones))) *
-            np.linspace(1.0, 0.0, self.num_overtones) +
-            np.linspace(2.0, 0.0, self.num_overtones)
-        )
-        overtone_weights = np.exp(overtone_weights)
-        overtone_weights /= overtone_weights.sum()
-        return overtone_weights
-
     def create_melody_signal(self, num_overtones):
         """
         Adapted from Melosynth by Justin Salamon: https://github.com/justinsalamon/melosynth. 
@@ -162,7 +283,7 @@ class Melodia(MaskSeparationBase):
         previous_frequency = 0
         previous_time = 0
 
-        overtone_weights = self.get_overtone_weights()
+        overtone_weights = np.ones(num_overtones)
 
         for time, frequency in zip(self.timestamps, self.melody):
             num_samples = int(np.round((time - previous_time) * sample_rate))
@@ -184,7 +305,7 @@ class Melodia(MaskSeparationBase):
                     overtone_num = overtone + 1
                     phasors = 2 * np.pi * overtone_num * frequency_series / float(sample_rate)
                     phases = phase[overtone] + np.cumsum(phasors)
-                    samples += overtone_weights[overtone] * np.sin(phases)
+                    samples += overtone_weights[overtone] * np.sign(np.sin(phases))
                     phase[overtone] = phases[-1]
 
                 if previous_frequency == 0 and frequency > 0:
@@ -200,6 +321,9 @@ class Melodia(MaskSeparationBase):
             previous_time = time
 
         melody_signal = np.asarray(melody_signal)
+        if self.apply_vowel_filter:
+            melody_signal = _apply_vowel_filter(melody_signal, sample_rate)
+
         melody_signal /= float(max(np.max(melody_signal), 1e-7))
         melody_signal = [melody_signal for _ in range(self.audio_signal.num_channels)]
         melody_signal = np.asarray(melody_signal)
