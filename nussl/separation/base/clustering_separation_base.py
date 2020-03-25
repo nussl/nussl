@@ -133,8 +133,6 @@ class ClusteringSeparationBase(MaskSeparationBase):
             responsibilities = distances / distances.sum(axis=-1, keepdims=True)
         elif 'GaussianMixture' in self.clustering_type:
             responsibilities = clusterer.predict_proba(features.reshape(-1, shape[-1]))
-        else:
-            raise ValueError(f'Unknown clustering type f{self.clustering_type}')
 
         responsibilities = responsibilities.reshape(shape[:-1] + (-1,))
         return responsibilities

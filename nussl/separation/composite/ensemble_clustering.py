@@ -170,9 +170,6 @@ class EnsembleClustering(ClusteringSeparationBase):
                     _features = self._extract_features_from_masks(masks)
                 elif self.extracted_feature == 'estimates':
                     _features = self._extract_features_from_estimates(estimates)
-                else:
-                    raise ValueError(f'Unknown value for extracted_feature: '
-                                     f'{self.extracted_feature}')
 
                 features.append(_features)
             

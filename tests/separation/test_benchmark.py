@@ -57,6 +57,9 @@ def test_ideal_ratio_mask(
     irm = nussl.separation.benchmark.IdealRatioMask(mix, sources)
     sources = list(sources.values())
 
+    pytest.raises(SeparationException, nussl.separation.benchmark.IdealRatioMask,
+            mix, sources, approach='none of the above')
+
     for approach in ['psa', 'msa']:
         irm = nussl.separation.benchmark.IdealRatioMask(
             mix, sources, approach=approach)

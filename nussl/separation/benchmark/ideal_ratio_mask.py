@@ -33,7 +33,7 @@ class IdealRatioMask(MaskSeparationBase):
         elif self.approach == 'msa':
             tfm = transforms.MagnitudeSpectrumApproximation(**kwargs)
         else:
-            raise ValueError(f'Unknown approach: {self.approach}')
+            raise SeparationException(f'Unknown approach: {self.approach}')
         self.tfm = tfm
 
         super().__init__(

@@ -179,8 +179,6 @@ class FT2D(MaskSeparationBase):
             bg_ft2d, fg_ft2d = self.filter_local_maxima(ft2d[:, :, ch])
         elif self.filter_approach == 'local_std':
             bg_ft2d, fg_ft2d = self.filter_local_maxima_with_std(ft2d[:, :, ch])
-        else:
-            raise ValueError('Unknown value for filter_approach')
 
         self.bg_ft2d = self.filter_quadrants(bg_ft2d, self.quadrants_to_keep)
         self.fg_ft2d = self.filter_quadrants(fg_ft2d, self.quadrants_to_keep)
