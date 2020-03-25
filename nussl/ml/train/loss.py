@@ -1,17 +1,23 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from itertools import permutations, combinations
+
 import torch
 import torch.nn as nn
-import numpy as np
-from itertools import permutations, combinations
-from enum import Enum
+
 
 class L1Loss(nn.L1Loss):
     DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
 
+
 class MSELoss(nn.MSELoss):
     DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
 
+
 class KLDivLoss(nn.KLDivLoss):
     DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
+
 
 class SISDRLoss(nn.Module):
     """
@@ -50,14 +56,15 @@ class SISDRLoss(nn.Module):
         signal = (e_true ** 2).sum(dim=1)
         noise = (e_res ** 2).sum(dim=1)
 
-        SDR = 10 * torch.log10(signal / noise)
+        sdr = 10 * torch.log10(signal / noise)
 
         if self.reduction == 'mean':
-            SDR = SDR.mean()
+            sdr = sdr.mean()
         elif self.reduction == 'sum':
-            SDR = SDR.sum()
+            sdr = sdr.sum()
         # go negative so it's a loss
-        return -SDR
+        return -sdr
+
 
 class DeepClusteringLoss(nn.Module):
     """
@@ -93,7 +100,7 @@ class DeepClusteringLoss(nn.Module):
         assignments = assignments.view(batch_size, -1, num_sources)
         assignments = nn.functional.normalize(assignments, dim=-1, p=2)
 
-        norm = (((weights.reshape(batch_size, -1)) ** 2).sum(dim=1) ** 2)+ 1e-8
+        norm = (((weights.reshape(batch_size, -1)) ** 2).sum(dim=1) ** 2) + 1e-8
 
         assignments = weights * assignments
         embedding = weights * embedding
@@ -106,6 +113,7 @@ class DeepClusteringLoss(nn.Module):
             batch_size, -1).sum(dim=-1)
         loss = (vTv - 2 * vTy + yTy) / norm
         return loss.mean()
+
 
 class PermutationInvariantLoss(nn.Module):
     """
@@ -149,6 +157,7 @@ class PermutationInvariantLoss(nn.Module):
         loss = torch.mean(losses)
         return loss
 
+
 class CombinationInvariantLoss(nn.Module):
     """
     Variant on Permutation Invariant Loss where instead a combination of the
@@ -186,7 +195,7 @@ class CombinationInvariantLoss(nn.Module):
                 loss = loss.mean(dim=[-1, -2])
                 losses.append(loss)
         
-        losses = torch.stack(losses,dim=-1)
+        losses = torch.stack(losses, dim=-1)
         losses = torch.min(losses, dim=-1)[0]
         loss = torch.mean(losses)
         return loss

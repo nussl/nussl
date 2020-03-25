@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
+
 def test_gradients(mix_source_folder):
     tfms = datasets.transforms.Compose([
         datasets.transforms.PhaseSensitiveSpectrumApproximation(),
@@ -21,14 +22,14 @@ def test_gradients(mix_source_folder):
     names = ['dpcl', 'mask_inference_l1', 'mask_inference_mse_loss', 'chimera']
     configs = [
         ml.networks.builders.build_recurrent_dpcl(
-            n_features, 50, 1, True, 0.0, 20, ['sigmoid'], 
+            n_features, 50, 1, True, 0.0, 20, ['sigmoid'],
             normalization_class='InstanceNorm'),
         ml.networks.builders.build_recurrent_mask_inference(
-            n_features, 50, 1, True, 0.0, 2, ['softmax'], 
+            n_features, 50, 1, True, 0.0, 2, ['softmax'],
             normalization_class='InstanceNorm'
         ),
         ml.networks.builders.build_recurrent_mask_inference(
-            n_features, 50, 1, True, 0.0, 2, ['softmax'], 
+            n_features, 50, 1, True, 0.0, 2, ['softmax'],
             normalization_class='InstanceNorm'
         ),
         ml.networks.builders.build_recurrent_chimera(
@@ -87,8 +88,8 @@ def test_gradients(mix_source_folder):
         # do a backward pass in batched mode
         _loss['loss'].backward()
 
-        plt.figure(figsize=(10,10))
-        utils.visualize_gradient_flow(model_grad.named_parameters()) 
+        plt.figure(figsize=(10, 10))
+        utils.visualize_gradient_flow(model_grad.named_parameters())
         plt.tight_layout()
         plt.savefig(f'tests/local/{name}:batch_gradient.png')
 
@@ -109,14 +110,14 @@ def test_gradients(mix_source_folder):
                 _data_a = output_acc[key]
                 _data_b = output_grad[key][i].unsqueeze(0)
                 assert torch.allclose(_data_a, _data_b, atol=1e-4)
-                
+
             _loss = loss_closure.compute_loss(output_acc, data)
             # do a backward pass on each item individually
             _loss['loss'] = _loss['loss'] / len(dataset)
             _loss['loss'].backward()
 
-        plt.figure(figsize=(10,10))
-        utils.visualize_gradient_flow(model_acc.named_parameters()) 
+        plt.figure(figsize=(10, 10))
+        utils.visualize_gradient_flow(model_acc.named_parameters())
         plt.tight_layout()
         plt.savefig(f'tests/local/{name}:accumulated_gradient.png')
 

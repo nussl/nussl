@@ -1,7 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
-from ..base import ClusteringSeparationBase, SeparationException, NMFMixin
 import librosa
-import inspect
+
+from ..base import ClusteringSeparationBase, NMFMixin
+
 
 class TimbreClustering(ClusteringSeparationBase, NMFMixin):
     """
@@ -24,17 +28,16 @@ class TimbreClustering(ClusteringSeparationBase, NMFMixin):
         kwargs (dict): Extra keyword arguments are passed to ClusteringSeparationBase.
     """
 
-    def __init__(self, input_audio_signal, num_sources, n_components, n_mfcc=13, 
-      nmf_kwargs={}, **kwargs):
-
+    def __init__(self, input_audio_signal, num_sources, n_components, n_mfcc=13,
+                 nmf_kwargs=None, **kwargs):
         self.n_components = n_components
-        self.nmf_kwargs = nmf_kwargs
+        self.nmf_kwargs = {} if nmf_kwargs is None else nmf_kwargs
         self.n_mfcc = n_mfcc
 
         super().__init__(
-            input_audio_signal=input_audio_signal, 
+            input_audio_signal=input_audio_signal,
             num_sources=num_sources, **kwargs)
-    
+
     def extract_features(self):
         model, components, activations = self.fit(
             self.audio_signal, self.n_components, **self.nmf_kwargs)
@@ -42,7 +45,6 @@ class TimbreClustering(ClusteringSeparationBase, NMFMixin):
             S=(components.T ** 2), sr=self.sample_rate)
         mfcc = librosa.feature.mfcc(S=mel, n_mfcc=self.n_mfcc).T
 
-        shape = activations.shape
         activations = activations.reshape(self.n_components, -1, 1)
         components = components.reshape(self.n_components, 1, -1)
 

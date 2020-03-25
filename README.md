@@ -99,23 +99,8 @@ nussl is to create a low barrier to entry for using popular source separation al
 allowing the user fine tuned control of low-level parameters.
 
 
-**NOTICE: nussl is currently in alpha. Please be mindful.**
 
 Please see the issues page before contacting the authors.
-
-Branch Layout
--------------
-
-- **Master** contains the most recent stable version, the version that you get when you pip install 
-*nussl*.
-- **Development** contains the most recent work, but is not as stable as master. Most all of 
-development work happens in this branch before being propagated to **master**.
-- **Experimental** has many more implementations, but many have not been vetted or properly tested. 
-Some methods in this branch require extra functionality that cannot be included in a pip install, 
-such as the Vamp binary files or pytorch.
-- **gh-pages** is used to auto generate our documentation using Sphinx.
-- Other feature branches do exist from time to time as well.
-
 
 
 Documentation

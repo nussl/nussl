@@ -1,10 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import copy
+
 import numpy as np
 import sklearn
 
-from .. import SeparationBase, SeparationException
+from .. import SeparationBase
 from ... import AudioSignal
 from ...core import utils
-import copy
+
 
 class ICA(SeparationBase):
     """
@@ -25,6 +30,7 @@ class ICA(SeparationBase):
         **kwargs: Additional keyword arguments that will be passed to 
           `sklearn.decomposition.FastICA`
     """
+
     def __init__(self, audio_signals, max_iterations=200, **kwargs):
         super().__init__(input_audio_signal=audio_signals)
 
@@ -37,6 +43,7 @@ class ICA(SeparationBase):
         self.estimated_sources = None
         self.estimated_mixing_params = None
         self.mean = None
+        self.ica_output = None
 
     @property
     def audio_signal(self):
@@ -44,7 +51,7 @@ class ICA(SeparationBase):
         Copy of AudioSignal that is made on initialization.
         """
         return self._audio_signal
-    
+
     @audio_signal.setter
     def audio_signal(self, audio_signals):
         """
@@ -52,7 +59,7 @@ class ICA(SeparationBase):
         object.
 
         Args:
-            audio_signal_list (list or AudioSignal): Either a multichannel audio signal, 
+            audio_signal (list or AudioSignal): Either a multichannel audio signal,
               or a list of AudioSignals containing the observations.
         """
 
@@ -66,7 +73,7 @@ class ICA(SeparationBase):
 
     def run(self):
         ica = sklearn.decomposition.FastICA(
-            n_components=self.num_components, max_iter=self.max_iterations, 
+            n_components=self.num_components, max_iter=self.max_iterations,
             **self.kwargs)
 
         # save for normalizing the estimated signals
@@ -84,7 +91,7 @@ class ICA(SeparationBase):
         self.estimated_mixing_params = ica.mixing_
         self.mean = ica.mean_
         self.ica_output = ica_output
-       
+
         return self.ica_output
 
     def make_audio_signals(self):
@@ -92,6 +99,6 @@ class ICA(SeparationBase):
             AudioSignal(
                 audio_data_array=self.ica_output[i, :],
                 sample_rate=self.audio_signal.sample_rate)
-                for i in range(self.ica_output.shape[0])
-            ]
+            for i in range(self.ica_output.shape[0])
+        ]
         return estimated_sources

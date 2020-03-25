@@ -7,13 +7,14 @@ import os
 import torch
 
 # uncomment if you want to see the trainer/engine logs
-logging.basicConfig(	
-    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',	
-    datefmt='%Y-%m-%d:%H:%M:%S',	
-    level=logging.INFO	
-) 
+logging.basicConfig(
+    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S',
+    level=logging.INFO
+)
 
 fix_dir = 'tests/local/trainer'
+
 
 def test_create_engine(mix_source_folder):
     # load dataset with transforms
@@ -28,7 +29,7 @@ def test_create_engine(mix_source_folder):
     # second bit of the shape is the number of features
     n_features = dataset[0]['mix_magnitude'].shape[1]
     mi_config = ml.networks.builders.build_recurrent_mask_inference(
-        n_features, 50, 2, True, 0.3, 2, 'softmax', 
+        n_features, 50, 2, True, 0.3, 2, 'softmax',
     )
 
     model = ml.SeparationModel(mi_config)
@@ -40,7 +41,6 @@ def test_create_engine(mix_source_folder):
         loss = np.random.rand()
         return {'loss': loss}
 
-
     # building the training and validation engines and running them
     # the validation engine runs within the training engine run
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -51,8 +51,8 @@ def test_create_engine(mix_source_folder):
 
         # add handlers to engine
         ml.train.add_stdout_handler(trainer, validator)
-        ml.train.add_validate_and_checkpoint(_dir, model, optimizer, dataset, 
-            trainer, dataset, validator)
+        ml.train.add_validate_and_checkpoint(_dir, model, optimizer, dataset,
+                                             trainer, dataset, validator)
         ml.train.add_tensorboard_handler(_dir, trainer)
 
         # run engine
@@ -68,7 +68,6 @@ def test_create_engine(mix_source_folder):
         assert os.path.exists(os.path.join(
             trainer.state.output_folder, 'checkpoints', 'best.optimizer.pth'))
 
-
         assert len(trainer.state.epoch_history['train/loss']) == 3
         assert len(trainer.state.iter_history['loss']) == 10
 
@@ -82,7 +81,7 @@ def test_create_engine(mix_source_folder):
             optimizer_path, map_location=lambda storage, loc: storage)
         state_dict = torch.load(
             model_path, map_location=lambda storage, loc: storage)
-        
+
         optimizer.load_state_dict(opt_state_dict)
         model.load_state_dict(state_dict['state_dict'])
 
@@ -99,7 +98,7 @@ def test_create_engine(mix_source_folder):
         # add handlers to engine
         ml.train.add_stdout_handler(new_trainer)
         ml.train.add_validate_and_checkpoint(
-            trainer.state.output_folder, model, optimizer, dataset, 
+            trainer.state.output_folder, model, optimizer, dataset,
             new_trainer)
         ml.train.add_tensorboard_handler(
             trainer.state.output_folder, new_trainer)
@@ -107,6 +106,7 @@ def test_create_engine(mix_source_folder):
         new_trainer.load_state_dict(state_dict['metadata']['trainer.state_dict'])
         assert new_trainer.state.epoch == trainer.state.epoch
         new_trainer.run(dataset, max_epochs=3)
+
 
 def test_trainer_data_parallel(mix_source_folder):
     # load dataset with transforms
@@ -120,7 +120,7 @@ def test_trainer_data_parallel(mix_source_folder):
     # second bit of the shape is the number of features
     n_features = dataset[0]['mix_magnitude'].shape[1]
     mi_config = ml.networks.builders.build_recurrent_mask_inference(
-        n_features, 50, 2, True, 0.3, 2, 'softmax', 
+        n_features, 50, 2, True, 0.3, 2, 'softmax',
     )
 
     model = ml.SeparationModel(mi_config)
@@ -133,7 +133,6 @@ def test_trainer_data_parallel(mix_source_folder):
         loss = np.random.rand()
         return {'loss': loss}
 
-
     # building the training and validation engines and running them
     # the validation engine runs within the training engine run
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -144,8 +143,8 @@ def test_trainer_data_parallel(mix_source_folder):
 
         # add handlers to engine
         ml.train.add_stdout_handler(trainer, validator)
-        ml.train.add_validate_and_checkpoint(_dir, model, optimizer, dataset, 
-            trainer, dataset, validator)
+        ml.train.add_validate_and_checkpoint(_dir, model, optimizer, dataset,
+                                             trainer, dataset, validator)
         ml.train.add_tensorboard_handler(_dir, trainer)
 
         # run engine
@@ -163,6 +162,7 @@ def test_trainer_data_parallel(mix_source_folder):
 
         assert len(trainer.state.epoch_history['train/loss']) == 3
         assert len(trainer.state.iter_history['loss']) == 10
+
 
 def test_cache_dataset(mix_source_folder):
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -181,19 +181,19 @@ def test_cache_dataset(mix_source_folder):
 
         for i in range(len(dataset)):
             outputs_a.append(dataset[i])
-        
+
         # now add a cache
         tfms.transforms.append(chc)
         dataset = datasets.MixSourceFolder(
             mix_source_folder,
             transform=tfms,
-            cache_populated=False) 
+            cache_populated=False)
         assert (
-            tfms.transforms[-1].cache.nchunks_initialized == 0)
+                tfms.transforms[-1].cache.nchunks_initialized == 0)
 
         ml.train.cache_dataset(dataset)
         assert (
-            tfms.transforms[-1].cache.nchunks_initialized == len(dataset))
+                tfms.transforms[-1].cache.nchunks_initialized == len(dataset))
 
         # now make sure the cached stuff matches
         dataset.cache_populated = True
@@ -207,7 +207,8 @@ def test_cache_dataset(mix_source_folder):
                 if torch.is_tensor(_data_a[key]):
                     assert torch.allclose(_data_a[key], _data_b[key])
                 else:
-                    assert _data_a[key] == _data_b[key] 
+                    assert _data_a[key] == _data_b[key]
+
 
 def test_cache_dataset_with_dataloader(mix_source_folder):
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -222,13 +223,11 @@ def test_cache_dataset_with_dataloader(mix_source_folder):
             mix_source_folder,
             transform=tfms,
             cache_populated=False)
-        
+
         dataloader = torch.utils.data.DataLoader(
             dataset, shuffle=True, batch_size=2)
 
         ml.train.cache_dataset(dataloader)
 
         assert (
-            tfms.transforms[-2].cache.nchunks_initialized == len(dataset))
-
-
+                tfms.transforms[-2].cache.nchunks_initialized == len(dataset))

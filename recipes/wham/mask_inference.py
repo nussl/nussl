@@ -38,9 +38,9 @@ import termtables
 utils.seed(0)
 
 # set up logging
-logging.basicConfig(	
-    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',	
-    datefmt='%Y-%m-%d:%H:%M:%S', level=logging.INFO) 
+logging.basicConfig(
+    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S', level=logging.INFO)
 
 # make sure this is set to WHAM root directory
 WHAM_ROOT = os.getenv("WHAM_ROOT")
@@ -61,16 +61,18 @@ shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 
+
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
     tfm = datasets.transforms.Compose([
-        datasets.transforms.MagnitudeSpectrumApproximation(), # take stfts and get ibm
-        datasets.transforms.MagnitudeWeights(), # get magnitude weights
-        datasets.transforms.ToSeparationModel(), # convert to tensors
-        datasets.transforms.Cache(cache_location), # up to here gets cached
-        datasets.transforms.GetExcerpt(400) # get 400 frame excerpts (3.2 seconds)
+        datasets.transforms.MagnitudeSpectrumApproximation(),  # take stfts and get ibm
+        datasets.transforms.MagnitudeWeights(),  # get magnitude weights
+        datasets.transforms.ToSeparationModel(),  # convert to tensors
+        datasets.transforms.Cache(cache_location),  # up to here gets cached
+        datasets.transforms.GetExcerpt(400)  # get 400 frame excerpts (3.2 seconds)
     ])
     return tfm
+
 
 def cache_dataset(_dataset):
     cache_dataloader = torch.utils.data.DataLoader(
@@ -78,13 +80,14 @@ def cache_dataset(_dataset):
     ml.train.cache_dataset(cache_dataloader)
     _dataset.cache_populated = True
 
+
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'tr'))
-dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm, 
-    cache_populated=CACHE_POPULATED)
+dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm,
+                        cache_populated=CACHE_POPULATED)
 
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'cv'))
-val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm, 
-    cache_populated=CACHE_POPULATED)
+val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm,
+                            cache_populated=CACHE_POPULATED)
 
 if not CACHE_POPULATED:
     # cache datasets for speed
@@ -99,16 +102,16 @@ if not CACHE_POPULATED:
 train_sampler = torch.utils.data.sampler.RandomSampler(dataset)
 val_sampler = torch.utils.data.sampler.RandomSampler(val_dataset)
 
-dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
-    batch_size=BATCH_SIZE, sampler=train_sampler)
+dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS,
+                                         batch_size=BATCH_SIZE, sampler=train_sampler)
 val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS,
-    batch_size=BATCH_SIZE, sampler=val_sampler)
+                                             batch_size=BATCH_SIZE, sampler=val_sampler)
 
 n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_mask_inference(
-    n_features, 600, 4, True, 0.3, 2, ['sigmoid'], 
+    n_features, 600, 4, True, 0.3, 2, ['sigmoid'],
     normalization_class='BatchNorm'
 )
 model = ml.SeparationModel(config).to(DEVICE)
@@ -136,9 +139,10 @@ trainer, validator = ml.train.create_train_and_validation_engines(
 # attach handlers for visualizing output and saving the model
 ml.train.add_stdout_handler(trainer, validator)
 ml.train.add_validate_and_checkpoint(
-    OUTPUT_DIR, model, optimizer, dataset, 
+    OUTPUT_DIR, model, optimizer, dataset,
     trainer, val_data=val_dataloader, validator=validator)
 ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
+
 
 # add a handler to set up patience
 @trainer.on(ml.train.ValidationEvents.VALIDATION_COMPLETED)
@@ -146,10 +150,12 @@ def step_scheduler(trainer):
     val_loss = trainer.state.epoch_history['validation/loss'][-1]
     scheduler.step(val_loss)
 
+
 # add a handler to set up gradient clipping
 @trainer.on(ml.train.BackwardsEvents.BACKWARDS_COMPLETED)
 def clip_gradient(trainer):
     torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_NORM)
+
 
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)
@@ -164,11 +170,13 @@ test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
 dme = separation.deep.DeepMaskEstimation(
     nussl.AudioSignal(), model_path=MODEL_PATH, device='cuda')
 
+
 def forward_on_gpu(audio_signal):
     # set the audio signal of the object to this item's mix
     dme.audio_signal = audio_signal
     masks = dme.forward()
     return masks
+
 
 def separate_and_evaluate(item, masks):
     separator = separation.deep.DeepMaskEstimation(item['mix'])
@@ -180,6 +188,7 @@ def separate_and_evaluate(item, masks):
     output_path = os.path.join(RESULTS_DIR, f"{item['mix'].file_name}.json")
     with open(output_path, 'w') as f:
         json.dump(scores, f)
+
 
 pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
 for i, item in enumerate(tqdm.tqdm(test_dataset)):

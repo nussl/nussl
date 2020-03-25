@@ -10,6 +10,7 @@ dur = 3  # seconds
 length = dur * sr
 stft_tol = 1e-6
 
+
 def test_apply_mask(benchmark_audio):
     for key, path in benchmark_audio.items():
         signal = nussl.AudioSignal(path)
@@ -25,7 +26,6 @@ def test_apply_mask(benchmark_audio):
         signal.stft()
         pytest.raises(AudioSignalException, signal.apply_mask, [0])
         pytest.raises(AudioSignalException, signal.apply_mask, bad_mask)
-
 
         s1 = signal.apply_mask(soft_mask)
         s1.istft(truncate_to_length=signal.signal_length)
@@ -53,12 +53,13 @@ def test_apply_mask(benchmark_audio):
 
         assert np.allclose(signal.stft_data, s1.stft_data)
 
+
 def test_create_mask():
     mask_data = np.random.rand(1025, 400, 1)
     pytest.raises(NotImplementedError, lambda x: MaskBase(x), mask_data)
     pytest.raises(ValueError, lambda x: MaskBase(), mask_data)
-    pytest.raises(NotImplementedError, 
-        lambda x: MaskBase._validate_mask(mask_data), mask_data)
+    pytest.raises(NotImplementedError,
+                  lambda x: MaskBase._validate_mask(mask_data), mask_data)
     pytest.raises(ValueError, lambda x: MaskBase(
         input_mask=mask_data, mask_shape=mask_data.shape), mask_data)
     bad_data = np.random.rand(1025, 400, 1, 1)
@@ -74,7 +75,6 @@ def test_create_mask():
     for t in thresholds:
         binary_mask = s1.mask_to_binary(t)
         assert np.allclose(binary_mask.mask, mask_data > t)
-
 
     m1 = np.zeros((1025, 400, 1))
     s1 = SoftMask.zeros(m1.shape)
@@ -94,6 +94,7 @@ def test_create_mask():
     s1 = SoftMask(mask_shape=m1.shape)
     assert np.allclose(s1.mask, m1)
 
+
 def test_binary_mask():
     mask_data = np.random.rand(1025, 400, 2)
     mask_data = mask_data > .5
@@ -111,6 +112,7 @@ def test_binary_mask():
     binary_mask = BinaryMask(mask_data * .9999)
     assert np.allclose(binary_mask.mask, mask_data)
 
+
 def test_mask_get_channels():
     mask_data = np.random.rand(1025, 400, 2)
     soft_mask = SoftMask(mask_data)
@@ -120,6 +122,7 @@ def test_mask_get_channels():
 
     pytest.raises(ValueError, soft_mask.get_channel, 2)
     pytest.raises(ValueError, soft_mask.get_channel, -1)
+
 
 def test_mask_arithmetic():
     m1 = np.random.rand(1025, 400, 1)
@@ -166,6 +169,7 @@ def test_mask_arithmetic():
     r2 *= .5
     assert r1 != r2
 
+
 def test_masks_sum_to_mix(benchmark_audio):
     for key, path in benchmark_audio.items():
         signal = nussl.AudioSignal(path)
@@ -176,8 +180,8 @@ def test_masks_sum_to_mix(benchmark_audio):
 
             random_masks = np.random.random(shape)
             random_masks = (
-                random_masks / 
-                np.sum(random_masks, axis=-1, keepdims=True)
+                    random_masks /
+                    np.sum(random_masks, axis=-1, keepdims=True)
             )
             estimates = []
 
@@ -192,4 +196,3 @@ def test_masks_sum_to_mix(benchmark_audio):
                 signal.audio_data,
                 atol=stft_tol
             )
-            

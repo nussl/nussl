@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 Deep unfolding is a type of architecture where an optimization
 process like clustering, non-negative matrix factorization and

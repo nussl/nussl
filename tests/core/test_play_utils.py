@@ -5,6 +5,7 @@ import os
 import numpy as np
 import pytest
 
+
 def test_jupyter_embed_audio(benchmark_audio):
     for key, path in benchmark_audio.items():
         s1 = nussl.AudioSignal(path)
@@ -19,10 +20,12 @@ def test_jupyter_embed_audio(benchmark_audio):
 
 def test_jupyter_no_ffmpy(benchmark_audio, monkeypatch):
     import_orig = builtins.__import__
-    def mocked_import(name, globals, locals, fromlist, level):
+
+    def mocked_import(name, globals_, locals_, fromlist, level):
         if name == 'ffmpy':
             raise ImportError()
-        return import_orig(name, globals, locals, fromlist, level)
+        return import_orig(name, globals_, locals_, fromlist, level)
+
     monkeypatch.setattr(builtins, '__import__', mocked_import)
 
     for key, path in benchmark_audio.items():
@@ -32,26 +35,31 @@ def test_jupyter_no_ffmpy(benchmark_audio, monkeypatch):
 
     monkeypatch.undo()
 
+
 def test_jupyter_no_ipython(benchmark_audio, monkeypatch):
     import_orig = builtins.__import__
-    def mocked_import(name, globals, locals, fromlist, level):
+
+    def mocked_import(name, globals_, locals_, fromlist, level):
         if name == 'IPython':
             raise ImportError()
-        return import_orig(name, globals, locals, fromlist, level)
+        return import_orig(name, globals_, locals_, fromlist, level)
+
     monkeypatch.setattr(builtins, '__import__', mocked_import)
 
     for key, path in benchmark_audio.items():
         s1 = nussl.AudioSignal(path)
         pytest.raises(ImportError, nussl.play_utils.embed_audio, s1)
-    
+
     monkeypatch.undo()
+
 
 def test_play_audio():
     audio_signal = nussl.AudioSignal(
         audio_data_array=np.zeros(100), sample_rate=1000)
     nussl.play_utils.play(audio_signal)
     audio_signal.play()
-    
+
+
 def test_multitrack():
     nussl.utils.seed(0)
 
@@ -76,14 +84,14 @@ def test_multitrack():
     else:
         with open(regression_path, 'w') as f:
             f.write(html.data)
-    
+
     # once more for coverage
     html = nussl.play_utils.multitrack(
         estimates, ['Cluster 0', 'Cluster 1'], display=True)
 
     # names are optional
-    html = nussl.play_utils.multitrack(estimates,  display=False)
+    html = nussl.play_utils.multitrack(estimates, display=False)
 
     # names should match length
-    pytest.raises(ValueError, 
-        nussl.play_utils.multitrack, estimates, ['not enough names'])
+    pytest.raises(ValueError,
+                  nussl.play_utils.multitrack, estimates, ['not enough names'])

@@ -1,12 +1,16 @@
-from .evaluation_base import EvaluationBase
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import museval
-import torch
 
-def scale_bss_eval(references, estimate, idx, scaling=True):
+from .evaluation_base import EvaluationBase
+
+
+def scale_bss_eval(references, estimates, idx, scaling=True):
     """
     Computes SDR, SIR, SAR for references[idx] relative to the
-    chosen estimate. This only works for mono audio. Each
+    chosen estimates. This only works for mono audio. Each
     channel should be done independently when calling this
     function. Lovingly borrowed from Gordon Wichern and 
     Jonathan Le Roux at Mitsubishi Electric Research Labs.
@@ -16,9 +20,9 @@ def scale_bss_eval(references, estimate, idx, scaling=True):
         references data. Of shape (n_samples, n_sources).
         
         estimates (np.ndarray): object containing the
-        estimate data. Of shape (n_samples, 1).
+        estimates data. Of shape (n_samples, 1).
 
-        idx (int): Which estimate to compute metrics for.
+        idx (int): Which estimates to compute metrics for.
 
         scaling (bool, optional): Whether to use scale-invariant (True) or
         scale-dependent (False) metrics. Defaults to True.
@@ -29,28 +33,29 @@ def scale_bss_eval(references, estimate, idx, scaling=True):
     references_projection = references.T @ references
     source = references[..., idx]
     scale = (
-        (source @ estimate) / 
-        references_projection[idx, idx] 
+        (source @ estimates) /
+        references_projection[idx, idx]
         if scaling else 1
     )
 
     e_true = scale * source
-    e_res = estimate - e_true
+    e_res = estimates - e_true
 
     signal = (e_true ** 2).sum()
     noise = (e_res ** 2).sum()
 
-    SDR = 10 * np.log10(signal / noise)
-    
+    sdr = 10 * np.log10(signal / noise)
+
     references_onto_residual = np.dot(references.transpose(), e_res)
     b = np.linalg.solve(references_projection, references_onto_residual)
 
-    e_interf = np.dot(references , b)
+    e_interf = np.dot(references, b)
     e_artif = e_res - e_interf
 
-    SIR = 10 * np.log10(signal / (e_interf**2).sum())
-    SAR = 10 * np.log10(signal / (e_artif**2).sum())
-    return SDR, SIR, SAR
+    sir = 10 * np.log10(signal / (e_interf ** 2).sum())
+    sar = 10 * np.log10(signal / (e_artif ** 2).sum())
+    return sdr, sir, sar
+
 
 class BSSEvaluationBase(EvaluationBase):
     """
@@ -86,12 +91,13 @@ class BSSEvaluationBase(EvaluationBase):
         **kwargs (dict): Any additional arguments are passed on to evaluate_helper.
     """
 
-    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, 
-                compute_permutation=False, best_permutation_key="SDR", **kwargs):      
-        super().__init__(true_sources_list, estimated_sources_list, source_labels=source_labels, 
-            compute_permutation=compute_permutation, best_permutation_key=best_permutation_key, 
-            **kwargs)
-    
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
+                 compute_permutation=False, best_permutation_key="SDR", **kwargs):
+        super().__init__(true_sources_list, estimated_sources_list, source_labels=source_labels,
+                         compute_permutation=compute_permutation,
+                         best_permutation_key=best_permutation_key,
+                         **kwargs)
+
     def preprocess(self):
         """
         Implements preprocess by stacking the audio_data inside each AudioSignal
@@ -110,6 +116,7 @@ class BSSEvaluationBase(EvaluationBase):
         )
         return references, estimates
 
+
 class BSSEvalV4(BSSEvaluationBase):
     def evaluate_helper(self, references, estimates, **kwargs):
         """
@@ -122,17 +129,17 @@ class BSSEvalV4(BSSEvaluationBase):
         references = np.transpose(references, (2, 0, 1))
         estimates = np.transpose(estimates, (2, 0, 1))
 
-        
-        SDR, ISR, SIR, SAR, _ = museval.metrics.bss_eval(
+        sdr, isr, sir, sar, _ = museval.metrics.bss_eval(
             references, estimates, compute_permutation=False, **kwargs)
 
         scores = []
         for j in range(references.shape[0]):
             score = {
-                'SDR': SDR[j], 'ISR': ISR[j], 'SIR': SIR[j], 'SAR': SAR[j],
+                'SDR': sdr[j], 'ISR': isr[j], 'SIR': sir[j], 'SAR': sar[j],
             }
             scores.append(score)
         return scores
+
 
 class BSSEvalScale(BSSEvaluationBase):
     def preprocess(self):
@@ -144,7 +151,7 @@ class BSSEvalScale(BSSEvaluationBase):
         estimates -= estimates.mean(axis=0)
         return references, estimates
 
-    def evaluate_helper(self, references, estimates, scaling=True):
+    def evaluate_helper(self, references, estimates, scaling=True, **kwargs):
         """
         Implements evaluation using scale-invariant BSSEval metrics [1].
 
@@ -154,25 +161,25 @@ class BSSEvalScale(BSSEvaluationBase):
         Processing (ICASSP) (pp. 626-630). IEEE.
         """
 
-        SDR, SIR, SAR = [], [], []
+        sdr, sir, sar = [], [], []
         for j in range(references.shape[-1]):
             cSDR, cSIR, cSAR = [], [], []
             for ch in range(references.shape[-2]):
                 _SDR, _SIR, _SAR = scale_bss_eval(
-                    references[..., ch, :], estimates[..., ch, j], 
+                    references[..., ch, :], estimates[..., ch, j],
                     j, scaling=scaling
                 )
                 cSDR.append(_SDR)
                 cSIR.append(_SIR)
                 cSAR.append(_SAR)
-            SDR.append(cSDR)
-            SIR.append(cSIR)
-            SAR.append(cSAR)
+            sdr.append(cSDR)
+            sir.append(cSIR)
+            sar.append(cSAR)
 
         scores = []
         for j in range(references.shape[-1]):
             score = {
-                'SDR': SDR[j], 'SIR': SIR[j], 'SAR': SAR[j],
+                'SDR': sdr[j], 'SIR': sir[j], 'SAR': sar[j],
             }
             scores.append(score)
         return scores

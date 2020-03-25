@@ -1,5 +1,10 @@
-from .. import ClusteringSeparationBase, SeparationException
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
+
+from .. import ClusteringSeparationBase, SeparationException
+
 
 class EnsembleClustering(ClusteringSeparationBase):
     """
@@ -111,7 +116,7 @@ class EnsembleClustering(ClusteringSeparationBase):
                     f"len(weights) must be the same as len(separators)!")
             self.weights = weights
         else:
-            self.weights = [1 for i in range(len(self.separators))]
+            self.weights = [1 for _ in range(len(self.separators))]
 
         if isinstance(returns, list):
             if len(returns) != len(separators):
@@ -135,7 +140,7 @@ class EnsembleClustering(ClusteringSeparationBase):
             weight = self.weights[i]
 
             _estimates = separator(audio_signal=mixture)
-            _names = [str(separator) for e in _estimates]
+            _names = [str(separator) for _ in _estimates]
             _masks = []
 
             if hasattr(separator, 'result_masks'):
@@ -147,7 +152,7 @@ class EnsembleClustering(ClusteringSeparationBase):
                 if _masks:
                     _masks = [_masks[j] for j in returns]
 
-            for i in range(weight):
+            for _ in range(weight):
                 estimates.extend(_estimates)
                 masks.extend(_masks)
 
@@ -168,7 +173,10 @@ class EnsembleClustering(ClusteringSeparationBase):
                     _features = self._extract_features_from_masks(masks)
                 elif self.extracted_feature == 'estimates':
                     _features = self._extract_features_from_estimates(estimates)
-                
+                else:
+                    raise ValueError(f'Unknown value for extracted_feature: '
+                                     f'{self.extracted_feature}')
+
                 features.append(_features)
             
             current_signal = new_signals
@@ -187,7 +195,8 @@ class EnsembleClustering(ClusteringSeparationBase):
         features = np.stack(features, axis=-1)
         return features
 
-    def _extract_features_from_masks(self, masks):
+    @staticmethod
+    def _extract_features_from_masks(masks):
         features = []
         for m in masks:
             mask_data = m.mask

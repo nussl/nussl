@@ -5,6 +5,7 @@ import numpy as np
 from nussl.ml.train.closures import ClosureException
 import pytest
 
+
 def test_base_closure():
     n_batch = 40
     n_time = 400
@@ -44,7 +45,7 @@ def test_base_closure():
     closure = ml.train.closures.Closure(loss_dictionary)
     loss_a = closure.compute_loss(output, target)
     weighted_sum = 0
-    
+
     for key in loss_dictionary:
         assert key in loss_a
         weighted_sum += loss_a[key].item() * loss_dictionary[key]['weight']
@@ -65,47 +66,47 @@ def test_base_closure():
     # checking validation
     pytest.raises(ClosureException, ml.train.closures.Closure, ['not a dict'])
     pytest.raises(ClosureException, ml.train.closures.Closure, {'no_matching_loss': {}})
-    pytest.raises(ClosureException, ml.train.closures.Closure, 
-        {
-            'DeepClusteringLoss': ['not a dict']
-        }
-    )
-    pytest.raises(ClosureException, ml.train.closures.Closure, 
-        {
-            'DeepClusteringLoss': {
-                'bad_val_key': []
-            }
-        }
-    )
-    pytest.raises(ClosureException, ml.train.closures.Closure, 
-        {
-            'DeepClusteringLoss': {
-                'weight': 'not a float or int'
-            }
-        }
-    )
-    pytest.raises(ClosureException, ml.train.closures.Closure, 
-        {
-            'DeepClusteringLoss': {
-                'weight': 1,
-                'args': {'not a list': 'woo'}
-            }
-        }
-    )
-    pytest.raises(ClosureException, ml.train.closures.Closure, 
-        {
-            'DeepClusteringLoss': {
-                'weight': 1,
-                'args': [],
-                'kwargs': ['not a dict']
-            }
-        }
-    ) 
+    pytest.raises(ClosureException, ml.train.closures.Closure,
+                  {
+                      'DeepClusteringLoss': ['not a dict']
+                  }
+                  )
+    pytest.raises(ClosureException, ml.train.closures.Closure,
+                  {
+                      'DeepClusteringLoss': {
+                          'bad_val_key': []
+                      }
+                  }
+                  )
+    pytest.raises(ClosureException, ml.train.closures.Closure,
+                  {
+                      'DeepClusteringLoss': {
+                          'weight': 'not a float or int'
+                      }
+                  }
+                  )
+    pytest.raises(ClosureException, ml.train.closures.Closure,
+                  {
+                      'DeepClusteringLoss': {
+                          'weight': 1,
+                          'args': {'not a list': 'woo'}
+                      }
+                  }
+                  )
+    pytest.raises(ClosureException, ml.train.closures.Closure,
+                  {
+                      'DeepClusteringLoss': {
+                          'weight': 1,
+                          'args': [],
+                          'kwargs': ['not a dict']
+                      }
+                  }
+                  )
 
     closure = ml.train.closures.Closure(loss_dictionary)
     loss_b = closure.compute_loss(output, target)
     weighted_sum = 0
-    
+
     for key in loss_dictionary:
         assert key in loss_b
         weighted_sum += loss_b[key].item() * loss_dictionary[key]['weight']
@@ -129,7 +130,7 @@ def test_base_closure():
 
     closure = ml.train.closures.Closure(custom_loss_dictionary)
     assert isinstance(closure.losses[0][0], CustomLoss)
-    
+
 
 def test_train_and_validate_closure():
     n_batch = 5
@@ -139,8 +140,8 @@ def test_train_and_validate_closure():
     n_embedding = 20
 
     chimera_config = ml.networks.builders.build_recurrent_chimera(
-        n_freq, 50, 2, True, 0.3, 20, ['sigmoid', 'unit_norm'], 
-        2, 'softmax', 
+        n_freq, 50, 2, True, 0.3, 20, ['sigmoid', 'unit_norm'],
+        2, 'softmax',
     )
     model = ml.networks.SeparationModel(chimera_config)
     optimizer = optim.Adam(model.parameters(), lr=1e-2)
@@ -167,15 +168,16 @@ def test_train_and_validate_closure():
 
     closure = ml.train.closures.TrainClosure(
         loss_dictionary, optimizer, model)
-    
+
     # since closure expects an
     # engine within an ignite object, make a fake one
     engine = ml.train.create_train_and_validation_engines(closure)[0]
     init_loss = closure(engine, data)
 
+    loss = None
     for i in range(100):
         loss = closure(engine, data)
-    
+
     last_loss = loss
 
     for key in last_loss:

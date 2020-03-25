@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
+
 from .. import MaskSeparationBase
 from ..benchmark import HighLowPassFilter
+
 
 class RPCA(MaskSeparationBase):
     """
@@ -36,6 +41,7 @@ class RPCA(MaskSeparationBase):
         self.gain = 1
 
         self.error = None
+        self.magnitude_spectrogram = None
 
     def run(self):
         high_low = HighLowPassFilter(self.audio_signal, self.high_pass_cutoff)
@@ -119,7 +125,8 @@ class RPCA(MaskSeparationBase):
         self.error = error
         return low_rank, sparse_matrix
 
-    def shrink(self, matrix, tau):
+    @staticmethod
+    def shrink(matrix, tau):
         return np.sign(matrix) * np.maximum(np.abs(matrix) - tau, 0)
 
     def svd_threshold(self, matrix, tau):

@@ -7,6 +7,7 @@ from nussl.datasets.base_dataset import DataSetException
 from nussl.datasets import transforms
 import tempfile
 
+
 def test_dataset_hook_musdb18(musdb_tracks):
     dataset = nussl.datasets.MUSDB18(
         folder=musdb_tracks.root, download=True)
@@ -20,7 +21,7 @@ def test_dataset_hook_musdb18(musdb_tracks):
     for k, v in sorted(track.sources.items(), key=lambda x: x[1].stem_id):
         assert np.allclose(
             data['sources'][k].audio_data, stems[v.stem_id].T)
-    
+
     dataset = nussl.datasets.MUSDB18(
         folder=None, download=False)
     assert dataset.folder == os.path.join(
@@ -28,7 +29,7 @@ def test_dataset_hook_musdb18(musdb_tracks):
 
     for k in data['sources']:
         assert k.split('::')[0] in data['metadata']['labels']
-    
+
 
 def test_dataset_hook_mix_source_folder(mix_source_folder):
     dataset = nussl.datasets.MixSourceFolder(mix_source_folder)
@@ -39,6 +40,7 @@ def test_dataset_hook_mix_source_folder(mix_source_folder):
 
     for k in data['sources']:
         assert k.split('::')[0] in data['metadata']['labels']
+
 
 def test_dataset_hook_scaper_folder(scaper_folder):
     dataset = nussl.datasets.Scaper(scaper_folder)
@@ -69,6 +71,7 @@ def test_dataset_hook_bad_scaper_folder(bad_scaper_folder):
     pytest.raises(
         DataSetException, nussl.datasets.Scaper, bad_scaper_folder)
 
+
 def test_dataset_hook_wham(benchmark_audio):
     # make a fake wham dir structure
     audio = nussl.AudioSignal(benchmark_audio['K0140.wav'])
@@ -88,37 +91,36 @@ def test_dataset_hook_wham(benchmark_audio):
                             os.makedirs(source_path, exist_ok=True)
                             audio.write_audio_to_file(
                                 os.path.join(source_path, '0.wav'))
-    
+
         for mode in ['min', 'max']:
             for split in ['tr', 'cv', 'tt']:
                 for sr in [8000, 16000]:
                     wham = nussl.datasets.WHAM(
-                        root=tmpdir, mix_folder='mix_clean', mode=mode, 
+                        root=tmpdir, mix_folder='mix_clean', mode=mode,
                         split=split, sample_rate=sr)
                     output = wham[0]
                     assert output['metadata']['labels'] == ['s1', 's2']
 
                     wham = nussl.datasets.WHAM(
-                        root=tmpdir, mix_folder='mix_both', mode=mode, 
+                        root=tmpdir, mix_folder='mix_both', mode=mode,
                         split=split, sample_rate=sr)
                     output = wham[0]
                     assert output['metadata']['labels'] == ['s1', 's2', 'noise']
 
                     wham = nussl.datasets.WHAM(
-                        root=tmpdir, mix_folder='mix_single', mode=mode, 
+                        root=tmpdir, mix_folder='mix_single', mode=mode,
                         split=split, sample_rate=sr)
                     output = wham[0]
                     assert output['metadata']['labels'] == ['s1']
-        
-        pytest.raises(DataSetException, nussl.datasets.WHAM, 
-            tmpdir, mix_folder='not matching')
 
-        pytest.raises(DataSetException, nussl.datasets.WHAM, 
-            tmpdir, mode='not matching')
+        pytest.raises(DataSetException, nussl.datasets.WHAM,
+                      tmpdir, mix_folder='not matching')
 
-        pytest.raises(DataSetException, nussl.datasets.WHAM, 
-            tmpdir, split='not matching')
+        pytest.raises(DataSetException, nussl.datasets.WHAM,
+                      tmpdir, mode='not matching')
 
-        pytest.raises(DataSetException, nussl.datasets.WHAM, 
-            tmpdir, sample_rate=44100)
-            
+        pytest.raises(DataSetException, nussl.datasets.WHAM,
+                      tmpdir, split='not matching')
+
+        pytest.raises(DataSetException, nussl.datasets.WHAM,
+                      tmpdir, sample_rate=44100)

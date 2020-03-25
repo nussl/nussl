@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 The *nussl* External File Zoo (EFZ) is a server that houses all files that are too large to
 bundle with *nussl* when distributing it through ``pip`` or Github. These types of files include
@@ -21,6 +24,7 @@ from six.moves.urllib.request import urlopen, Request
 from six.moves.urllib.request import urlretrieve
 
 from . import constants
+
 
 def get_available_audio_files():
     """
@@ -169,7 +173,6 @@ def print_available_trained_models():
 
     """
     file_metadata = get_available_trained_models()
-
 
     print(f'{"File Name":40} {"For Class":15} {"Size":10} {"Description":50}')
     for info in file_metadata:
@@ -373,7 +376,7 @@ def download_trained_model(model_name, local_folder=None, verbose=True):
     server metadata, then the file will not be downloaded.
 
     Args:
-        audio_file_name: (str) Name of the trained model to attempt to download.
+        model_name: (str) Name of the trained model to attempt to download.
         local_folder: (str) Path to local folder in which to download the file.
             If no folder is provided, `nussl` will store the file in `~/.nussl/` (expanded) or in
             `/tmp/.nussl`.
@@ -410,7 +413,7 @@ def download_benchmark_file(benchmark_name, local_folder=None, verbose=True):
     server metadata, then the file will not be downloaded.
 
     Args:
-        audio_file_name: (str) Name of the trained model to attempt to download.
+        benchmark_name: (str) Name of the trained model to attempt to download.
         local_folder: (str) Path to local folder in which to download the file.
             If no folder is provided, `nussl` will store the file in `~/.nussl/` (expanded) or in
             `tmp/.nussl`.
@@ -593,15 +596,18 @@ def _hash_file(file_path, chunk_size=65535):
 
     return hasher.hexdigest()
 
+
 ########################################
 #             Error Classes
 ########################################
+
 
 class NoConnectivityError(Exception):
     """
     Exception class for lack of internet connection.
     """
     pass
+
 
 class FailedDownloadError(Exception):
     """

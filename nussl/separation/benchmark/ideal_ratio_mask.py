@@ -1,6 +1,9 @@
-import numpy as np
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from ..base import MaskSeparationBase, SeparationException
 from ...datasets import transforms
+
 
 class IdealRatioMask(MaskSeparationBase):
     """
@@ -18,8 +21,9 @@ class IdealRatioMask(MaskSeparationBase):
           initialization.
     """
 
-    def __init__(self, input_audio_signal, sources, approach='psa', mask_type='soft', 
-      mask_threshold=.5, **kwargs):
+    def __init__(self, input_audio_signal, sources, approach='psa', mask_type='soft',
+                 mask_threshold=.5, **kwargs):
+
         if isinstance(sources, list):
             sources = {i: sources[i] for i in range(len(sources))}
         elif not isinstance(sources, dict):
@@ -31,6 +35,8 @@ class IdealRatioMask(MaskSeparationBase):
             tfm = transforms.PhaseSensitiveSpectrumApproximation(**kwargs)
         elif self.approach == 'msa':
             tfm = transforms.MagnitudeSpectrumApproximation(**kwargs)
+        else:
+            raise ValueError(f'Unknown approach: {self.approach}')
         self.tfm = tfm
 
         super().__init__(

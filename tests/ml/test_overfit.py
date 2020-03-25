@@ -7,13 +7,14 @@ import os
 import torch
 from matplotlib import pyplot as plt
 
-logging.basicConfig(	
-    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',	
-    datefmt='%Y-%m-%d:%H:%M:%S',	
-    level=logging.INFO	
-) 
+logging.basicConfig(
+    format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%Y-%m-%d:%H:%M:%S',
+    level=logging.INFO
+)
 
 fix_dir = 'tests/local/trainer'
+
 
 def test_overfit_a(mix_source_folder):
     tfms = datasets.transforms.Compose([
@@ -35,7 +36,7 @@ def test_overfit_a(mix_source_folder):
     # second bit of the shape is the number of features
     n_features = dataset[0]['mix_magnitude'].shape[1]
     mi_config = ml.networks.builders.build_recurrent_mask_inference(
-        n_features, 50, 1, False, 0.0, 2, 'sigmoid', 
+        n_features, 50, 1, False, 0.0, 2, 'sigmoid',
     )
 
     model = ml.SeparationModel(mi_config)
@@ -70,7 +71,7 @@ def test_overfit_a(mix_source_folder):
         # add handlers to engine
         ml.train.add_stdout_handler(trainer, validator)
         ml.train.add_validate_and_checkpoint(
-            _dir, model, optimizer, dataset, 
+            _dir, model, optimizer, dataset,
             trainer, val_data=dataloader, validator=validator)
         ml.train.add_tensorboard_handler(_dir, trainer)
 
@@ -88,7 +89,7 @@ def test_overfit_a(mix_source_folder):
         for key in history:
             plt.figure(figsize=(10, 4))
             plt.title(f"epoch:{key}")
-            plt.plot(np.array(history[key]).reshape(-1,))
+            plt.plot(np.array(history[key]).reshape(-1, ))
             plt.savefig(os.path.join(
                 trainer.state.output_folder, 'plots',
                 f"epoch:{key.replace('/', ':')}.png"))

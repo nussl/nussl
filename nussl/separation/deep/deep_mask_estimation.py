@@ -1,7 +1,10 @@
-from ..base import MaskSeparationBase, DeepMixin, SeparationException
-import numpy as np
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import torch
-from copy import deepcopy
+
+from ..base import MaskSeparationBase, DeepMixin, SeparationException
+
 
 class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
     """
@@ -23,6 +26,7 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
         if model_path is not None:
             self.load_model(model_path, device=device)
         super().__init__(input_audio_signal, **kwargs)
+        self.model_output = None
 
     def forward(self):
         input_data = self._get_input_data_for_model()

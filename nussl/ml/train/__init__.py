@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from .trainer import (
     create_train_and_validation_engines,
     add_tensorboard_handler,

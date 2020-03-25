@@ -7,11 +7,12 @@ import os
 REGRESSION_PATH = 'tests/separation/regression/spatial/'
 os.makedirs(REGRESSION_PATH, exist_ok=True)
 
+
 def test_spatial_clustering(mix_and_sources, check_against_regression_data):
     nussl.utils.seed(0)
     mix, sources = mix_and_sources
     sources = list(sources.values())
-    
+
     a = nussl.mixing.pan_audio_signal(sources[0], -35)
     a_delays = [np.random.randint(1, 200) for _ in range(a.num_channels)]
     a = nussl.mixing.delay_audio_signal(a, a_delays)
@@ -35,11 +36,12 @@ def test_spatial_clustering(mix_and_sources, check_against_regression_data):
     reg_path = os.path.join(REGRESSION_PATH, 'spatial_clustering.json')
     check_against_regression_data(scores, reg_path)
 
+
 def test_duet(mix_and_sources, check_against_regression_data):
     nussl.utils.seed(0)
     mix, sources = mix_and_sources
     sources = list(sources.values())
-    
+
     a = nussl.mixing.pan_audio_signal(sources[0], -35)
     a_delays = [np.random.randint(1, 20) for _ in range(a.num_channels)]
     a = nussl.mixing.delay_audio_signal(a, a_delays)
@@ -54,7 +56,7 @@ def test_duet(mix_and_sources, check_against_regression_data):
 
     for e in estimates:
         e.to_mono()
-    
+
     for s in [a, b]:
         s.to_mono()
 
@@ -65,9 +67,10 @@ def test_duet(mix_and_sources, check_against_regression_data):
     reg_path = os.path.join(REGRESSION_PATH, 'duet.json')
     check_against_regression_data(scores, reg_path)
 
+
 def test_projet(
-    drum_and_vocals,
-    check_against_regression_data
+        drum_and_vocals,
+        check_against_regression_data
 ):
     nussl.utils.seed(0)
 
@@ -110,8 +113,8 @@ def test_projet(
     ft2d = nussl.separation.primitive.FT2D(mix)
     ft2d_estimates = ft2d()
 
-    pytest.raises(SeparationException, nussl.separation.spatial.Projet, 
-        mix, 2, estimates=[ft2d_estimates[0]])
+    pytest.raises(SeparationException, nussl.separation.spatial.Projet,
+                  mix, 2, estimates=[ft2d_estimates[0]])
 
     sep = nussl.separation.spatial.Projet(mix, 2, estimates=ft2d_estimates)
     estimates = sep()

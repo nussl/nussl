@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 Small collection of utilities for altering and remixing
 AudioSignal objects. 
@@ -5,10 +8,12 @@ AudioSignal objects.
 TODO: add pitch_shift, time_stretch, dynamic_range_compression, and 
 apply_impulse_response
 """
-import librosa
-from . import AudioSignal
 import copy
+
 import numpy as np
+
+from . import AudioSignal
+
 
 def pan_audio_signal(audio_signal, angle_in_degrees):
     """
@@ -50,6 +55,7 @@ def pan_audio_signal(audio_signal, angle_in_degrees):
     panned_signal.audio_data[1] *= right_scale
 
     return panned_signal
+
 
 def delay_audio_signal(audio_signal, delays_in_samples):
     """

@@ -10,6 +10,7 @@ import tempfile
 import os
 import torch
 
+
 class BadTransform(object):
     def __init__(self, fake=None):
         self.fake = fake
@@ -17,12 +18,14 @@ class BadTransform(object):
     def __call__(self, data):
         return 'not a dictionary'
 
+
 class BadDataset(BaseDataset):
     def get_items(self, folder):
         return {'anything': 'not a list'}
-    
+
     def process_item(self, item):
         return 'not a dictionary'
+
 
 def dummy_process_item(self, item):
     audio = self._load_audio_file(item)
@@ -31,6 +34,7 @@ def dummy_process_item(self, item):
         'sources': {'key': audio}
     }
     return output
+
 
 def dummy_process_item_by_audio(self, item):
     data, sr = sf.read(item)
@@ -41,16 +45,18 @@ def dummy_process_item_by_audio(self, item):
     }
     return output
 
+
 def initialize_bad_dataset_and_run():
     _bad_transform = BadTransform()
     _bad_dataset = BadDataset('test', transform=_bad_transform)
-    _bad_dataset[0]
-    
+    _ = _bad_dataset[0]
+
 
 def test_dataset_base(benchmark_audio, monkeypatch):
-    keys = [benchmark_audio[k] for k in benchmark_audio]  
+    keys = [benchmark_audio[k] for k in benchmark_audio]
+
     def dummy_get(self, folder):
-        return keys      
+        return keys
 
     pytest.raises(DataSetException, initialize_bad_dataset_and_run)
 
@@ -71,7 +77,7 @@ def test_dataset_base(benchmark_audio, monkeypatch):
     assert _dataset[0]['mix'] == audio_signal
 
     _dataset = BaseDataset('test', transform=BadTransform())
-    pytest.raises(transforms.TransformException, _dataset.__getitem__, 0) 
+    pytest.raises(transforms.TransformException, _dataset.__getitem__, 0)
 
     psa = transforms.MagnitudeSpectrumApproximation()
     _dataset = BaseDataset('test', transform=psa)
@@ -91,10 +97,12 @@ def test_dataset_base(benchmark_audio, monkeypatch):
     assert 'mix_magnitude' in output
     assert 'ideal_binary_mask' in output
 
+
 def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
-    keys = [benchmark_audio[k] for k in benchmark_audio]  
+    keys = [benchmark_audio[k] for k in benchmark_audio]
+
     def dummy_get(self, folder):
-        return keys      
+        return keys
 
     monkeypatch.setattr(BaseDataset, 'get_items', dummy_get)
 
@@ -105,7 +113,7 @@ def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
         STFTParams(
             window_length=256,
             hop_length=32,
-            window_type='triang'), 
+            window_type='triang'),
         None
     ]
 
@@ -122,7 +130,6 @@ def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
             outputs.append(dset[i])
         return outputs
 
-
     for s, sr, nc, s_sr in product:
         if s_sr and sr is not None:
             pytest.raises(
@@ -131,7 +138,7 @@ def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
             continue
 
         _dataset = BaseDataset(
-            'test', stft_params=s, 
+            'test', stft_params=s,
             sample_rate=sr, num_channels=nc,
             strict_sample_rate=s_sr)
         outputs = _get_outputs(_dataset)
@@ -159,10 +166,10 @@ def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
 
 
 def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
-    keys = [benchmark_audio[k] for k in benchmark_audio]  
+    keys = [benchmark_audio[k] for k in benchmark_audio]
 
     def dummy_get(self, folder):
-        return keys      
+        return keys
 
     monkeypatch.setattr(BaseDataset, 'get_items', dummy_get)
     monkeypatch.setattr(
@@ -170,15 +177,15 @@ def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tfm = transforms.Cache(
-                os.path.join(tmpdir, 'cache'), overwrite=True)
+            os.path.join(tmpdir, 'cache'), overwrite=True)
 
         _dataset = BaseDataset('test', transform=tfm, cache_populated=False)
         assert tfm.cache_size == len(_dataset)
-        
+
         _data_a = _dataset[0]
         _dataset.cache_populated = True
-        pytest.raises(transforms.TransformException, 
-            _dataset.__getitem__, 1) # haven't written to this yet!
+        pytest.raises(transforms.TransformException,
+                      _dataset.__getitem__, 1)  # haven't written to this yet!
         assert len(_dataset.post_cache_transforms.transforms) == 1
         _data_b = _dataset[0]
 
@@ -192,15 +199,15 @@ def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
 
         for i in range(len(_dataset)):
             outputs_a.append(_dataset[i])
-        
+
         _dataset.cache_populated = True
 
         for i in range(len(_dataset)):
             outputs_b.append(_dataset[i])
-        
+
         for _data_a, _data_b in zip(outputs_a, outputs_b):
             for key in _data_a:
-                assert _data_a[key] == _data_b[key]  
+                assert _data_a[key] == _data_b[key]
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tfm = transforms.Compose([
@@ -214,8 +221,8 @@ def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
         _data_a = _dataset[0]
 
         _dataset.cache_populated = True
-        pytest.raises(transforms.TransformException, 
-            _dataset.__getitem__, 1) # haven't written to this yet!
+        pytest.raises(transforms.TransformException,
+                      _dataset.__getitem__, 1)  # haven't written to this yet!
         assert len(_dataset.post_cache_transforms.transforms) == 1
         _data_b = _dataset[0]
 
@@ -232,18 +239,18 @@ def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
 
         for i in range(len(_dataset)):
             outputs_a.append(_dataset[i])
-        
+
         _dataset.cache_populated = True
 
         for i in range(len(_dataset)):
             outputs_b.append(_dataset[i])
-        
+
         for _data_a, _data_b in zip(outputs_a, outputs_b):
             for key in _data_a:
                 if torch.is_tensor(_data_a[key]):
                     assert torch.allclose(_data_a[key], _data_b[key])
                 else:
-                    assert _data_a[key] == _data_b[key]   
+                    assert _data_a[key] == _data_b[key]
 
     for L in [100, 400, 1000]:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -259,8 +266,8 @@ def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
             assert len(_dataset.post_cache_transforms.transforms) == 2
 
             for i in range(len(_dataset)):
-                _dataset[i]
-            
+                _ = _dataset[i]
+
             _dataset.cache_populated = True
             outputs = []
             for i in range(len(_dataset)):
@@ -269,4 +276,4 @@ def test_dataset_base_with_caching(benchmark_audio, monkeypatch):
             for _output in outputs:
                 for key, val in _output.items():
                     if torch.is_tensor(val):
-                        assert val.shape[0] == L     
+                        assert val.shape[0] == L

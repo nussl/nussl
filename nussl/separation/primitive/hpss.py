@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import librosa
+
 from .. import MaskSeparationBase
+
 
 class HPSS(MaskSeparationBase):
     """
@@ -28,8 +33,8 @@ class HPSS(MaskSeparationBase):
         mask_threshold (float, optional): Masking threshold. Defaults to 0.5.
 
     """
-    def __init__(self, input_audio_signal, kernel_size=31, mask_type='soft', 
-      mask_threshold=0.5):
+    def __init__(self, input_audio_signal, kernel_size=31, mask_type='soft',
+                 mask_threshold=0.5):
         super().__init__(
             input_audio_signal=input_audio_signal, 
             mask_type=mask_type,

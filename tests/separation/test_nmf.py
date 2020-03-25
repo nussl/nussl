@@ -9,15 +9,16 @@ import copy
 REGRESSION_PATH = 'tests/separation/regression/nmf/'
 os.makedirs(REGRESSION_PATH, exist_ok=True)
 
+
 def test_nmf_mixin(
-    drum_and_vocals, 
-    check_against_regression_data
+        drum_and_vocals,
+        check_against_regression_data
 ):
     np.random.seed(0)
     drum, vocals = drum_and_vocals
     drum = copy.deepcopy(drum)
     vocals = copy.deepcopy(vocals)
-    
+
     drum.resample(16000)
     vocals.resample(16000)
     nmf = NMFMixin()
@@ -40,19 +41,19 @@ def test_nmf_mixin(
 
     reconstruction = nmf.inverse_transform(
         components, mix_activations)
-    
+
     mask_data = (
-        reconstruction / 
-        np.maximum(reconstruction, np.abs(mix.stft()))
+            reconstruction /
+            np.maximum(reconstruction, np.abs(mix.stft()))
     )
-        
+
     mask = nussl.core.masks.SoftMask(mask_data)
     drum_est = mix.apply_mask(mask)
     drum_est.istft()
     vocals_est = mix - drum_est
 
     evaluator = nussl.evaluation.BSSEvalScale(
-        [drum, vocals], [drum_est, vocals_est], 
+        [drum, vocals], [drum_est, vocals_est],
         source_labels=['drums', 'vocals']
     )
     scores = evaluator.evaluate()

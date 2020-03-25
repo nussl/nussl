@@ -13,6 +13,7 @@ import os
 
 stft_tol = 1e-6
 
+
 def separate_and_evaluate(mix, sources, mask_data):
     estimates = []
     mask_data = normalize_masks(mask_data)
@@ -31,12 +32,14 @@ def separate_and_evaluate(mix, sources, mask_data):
     scores = evaluator.evaluate()
     return scores
 
+
 def normalize_masks(mask_data):
     mask_data = (
-        mask_data / 
-        np.sum(mask_data, axis=-1, keepdims=True) + 1e-8
+            mask_data /
+            np.sum(mask_data, axis=-1, keepdims=True) + 1e-8
     )
     return mask_data
+
 
 def test_transform_msa_psa(musdb_tracks):
     track = musdb_tracks[10]
@@ -77,10 +80,10 @@ def test_transform_msa_psa(musdb_tracks):
     output['source_magnitudes'] += 1e-8
 
     mask_data = (
-        output['source_magnitudes'] / 
-        np.maximum(
-            output['mix_magnitude'][..., None], 
-            output['source_magnitudes'])
+            output['source_magnitudes'] /
+            np.maximum(
+                output['mix_magnitude'][..., None],
+                output['source_magnitudes'])
     )
     msa_scores = separate_and_evaluate(mix, data['sources'], mask_data)
 
@@ -95,10 +98,10 @@ def test_transform_msa_psa(musdb_tracks):
     output['source_magnitudes'] += 1e-8
 
     mask_data = (
-        output['source_magnitudes'] / 
-        np.maximum(
-            output['mix_magnitude'][..., None], 
-            output['source_magnitudes'])
+            output['source_magnitudes'] /
+            np.maximum(
+                output['mix_magnitude'][..., None],
+                output['source_magnitudes'])
     )
     psa_scores = separate_and_evaluate(mix, data['sources'], mask_data)
 
@@ -106,6 +109,7 @@ def test_transform_msa_psa(musdb_tracks):
         if key in ['SDR', 'SIR', 'SAR']:
             diff = np.array(psa_scores[key]) - np.array(mix_scores[key])
             assert diff.mean() > 10
+
 
 def test_transform_sum_sources(musdb_tracks):
     track = musdb_tracks[10]
@@ -118,6 +122,7 @@ def test_transform_sum_sources(musdb_tracks):
 
     groups = itertools.combinations(data['sources'].keys(), 3)
 
+    tfm = None
     for group in groups:
         _data = copy.deepcopy(data)
         tfm = transforms.SumSources([group])
@@ -135,14 +140,15 @@ def test_transform_sum_sources(musdb_tracks):
 
     pytest.raises(TransformException, tfm, {'no_key'})
 
-    pytest.raises(TransformException, 
-        transforms.SumSources, 'test')
+    pytest.raises(TransformException,
+                  transforms.SumSources, 'test')
 
-    pytest.raises(TransformException,   
-        transforms.SumSources, 
-        [['vocals', 'test'], ['test2', 'test3']],
-        ['mygroup']
-    )
+    pytest.raises(TransformException,
+                  transforms.SumSources,
+                  [['vocals', 'test'], ['test2', 'test3']],
+                  ['mygroup']
+                  )
+
 
 def test_transform_compose(musdb_tracks):
     track = musdb_tracks[10]
@@ -179,10 +185,10 @@ def test_transform_compose(musdb_tracks):
         'bass', 'drums', 'other', 'vocals', 'accompaniment']
 
     mask_data = (
-        data['source_magnitudes'] / 
-        np.maximum(
-            data['mix_magnitude'][..., None], 
-            data['source_magnitudes'])
+            data['source_magnitudes'] /
+            np.maximum(
+                data['mix_magnitude'][..., None],
+                data['source_magnitudes'])
     )
     msa_scores = separate_and_evaluate(mix, data['sources'], mask_data)
     shape = mix.stft_data.shape + (len(sources),)
@@ -193,6 +199,7 @@ def test_transform_compose(musdb_tracks):
         if key in ['SDR', 'SIR', 'SAR']:
             diff = np.array(msa_scores[key]) - np.array(mix_scores[key])
             assert diff.mean() > 10
+
 
 def test_transform_to_separation_model(musdb_tracks):
     track = musdb_tracks[10]
@@ -218,11 +225,12 @@ def test_transform_to_separation_model(musdb_tracks):
         assert a in data
     for r in rejected_keys:
         assert r not in data
-    
+
     for key in data:
         assert torch.is_tensor(data[key])
         assert data[key].shape[0] == mix.stft().shape[1]
         assert data[key].shape[1] == mix.stft().shape[0]
+
 
 def test_transform_get_excerpt(musdb_tracks):
     track = musdb_tracks[10]
@@ -242,14 +250,14 @@ def test_transform_get_excerpt(musdb_tracks):
         com = transforms.Compose([msa, tdl, exc])
 
         data = com(data)
-        
+
         for key in data:
             assert torch.is_tensor(data[key])
             assert data[key].shape[0] == excerpt_length
             assert data[key].shape[1] == mix.stft().shape[0]
 
-        assert torch.mean((data['source_magnitudes'].sum(dim=-1) - 
-                    data['mix_magnitude']) ** 2).item() < 1e-5
+        assert torch.mean((data['source_magnitudes'].sum(dim=-1) -
+                           data['mix_magnitude']) ** 2).item() < 1e-5
 
         data = {
             'mix': mix,
@@ -263,21 +271,22 @@ def test_transform_get_excerpt(musdb_tracks):
         data = com(data)
         for key in data:
             data[key] = data[key].cpu().data.numpy()
-        
+
         data = exc(data)
 
         for key in data:
             assert data[key].shape[0] == excerpt_length
             assert data[key].shape[1] == mix.stft().shape[0]
-  
-        assert np.mean((data['source_magnitudes'].sum(axis=-1) - 
-                    data['mix_magnitude']) ** 2) < 1e-5
+
+        assert np.mean((data['source_magnitudes'].sum(axis=-1) -
+                        data['mix_magnitude']) ** 2) < 1e-5
 
         data = {
             'mix_magnitude': 'not an array or tensor'
         }
 
         pytest.raises(TransformException, exc, data)
+
 
 def test_transform_cache(musdb_tracks):
     track = musdb_tracks[10]
@@ -298,12 +307,12 @@ def test_transform_cache(musdb_tracks):
         _info_a = tfm.info
 
         tfm.overwrite = False
-        
+
         _data_b = tfm({'index': 0})
 
         pytest.raises(TransformException, tfm, {})
         pytest.raises(TransformException, tfm, {'index': 1})
-        
+
         for key in _data_a:
             assert _data_a[key] == _data_b[key]
 
@@ -311,7 +320,7 @@ def test_transform_cache(musdb_tracks):
             transforms.MagnitudeSpectrumApproximation(),
             transforms.ToSeparationModel(),
             transforms.Cache(
-                os.path.join(tmpdir, 'cache'), 
+                os.path.join(tmpdir, 'cache'),
                 overwrite=True),
         ])
 
@@ -376,8 +385,8 @@ def test_transforms_index_sources(mix_source_folder):
     tfm = transforms.IndexSources('source_magnitudes', index)
 
     pytest.raises(TransformException, tfm, {'sources': []})
-    pytest.raises(TransformException, tfm, 
-        {'source_magnitudes': np.random.randn(100, 100, 1)})
+    pytest.raises(TransformException, tfm,
+                  {'source_magnitudes': np.random.randn(100, 100, 1)})
 
     msa = transforms.MagnitudeSpectrumApproximation()
     msa_output = copy.deepcopy(msa(item))

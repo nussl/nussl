@@ -2,6 +2,7 @@ import nussl
 import numpy as np
 import pytest
 
+
 def test_pan_audio_signal(mix_and_sources):
     mix, sources = mix_and_sources
     sources = list(sources.values())
@@ -23,10 +24,11 @@ def test_pan_audio_signal(mix_and_sources):
     pytest.raises(ValueError, nussl.mixing.pan_audio_signal, mix, -46)
     pytest.raises(ValueError, nussl.mixing.pan_audio_signal, mix, 46)
 
+
 def test_delay_audio_signal(mix_and_sources):
     mix, sources = mix_and_sources
     sources = list(sources.values())
-    
+
     a = nussl.mixing.pan_audio_signal(sources[0], -35)
     b = nussl.mixing.pan_audio_signal(sources[1], 15)
     mix = a + b
@@ -44,5 +46,3 @@ def test_delay_audio_signal(mix_and_sources):
     pytest.raises(ValueError, nussl.mixing.delay_audio_signal, mix, [0, 0, 0])
     pytest.raises(ValueError, nussl.mixing.delay_audio_signal, mix, [0, -10, 0])
     pytest.raises(ValueError, nussl.mixing.delay_audio_signal, mix, [0, .1, 2.0])
-
-    

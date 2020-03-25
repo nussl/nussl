@@ -1,18 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
 Base class for separation algorithms that make masks. Most algorithms in 
 nussl are derived from MaskSeparationBase. 
 """
-import json
-import warnings
 
 from ...core import masks
 from . import SeparationBase
-from ...core import utils
-from ...core import constants
 from .separation_base import SeparationException
+
 
 class MaskSeparationBase(SeparationBase):
     """

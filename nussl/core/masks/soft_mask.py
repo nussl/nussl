@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 The :class:`SoftMask` class is for creating a time-frequency mask with values in the range ``[0.0, 1.0]``. Like all 
 :class:`separation.masks.mask_base.MaskBase` objects, :class:`SoftMask` is initialized with a 2D or 3D numpy array
@@ -53,7 +56,6 @@ Examples:
 """
 
 import numpy as np
-import warnings
 
 from . import MaskBase
 from . import BinaryMask

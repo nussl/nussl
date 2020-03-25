@@ -9,8 +9,9 @@ import pytest
 import os
 
 fix_dir = 'tests/local/trainer'
-EPOCH_LENGTH = 500 # use 1 for quick testing, 500 for actual testing
-SDR_CUTOFF = 5 # use -10 for quick testing, 5 for actual testing
+EPOCH_LENGTH = 500  # use 1 for quick testing, 500 for actual testing
+SDR_CUTOFF = 5  # use -10 for quick testing, 5 for actual testing
+
 
 @pytest.fixture(scope="module")
 def overfit_model(scaper_folder):
@@ -29,11 +30,11 @@ def overfit_model(scaper_folder):
 
     n_features = dataset[0]['mix_magnitude'].shape[1]
     config = ml.networks.builders.build_recurrent_chimera(
-        n_features, 50, 1, True, 0.3, 20, 'sigmoid', 2, 'sigmoid', 
+        n_features, 50, 1, True, 0.3, 20, 'sigmoid', 2, 'sigmoid',
         normalization_class='InstanceNorm'
     )
     model = ml.SeparationModel(config)
-    
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = model.to(device)
 
@@ -69,6 +70,7 @@ def overfit_model(scaper_folder):
             trainer.state.output_folder, 'checkpoints', 'best.model.pth')
         yield model_path, dataset.process_item(dataset.items[0])
 
+
 def test_deep_mixin(overfit_model):
     model_path, item = overfit_model
     deep_mixin = DeepMixin()
@@ -98,7 +100,7 @@ def test_deep_mixin(overfit_model):
 
     output_tfm = deep_mixin._get_transforms(
         datasets.transforms.MagnitudeSpectrumApproximation())
-    
+
     assert isinstance(
         output_tfm, datasets.transforms.MagnitudeSpectrumApproximation)
 
@@ -106,6 +108,7 @@ def test_deep_mixin(overfit_model):
     deep_mixin.audio_signal = item['mix']
     deep_mixin._get_input_data_for_model()
     assert deep_mixin.audio_signal.sample_rate == deep_mixin.metadata['sample_rate']
+
 
 def test_separation_deep_clustering(overfit_model):
     model_path, item = overfit_model
@@ -124,12 +127,13 @@ def test_separation_deep_clustering(overfit_model):
 
     for key in evaluator.source_labels:
         for metric in ['SDR', 'SIR']:
-            _score = scores[key][metric]  
+            _score = scores[key][metric]
             for val in _score:
                 assert val > SDR_CUTOFF
 
     dpcl.model.output_keys = []
     pytest.raises(SeparationException, dpcl.extract_features)
+
 
 def test_separation_deep_mask_estimation(overfit_model):
     model_path, item = overfit_model
@@ -149,7 +153,7 @@ def test_separation_deep_mask_estimation(overfit_model):
 
         for key in evaluator.source_labels:
             for metric in ['SDR', 'SIR']:
-                _score = scores[key][metric]  
+                _score = scores[key][metric]
                 for val in _score:
                     assert val > SDR_CUTOFF
 

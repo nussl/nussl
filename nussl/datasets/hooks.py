@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 While *nussl* does not come with any data sets, it does have the capability to interface with
 many common source separation data sets used within the MIR and speech separation communities.
@@ -6,15 +9,13 @@ labeled dictionaries for ease of use. Transforms can be applied to these dataset
 in machine learning pipelines.
 """
 import os
-import warnings
 
-import numpy as np
-
-from ..core import efz_utils, constants, utils
-from .. import AudioSignal
 import musdb
-from .base_dataset import BaseDataset, DataSetException
 import jams
+
+from ..core import constants, utils
+from .base_dataset import BaseDataset, DataSetException
+
 
 class MUSDB18(BaseDataset):
     """
@@ -64,7 +65,8 @@ class MUSDB18(BaseDataset):
     }
     
     def __init__(self, folder=None, is_wav=False, download=False,
-            subsets=['train', 'test'], split=None, **kwargs):
+                 subsets=None, split=None, **kwargs):
+        subsets = ['train', 'test'] if subsets is None else subsets
         if folder is None:
             folder = os.path.join(
                 constants.DEFAULT_DOWNLOAD_DIRECTORY, 'musdb18'
@@ -163,10 +165,10 @@ class MixSourceFolder(BaseDataset):
             (see ``nussl.datasets.BaseDataset``).
     """
     def __init__(self, folder, mix_folder='mix', source_folders=None, sample_rate=None,
-            ext=['.wav', '.flac', '.mp3'], **kwargs):
+                 ext=None, **kwargs):
         self.mix_folder = mix_folder
         self.source_folders = source_folders
-        self.ext = ext
+        self.ext = ['.wav', '.flac', '.mp3'] if ext is None else ext
         super().__init__(folder, **kwargs)
 
     def get_items(self, folder):
@@ -200,6 +202,7 @@ class MixSourceFolder(BaseDataset):
             }
         }
         return output
+
 
 class Scaper(BaseDataset):
     """
@@ -330,6 +333,7 @@ class Scaper(BaseDataset):
         }
         return output
 
+
 class WHAM(MixSourceFolder):
     """
     Hook for the WHAM dataset. Essentially subclasses MixSourceFolder but with presets
@@ -361,7 +365,7 @@ class WHAM(MixSourceFolder):
         'mix_single': ['s1'],
     }
 
-    DATASET_HASHES =  {
+    DATASET_HASHES = {
         "wav8k": "acd49e0dae066e16040c983d71cc5a8adb903abff6e5cbb92b3785a1997b7547", 
         "wav16k": "5691d6a35382f2408a99594f21d820b58371b5ea061841db37d548c0b8d6ec7f"
     }
@@ -386,6 +390,5 @@ class WHAM(MixSourceFolder):
         folder = os.path.join(root, wav_folder, mode, split)
         source_folders = self.MIX_TO_SOURCE_MAP[mix_folder]
 
-        super().__init__(folder, mix_folder=mix_folder, source_folders=source_folders, 
-            sample_rate=sample_rate, strict_sample_rate=True, **kwargs)
-        
+        super().__init__(folder, mix_folder=mix_folder, source_folders=source_folders,
+                         sample_rate=sample_rate, strict_sample_rate=True, **kwargs)

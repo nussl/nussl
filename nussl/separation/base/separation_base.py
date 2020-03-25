@@ -1,16 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import copy
-import inspect
-import json
 import warnings
 
 import numpy as np
 
-from ...core import utils
-from ...core import constants
 from ... import AudioSignal
+
 
 class SeparationBase(object):
     """Base class for all separation algorithms in nussl.
@@ -121,6 +118,7 @@ class SeparationBase(object):
 
     def __ne__(self, other):
         return not self == other
+
 
 class SeparationException(Exception):
     pass

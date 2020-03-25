@@ -1,10 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import warnings
+
 import torch
 import torch.nn as nn
 import librosa
 import numpy as np
-from ..unfold import GaussianMixtureTorch
 from torch.utils.checkpoint import checkpoint
-import warnings
+
+from ..unfold import GaussianMixtureTorch
 
 class AmplitudeToDB(nn.Module):
     """
@@ -21,12 +26,14 @@ class AmplitudeToDB(nn.Module):
     Returns:
         [type]: [description]
     """
+
     def forward(self, data, ref=1.0, amin=1e-4):
         data = data ** 2
         amin = amin ** 2
         ref = np.log10(np.maximum(amin, ref ** 2))
         data = 10.0 * (torch.log10(torch.clamp(data, min=amin)) - ref)
         return data
+
 
 class BatchNorm(nn.Module):
     """
@@ -48,11 +55,12 @@ class BatchNorm(nn.Module):
     Returns:
         torch.Tensor: modified input data tensor with batch norm.
     """
+
     def __init__(self, num_features=1, **kwargs):
         super(BatchNorm, self).__init__()
         self.num_features = num_features
         self.add_module('batch_norm', nn.BatchNorm1d(self.num_features, **kwargs))
-    
+
     def forward(self, data):
         data = data.transpose(2, 1)
         shape = data.shape
@@ -63,6 +71,7 @@ class BatchNorm(nn.Module):
         data = data.reshape(shape)
         data = data.transpose(2, 1)
         return data
+
 
 class InstanceNorm(nn.Module):
     """
@@ -85,11 +94,12 @@ class InstanceNorm(nn.Module):
     Returns:
         torch.Tensor: modified input data tensor with instance norm applied.
     """
+
     def __init__(self, num_features=1, **kwargs):
         super(InstanceNorm, self).__init__()
         self.num_features = num_features
         self.add_module('instance_norm', nn.InstanceNorm1d(self.num_features, **kwargs))
-    
+
     def forward(self, data):
         data = data.transpose(2, 1)
         shape = data.shape
@@ -101,9 +111,10 @@ class InstanceNorm(nn.Module):
         data = data.transpose(2, 1)
         return data
 
+
 class MelProjection(nn.Module):
-    def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward', 
-                clamp=False, trainable=False):
+    def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward',
+                 clamp=False, trainable=False):
         """
         MelProjection takes as input a time-frequency representation (e.g. a spectrogram, or a mask) and outputs a mel
         project that can be learned or fixed. The initialization uses librosa to get a mel filterbank. Direction
@@ -129,8 +140,8 @@ class MelProjection(nn.Module):
 
         if self.num_mels > 0:
             shape = (
-                (num_frequencies, num_mels) 
-                if self.direction == 'forward' else 
+                (num_frequencies, num_mels)
+                if self.direction == 'forward' else
                 (num_mels, num_frequencies)
             )
             self.add_module('transform', nn.Linear(*shape))
@@ -138,8 +149,8 @@ class MelProjection(nn.Module):
             mel_filters = librosa.filters.mel(sample_rate, 2 * (num_frequencies - 1), num_mels)
             mel_filters = (mel_filters.T / (mel_filters.sum(axis=1) + 1e-8)).T
             filter_bank = (
-                mel_filters 
-                if self.direction == 'forward' 
+                mel_filters
+                if self.direction == 'forward'
                 else np.linalg.pinv(mel_filters)
             )
 
@@ -172,7 +183,7 @@ class MelProjection(nn.Module):
 
 
 class Embedding(nn.Module):
-    def __init__(self, num_features, hidden_size, embedding_size, activation, 
+    def __init__(self, num_features, hidden_size, embedding_size, activation,
                  num_audio_channels=1, dim_to_embed=-1):
         """
         Maps output from an audio representation module (e.g. RecurrentStack, 
@@ -203,7 +214,7 @@ class Embedding(nn.Module):
         """
         super(Embedding, self).__init__()
         self.add_module(
-            'linear', 
+            'linear',
             nn.Linear(hidden_size, num_features * num_audio_channels * embedding_size)
         )
         self.num_features = num_features
@@ -251,6 +262,7 @@ class Embedding(nn.Module):
 
         return data
 
+
 class Mask(nn.Module):
     """
     Takes a mask and applies it to a representation. Mask and representation must match
@@ -263,6 +275,7 @@ class Mask(nn.Module):
     broadcasts, resulting in (nb, nt, nf, ns) output corresponding to each separated
     source from the representation.
     """
+
     def __init__(self):
         super(Mask, self).__init__()
 
@@ -271,8 +284,9 @@ class Mask(nn.Module):
         representation = representation.unsqueeze(-1).expand_as(mask)
         return mask * representation
 
+
 class RecurrentStack(nn.Module):
-    def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout, 
+    def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout,
                  rnn_type='lstm'):
         """
         Creates a stack of RNNs used to process an audio sequence represented as 
@@ -308,10 +322,10 @@ class RecurrentStack(nn.Module):
                 nn.init.xavier_normal_(param)
 
         for names in self.rnn._all_weights:
-            for name in filter(lambda n: "bias" in n,  names):
+            for name in filter(lambda nm: "bias" in nm, names):
                 bias = getattr(self.rnn, name)
                 n = bias.size(0)
-                start, end = n//4, n//2
+                start, end = n // 4, n // 2
                 bias.data[start:end].fill_(1.)
 
     def forward(self, data):
@@ -331,9 +345,10 @@ class RecurrentStack(nn.Module):
         data = self.rnn(data)[0]
         return data
 
-class ConvolutionalStack2D(nn.Module):   
-    def __init__(self, in_channels, channels, dilations, filter_shapes, residuals, 
-        batch_norm=True, use_checkpointing=False):
+
+class ConvolutionalStack2D(nn.Module):
+    def __init__(self, in_channels, channels, dilations, filter_shapes, residuals,
+                 batch_norm=True, use_checkpointing=False):
         """Implements a stack of dilated convolutional layers for source separation from 
         the following papers:
 
@@ -366,14 +381,14 @@ class ConvolutionalStack2D(nn.Module):
         for x in [dilations, filter_shapes, residuals]:
             if len(x) != len(channels):
                 raise ValueError(
-                    f"All lists (channels, dilations, filters, residuals) should have" 
+                    f"All lists (channels, dilations, filters, residuals) should have"
                     f"the same length!"
                 )
         super().__init__()
 
         if any([d != 1 for d in dilations]):
             warnings.warn(
-                "You specified a dilation != 1. Input size and output size are " 
+                "You specified a dilation != 1. Input size and output size are "
                 "not guaranteed to be the same! This is due to the lacking of "
                 "padding = 'same' in PyTorch."
             )
@@ -394,7 +409,7 @@ class ConvolutionalStack2D(nn.Module):
 
     def _make_layer(self, i):
         convolution = nn.Conv2d(
-            in_channels=self.channels[i-1] if i > 0 else self.in_channels,
+            in_channels=self.channels[i - 1] if i > 0 else self.in_channels,
             out_channels=self.channels[i],
             kernel_size=self.filter_shapes[i],
             dilation=self.dilations[i],
@@ -415,9 +430,8 @@ class ConvolutionalStack2D(nn.Module):
         return layer
 
     def layer_function(self, data, layer, previous_layer, i):
-        conv_layer = layer.conv if hasattr(layer, 'conv') else layer
         if self.use_checkpointing:
-            data = checkpoint(layer, (data))
+            data = checkpoint(layer, data)
         else:
             data = layer(data)
         if self.residuals[i]:
@@ -437,7 +451,7 @@ class ConvolutionalStack2D(nn.Module):
           [num_batch, sequence_length, num_frequencies, num_output_channels]
         So it can be passed to an Embedding module.
         """
-        data =  data.permute(0, 3, 1, 2)
+        data = data.permute(0, 3, 1, 2)
         previous_layer = None
         for i in range(self.num_layers):
             data, previous_layer = self.layer_function(

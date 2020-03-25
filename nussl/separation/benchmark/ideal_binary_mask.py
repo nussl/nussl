@@ -1,6 +1,9 @@
-import numpy as np
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from ..base import MaskSeparationBase, SeparationException
 from ...datasets import transforms
+
 
 class IdealBinaryMask(MaskSeparationBase):
     """
@@ -13,8 +16,8 @@ class IdealBinaryMask(MaskSeparationBase):
         mask_type (str, optional): Mask type. Defaults to 'binary'.
     """
 
-    def __init__(self, input_audio_signal, sources, mask_type='binary', 
-      mask_threshold=.5):
+    def __init__(self, input_audio_signal, sources, mask_type='binary',
+                 mask_threshold=.5):
         if isinstance(sources, list):
             sources = {i: sources[i] for i in range(len(sources))}
         elif not isinstance(sources, dict):

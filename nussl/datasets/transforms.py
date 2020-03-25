@@ -1,29 +1,35 @@
-from .. import AudioSignal
-from .. import utils
-import numpy as np
-from collections import OrderedDict
-import torch
-import random
-import zarr
-import numcodecs
-import logging
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 import shutil
+import logging
+import random
+from collections import OrderedDict
+
+import torch
+import zarr
+import numcodecs
+import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+
+from .. import utils
+
 
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
-        source_magnitudes == np.max(source_magnitudes, axis=-1, keepdims=True)
+            source_magnitudes == np.max(source_magnitudes, axis=-1, keepdims=True)
     ).astype(float)
 
     ibm = ibm / np.sum(ibm, axis=-1, keepdims=True)
     ibm[ibm <= .5] = 0
     return ibm
 
+
 # Keys that correspond to the time-frequency representations after being passed through
 # the transforms here.
-time_frequency_keys = [
-    'mix_magnitude', 'source_magnitudes', 'ideal_binary_mask', 'weights']
+time_frequency_keys = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask', 'weights']
+
 
 class SumSources(object):
     """
@@ -79,7 +85,7 @@ class SumSources(object):
         if not isinstance(groupings, list):
             raise TransformException(
                 f"groupings must be a list, got {type(groupings)}!")
-        
+
         if group_names:
             if len(group_names) != len(groupings):
                 raise TransformException(
@@ -87,13 +93,13 @@ class SumSources(object):
                     f"group_names can be None! Got {len(group_names)} for "
                     f"len(group_names) and {len(groupings)} for len(groupings)."
                 )
-        
+
         self.groupings = groupings
         self.source_key = source_key
         if group_names is None:
             group_names = [f"group{i}" for i in range(len(groupings))]
         self.group_names = group_names
-    
+
     def __call__(self, data):
         if self.source_key not in data:
             raise TransformException(
@@ -113,7 +119,7 @@ class SumSources(object):
                         sources.pop(key2[1])
             sources[group_name] = sum(combined)
             sources[group_name].path_to_input_file = group_name
-        
+
         data[self.source_key] = sources
         if 'metadata' in data:
             if 'labels' in data['metadata']:
@@ -130,12 +136,14 @@ class SumSources(object):
             f")"
         )
 
+
 class LabelsToOneHot(object):
     """
     Takes a data dictionary with sources and their keys and converts the keys to
     a one-hot numpy array using the list in data['metadata']['labels'] to figure
     out which index goes where.
     """
+
     def __init__(self, source_key='sources'):
         self.source_key = source_key
 
@@ -205,7 +213,7 @@ class MagnitudeSpectrumApproximation(object):
         self.mix_key = mix_key
         self.source_key = source_key
 
-    def __call__(self, data):        
+    def __call__(self, data):
         if self.mix_key not in data:
             raise TransformException(
                 f"Expected {self.mix_key} in dictionary "
@@ -229,7 +237,6 @@ class MagnitudeSpectrumApproximation(object):
             sources[key] = _sources[key]
         data[self.source_key] = sources
 
-
         source_magnitudes = []
         for key in source_names:
             s = sources[key]
@@ -237,7 +244,7 @@ class MagnitudeSpectrumApproximation(object):
             source_magnitudes.append(s.magnitude_spectrogram_data)
 
         source_magnitudes = np.stack(source_magnitudes, axis=-1)
-        
+
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)
         data['source_magnitudes'] = source_magnitudes
 
@@ -250,6 +257,7 @@ class MagnitudeSpectrumApproximation(object):
             f"source_key = {self.source_key}"
             f")"
         )
+
 
 class MagnitudeWeights(object):
     """
@@ -265,6 +273,7 @@ class MagnitudeWeights(object):
     Args:
         mix_magnitude_key (str): Which key to look for the mix_magnitude data in.
     """
+
     def __init__(self, mix_key='mix', mix_magnitude_key='mix_magnitude'):
         self.mix_magnitude_key = mix_magnitude_key
         self.mix_key = mix_key
@@ -284,10 +293,11 @@ class MagnitudeWeights(object):
         magnitude_spectrogram = data[self.mix_magnitude_key]
         weights = magnitude_spectrogram / (np.sum(magnitude_spectrogram) + 1e-6)
         weights *= (
-            magnitude_spectrogram.shape[0] * magnitude_spectrogram.shape[1]
+                magnitude_spectrogram.shape[0] * magnitude_spectrogram.shape[1]
         )
         data['weights'] = np.sqrt(weights)
         return data
+
 
 class PhaseSensitiveSpectrumApproximation(object):
     """
@@ -339,7 +349,7 @@ class PhaseSensitiveSpectrumApproximation(object):
     """
 
     def __init__(self, mix_key='mix', source_key='sources',
-      range_min=0.0, range_max=1.0):
+                 range_min=0.0, range_max=1.0):
         self.mix_key = mix_key
         self.source_key = source_key
         self.range_min = range_min
@@ -351,7 +361,7 @@ class PhaseSensitiveSpectrumApproximation(object):
                 f"Expected {self.mix_key} in dictionary "
                 f"passed to this Transform! Got {list(data.keys())}."
             )
-        
+
         mixture = data[self.mix_key]
 
         mix_stft = mixture.stft()
@@ -391,7 +401,7 @@ class PhaseSensitiveSpectrumApproximation(object):
             ),
             range_max
         )
-        
+
         data['ideal_binary_mask'] = compute_ideal_binary_mask(source_magnitudes)
         data['source_magnitudes'] = source_magnitudes
 
@@ -404,6 +414,7 @@ class PhaseSensitiveSpectrumApproximation(object):
             f"source_key = {self.source_key}"
             f")"
         )
+
 
 class IndexSources(object):
     """
@@ -443,6 +454,7 @@ class IndexSources(object):
     Args:
         object ([type]): [description]
     """
+
     def __init__(self, target_key, index):
         self.target_key = target_key
         self.index = index
@@ -457,6 +469,7 @@ class IndexSources(object):
                 f"but index =  {self.index} out of bounds bounds of last dim.")
         data[self.target_key] = data[self.target_key][..., self.index, None]
         return data
+
 
 class GetExcerpt(object):
     """
@@ -478,13 +491,15 @@ class GetExcerpt(object):
         time_frequency_keys (list): Which keys to look at it in the data dictionary to
           take excerpts from.
     """
-    def __init__(self, excerpt_length, time_dim=0, 
-                time_frequency_keys=time_frequency_keys):
+
+    def __init__(self, excerpt_length, time_dim=0,
+                 tf_keys=None):
         self.excerpt_length = excerpt_length
         self.time_dim = time_dim
-        self.time_frequency_keys = time_frequency_keys
+        self.time_frequency_keys = tf_keys if tf_keys else time_frequency_keys
 
-    def _validate(self, data, key):
+    @staticmethod
+    def _validate(data, key):
         is_tensor = torch.is_tensor(data[key])
         is_array = isinstance(data[key], np.ndarray)
         if not is_tensor and not is_array:
@@ -500,7 +515,7 @@ class GetExcerpt(object):
             offset = random.randint(0, data_length - self.excerpt_length)
         else:
             offset = 0
-        
+
         pad_amount = max(0, self.excerpt_length - data_length)
 
         return offset, pad_amount
@@ -508,14 +523,13 @@ class GetExcerpt(object):
     def _construct_pad_func_tuple(self, shape, pad_amount, is_tensor):
         if is_tensor:
             pad_func = torch.nn.functional.pad
-            pad_tuple = [0 for i in range(2 * len(shape))]
-            pad_tuple[2*self.time_dim] = 0
-            pad_tuple[2*self.time_dim + 1] = pad_amount
+            pad_tuple = [0 for _ in range(2 * len(shape))]
+            pad_tuple[2 * self.time_dim] = 0
+            pad_tuple[2 * self.time_dim + 1] = pad_amount
             pad_tuple = pad_tuple[::-1]
         else:
-            pad_func  = np.pad
-            pad_tuple = [(0, 0) for i in range(len(shape))]
-            pad_tuple = [(0, 0) for i in range(len(shape))]
+            pad_func = np.pad
+            pad_tuple = [(0, 0) for _ in range(len(shape))]
             pad_tuple[self.time_dim] = (0, pad_amount)
         return pad_func, pad_tuple
 
@@ -535,6 +549,7 @@ class GetExcerpt(object):
                 data[key] = utils._slice_along_dim(
                     data[key], self.time_dim, offset, offset + self.excerpt_length)
         return data
+
 
 class Cache(object):
     """
@@ -578,6 +593,7 @@ class Cache(object):
     Args:
         object ([type]): [description]
     """
+
     def __init__(self, location, cache_size=1, overwrite=False):
         self.location = location
         self.cache_size = cache_size
@@ -591,13 +607,13 @@ class Cache(object):
     @property
     def overwrite(self):
         return self._overwrite
-    
+
     @overwrite.setter
     def overwrite(self, value):
         self._overwrite = value
         self._clear_cache(self.location)
         self._open_cache(self.location)
-    
+
     def _clear_cache(self, location):
         if os.path.exists(location):
             if self.overwrite:
@@ -606,21 +622,20 @@ class Cache(object):
                 shutil.rmtree(location, ignore_errors=True)
 
     def _open_cache(self, location):
-        file_mode = 'r' if not self.overwrite else 'w'
         if self.overwrite:
-            self.cache = zarr.open(location, mode='w', shape=(self.cache_size,), 
-                chunks=(1,), dtype=object, object_codec=numcodecs.Pickle(), 
-                synchronizer=zarr.ThreadSynchronizer())
+            self.cache = zarr.open(location, mode='w', shape=(self.cache_size,),
+                                   chunks=(1,), dtype=object, object_codec=numcodecs.Pickle(),
+                                   synchronizer=zarr.ThreadSynchronizer())
         else:
             if os.path.exists(location):
-                self.cache = zarr.open(location, mode='r', 
-                    object_codec=numcodecs.Pickle(), 
+                self.cache = zarr.open(location, mode='r',
+                    object_codec=numcodecs.Pickle(),
                     synchronizer=zarr.ThreadSynchronizer())
 
     def __call__(self, data):
         if 'index' not in data:
             raise TransformException(
-                f"Expected 'index' in dictionary, got {list(data.keys())}")  
+                f"Expected 'index' in dictionary, got {list(data.keys())}")
         index = data['index']
         if self.overwrite:
             self.cache[index] = data
@@ -633,6 +648,7 @@ class Cache(object):
                 f"the cache?")
 
         return data
+
 
 class ToSeparationModel(object):
     """
@@ -670,17 +686,17 @@ class ToSeparationModel(object):
     using it in the Trainer class, then it is added automatically as the
     last transform.
     """
-    def __init__(self, swap_tf_dims=time_frequency_keys):
-        self.swap_tf_dims = swap_tf_dims
+
+    def __init__(self, swap_tf_dims=None):
+        self.swap_tf_dims = swap_tf_dims if swap_tf_dims else time_frequency_keys
 
     def __call__(self, data):
         keys = list(data.keys())
         for key in keys:
             if key != 'index':
                 is_array = isinstance(data[key], np.ndarray)
-                is_tensor = torch.is_tensor(data[key])
                 if is_array:
-                    data[key] = torch.from_numpy(data[key])  
+                    data[key] = torch.from_numpy(data[key])
                 if not torch.is_tensor(data[key]):
                     data.pop(key)
                 if key in self.swap_tf_dims:
@@ -689,6 +705,7 @@ class ToSeparationModel(object):
 
     def __repr__(self):
         return f"{self.__class__.__name__}()"
+
 
 class Compose(object):
     """Composes several transforms together. Inspired by torchvision implementation.
@@ -721,6 +738,7 @@ class Compose(object):
             format_string += '    {0}'.format(t)
         format_string += '\n)'
         return format_string
+
 
 class TransformException(Exception):
     """

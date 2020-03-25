@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
-from ..base import MaskSeparationBase, SeparationException
 import norbert
+
+from ..base import MaskSeparationBase, SeparationException
+
 
 class WienerFilter(MaskSeparationBase):
     """

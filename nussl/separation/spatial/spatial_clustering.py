@@ -1,5 +1,10 @@
-from ..base import ClusteringSeparationBase
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
+
+from ..base import ClusteringSeparationBase
+
 
 class SpatialClustering(ClusteringSeparationBase):
     """
@@ -17,8 +22,8 @@ class SpatialClustering(ClusteringSeparationBase):
         num_channels = self.audio_signal.num_channels
         
         features = [
-            [ipd for i in range(num_channels)],
-            [ild for i in range(num_channels)]
+            [ipd for _ in range(num_channels)],
+            [ild for _ in range(num_channels)]
         ]
         features = np.array(features).transpose(2, 3, 1, 0)   
 

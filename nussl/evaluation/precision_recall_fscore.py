@@ -1,8 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import sklearn
+import numpy as np
 
 from . import EvaluationBase
 from ..core.masks import BinaryMask
-import numpy as np
+
 
 class PrecisionRecallFScore(EvaluationBase):
     """
@@ -26,15 +30,15 @@ class PrecisionRecallFScore(EvaluationBase):
          will be labeled ``Source 0, Source 1, ...`` etc.        
     """
 
-    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None, 
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
                  compute_permutation=False, best_permutation_key="F1-Score", **kwargs):
         self.true_sources_list = self._verify_input_list(true_sources_list)
         self.estimated_sources_list = self._verify_input_list(estimated_sources_list)
 
-        super().__init__(true_sources_list, estimated_sources_list, 
-            source_labels=source_labels, 
-            compute_permutation=compute_permutation, 
-            best_permutation_key=best_permutation_key, **kwargs)
+        super().__init__(true_sources_list, estimated_sources_list,
+                         source_labels=source_labels,
+                         compute_permutation=compute_permutation,
+                         best_permutation_key=best_permutation_key, **kwargs)
 
     @staticmethod
     def _verify_input_list(mask_list):
@@ -52,18 +56,18 @@ class PrecisionRecallFScore(EvaluationBase):
     def preprocess(self):
         n_channels = self.true_sources_list[0].num_channels
         references = np.stack(
-            [np.copy(x.mask.reshape(-1, n_channels)) 
-            for x in self.true_sources_list],
+            [np.copy(x.mask.reshape(-1, n_channels))
+             for x in self.true_sources_list],
             axis=-1
         )
         estimates = np.stack(
-            [np.copy(x.mask.reshape(-1, n_channels)) 
-            for x in self.estimated_sources_list],
+            [np.copy(x.mask.reshape(-1, n_channels))
+             for x in self.estimated_sources_list],
             axis=-1
         )
         return references, estimates
 
-    def evaluate_helper(self, references, estimates):
+    def evaluate_helper(self, references, estimates, **kwargs):
         """
         Determines the precision, recall, f-score, and accuracy of each :ref:`binary_mask` object in 
         ``true_sources_mask_list`` and ``estimated_sources_mask_list``. Returns a list of results that is

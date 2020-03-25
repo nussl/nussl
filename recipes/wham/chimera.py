@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 This recipe trains and evaluates a mask inference model
 on the clean data from the WHAM dataset with 8k. It's divided into 
@@ -9,10 +11,9 @@ from nussl import ml, datasets, utils, separation, evaluation
 import os
 import torch
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from torch import optim
 import logging
-import matplotlib.pyplot as plt
 import shutil
 import json
 import tqdm
@@ -51,16 +52,18 @@ shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 
+
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
-    tfm = datasets.transforms.Compose([
-        datasets.transforms.MagnitudeSpectrumApproximation(), # take stfts and get ibm
-        datasets.transforms.MagnitudeWeights(), # get magnitude weights
-        datasets.transforms.ToSeparationModel(), # convert to tensors
-        datasets.transforms.Cache(cache_location), # up to here gets cached
-        datasets.transforms.GetExcerpt(400) # get 400 frame excerpts (3.2 seconds)
+    tfm_list = datasets.transforms.Compose([
+        datasets.transforms.MagnitudeSpectrumApproximation(),  # take stfts and get ibm
+        datasets.transforms.MagnitudeWeights(),  # get magnitude weights
+        datasets.transforms.ToSeparationModel(),  # convert to tensors
+        datasets.transforms.Cache(cache_location),  # up to here gets cached
+        datasets.transforms.GetExcerpt(400)  # get 400 frame excerpts (3.2 seconds)
     ])
-    return tfm
+    return tfm_list
+
 
 def cache_dataset(_dataset):
     cache_dataloader = torch.utils.data.DataLoader(
@@ -68,13 +71,16 @@ def cache_dataset(_dataset):
     ml.train.cache_dataset(cache_dataloader)
     _dataset.cache_populated = True
 
+
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'tr'))
 dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm, 
     cache_populated=CACHE_POPULATED)
 
+
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'cv'))
 val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm, 
     cache_populated=CACHE_POPULATED)
+
 
 if not CACHE_POPULATED:
     # cache datasets for speed
@@ -158,17 +164,17 @@ dme = separation.deep.DeepMaskEstimation(
 def forward_on_gpu(audio_signal):
     # set the audio signal of the object to this item's mix
     dme.audio_signal = audio_signal
-    masks = dme.forward()
-    return masks
+    masks_ = dme.forward()
+    return masks_
 
-def separate_and_evaluate(item, masks):
-    separator = separation.deep.DeepMaskEstimation(item['mix'])
-    estimates = separator(masks)
+def separate_and_evaluate(item_, masks_):
+    separator = separation.deep.DeepMaskEstimation(item_['mix'])
+    estimates = separator(masks_)
 
     evaluator = evaluation.BSSEvalScale(
-        list(item['sources'].values()), estimates, compute_permutation=True)
+        list(item_['sources'].values()), estimates, compute_permutation=True)
     scores = evaluator.evaluate()
-    output_path = os.path.join(RESULTS_DIR, f"{item['mix'].file_name}.json")
+    output_path = os.path.join(RESULTS_DIR, f"{item_['mix'].file_name}.json")
     with open(output_path, 'w') as f:
         json.dump(scores, f)
 

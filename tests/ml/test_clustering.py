@@ -7,11 +7,12 @@ from sklearn import datasets
 from sklearn.metrics import adjusted_mutual_info_score
 from sklearn.preprocessing import StandardScaler
 import sklearn
-import numpy as np 
+import numpy as np
 import pytest
 from nussl.ml import cluster
 import matplotlib.pyplot as plt
 import nussl
+
 
 @pytest.fixture(scope="module")
 def cluster_data():
@@ -23,7 +24,7 @@ def cluster_data():
     # ============
     n_samples = 1500
     noisy_circles = datasets.make_circles(n_samples=n_samples, factor=.5,
-                                        noise=.05)
+                                          noise=.05)
     noisy_moons = datasets.make_moons(n_samples=n_samples, noise=.05)
     blobs = datasets.make_blobs(n_samples=n_samples, random_state=8)
 
@@ -36,28 +37,28 @@ def cluster_data():
 
     # blobs with varied variances
     varied = datasets.make_blobs(n_samples=n_samples,
-                                cluster_std=[1.0, 2.5, 0.5],
-                                random_state=random_state)
+                                 cluster_std=[1.0, 2.5, 0.5],
+                                 random_state=random_state)
 
     default_base = {'quantile': .3,
-                'eps': .3,
-                'damping': .9,
-                'preference': -200,
-                'n_neighbors': 10,
-                'n_clusters': 3,
-                'min_samples': 20,
-                'xi': 0.05,
-                'min_cluster_size': 0.1}
+                    'eps': .3,
+                    'damping': .9,
+                    'preference': -200,
+                    'n_neighbors': 10,
+                    'n_clusters': 3,
+                    'min_samples': 20,
+                    'xi': 0.05,
+                    'min_cluster_size': 0.1}
 
     data = [
         ('noisy_circles', noisy_circles, {'damping': .77, 'preference': -240,
-                        'quantile': .2, 'n_clusters': 2,
-                        'min_samples': 20, 'xi': 0.25}),
+                                          'quantile': .2, 'n_clusters': 2,
+                                          'min_samples': 20, 'xi': 0.25}),
         ('noisy_moons', noisy_moons, {'damping': .75, 'preference': -220, 'n_clusters': 2}),
         ('varied', varied, {'eps': .18, 'n_neighbors': 2,
-                'min_samples': 5, 'xi': 0.035, 'min_cluster_size': .2}),
+                            'min_samples': 5, 'xi': 0.035, 'min_cluster_size': .2}),
         ('aniso', aniso, {'eps': .15, 'n_neighbors': 2,
-                'min_samples': 20, 'xi': 0.1, 'min_cluster_size': .2}),
+                          'min_samples': 20, 'xi': 0.1, 'min_cluster_size': .2}),
         ('blobs', blobs, {}),
     ]
     yield data, default_base

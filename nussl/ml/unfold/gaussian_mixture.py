@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import torch
 import torch.nn as nn
 import numpy as np
+
 
 class GaussianMixtureTorch(nn.Module):
     def __init__(self, n_components, n_iter=5, covariance_type='diag',
@@ -35,7 +39,7 @@ class GaussianMixtureTorch(nn.Module):
             covariance matrix.
         """
         self.n_components = n_components
-        self.n_iter = 5
+        self.n_iter = n_iter
         self.covariance_type = covariance_type
         self.covariance_init = covariance_init
         self.reg_covar = reg_covar
@@ -60,7 +64,6 @@ class GaussianMixtureTorch(nn.Module):
         _top = (resp * X).sum(dim=1, keepdims=True)
         _bottom = resp.sum(dim=1, keepdims=True)
         means = _top / _bottom
-    
 
         # update covariance
         diff = X - means
@@ -75,8 +78,8 @@ class GaussianMixtureTorch(nn.Module):
 
         return means.squeeze(1), covariance, prior
 
-
-    def _e_step(self, X, means, covariance):
+    @staticmethod
+    def _e_step(X, means, covariance):
         """
         Takes the expectation of X. Returns the log probability of X under each
         Gaussian in the mixture model.
@@ -88,7 +91,7 @@ class GaussianMixtureTorch(nn.Module):
         """
         n_batch, n_samples, n_features = X.shape
         _, n_components, _ = means.shape
-        
+
         X = X.view(n_batch, n_samples, 1, n_features)
         means = means.view(n_batch, 1, n_components, n_features)
         covariance = covariance.view(
@@ -114,7 +117,7 @@ class GaussianMixtureTorch(nn.Module):
                 )
             )
             covariance = covariance * diag_mask
-        
+
         if 'diag' in self.covariance_type:
             covariance = covariance * diag_mask
 
@@ -133,24 +136,24 @@ class GaussianMixtureTorch(nn.Module):
             means (torch.Tensor): Means, shape (n_batch, n_components, n_features). Defaults
             to None.
             covariance (torch.Tensor): (n_batch, n_components, n_features, n_features) 
-            or (n_batch, n_components, n_features). 
+                or (n_batch, n_components, n_features).
             Defaults to None.
         """
         if means is None:
             sampled = X.new(
                 X.shape[0], self.n_components).random_(0, X.shape[1])
             sampled += X.new(np.arange(0, X.shape[0])).unsqueeze(
-                1).expand(-1, sampled.shape[1])*X.shape[1]
+                1).expand(-1, sampled.shape[1]) * X.shape[1]
             sampled = sampled.long()
             means = torch.index_select(
                 X.view(-1, X.shape[-1]), 0, sampled.view(-1)).view(
-                    X.shape[0], sampled.shape[-1], -1)
-        
+                X.shape[0], sampled.shape[-1], -1)
+
         if covariance is None:
             covariance = X.new(
                 X.shape[0], self.n_components, X.shape[-1]).fill_(
-                    self.covariance_init)
-        
+                self.covariance_init)
+
         if len(covariance.shape) < 4:
             covariance = covariance.unsqueeze(-1).expand(-1, -1, -1, X.shape[-1])
 
@@ -158,7 +161,7 @@ class GaussianMixtureTorch(nn.Module):
         diag_mask = torch.eye(n_features)
         diag_mask = diag_mask.reshape(1, 1, n_features, n_features)
         covariance = covariance * diag_mask
-        
+
         covariance = self._enforce_covariance_type(covariance)
 
         return means, covariance
@@ -183,6 +186,7 @@ class GaussianMixtureTorch(nn.Module):
         data = data.view(shape[0], -1, shape[-1])
         means, covariance = self.init_params(data, means, covariance)
 
+        resp = log_prob = prior = None
         for i in range(self.n_iter):
             resp, log_prob = self._e_step(data, means, covariance)
             means, covariance, prior = self._m_step(data, resp)
@@ -192,6 +196,5 @@ class GaussianMixtureTorch(nn.Module):
             'log_prob': log_prob.view(shape[:-1] + (-1,)),
             'means': means,
             'covariance': covariance,
-            'prior': prior    
+            'prior': prior
         }
-

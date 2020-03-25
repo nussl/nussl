@@ -9,6 +9,7 @@ import tempfile
 import os
 import glob
 
+
 @pytest.fixture(scope='module')
 def estimated_and_true_sources(musdb_tracks):
     i = np.random.randint(len(musdb_tracks))
@@ -42,10 +43,10 @@ def estimated_and_true_sources(musdb_tracks):
         random_masks.append(random_mask)
 
         source_stft = true_sources[-1].stft()
-        
+
         mask_data = (
-            (np.abs(source_stft) + 1e-8) / 
-            (np.maximum(np.abs(mixture.stft_data), np.abs(source_stft)) + 1e-8)
+                (np.abs(source_stft) + 1e-8) /
+                (np.maximum(np.abs(mixture.stft_data), np.abs(source_stft)) + 1e-8)
         )
         oracle_mask = SoftMask(mask_data)
         oracle_source = mixture.apply_mask(oracle_mask)
@@ -55,23 +56,26 @@ def estimated_and_true_sources(musdb_tracks):
         oracle_masks.append(oracle_mask)
 
     yield {
-        'oracle': oracle_sources, 
-        'random': random_sources, 
+        'oracle': oracle_sources,
+        'random': random_sources,
         'true': true_sources,
         'keys': keys,
         'oracle_masks': oracle_masks,
         'random_masks': random_masks,
     }
 
+
 def fake_preprocess_a(self):
     references = np.random.rand(44100, 2, 4)
     estimates = np.random.rand(44100, 2, 4)
     return references, estimates
 
+
 def fake_preprocess_b(self):
     references = np.random.rand(44100, 2, 2)
     estimates = np.random.rand(44100, 2, 4)
     return references, estimates
+
 
 def fake_evaluate_helper(self, references, estimates):
     n_sources = references.shape[-1]
@@ -80,11 +84,12 @@ def fake_evaluate_helper(self, references, estimates):
     for i in range(n_sources):
         score = {
             'metric1': [np.random.rand()] * n_channels,
-            'metric2':[np.random.rand()] * n_channels,
+            'metric2': [np.random.rand()] * n_channels,
             'metric3': [np.random.rand()] * n_channels,
         }
         scores.append(score)
     return scores
+
 
 def test_evaluation_base(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true']
@@ -94,11 +99,11 @@ def test_evaluation_base(estimated_and_true_sources):
     default_source_labels = [f'source_{i}' for i in range(len(true_sources))]
     evaluator = nussl.evaluation.EvaluationBase(true_sources, estimated_sources)
     assert (
-        evaluator.source_labels == default_source_labels)
-    
+            evaluator.source_labels == default_source_labels)
+
     for k, t in zip(keys, true_sources):
         t.path_to_input_file = k
-    
+
     evaluator = nussl.evaluation.EvaluationBase(true_sources, estimated_sources)
     assert evaluator.source_labels == keys
 
@@ -120,12 +125,13 @@ def test_evaluation_base(estimated_and_true_sources):
 
     assert evaluator.scores == {}
 
+
 def test_evaluation_run(estimated_and_true_sources, monkeypatch):
     monkeypatch.setattr(
         nussl.evaluation.EvaluationBase, 'preprocess', fake_preprocess_a)
     monkeypatch.setattr(
         nussl.evaluation.EvaluationBase, 'evaluate_helper', fake_evaluate_helper)
-    
+
     true_sources = estimated_and_true_sources['true']
     estimated_sources = estimated_and_true_sources['random']
     keys = estimated_and_true_sources['keys']
@@ -135,13 +141,13 @@ def test_evaluation_run(estimated_and_true_sources, monkeypatch):
 
     evaluator = nussl.evaluation.EvaluationBase(true_sources, estimated_sources)
     candidates = evaluator.get_candidates()
-    assert len(candidates[0]) == 1 
+    assert len(candidates[0]) == 1
     assert len(candidates[1]) == 1
     evaluator.evaluate()
     check_scores(evaluator)
-    
+
     evaluator = nussl.evaluation.EvaluationBase(true_sources, estimated_sources,
-        compute_permutation=True)
+                                                compute_permutation=True)
     candidates = evaluator.get_candidates()
     # should be 4 choose 2
     assert len(candidates[0]) == 1
@@ -150,10 +156,11 @@ def test_evaluation_run(estimated_and_true_sources, monkeypatch):
     check_scores(evaluator)
 
     evaluator = nussl.evaluation.EvaluationBase(true_sources, estimated_sources,
-        compute_permutation=True, best_permutation_key='metric2')
+                                                compute_permutation=True,
+                                                best_permutation_key='metric2')
     candidates = evaluator.get_candidates()
     # should be 1 * 4! = 24
-    assert len(candidates[0]) == 1 
+    assert len(candidates[0]) == 1
     assert len(candidates[1]) == 24
     evaluator.evaluate()
     check_scores(evaluator)
@@ -162,13 +169,14 @@ def test_evaluation_run(estimated_and_true_sources, monkeypatch):
         nussl.evaluation.EvaluationBase, 'preprocess', fake_preprocess_b)
 
     evaluator = nussl.evaluation.EvaluationBase(true_sources[:2], estimated_sources,
-        compute_permutation=True)
+                                                compute_permutation=True)
     candidates = evaluator.get_candidates()
     # should be (4 choose 2) * 2! = 12
-    assert len(candidates[0]) == 6 
+    assert len(candidates[0]) == 6
     assert len(candidates[1]) == 2
     evaluator.evaluate()
     check_scores(evaluator)
+
 
 def check_scores(evaluator):
     assert evaluator.scores is not None
@@ -179,6 +187,7 @@ def check_scores(evaluator):
 
     for source_label in evaluator.source_labels:
         assert source_label in evaluator.scores
+
 
 def test_bss_evaluation_base(estimated_and_true_sources, monkeypatch):
     monkeypatch.setattr(
@@ -202,6 +211,7 @@ def test_bss_evaluation_base(estimated_and_true_sources, monkeypatch):
     assert references.shape == (n_samples, n_channels, n_sources)
     assert estimates.shape == (n_samples, n_channels, n_sources)
 
+
 def test_bss_eval_v4(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true']
     estimated_sources = estimated_and_true_sources['random']
@@ -222,7 +232,7 @@ def test_bss_eval_v4(estimated_and_true_sources):
     evaluator = nussl.evaluation.BSSEvalV4(
         true_sources, estimated_sources)
     oracle_scores = evaluator.evaluate()
-    
+
     # the oracle score should beat the random score by a lot on average
     # for SDR and SIR
 
@@ -230,8 +240,9 @@ def test_bss_eval_v4(estimated_and_true_sources):
         for metric in ['SDR', 'SIR']:
             _oracle = oracle_scores[key][metric]
             _random = random_scores[key][metric]
-            
+
             assert np.alltrue(_oracle > _random)
+
 
 def test_scale_bss_eval(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true']
@@ -261,6 +272,7 @@ def test_scale_bss_eval(estimated_and_true_sources):
     assert tSDR > rSIR
     assert tSIR > rSIR
 
+
 def test_bss_eval_scale(estimated_and_true_sources):
     eval_args = [{'scaling': True}, {'scaling': False}]
 
@@ -287,28 +299,31 @@ def test_bss_eval_scale(estimated_and_true_sources):
             evaluator = nussl.evaluation.BSSEvalScale(
                 true_sources, estimated_sources, **_eval_args)
             oracle_scores = evaluator.evaluate()
-            
+
             # the oracle score should beat the random score by a lot on average
             # for SDR and SIR
             for key in evaluator.source_labels:
                 for metric in ['SDR', 'SIR']:
                     _oracle = oracle_scores[key][metric]
                     _random = random_scores[key][metric]
-                    
+
                     assert np.alltrue(_oracle > _random)
-            
+
             save_scores(tmpdir, oracle_scores, f'oracle{i}.json')
             save_scores(tmpdir, random_scores, f'random{i}.json')
-        
+
         check_aggregate(tmpdir)
+
 
 def save_scores(directory, scores, name):
     with open(os.path.join(directory, f'{name}.json'), 'w') as f:
         json.dump(scores, f)
 
+
 def check_aggregate(directory):
     json_files = glob.glob(f"{directory}/*.json")
     df = nussl.evaluation.aggregate_score_files(json_files)
+
 
 def test_eval_permutation(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true'][:2]
@@ -318,7 +333,7 @@ def test_eval_permutation(estimated_and_true_sources):
         t.path_to_input_file = k
 
     evaluator = nussl.evaluation.BSSEvalV4(
-        true_sources, estimated_sources[::-1], 
+        true_sources, estimated_sources[::-1],
         compute_permutation=True)
     scores = evaluator.evaluate()
     assert scores['permutation'] == (1, 0)
@@ -327,7 +342,7 @@ def test_eval_permutation(estimated_and_true_sources):
     estimated_sources = estimated_and_true_sources['oracle']
 
     evaluator = nussl.evaluation.BSSEvalScale(
-        true_sources, estimated_sources[::-1], 
+        true_sources, estimated_sources[::-1],
         compute_permutation=True)
     scores = evaluator.evaluate()
     assert scores['permutation'] == (3, 2, 1, 0)
@@ -343,24 +358,25 @@ def test_eval_permutation(estimated_and_true_sources):
     scores = evaluator.evaluate()
     assert scores['permutation'] == (3, 2, 1, 0)
 
+
 def test_eval_precision_recall_fscore(estimated_and_true_sources):
     oracle_masks = estimated_and_true_sources['oracle_masks']
     random_masks = estimated_and_true_sources['random_masks']
 
-    pytest.raises(ValueError, 
-        nussl.evaluation.PrecisionRecallFScore, oracle_masks, random_masks
-    )
+    pytest.raises(ValueError,
+                  nussl.evaluation.PrecisionRecallFScore, oracle_masks, random_masks
+                  )
 
     random_extra_mask = [BinaryMask(np.random.rand(100, 10, 2) > .5)]
 
     oracle_masks = [o.mask_to_binary() for o in oracle_masks]
     random_masks = [r.mask_to_binary() for r in random_masks]
 
-    pytest.raises(ValueError, 
-        nussl.evaluation.PrecisionRecallFScore, 
-        oracle_masks + random_extra_mask, 
-        random_masks + random_extra_mask
-    )
+    pytest.raises(ValueError,
+                  nussl.evaluation.PrecisionRecallFScore,
+                  oracle_masks + random_extra_mask,
+                  random_masks + random_extra_mask
+                  )
 
     evaluator = nussl.evaluation.PrecisionRecallFScore(
         oracle_masks[0], random_masks[0])
@@ -368,8 +384,8 @@ def test_eval_precision_recall_fscore(estimated_and_true_sources):
 
     shape = (
         oracle_masks[0].mask.shape[0] * oracle_masks[0].mask.shape[1],
-        oracle_masks[0].num_channels, 1) 
-    
+        oracle_masks[0].num_channels, 1)
+
     assert references.shape == shape
     assert estimates.shape == shape
 
@@ -379,8 +395,8 @@ def test_eval_precision_recall_fscore(estimated_and_true_sources):
 
     shape = (
         oracle_masks[0].mask.shape[0] * oracle_masks[0].mask.shape[1],
-        oracle_masks[0].num_channels, len(oracle_masks)) 
-    
+        oracle_masks[0].num_channels, len(oracle_masks))
+
     assert references.shape == shape
     assert estimates.shape == shape
 

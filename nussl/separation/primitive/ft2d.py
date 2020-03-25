@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 from scipy.ndimage.filters import maximum_filter, minimum_filter, uniform_filter
+
 from .. import MaskSeparationBase, SeparationException
 from ..benchmark import HighLowPassFilter
 
@@ -69,13 +73,14 @@ class FT2D(MaskSeparationBase):
         mask_threshold (float, optional): Masking threshold. Defaults to 0.5.
 
     """
+
     def __init__(self, input_audio_signal, neighborhood_size=(1, 25), high_pass_cutoff=100.0,
-      quadrants_to_keep=(0,1,2,3), filter_approach='local_std', use_bg_2dft=True, 
-      mask_type='soft', mask_threshold=0.5):
+                 quadrants_to_keep=(0, 1, 2, 3), filter_approach='local_std', use_bg_2dft=True,
+                 mask_type='soft', mask_threshold=0.5):
 
         super().__init__(
-            input_audio_signal=input_audio_signal, 
-            mask_type=mask_type, 
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type,
             mask_threshold=mask_threshold)
 
         self.neighborhood_size = neighborhood_size
@@ -83,6 +88,8 @@ class FT2D(MaskSeparationBase):
         self.quadrants_to_keep = quadrants_to_keep
         self.use_bg_2dft = use_bg_2dft
         self.high_pass_cutoff = high_pass_cutoff
+        self.bg_ft2d = None
+        self.fg_ft2d = None
 
         allowed_filter_approaches = ['original', 'local_std']
         if filter_approach not in allowed_filter_approaches:
@@ -115,17 +122,16 @@ class FT2D(MaskSeparationBase):
             mask_data = _masks[..., i]
             if self.mask_type == self.MASKS['binary']:
                 mask_data = _masks[..., i] == np.max(_masks, axis=-1)
-            
+
             if i == 0:
                 mask_data = np.maximum(mask_data, high_pass_masks[i].mask)
             elif i == 1:
                 mask_data = np.minimum(mask_data, high_pass_masks[i].mask)
-            
+
             mask = self.mask_type(mask_data)
             self.result_masks.append(mask)
 
         return self.result_masks
-
 
     def _preprocess_audio_signal(self):
         super()._preprocess_audio_signal()
@@ -136,7 +142,8 @@ class FT2D(MaskSeparationBase):
             axis=-1
         )
 
-    def filter_quadrants(self, data, quadrants_to_keep):
+    @staticmethod
+    def filter_quadrants(data, quadrants_to_keep):
         """
         Filters the quadrants of the incoming 2DFT, deleting the ones not in 
         `quadrants_to_keep`. Those are zero'd out. This can be used to separate
@@ -156,7 +163,7 @@ class FT2D(MaskSeparationBase):
         Returns:
             [type]: [description]
         """
-        
+
         shape = data.shape
         for quadrant in range(4):
             if quadrant not in quadrants_to_keep:
@@ -175,11 +182,11 @@ class FT2D(MaskSeparationBase):
             bg_ft2d, fg_ft2d = self.filter_local_maxima(ft2d[:, :, ch])
         elif self.filter_approach == 'local_std':
             bg_ft2d, fg_ft2d = self.filter_local_maxima_with_std(ft2d[:, :, ch])
-        
-        self.bg_ft2d = self.filter_quadrants(
-            bg_ft2d, self.quadrants_to_keep)
-        self.fg_ft2d = self.filter_quadrants(
-            fg_ft2d, self.quadrants_to_keep)
+        else:
+            raise ValueError('Unknown value for filter_approach')
+
+        self.bg_ft2d = self.filter_quadrants(bg_ft2d, self.quadrants_to_keep)
+        self.fg_ft2d = self.filter_quadrants(fg_ft2d, self.quadrants_to_keep)
 
         _stft = np.abs(self.stft)[:, :, ch] + 1e-7
         _stft = _stft
@@ -199,7 +206,7 @@ class FT2D(MaskSeparationBase):
         else:
             fg_mask = est_mask
             bg_mask = 1 - fg_mask
-        
+
         return bg_mask, fg_mask
 
     def filter_local_maxima_with_std(self, ft2d):
@@ -207,7 +214,6 @@ class FT2D(MaskSeparationBase):
         data /= (np.max(data) + 1e-7)
 
         data_max = maximum_filter(data, self.neighborhood_size)
-        data_min = minimum_filter(data, self.neighborhood_size)
         data_mean = uniform_filter(data, self.neighborhood_size)
         data_mean_sq = uniform_filter(data ** 2, self.neighborhood_size)
         data_std = np.sqrt(data_mean_sq - data_mean ** 2) + 1e-7
@@ -220,18 +226,17 @@ class FT2D(MaskSeparationBase):
 
         maxima = np.maximum(maxima, np.fliplr(maxima), np.flipud(maxima))
         maxima = np.fft.ifftshift(maxima)
-        
+
         background_ft2d = np.multiply(maxima, ft2d)
         foreground_ft2d = np.multiply(1 - maxima, ft2d)
 
         return background_ft2d, foreground_ft2d
 
-
     def filter_local_maxima(self, ft2d):
         data = np.abs(np.fft.fftshift(ft2d))
         data /= (np.max(data) + 1e-7)
         threshold = np.std(data)
-        
+
         data_max = maximum_filter(data, self.neighborhood_size)
         maxima = (data == data_max)
         data_min = minimum_filter(data, self.neighborhood_size)
@@ -239,7 +244,7 @@ class FT2D(MaskSeparationBase):
         maxima[diff == 0] = 0
         maxima = np.maximum(maxima, np.fliplr(maxima), np.flipud(maxima))
         maxima = np.fft.ifftshift(maxima)
-        
+
         background_ft2d = np.multiply(maxima, ft2d)
         foreground_ft2d = np.multiply(1 - maxima, ft2d)
 

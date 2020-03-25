@@ -5,13 +5,14 @@ from torch import nn
 from sklearn.metrics import adjusted_mutual_info_score
 from sklearn import mixture, cluster
 
+
 def test_ml_gaussian_mixture():
     loc = torch.randn(1, 1, 3, 2)
     cov = torch.eye(2).view(1, 1, 1, 2, 2)
     cov = cov.repeat(1, 1, 3, 1, 1)
 
     for i in range(loc.shape[2]):
-        loc[:, :, i, :] += (i  * 10)
+        loc[:, :, i, :] += (i * 10)
         cov[:, :, i, :, :] *= .1
 
     n_components = 3

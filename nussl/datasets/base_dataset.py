@@ -1,7 +1,13 @@
-from torch.utils.data import Dataset
-from .. import AudioSignal, STFTParams
-from . import transforms as tfm
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import warnings
+
+from torch.utils.data import Dataset
+
+from .. import AudioSignal
+from . import transforms as tfm
+
 
 class BaseDataset(Dataset):
     """
@@ -275,6 +281,7 @@ class BaseDataset(Dataset):
                 )
         else:
             self.num_channels = audio_signal.num_channels
+
 
 class DataSetException(Exception):
     """

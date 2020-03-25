@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import scipy.fftpack as scifft
-import scipy.spatial.distance
 
 from .. import MaskSeparationBase, SeparationException
 from ..benchmark import HighLowPassFilter
 from ...core import constants
+
 
 class Repet(MaskSeparationBase):
     """Implements the original REpeating Pattern Extraction Technique algorithm 
@@ -45,11 +48,13 @@ class Repet(MaskSeparationBase):
         mask_threshold (float, optional): Masking threshold. Defaults to 0.5.
 
     """
-    def __init__(self, input_audio_signal, min_period=None, max_period=None, 
-      period=None, high_pass_cutoff=100.0, mask_type='soft', 
-      mask_threshold=0.5):
+
+    def __init__(self, input_audio_signal, min_period=None, max_period=None,
+                 period=None, high_pass_cutoff=100.0, mask_type='soft',
+                 mask_threshold=0.5):
+
         super().__init__(
-            input_audio_signal=input_audio_signal, 
+            input_audio_signal=input_audio_signal,
             mask_type=mask_type,
             mask_threshold=mask_threshold)
 
@@ -57,7 +62,7 @@ class Repet(MaskSeparationBase):
         if (min_period or max_period) and period:
             raise SeparationException(
                 'Cannot set both period and (min_period or max_period)!')
-        
+
         self._is_period_converted_to_hops = False
         self.period = period
 
@@ -70,6 +75,9 @@ class Repet(MaskSeparationBase):
             self._is_period_converted_to_hops = True
 
         self.high_pass_cutoff = high_pass_cutoff
+        self.magnitude_spectrogram = None
+        self.repeating_period = None
+        self.beat_spectrum = None
 
     def run(self):
         high_low = HighLowPassFilter(self.audio_signal, self.high_pass_cutoff)
@@ -86,7 +94,7 @@ class Repet(MaskSeparationBase):
             background_mask = self._compute_repeating_mask(
                 self.magnitude_spectrogram[..., ch])
             foreground_mask = 1 - background_mask
-            
+
             background_masks.append(background_mask)
             foreground_masks.append(foreground_mask)
 
@@ -101,12 +109,12 @@ class Repet(MaskSeparationBase):
             mask_data = _masks[..., i]
             if self.mask_type == self.MASKS['binary']:
                 mask_data = _masks[..., i] == np.max(_masks, axis=-1)
-            
+
             if i == 0:
                 mask_data = np.maximum(mask_data, high_pass_masks[i].mask)
             elif i == 1:
                 mask_data = np.minimum(mask_data, high_pass_masks[i].mask)
-            
+
             mask = self.mask_type(mask_data)
             self.result_masks.append(mask)
 
@@ -116,9 +124,6 @@ class Repet(MaskSeparationBase):
         """
         Calculates and returns the beat spectrum for the audio signal associated 
         with this object
-
-        Args:
-            recompute_stft (bool, Optional): Recompute the stft for the audio signal
 
         Returns:
             beat_spectrum (np.array): beat spectrum for the audio file
@@ -140,8 +145,8 @@ class Repet(MaskSeparationBase):
         """
         # TODO: Make this multi-channel. The np.mean() reduces the n channels to 1.       
         self.beat_spectrum = self.compute_beat_spectrum(
-            np.mean(np.square(self.magnitude_spectrogram), 
-                axis=constants.STFT_CHAN_INDEX).T
+            np.mean(np.square(self.magnitude_spectrogram),
+                    axis=constants.STFT_CHAN_INDEX).T
         )
         return self.beat_spectrum
 
@@ -160,7 +165,7 @@ class Repet(MaskSeparationBase):
             self._is_period_converted_to_hops = True
 
         self.repeating_period = self.find_repeating_period_simple(self.beat_spectrum,
-                                                                    self.min_period, self.max_period)
+                                                                  self.min_period, self.max_period)
 
         return self.repeating_period
 
@@ -194,14 +199,15 @@ class Repet(MaskSeparationBase):
         power_spectrogram = np.pad(power_spectrogram, ((0, pad_amount), (0, 0)), 'constant')
         fft_power_spec = scifft.fft(power_spectrogram, axis=0)
         abs_fft = np.abs(fft_power_spec) ** 2
-        autocorrelation_rows = np.real(scifft.ifft(abs_fft, axis=0)[:freq_bins, :])  # ifft over columns
+        autocorrelation_rows = np.real(
+            scifft.ifft(abs_fft, axis=0)[:freq_bins, :])  # ifft over columns
 
         # normalization factor
         norm_factor = np.tile(np.arange(freq_bins, 0, -1), (time_bins, 1)).T
         autocorrelation_rows = autocorrelation_rows / norm_factor
 
         # compute the beat spectrum
-        beat_spectrum = np.mean(autocorrelation_rows, axis=1)  
+        beat_spectrum = np.mean(autocorrelation_rows, axis=1)
         # average over frequencies
 
         return beat_spectrum
@@ -228,7 +234,7 @@ class Repet(MaskSeparationBase):
         """
         min_period, max_period = int(min_period), int(max_period)
         # discard the first element of beat_spectrum (lag 0)
-        beat_spectrum = beat_spectrum[1:]  
+        beat_spectrum = beat_spectrum[1:]
         beat_spectrum = beat_spectrum[min_period - 1: max_period]
 
         if len(beat_spectrum) == 0:
@@ -260,8 +266,9 @@ class Repet(MaskSeparationBase):
         # Pad to make an integer number of repetitions. Pad with 'nan's to not affect the median.
         remainder = (period * n_repetitions) % time_bins
         mask_reshaped = np.hstack(
-            [magnitude_spectrogram_channel, 
-            float('nan') * np.zeros((freq_bins, remainder))])
+            [magnitude_spectrogram_channel,
+             float('nan') * np.zeros((freq_bins, remainder))]
+        )
 
         # reshape to take the median of each period
         mask_reshaped = np.reshape(mask_reshaped.T, (n_repetitions, one_period))
@@ -271,13 +278,14 @@ class Repet(MaskSeparationBase):
 
         # reshape to it's original shape
         median_mask = np.reshape(
-            np.tile(median_mask, (n_repetitions, 1)), 
+            np.tile(median_mask, (n_repetitions, 1)),
             (n_repetitions * period, freq_bins)).T
         median_mask = median_mask[:, :time_bins]
 
         # take minimum of computed mask and original input and scale
         min_median_mask = np.minimum(median_mask, magnitude_spectrogram_channel)
-        mask = (min_median_mask + constants.EPSILON) / (magnitude_spectrogram_channel + constants.EPSILON)
+        mask = (min_median_mask + constants.EPSILON) / (
+                    magnitude_spectrogram_channel + constants.EPSILON)
 
         return mask
 

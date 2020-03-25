@@ -47,7 +47,7 @@ NUM_WORKERS = multiprocessing.cpu_count() // 4
 OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/ideal_ratio_mask/')
 RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 
-#APPROACH, KWARGS = 'psa', {'range_min': -np.inf, 'range_max':np.inf}
+# APPROACH, KWARGS = 'psa', {'range_min': -np.inf, 'range_max':np.inf}
 APPROACH, KWARGS = 'msa', {}
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
@@ -55,18 +55,20 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
 
-def separate_and_evaluate(item):
+
+def separate_and_evaluate(item_):
     separator = separation.benchmark.IdealRatioMask(
-        item['mix'], item['sources'], approach=APPROACH, 
+        item_['mix'], item_['sources'], approach=APPROACH,
         mask_type='soft', **KWARGS)
     estimates = separator()
 
     evaluator = evaluation.BSSEvalScale(
-        list(item['sources'].values()), estimates, compute_permutation=True)
+        list(item_['sources'].values()), estimates, compute_permutation=True)
     scores = evaluator.evaluate()
-    output_path = os.path.join(RESULTS_DIR, f"{item['mix'].file_name}.json")
+    output_path = os.path.join(RESULTS_DIR, f"{item_['mix'].file_name}.json")
     with open(output_path, 'w') as f:
         json.dump(scores, f)
+
 
 pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
 for i, item in enumerate(tqdm.tqdm(test_dataset)):

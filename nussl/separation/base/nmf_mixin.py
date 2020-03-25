@@ -1,11 +1,16 @@
-from ... import ml
-from ... import AudioSignal
-from ... import constants
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 
-class NMFMixin():
-    def fit(self, audio_signals, n_components, beta_loss='frobenius', 
-      l1_ratio=0.5, **kwargs):
+from ... import ml
+from ... import AudioSignal
+
+
+class NMFMixin:
+    @staticmethod
+    def fit(audio_signals, n_components, beta_loss='frobenius',
+            l1_ratio=0.5, **kwargs):
         """
         Fits an NMF model to the magnitude spectrograms of each
         audio signal. If `audio_signals` is a list, the magnitude
@@ -52,23 +57,24 @@ class NMFMixin():
         n_spectrograms = 0
 
         for audio_signal in audio_signals:
-            _data = np.abs(audio_signal.stft())    
-            n_spectrograms += audio_signal.num_channels  
+            _data = np.abs(audio_signal.stft())
+            n_spectrograms += audio_signal.num_channels
             # flip around array so frequencies are last
             _data = _data.transpose()
             # flatten first 2 axes
             _data = _data.reshape(-1, _data.shape[-1])
             data.append(_data)
-        
+
         data = np.concatenate(data, axis=0)
 
-        model = ml.NMF(n_components=n_components, l1_ratio=l1_ratio, 
-            beta_loss=beta_loss, **kwargs)
+        model = ml.NMF(n_components=n_components, l1_ratio=l1_ratio,
+                       beta_loss=beta_loss, **kwargs)
         activations = model.fit_transform(data)
         activations = activations.T.reshape(n_components, -1, n_spectrograms)
         return model, model.components_, activations
-    
-    def transform(self, audio_signal, model):
+
+    @staticmethod
+    def transform(audio_signal, model):
         """
         Use an already fit model to transform the magnitude spectrogram of an 
         audio signal into components and activations. These can be multiplied to 
@@ -87,7 +93,7 @@ class NMFMixin():
               features rather than frequencies of the STFT.
         """
         data = np.abs(audio_signal.stft())
-        
+
         shape = data.shape
         data = data.transpose()
         data = data.reshape(-1, data.shape[-1])
@@ -96,7 +102,8 @@ class NMFMixin():
         activations = activations.reshape((model.n_components,) + shape[1:])
         return model.components_, activations
 
-    def inverse_transform(self, components, activations):
+    @staticmethod
+    def inverse_transform(components, activations):
         """
         Reconstructs the magnitude spectrogram by matrix multiplying the components 
         with the activations. Components and activations are considered to be 2D matrices, 
@@ -114,5 +121,5 @@ class NMFMixin():
 
         reconstruction = activations @ components
         reconstruction = reconstruction.reshape(shape[:-1] + (-1,))
-        
+
         return reconstruction.transpose()

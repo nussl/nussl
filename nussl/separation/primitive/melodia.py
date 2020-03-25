@@ -1,16 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 from scipy.ndimage.filters import convolve
 from scipy.ndimage import maximum_filter, gaussian_filter
-import scipy.special
 
 from .. import MaskSeparationBase, SeparationException
 from ..benchmark import HighLowPassFilter
 from ... import AudioSignal
 from ... import vamp_imported
-import norbert
 
 if vamp_imported:
     import vamp
+
 
 class Melodia(MaskSeparationBase):
     """
@@ -48,9 +50,10 @@ class Melodia(MaskSeparationBase):
         num_overtones: (Optional) (int) Number of overtones to use when creating 
           melody mask.
     """
+
     def __init__(self, input_audio_signal, high_pass_cutoff=100, minimum_frequency=55.0,
                  maximum_frequency=1760.0, voicing_tolerance=0.2, minimum_peak_salience=0.0,
-                 compression=0.5, num_overtones=120, smooth_length=5, mask_type='soft', 
+                 compression=0.5, num_overtones=120, smooth_length=5, mask_type='soft',
                  mask_threshold=0.5):
         # lazy load vamp to check if it exists
         from ... import vamp_imported
@@ -61,10 +64,10 @@ class Melodia(MaskSeparationBase):
 
         if not vamp_imported or not melodia_installed:
             self._raise_vamp_melodia_error()
-        
+
         super().__init__(
-            input_audio_signal=input_audio_signal, 
-            mask_type=mask_type, 
+            input_audio_signal=input_audio_signal,
+            mask_type=mask_type,
             mask_threshold=mask_threshold
         )
 
@@ -113,12 +116,11 @@ class Melodia(MaskSeparationBase):
             'minpeaksalience': self.minimum_peak_salience
         }
 
-        
         data = vamp.collect(self.audio_signal.audio_data, self.sample_rate,
                             "mtg-melodia:melodia", parameters=params)
 
         _, melody = data['vector']
-        hop = 128./44100. # hard coded hop in Melodia vamp plugin, converting it to frames.
+        hop = 128. / 44100.  # hard coded hop in Melodia vamp plugin, converting it to frames.
         timestamps = 8 * hop + np.arange(len(melody)) * hop
         melody[melody < 0] = 0
         self.melody = melody
@@ -127,8 +129,8 @@ class Melodia(MaskSeparationBase):
     def get_overtone_weights(self):
         overtone_weights = (
             np.abs(np.cos(.33 * np.arange(self.num_overtones))) *
-            np.linspace(1.0, 0.0, self.num_overtones) + 
-            np.linspace(2.0, 0.0, self.num_overtones) 
+            np.linspace(1.0, 0.0, self.num_overtones) +
+            np.linspace(2.0, 0.0, self.num_overtones)
         )
         overtone_weights = np.exp(overtone_weights)
         overtone_weights /= overtone_weights.sum()
@@ -158,7 +160,7 @@ class Melodia(MaskSeparationBase):
 
         sample_rate = self.audio_signal.sample_rate
         melody_signal = []
-        transition_length = .001 # duration for fade in/out and frequency interpretation
+        transition_length = .001  # duration for fade in/out and frequency interpretation
         phase = np.zeros(num_overtones)
         previous_frequency = 0
         previous_time = 0
@@ -178,7 +180,7 @@ class Melodia(MaskSeparationBase):
                                         (frequency - previous_frequency)
                 elif frequency > 0:
                     frequency_series = np.ones(num_samples) * frequency
-                
+
                 samples = np.zeros(num_samples)
 
                 for overtone in range(num_overtones):
@@ -202,11 +204,11 @@ class Melodia(MaskSeparationBase):
 
         melody_signal = np.asarray(melody_signal)
         melody_signal /= float(max(np.max(melody_signal), 1e-7))
-        melody_signal = [melody_signal for channel in range(self.audio_signal.num_channels)]
+        melody_signal = [melody_signal for _ in range(self.audio_signal.num_channels)]
         melody_signal = np.asarray(melody_signal)
         melody_signal = melody_signal[:, 0:self.audio_signal.signal_length]
         melody_signal = AudioSignal(
-            audio_data_array=melody_signal, 
+            audio_data_array=melody_signal,
             sample_rate=sample_rate,
             stft_params=self.audio_signal.stft_params
         )
@@ -230,7 +232,7 @@ class Melodia(MaskSeparationBase):
 
         # Smoothing the mask row-wise using a low-pass filter to
         # get rid of discontuinities in the mask.
-        kernel =  np.full((1, self.smooth_length), 1/self.smooth_length)
+        kernel = np.full((1, self.smooth_length), 1 / self.smooth_length)
         for ch in range(self.audio_signal.num_channels):
             mask[..., ch] = convolve(stft[..., ch], kernel)
         return mask
@@ -259,13 +261,13 @@ class Melodia(MaskSeparationBase):
             mask_data = _masks[..., i]
             if self.mask_type == self.MASKS['binary']:
                 mask_data = _masks[..., i] == np.max(_masks, axis=-1)
-            
+
             if i == 0:
                 mask_data = np.maximum(mask_data, high_pass_masks[i].mask)
             elif i == 1:
                 mask_data = np.minimum(mask_data, high_pass_masks[i].mask)
-            
+
             mask = self.mask_type(mask_data)
             self.result_masks.append(mask)
 
-        return self.result_masks  
+        return self.result_masks

@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import numpy as np
 
-from .. import MaskSeparationBase, SeparationException
+from .. import MaskSeparationBase
 from ..benchmark import HighLowPassFilter
 from ...core import utils
 from ...core import constants
+
 
 class RepetSim(MaskSeparationBase):
     """
@@ -53,6 +57,7 @@ class RepetSim(MaskSeparationBase):
 
         self.similarity_matrix = None
         self.similarity_indices = None
+        self.magnitude_spectrogram = None
 
     def run(self):
         high_low = HighLowPassFilter(self.audio_signal, self.high_pass_cutoff)

@@ -1,10 +1,15 @@
-from torch import nn
-import json
-from . import modules
-import torch
-import numpy as np
-from itertools import chain
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
+import json
+
+import torch
+from torch import nn
+import numpy as np
+
+from . import modules
+
 
 class SeparationModel(nn.Module):
     """
@@ -67,7 +72,8 @@ class SeparationModel(nn.Module):
         self.output_keys = config['output']
         self.config = config
 
-    def _validate_config(self, config):
+    @staticmethod
+    def _validate_config(config):
         expected_keys = ['connections', 'modules', 'output']
         got_keys = sorted(list(config.keys()))
 

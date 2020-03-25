@@ -1,8 +1,13 @@
-import torch
-from . import loss
-from collections import namedtuple
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import copy
+
+import torch
+
+from . import loss
 from .trainer import BackwardsEvents
+
 
 class Closure(object):
     """
@@ -52,6 +57,7 @@ class Closure(object):
         ml.register_loss to register your loss functions with this closure.
 
     """
+
     def __init__(self, loss_dictionary):
         loss_dictionary = self._validate_loss_dictionary(loss_dictionary)
 
@@ -59,7 +65,7 @@ class Closure(object):
         for key, val in loss_dictionary.items():
             loss_class = getattr(loss, key)
             weight = 1 if 'weight' not in val else val['weight']
-            keys = loss_class.DEFAULT_KEYS  if 'keys' not in val else val['keys']
+            keys = loss_class.DEFAULT_KEYS if 'keys' not in val else val['keys']
             args = [] if 'args' not in val else val['args']
             kwargs = {} if 'kwargs' not in val else val['kwargs']
             if key in ['CombinationInvariantLoss', 'PermutationInvariantLoss']:
@@ -68,7 +74,8 @@ class Closure(object):
             _loss = (loss_class(*args, **kwargs), weight, keys, key)
             self.losses.append(_loss)
 
-    def _validate_loss_dictionary(self, loss_dictionary):
+    @staticmethod
+    def _validate_loss_dictionary(loss_dictionary):
         if not isinstance(loss_dictionary, dict):
             raise ClosureException(
                 "loss_dictionary must be a dictionary specifying the "
@@ -87,21 +94,21 @@ class Closure(object):
                 if val_key not in ['weight', 'args', 'kwargs']:
                     raise ClosureException(
                         f"{key} in loss_dictionary not in ['weight', 'args', 'kwargs'")
+
                 elif val_key == 'weight':
-                    if not isinstance(val[val_key], float) and not isinstance(
-                        val[val_key], int):
-                        raise ClosureException(
-                            f"weight can only be an int or a float")
+                    if not isinstance(val[val_key], float) and not isinstance(val[val_key], int):
+                        raise ClosureException(f"weight can only be an int or a float")
+
                 elif val_key == 'args':
                     if not isinstance(val[val_key], list):
-                        raise ClosureException(
-                            f"args must be a list")
+                        raise ClosureException(f"args must be a list")
+
                 elif val_key == 'kwargs':
                     if not isinstance(val[val_key], dict):
-                        raise ClosureException(
-                            "kwargs must be a dict")
+                        raise ClosureException("kwargs must be a dict")
+
         return copy.deepcopy(loss_dictionary)
-    
+
     def __call__(self, engine, data):
         raise NotImplementedError()
 
@@ -116,6 +123,7 @@ class Closure(object):
             loss_output['loss'] += weight * loss_output[name]
         return loss_output
 
+
 class TrainClosure(Closure):
     """
     This closure takes an optimization step on a SeparationModel object given a
@@ -126,6 +134,7 @@ class TrainClosure(Closure):
         optimizer (torch Optimizer): Optimizer to use to train the model.
         model (SeparationModel): The model to be trained.
     """
+
     def __init__(self, loss_dictionary, optimizer, model):
         super().__init__(loss_dictionary)
         self.optimizer = optimizer
@@ -137,13 +146,14 @@ class TrainClosure(Closure):
 
         output = self.model(data)
 
-        loss = self.compute_loss(output, data)
-        loss['loss'].backward()
+        loss_ = self.compute_loss(output, data)
+        loss_['loss'].backward()
         engine.fire_event(BackwardsEvents.BACKWARDS_COMPLETED)
         self.optimizer.step()
-        loss = {key: loss[key].item() for key in loss}
+        loss_ = {key: loss_[key].item() for key in loss_}
 
-        return loss
+        return loss_
+
 
 class ValidationClosure(Closure):
     """
@@ -153,6 +163,7 @@ class ValidationClosure(Closure):
         loss_dictionary (dict): Dictionary containing loss functions and specification.
         model (SeparationModel): The model to be validated.
     """
+
     def __init__(self, loss_dictionary, model):
         super().__init__(loss_dictionary)
         self.model = model
@@ -161,9 +172,10 @@ class ValidationClosure(Closure):
         with torch.no_grad():
             self.model.eval()
             output = self.model(data)
-            loss = self.compute_loss(output, data)
-            loss = {key: loss[key].item() for key in loss}
-        return loss
+            loss_ = self.compute_loss(output, data)
+            loss_ = {key: loss_[key].item() for key in loss_}
+        return loss_
+
 
 class ClosureException(Exception):
     """ 

@@ -1,10 +1,14 @@
-import copy
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import numpy as np
+
 from ... import ml
 from . import SeparationException, MaskSeparationBase
-import numpy as np
-from sklearn import preprocessing
+
 
 ALLOWED_CLUSTERING_TYPES = ['KMeans', 'GaussianMixture', 'MiniBatchKMeans']
+
 
 class ClusteringSeparationBase(MaskSeparationBase):
     """
@@ -105,7 +109,6 @@ class ClusteringSeparationBase(MaskSeparationBase):
         """
         raise NotImplementedError()
 
-
     def cluster_features(self, features, clusterer):
         """
         Clusters each time-frequency point according to features for each
@@ -131,8 +134,10 @@ class ClusteringSeparationBase(MaskSeparationBase):
             distances = clusterer.transform(features.reshape(-1, shape[-1]))
             distances = np.exp(-self.beta * distances) + 1e-8
             responsibilities = distances / distances.sum(axis=-1, keepdims=True)
-        if 'GaussianMixture' in self.clustering_type:
+        elif 'GaussianMixture' in self.clustering_type:
             responsibilities = clusterer.predict_proba(features.reshape(-1, shape[-1]))
+        else:
+            raise ValueError(f'Unknown clustering type f{self.clustering_type}')
 
         responsibilities = responsibilities.reshape(shape[:-1] + (-1,))
         return responsibilities

@@ -1,15 +1,20 @@
-from ...ml import SeparationModel
-from ...datasets import transforms as tfm
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import torch
 
+from ...ml import SeparationModel
+from ...datasets import transforms as tfm
+
 OMITTED_TRANSFORMS = (
-    tfm.GetExcerpt, 
-    tfm.MagnitudeWeights, 
+    tfm.GetExcerpt,
+    tfm.MagnitudeWeights,
     tfm.SumSources,
     tfm.Cache
 )
 
-class DeepMixin():
+
+class DeepMixin:
     def load_model(self, model_path, device='cpu'):
         """
         Loads the model at specified path `model_path`. Uses GPU if
@@ -26,14 +31,14 @@ class DeepMixin():
             the input data into the model.
         """
         model_dict = torch.load(model_path, map_location='cpu')
-        model =  SeparationModel(model_dict['config'])
+        model = SeparationModel(model_dict['config'])
         model.load_state_dict(model_dict['state_dict'])
 
         if not torch.cuda.is_available():
             device = 'cpu'
 
         self.device = device
-        
+
         model = model.to(device).eval()
         metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
         self.model = model
@@ -41,7 +46,8 @@ class DeepMixin():
         self.transform = self._get_transforms(
             self.metadata['transforms'])
 
-    def _get_transforms(self, loaded_tfm):
+    @staticmethod
+    def _get_transforms(loaded_tfm):
         """
         Look through the loaded transforms and omits any that are in 
         `OMITTED_TRANSFORMS`.
@@ -65,7 +71,7 @@ class DeepMixin():
             else:
                 transform = None
         return transform
-    
+
     def _get_input_data_for_model(self):
         """
         Sets up the audio signal with the appropriate STFT parameters and runs it
@@ -77,7 +83,7 @@ class DeepMixin():
         if self.metadata['sample_rate'] is not None:
             if self.audio_signal.sample_rate != self.metadata['sample_rate']:
                 self.audio_signal.resample(self.metadata['sample_rate'])
-        
+
         self.audio_signal.stft_params = self.metadata['stft_params']
 
         data = {'mix': self.audio_signal}
@@ -91,4 +97,3 @@ class DeepMixin():
                     data[key] = data[key].transpose(0, -1)
         self.input_data = data
         return self.input_data
-        

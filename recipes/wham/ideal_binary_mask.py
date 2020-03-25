@@ -12,13 +12,11 @@ and min subset in the WHAM dataset. Output of this script:
 
 Last run on 3/14/2020
 """
-import nussl
-from nussl import ml, datasets, utils, separation, evaluation
+from nussl import datasets, separation, evaluation
 import os
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 import logging
-import shutil
 import json
 import tqdm
 import glob
@@ -39,6 +37,7 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
 
+
 def separate_and_evaluate(item):
     separator = separation.benchmark.IdealBinaryMask(
         item['mix'], item['sources'], mask_type='binary')
@@ -50,6 +49,7 @@ def separate_and_evaluate(item):
     output_path = os.path.join(RESULTS_DIR, f"{item['mix'].file_name}.json")
     with open(output_path, 'w') as f:
         json.dump(scores, f)
+
 
 pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
 for i, item in enumerate(tqdm.tqdm(test_dataset)):

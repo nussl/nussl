@@ -37,23 +37,25 @@ signals = []
 
 combos = itertools.product(win_lengths, hop_length_ratios, window_types)
 
+
 @pytest.fixture
 def signals(benchmark_audio):
-    signals = []
+    signals_ = []
     # noisy signal
     noise = (np.random.rand(n_ch, length) * 2) - 1
-    signals.append(noise)
+    signals_.append(noise)
 
     # ones signal
     ones = np.ones(length)
-    signals.append(ones)
+    signals_.append(ones)
 
     # audio files
     for key, path in benchmark_audio.items():
         _s = nussl.AudioSignal(path, duration=dur)
-        signals.append(_s.audio_data)
+        signals_.append(_s.audio_data)
 
-    yield signals
+    yield signals_
+
 
 @pytest.mark.parametrize("combo", combos)
 def test_stft_istft_combo(combo, signals):
@@ -70,6 +72,7 @@ def test_stft_istft_combo(combo, signals):
             signal, win_length, hop_length, win_type
         )
 
+
 def test_stft_copy(signals):
     for audio_data in signals:
         signal = AudioSignal(
@@ -80,7 +83,7 @@ def test_stft_copy(signals):
         new_signal.istft(truncate_to_length=signal.signal_length)
         assert np.allclose(
             new_signal.audio_data, signal.audio_data, atol=stft_tol)
-        
+
         signal.set_active_region(0, 1000)
         pytest.warns(UserWarning, signal.make_copy_with_stft_data,
                      stft)
@@ -92,19 +95,24 @@ def test_stft_copy(signals):
 
         def dummy_a(signal):
             signal.stft_data = np.abs(signal.stft_data)
+
         pytest.warns(UserWarning, dummy_a, signal)
 
         def dummy_b(signal):
             signal.stft_data = np.ones((2, 100, 100, 2))
+
         pytest.raises(AudioSignalException, dummy_b, signal)
 
         def dummy_c(signal):
             signal.stft_data = np.ones((2,))
+
         pytest.raises(AudioSignalException, dummy_c, signal)
 
         def dummy_d(signal):
             signal.stft_data = [1, 2, 3, 4]
+
         pytest.raises(AudioSignalException, dummy_d, signal)
+
 
 def test_stft_features(signals):
     for audio_data in signals:
@@ -112,15 +120,15 @@ def test_stft_features(signals):
             audio_data_array=audio_data, sample_rate=sr)
         pytest.raises(AudioSignalException, signal.get_stft_channel, 0)
         pytest.raises(AudioSignalException, signal.ipd_ild_features)
-        pytest.raises(AudioSignalException, 
-            lambda x: x.log_magnitude_spectrogram_data,
-            signal)
-        pytest.raises(AudioSignalException, 
-            lambda x: x.magnitude_spectrogram_data,
-            signal)
-        pytest.raises(AudioSignalException, 
-            lambda x: x.power_spectrogram_data,
-            signal)
+        pytest.raises(AudioSignalException,
+                      lambda x: x.log_magnitude_spectrogram_data,
+                      signal)
+        pytest.raises(AudioSignalException,
+                      lambda x: x.magnitude_spectrogram_data,
+                      signal)
+        pytest.raises(AudioSignalException,
+                      lambda x: x.power_spectrogram_data,
+                      signal)
 
         signal.stft()
         ref_mag_spec = np.abs(signal.stft_data)
@@ -145,11 +153,12 @@ def test_stft_features(signals):
 
             assert np.allclose(ref_mag_spec[..., ch], tst_mag_spec)
             assert np.allclose(ref_pow_spec[..., ch], tst_pow_spec)
-        
+
         if signal.is_mono:
             pytest.raises(AudioSignalException, signal.ipd_ild_features)
         else:
-            ipd, ild = signal.ipd_ild_features(0, 1)
+            _, _ = signal.ipd_ild_features(0, 1)
+
 
 def test_stft_istft_defaults(benchmark_audio, atol=stft_tol):
     dummy = nussl.AudioSignal()
@@ -172,7 +181,7 @@ def test_stft_istft_defaults(benchmark_audio, atol=stft_tol):
     min_length = min(b.audio_data.shape[1], a.audio_data.shape[1])
 
     assert np.allclose(
-        a.audio_data[:, :min_length], 
+        a.audio_data[:, :min_length],
         b.audio_data[:, :min_length],
         atol=stft_tol)
 
@@ -182,14 +191,15 @@ def test_stft_istft_defaults(benchmark_audio, atol=stft_tol):
         recon = a.istft(overwrite=False)
         assert np.allclose(a.audio_data, recon, atol=stft_tol)
 
+
 def test_stft_params_setter():
     dummy = nussl.AudioSignal(sample_rate=44100)
     dummy.stft_params = None
-    
+
     default_win_len = int(
         2 ** (np.ceil(np.log2(
             nussl.constants.DEFAULT_WIN_LEN_PARAM * dummy.sample_rate))
-    ))
+        ))
     default_hop_len = default_win_len // 4
     default_win_type = nussl.constants.WINDOW_DEFAULT
 
@@ -239,5 +249,5 @@ def _check_stft_istft_allclose(audio_data, win_length, hop_length, win_type):
         audio_data_array=audio_data, sample_rate=sr, stft_params=stft_params)
     signal.stft()
     recon = signal.istft(overwrite=False)
-    
+
     assert np.allclose(signal.audio_data, recon, atol=stft_tol)

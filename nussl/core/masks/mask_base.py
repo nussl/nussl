@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 Base class for Mask objects. Contains many common utilities used for accessing masks. The mask itself is
 represented under the hood as a three dimensional numpy :obj:`ndarray` object. The dimensions are 
@@ -8,8 +11,6 @@ Right now only spectrogram-like masks are supported (note the shape of the :ref:
 releases nussl will support masks for representations with different dimensionality requirements.
 """
 
-import copy
-import json
 import numbers
 
 import numpy as np

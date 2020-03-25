@@ -1,7 +1,10 @@
-from ..base import ClusteringSeparationBase, DeepMixin, SeparationException
-import numpy as np
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import torch
-from copy import deepcopy
+
+from ..base import ClusteringSeparationBase, DeepMixin, SeparationException
+
 
 class DeepClustering(ClusteringSeparationBase, DeepMixin):
     """
@@ -27,8 +30,8 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
     Raises:
         SeparationException: If 'embedding' isn't in the output of the model.
     """
-    def __init__(self, input_audio_signal, num_sources, model_path=None, 
-        device='cpu', **kwargs):
+    def __init__(self, input_audio_signal, num_sources, model_path=None,
+                 device='cpu', **kwargs):
         if model_path is not None:
             self.load_model(model_path, device=device)
 

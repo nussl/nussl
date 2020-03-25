@@ -1,16 +1,21 @@
-import ignite
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import logging
+from enum import Enum
+import copy
+import time
+
 from ignite.engine import Events, Engine
 from ignite.handlers import Timer
 from torch.utils.tensorboard import SummaryWriter
 import torch
 from torch import nn
-import logging
-import time
-from enum import Enum
-import os
 import numpy as np
-from nussl import STFTParams, datasets
-import copy
+
+from nussl import datasets
+
 
 class ValidationEvents(Enum):
     """
@@ -19,11 +24,13 @@ class ValidationEvents(Enum):
     VALIDATION_STARTED = 'validation_started'
     VALIDATION_COMPLETED = 'validation_completed'
 
+
 class BackwardsEvents(Enum):
     """
     Events based on validation running
     """
     BACKWARDS_COMPLETED = 'backwards_completed'
+
 
 def cache_dataset(dataset, log_frequency=.1):
     """
@@ -42,6 +49,7 @@ def cache_dataset(dataset, log_frequency=.1):
           0.0 and 1.0 of the total dataset length. Defaults to .1 
           (10x over the course of caching).
     """
+
     def dummy_process(engine, data):
         pass
 
@@ -56,6 +64,7 @@ def cache_dataset(dataset, log_frequency=.1):
 
     cache.run(dataset)
     dataset.cache_populated = True
+
 
 def create_train_and_validation_engines(train_func, val_func=None, device='cpu'):
     """
@@ -87,7 +96,7 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
     trainer = Engine(train_func)
     trainer.register_events(*ValidationEvents)
     trainer.register_events(*BackwardsEvents)
-    
+
     validator = None if val_func is None else Engine(val_func)
 
     # Before a batch starts, the items should be float and moved to the 
@@ -103,7 +112,7 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
             if torch.is_tensor(batch[key]):
                 batch[key] = batch[key].float().to(device)
         engine.state.batch = batch
-    
+
     # Set up stuff for bookkeeping as training progresses.
     def book_keeping(engine):
         engine.state.epoch_history = {}
@@ -122,7 +131,7 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
             engine.state.past_iter_history[key].append(
                 engine.state.iter_history[key]
             )
-    
+
     def clear_iter_history(engine):
         engine.state.iter_history = {}
 
@@ -148,8 +157,8 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
     return trainer, validator
 
 
-def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, trainer, 
-    val_data=None, validator=None):
+def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, trainer,
+                                val_data=None, validator=None):
     """
     This adds the following handler to the trainer:
 
@@ -178,7 +187,8 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
 
         val_data (torch.utils.data.Dataset, optional): The validation data. 
           Defaults to None.
-    """ 
+    """
+
     # When the trainer finishes an epoch, it should validate and save 
     # the model.
     @trainer.on(Events.EPOCH_COMPLETED)
@@ -196,7 +206,7 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                 trainer.state.epoch_history[_key].append(np.mean(
                     validator.state.iter_history[key]
                 ))
-                
+
             if 'validation/loss' in trainer.state.epoch_history:
                 cur = trainer.state.epoch_history['validation/loss'][-1]
                 is_best = cur == min(trainer.state.epoch_history['validation/loss'])
@@ -248,8 +258,8 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
             else:
                 _model = model
             _model.save(_path, {'metadata': metadata})
-            torch.save(optimizer.state_dict(), 
-                _path.replace('model.pth', 'optimizer.pth'))
+            torch.save(optimizer.state_dict(),
+                       _path.replace('model.pth', 'optimizer.pth'))
 
         trainer.state.saved_model_path = output_paths[-1]
         trainer.state.output_folder = output_folder
@@ -286,13 +296,14 @@ def add_stdout_handler(trainer, validator=None):
     """
     # Set up timers for overall time taken and each epoch
     overall_timer = Timer(average=False)
-    overall_timer.attach(trainer, 
-        start=Events.STARTED, pause=Events.COMPLETED)
+    overall_timer.attach(trainer,
+                         start=Events.STARTED, pause=Events.COMPLETED)
 
     epoch_timer = Timer(average=False)
     epoch_timer.attach(
-        trainer, start=Events.EPOCH_STARTED, 
-        pause=ValidationEvents.VALIDATION_COMPLETED)
+        trainer, start=Events.EPOCH_STARTED,
+        pause=ValidationEvents.VALIDATION_COMPLETED
+    )
 
     @trainer.on(ValidationEvents.VALIDATION_COMPLETED)
     def log_epoch_to_stdout(trainer):
@@ -303,7 +314,7 @@ def add_stdout_handler(trainer, validator=None):
         overall_time = time.strftime(
             "%H:%M:%S", time.gmtime(overall_time))
 
-        epoch_number = trainer.state.epoch 
+        epoch_number = trainer.state.epoch
         total_epochs = trainer.state.max_epochs
 
         try:
@@ -319,17 +330,18 @@ def add_stdout_handler(trainer, validator=None):
             f"\n\n"
             f"EPOCH SUMMARY \n"
             f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
-            f"- Epoch number: {epoch_number:04d} / {total_epochs:04d} \n"                 
+            f"- Epoch number: {epoch_number:04d} / {total_epochs:04d} \n"
             f"- Training loss:   {train_loss:04f} \n"
-            f"- Validation loss: {validation_loss} \n"    
-            f"- Epoch took: {epoch_time} \n"                
-            f"- Time since start: {overall_time} \n"       
+            f"- Validation loss: {validation_loss} \n"
+            f"- Epoch took: {epoch_time} \n"
+            f"- Time since start: {overall_time} \n"
             f"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
             f"Saving to {saved_model_path}. \n"
             f"Output @ {trainer.state.output_folder} \n"
         )
 
         logging.info(logging_str)
+
 
 def add_tensorboard_handler(output_folder, engine):
     """
@@ -341,6 +353,7 @@ def add_tensorboard_handler(output_folder, engine):
 
         trainer (ignite.Engine): The engine to log.
     """
+
     @engine.on(ValidationEvents.VALIDATION_COMPLETED)
     def log_to_tensorboard(engine):
         writer = SummaryWriter(

@@ -1,10 +1,16 @@
-from .. import AudioSignal
-from itertools import permutations, combinations
-import numpy as np
-from ..core import utils
-import json
-import pandas as pd
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
+import json
+from itertools import permutations, combinations
+
+import pandas as pd
+import numpy as np
+
+from .. import AudioSignal
+from ..core import utils
+
 
 def aggregate_score_files(json_files, aggregator=np.median):
     """
@@ -59,6 +65,7 @@ def aggregate_score_files(json_files, aggregator=np.median):
         k: pd.DataFrame(v).T for k, v in metrics.items()
     }, axis=0, names=['source', 'file'])
     return df
+
 
 class EvaluationBase(object):
     """
@@ -229,7 +236,6 @@ class EvaluationBase(object):
 
         raise NotImplementedError('Must implement evaluate_helper in a subclass!')
 
-
     def evaluate(self):
         """
         This function encapsulates the main functionality of all evaluation classes.
@@ -294,6 +300,7 @@ class EvaluationBase(object):
 
         """
         return self._scores
+
 
 class AudioSignalListMismatchError(Exception):
     """

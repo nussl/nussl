@@ -14,21 +14,23 @@ Final output of this script:
 
 Last run on 3/20/20.
 """
-import nussl
-from nussl import ml, datasets, utils, separation, evaluation
 import os
-import torch
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from torch import optim
 import logging
-import matplotlib.pyplot as plt
 import shutil
 import json
-import tqdm
 import glob
+from concurrent.futures import ThreadPoolExecutor
+
+import torch
+from torch import optim
+import tqdm
 import numpy as np
 import termtables
+
+import nussl
+from nussl import ml, datasets, utils, separation, evaluation
+
 
 # ----------------------------------------------------
 # ------------------- SETTING UP ---------------------
@@ -61,16 +63,18 @@ shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 shutil.rmtree(os.path.join(OUTPUT_DIR, 'tensorboard'), ignore_errors=True)
 
+
 def construct_transforms(cache_location):
     # stft will be 32ms wlen, 8ms hop, sqrt-hann, at 8khz sample rate by default
     tfm = datasets.transforms.Compose([
-        datasets.transforms.MagnitudeSpectrumApproximation(), # take stfts and get ibm
-        datasets.transforms.MagnitudeWeights(), # get magnitude weights
-        datasets.transforms.ToSeparationModel(), # convert to tensors
-        datasets.transforms.Cache(cache_location), # up to here gets cached
-        datasets.transforms.GetExcerpt(400) # get 400 frame excerpts (3.2 seconds)
+        datasets.transforms.MagnitudeSpectrumApproximation(),  # take stfts and get ibm
+        datasets.transforms.MagnitudeWeights(),  # get magnitude weights
+        datasets.transforms.ToSeparationModel(),  # convert to tensors
+        datasets.transforms.Cache(cache_location),  # up to here gets cached
+        datasets.transforms.GetExcerpt(400)  # get 400 frame excerpts (3.2 seconds)
     ])
     return tfm
+
 
 def cache_dataset(_dataset):
     cache_dataloader = torch.utils.data.DataLoader(
@@ -78,18 +82,20 @@ def cache_dataset(_dataset):
     ml.train.cache_dataset(cache_dataloader)
     _dataset.cache_populated = True
 
+
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'tr'))
-dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm, 
-    cache_populated=CACHE_POPULATED)
+dataset = datasets.WHAM(WHAM_ROOT, split='tr', transform=tfm,
+                        cache_populated=CACHE_POPULATED)
 
 tfm = construct_transforms(os.path.join(CACHE_ROOT, 'cv'))
-val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm, 
-    cache_populated=CACHE_POPULATED)
+val_dataset = datasets.WHAM(WHAM_ROOT, split='cv', transform=tfm,
+                            cache_populated=CACHE_POPULATED)
 
 if not CACHE_POPULATED:
     # cache datasets for speed
     cache_dataset(dataset)
     cache_dataset(val_dataset)
+
 
 # ----------------------------------------------------
 # -------------------- TRAINING ----------------------
@@ -99,12 +105,13 @@ if not CACHE_POPULATED:
 train_sampler = torch.utils.data.sampler.RandomSampler(dataset)
 val_sampler = torch.utils.data.sampler.RandomSampler(val_dataset)
 
-dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS, 
-    batch_size=BATCH_SIZE, sampler=train_sampler)
+dataloader = torch.utils.data.DataLoader(dataset, num_workers=NUM_WORKERS,
+                                         batch_size=BATCH_SIZE, sampler=train_sampler)
 val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKERS,
-    batch_size=BATCH_SIZE, sampler=val_sampler)
+                                             batch_size=BATCH_SIZE, sampler=val_sampler)
 
 n_features = dataset[0]['mix_magnitude'].shape[1]
+
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
 # and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_dpcl(
@@ -117,26 +124,25 @@ optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(
     optimizer, factor=0.5, patience=PATIENCE)
 
+
 # set up the loss function
 loss_dictionary = {
     'DeepClusteringLoss': {'weight': 1.0}
 }
 
 # set up closures for the forward and backward pass on one batch
-train_closure = ml.train.closures.TrainClosure(
-    loss_dictionary, optimizer, model)
-val_closure = ml.train.closures.ValidationClosure(
-    loss_dictionary, model)
+train_closure = ml.train.closures.TrainClosure(loss_dictionary, optimizer, model)
+val_closure = ml.train.closures.ValidationClosure(loss_dictionary, model)
+
 
 # set up engines for training and validation
-trainer, validator = ml.train.create_train_and_validation_engines(
-    train_closure, val_closure, device=DEVICE)
+trainer, validator = ml.train.create_train_and_validation_engines(train_closure, val_closure,
+                                                                  device=DEVICE)
 
 # attach handlers for visualizing output and saving the model
 ml.train.add_stdout_handler(trainer, validator)
-ml.train.add_validate_and_checkpoint(
-    OUTPUT_DIR, model, optimizer, dataset, 
-    trainer, val_data=val_dataloader, validator=validator)
+ml.train.add_validate_and_checkpoint(OUTPUT_DIR, model, optimizer, dataset,
+                                     trainer, val_data=val_dataloader, validator=validator)
 ml.train.add_tensorboard_handler(OUTPUT_DIR, trainer)
 
 # add a handler to set up patience
@@ -150,8 +156,10 @@ def step_scheduler(trainer):
 def clip_gradient(trainer):
     torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_NORM)
 
+
 # train the model
 trainer.run(dataloader, max_epochs=MAX_EPOCHS)
+
 
 # ----------------------------------------------------
 # ------------------- EVALUATION ---------------------
@@ -163,11 +171,13 @@ test_dataset = datasets.WHAM(WHAM_ROOT, sample_rate=8000, split='tt')
 dpcl = separation.deep.DeepClustering(
     nussl.AudioSignal(), num_sources=2, model_path=MODEL_PATH, device='cuda')
 
+
 def forward_on_gpu(audio_signal):
     # set the audio signal of the object to this item's mix
     dpcl.audio_signal = audio_signal
     features = dpcl.extract_features()
     return features
+
 
 def separate_and_evaluate(item, features):
     separator = separation.deep.DeepClustering(item['mix'], num_sources=2)
@@ -179,6 +189,7 @@ def separate_and_evaluate(item, features):
     output_path = os.path.join(RESULTS_DIR, f"{item['mix'].file_name}.json")
     with open(output_path, 'w') as f:
         json.dump(scores, f)
+
 
 pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
 for i, item in enumerate(tqdm.tqdm(test_dataset)):

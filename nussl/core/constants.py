@@ -1,11 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 A repository containing all of the constants frequently used in
 this wacky, mixed up source separation stuff.
 """
-import scipy.signal
-from six.moves.urllib_parse import urljoin
-from collections import OrderedDict
 import os
+from collections import OrderedDict
+from six.moves.urllib_parse import urljoin
+
+import scipy.signal
 
 __all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
            'DEFAULT_MAX_VAL', 'EPSILON', 'MAX_FREQUENCY',
@@ -27,7 +31,7 @@ WINDOW_RECTANGULAR = 'rectangular'  #: (str): Name for calling Rectangular windo
 WINDOW_HANN = scipy.signal.hann.__name__  #: (str): Name for calling Hann window. 'hann'
 WINDOW_BLACKMAN = scipy.signal.blackman.__name__  #: (str): Name for calling Blackman window. 'blackman'
 WINDOW_TRIANGULAR = 'triang'  #: (str): Name for calling Triangular window. 'triangular'
-WINDOW_SQRT_HANN = 'sqrt_hann' #: (str): Name for calling square root of hann window. 'sqrt_hann'.
+WINDOW_SQRT_HANN = 'sqrt_hann'  #: (str): Name for calling square root of hann window. 'sqrt_hann'.
 
 WINDOW_DEFAULT = WINDOW_SQRT_HANN  #: (str): Default window, Hamming.
 ALL_WINDOWS = [
@@ -49,7 +53,7 @@ SOFT_MASK = 'soft'
 # ############# Array Indices ############# #
 
 # audio_data
-LEN_INDEX  = 1  #: (int): Index of the number of samples in an audio signal. Used in :ref:`audio_signal`
+LEN_INDEX = 1  #: (int): Index of the number of samples in an audio signal. Used in :ref:`audio_signal`
 CHAN_INDEX = 0  #: (int): Index of the number of channels in an audio signal. Used in :ref:`audio_signal`
 
 # stft_data
@@ -58,7 +62,7 @@ STFT_VERT_INDEX = 0
 (int) Index of the number of frequency (vertical) values in a time-frequency representation. 
 Used in :ref:`audio_signal` and in :ref:`mask_base`.
 """
-STFT_LEN_INDEX  = 1
+STFT_LEN_INDEX = 1
 """
 (int) Index of the number of time (horizontal) hops in a time-frequency representation. 
 Used in :ref:`audio_signal` and in :ref:`mask_base`.

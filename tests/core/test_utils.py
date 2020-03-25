@@ -7,6 +7,7 @@ import pytest
 import torch
 import random
 
+
 def test_utils_seed():
     seeds = [0, 123, 666, 15, 2]
 
@@ -33,7 +34,7 @@ def test_utils_seed():
 
         for first, second in zip(t1, t3):
             assert not np.allclose(first, second)
-            
+
     # do it again with set_cudnn = True
     for seed in seeds:
         nussl.utils.seed(seed, set_cudnn=True)
@@ -51,7 +52,6 @@ def test_utils_seed():
 
         for first, second in zip(t1, t3):
             assert not np.allclose(first, second)
-
 
 
 def test_utils_find_peak_indices():
@@ -87,18 +87,19 @@ def test_utils_complex_randn():
     assert (mat.shape == (100, 100))
     assert (mat.dtype == np.complex128)
 
+
 def test_utils_audio_signal_list(benchmark_audio):
     path = benchmark_audio['dev1_female3_inst_mix.wav']
     signals = [nussl.AudioSignal(path) for i in range(3)]
     assert signals == nussl.utils.verify_audio_signal_list_strict(signals)
     assert signals == nussl.utils.verify_audio_signal_list_lax(signals)
     assert [signals[0]] == nussl.utils.verify_audio_signal_list_lax(signals[0])
-    
+
     dur = signals[0].signal_duration
 
     signals = [
         nussl.AudioSignal(
-            path, 
+            path,
             duration=np.random.rand() * dur) for i in range(3)
         for i in range(10)
     ]
@@ -127,6 +128,7 @@ def test_utils_audio_signal_list(benchmark_audio):
 
     pytest.raises(
         ValueError, nussl.utils.verify_audio_signal_list_lax, {'test': 'garbage'})
+
 
 def test_utils_audio_signals_to_musdb_track(musdb_tracks):
     track = musdb_tracks[0]
@@ -161,6 +163,7 @@ def test_utils_audio_signals_to_musdb_track(musdb_tracks):
     assert np.allclose(track.stems, reconstructed_track.stems)
     assert track.stems.shape == separated_track.stems.shape
 
+
 def test_utils_musdb_track_to_audio_signals(musdb_tracks):
     track = musdb_tracks[0]
     stems = track.stems
@@ -175,12 +178,14 @@ def test_utils_musdb_track_to_audio_signals(musdb_tracks):
         assert sources[k].sample_rate == track.rate
         assert k in sources[k].path_to_input_file
 
+
 def test_utils_format():
     _in = '0123~5aBc'
     _gt = '01235abc'
     _est = nussl.utils._format(_in)
 
     assert _gt == _est
+
 
 def test_utils_get_axis():
     mat = np.random.rand(100, 10, 1)
@@ -190,6 +195,7 @@ def test_utils_get_axis():
     assert _out.shape == (100, 1)
     _out = nussl.utils._get_axis(mat, 2, 0)
     assert _out.shape == (100, 10)
+
 
 def test_utils_slice_along_dim():
     data = [
@@ -206,9 +212,9 @@ def test_utils_slice_along_dim():
             end = max(_first, _second)
 
             if d > 3:
-                pytest.raises(ValueError, 
-                    nussl.utils._slice_along_dim,
-                    _data, d, start, end)
+                pytest.raises(ValueError,
+                              nussl.utils._slice_along_dim,
+                              _data, d, start, end)
             else:
                 sliced_data = nussl.utils._slice_along_dim(
                     _data, d, start, end)
@@ -221,4 +227,4 @@ def test_utils_slice_along_dim():
 
     data = np.random.rand(10, 10)
     pytest.raises(ValueError, nussl.utils._slice_along_dim,
-        data, 2, 0, 10)
+                  data, 2, 0, 10)

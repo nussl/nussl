@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from .networks import SeparationModel
 from .networks import modules
 
@@ -25,9 +28,10 @@ def register_module(module):
     You can now use the name `ExampleModule` in the config for a SeparationModel.
     
     Args:
-        _module ([type]): [description]
+        module ([type]): [description]
     """
     setattr(modules, module.__name__, module)
+
 
 def register_loss(custom_loss):
     """

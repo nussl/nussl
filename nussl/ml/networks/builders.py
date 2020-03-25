@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 Functions that make it easy to build commonly used source separation architectures.
 Currently contains mask inference, deep clustering, and chimera networks that are
@@ -6,9 +9,11 @@ creating your own network toplogies. Since there can be dependencies between lay
 depending on input size, it's good to work this out in a function like those below.
 """
 
+
 def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidirectional,
-    dropout, num_sources, mask_activation, num_audio_channels=1, rnn_type='lstm', 
-    normalization_class='BatchNorm', mix_key='mix_magnitude'):
+                                   dropout, num_sources, mask_activation, num_audio_channels=1,
+                                   rnn_type='lstm', normalization_class='BatchNorm',
+                                   mix_key='mix_magnitude'):
     """
     Builds a config for a mask inference network that can be passed to 
     SeparationModel. This mask inference network uses a recurrent neural network (RNN)
@@ -71,13 +76,13 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
             'class': 'Mask',
         },
     }
-    
+
     # define the topology
     connections = [
-        ['log_spectrogram', ['mix_magnitude',]],
-        ['normalization', ['log_spectrogram',]],
-        ['recurrent_stack', ['normalization',]],
-        ['mask', ['recurrent_stack',]],
+        ['log_spectrogram', ['mix_magnitude', ]],
+        ['normalization', ['log_spectrogram', ]],
+        ['recurrent_stack', ['normalization', ]],
+        ['mask', ['recurrent_stack', ]],
         ['estimates', ['mask', 'mix_magnitude']]
     ]
 
@@ -93,9 +98,11 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
 
     return config
 
+
 def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
-    dropout, embedding_size, embedding_activation, num_audio_channels=1, rnn_type='lstm', 
-    normalization_class='BatchNorm', mix_key='mix_magnitude'):
+                         dropout, embedding_size, embedding_activation, num_audio_channels=1,
+                         rnn_type='lstm',
+                         normalization_class='BatchNorm', mix_key='mix_magnitude'):
     """
     Builds a config for a deep clustering network that can be passed to 
     SeparationModel. This deep clustering network uses a recurrent neural network (RNN)
@@ -155,13 +162,13 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
             }
         },
     }
-    
+
     # define the topology
     connections = [
-        ['log_spectrogram', ['mix_magnitude',]],
-        ['normalization', ['log_spectrogram',]],
-        ['recurrent_stack', ['normalization',]],
-        ['embedding', ['recurrent_stack',]],
+        ['log_spectrogram', ['mix_magnitude', ]],
+        ['normalization', ['log_spectrogram', ]],
+        ['recurrent_stack', ['normalization', ]],
+        ['embedding', ['recurrent_stack', ]],
     ]
 
     # define the outputs
@@ -176,10 +183,12 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
 
     return config
 
+
 def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional,
-    dropout, embedding_size, embedding_activation, num_sources, mask_activation,
-    num_audio_channels=1, rnn_type='lstm', normalization_class='BatchNorm', 
-    mix_key='mix_magnitude'):
+                            dropout, embedding_size, embedding_activation, num_sources,
+                            mask_activation,
+                            num_audio_channels=1, rnn_type='lstm', normalization_class='BatchNorm',
+                            mix_key='mix_magnitude'):
     """
     Builds a config for a Chimera network that can be passed to SeparationModel. 
     Chimera networks are so-called because they have two "heads" which can be trained
@@ -258,14 +267,14 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
             'class': 'Mask',
         },
     }
-    
+
     # define the topology
     connections = [
-        ['log_spectrogram', ['mix_magnitude',]],
-        ['normalization', ['log_spectrogram',]],
-        ['recurrent_stack', ['normalization',]],
-        ['embedding', ['recurrent_stack',]],
-        ['mask', ['recurrent_stack',]],
+        ['log_spectrogram', ['mix_magnitude', ]],
+        ['normalization', ['log_spectrogram', ]],
+        ['recurrent_stack', ['normalization', ]],
+        ['embedding', ['recurrent_stack', ]],
+        ['mask', ['recurrent_stack', ]],
         ['estimates', ['mask', 'mix_magnitude']]
     ]
 
@@ -280,4 +289,3 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
     }
 
     return config
-    

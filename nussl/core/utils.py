@@ -1,21 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 Provides utilities for running nussl algorithms that do not belong to
 any specific algorithm or that are shared between algorithms.
 """
 
 import warnings
-import base64
-import json
-import re
-import collections
 
 import numpy as np
 import torch
 import random
 import musdb
 import matplotlib.pyplot as plt
-
-from . import constants
 
 
 def seed(random_seed, set_cudnn=False):
@@ -123,7 +120,7 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
         cur_peak_idx = list(np.unravel_index(
             np.argmax(input_array.flatten()), input_array.shape
         ))
-        
+
         # zero out peak and its surroundings
         if is_1d:
             cur_peak_idx = cur_peak_idx[0]
@@ -143,12 +140,14 @@ def find_peak_indices(input_array, n_peaks, min_dist=None, do_min=False, thresho
 
     return peak_indices
 
+
 def _set_array_zero_indices(index, zero_distance, max_len):
     lower = index - zero_distance
     upper = index + zero_distance + 1
     lower = 0 if lower < 0 else lower
     upper = max_len if upper >= max_len else upper
     return int(lower), int(upper)
+
 
 def complex_randn(shape):
     """
@@ -161,6 +160,7 @@ def complex_randn(shape):
         (:obj:`np.ndarray`): a complex-valued numpy array of random values with shape `shape`
     """
     return np.random.randn(*shape) + 1j * np.random.randn(*shape)
+
 
 def _get_axis(array, axis_num, i):
     """
@@ -177,6 +177,7 @@ def _get_axis(array, axis_num, i):
 
     return np.take(array, i, axis_num)
 
+
 def _slice_along_dim(data, dim, start, end):
     """
     Takes a slice of data along a dim between a start and an end. Agnostic to
@@ -192,7 +193,7 @@ def _slice_along_dim(data, dim, start, end):
         raise ValueError("Unsupported for dim > 4")
     if dim >= len(data.shape):
         raise ValueError(f"dim {dim} too high for data.shape {data.shape}!")
-    
+
     if dim == 0:
         return data[start:end, ...]
     elif dim == 1:
@@ -202,11 +203,13 @@ def _slice_along_dim(data, dim, start, end):
     elif dim == 3:
         return data[:, :, :, start:end, ...]
 
+
 def _format(string):
     """ Formats a class name correctly for checking function and class names.
         Strips all non-alphanumeric chars and makes lowercase.
     """
     return ''.join(list(filter(str.isalnum, string))).lower()
+
 
 def musdb_track_to_audio_signals(track):
     """
@@ -235,8 +238,9 @@ def musdb_track_to_audio_signals(track):
             sample_rate=track.rate
         )
         sources[k].path_to_input_file = f'musdb/{track.name}_{k}.wav'
-    
+
     return mixture, sources
+
 
 def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
     """
@@ -289,7 +293,7 @@ def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
     for name, target_srcs in list(targets_dict.items()):
         if name in sources_dict:
             stems.append(sources_dict[name].audio_data.T)
-    
+
     track._stems = np.array(stems)
     return track
 
@@ -378,11 +382,11 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
             _data = _data[_data <= upper]
             n = n.split('layers.')[-1]
             data.append((n, _data, np.abs(_data).mean()))
-    
+
     _data = [d[1] for d in sorted(data, key=lambda x: x[-1])]
     _names = [d[0] for d in sorted(data, key=lambda x: x[-1])]
 
-    plt.hist(_data, len(_data) * n_bins, histtype='step', fill=False, 
-        stacked=True, label=_names)
+    plt.hist(_data, len(_data) * n_bins, histtype='step', fill=False,
+             stacked=True, label=_names)
 
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)

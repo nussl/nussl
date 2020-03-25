@@ -138,6 +138,7 @@ def test_separation_model_chimera(one_item):
                 output['embedding'].shape == (
                     one_item['mix_magnitude'].shape + (20,)))
 
+
 def test_separation_model_gmm_unfold(one_item):
     n_features = one_item['mix_magnitude'].shape[2]
 
@@ -162,6 +163,7 @@ def test_separation_model_gmm_unfold(one_item):
             assert (
                 output['embedding'].shape == (
                     one_item['mix_magnitude'].shape + (20,)))
+
 
 def test_separation_model_extra_modules(one_item):
     with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
@@ -189,6 +191,7 @@ def test_separation_model_extra_modules(one_item):
             assert torch.allclose(
                 one_item['mix_magnitude'], output['test']
             )
+
 
 def test_separation_model_save():
     model = SeparationModel(dpcl_config)
