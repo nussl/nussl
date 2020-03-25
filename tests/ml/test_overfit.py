@@ -61,6 +61,8 @@ def test_overfit_a(mix_source_folder):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         _dir = fix_dir if fix_dir else tmpdir
+        os.makedirs(os.path.join(_dir, 'plots'), exist_ok=True)
+
         trainer, validator = ml.train.create_train_and_validation_engines(
             train_closure, val_closure, device=device
         )
