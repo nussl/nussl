@@ -14,12 +14,15 @@ import numpy as np
 import torch
 import json
 
+
 def _unzip(path_to_zip, target_path):
     with zipfile.ZipFile(path_to_zip, 'r') as zip_ref:
         zip_ref.extractall(target_path)
 
+
 fix_dir = os.path.expanduser('~/.nussl/tests/')
 OVERWRITE_REGRESSION_DATA = False
+
 
 @pytest.fixture(scope="module")
 def benchmark_audio():
@@ -31,12 +34,14 @@ def benchmark_audio():
             audio_files[k] = efz_utils.download_audio_file(k, _dir)
         yield audio_files
 
+
 @pytest.fixture(scope="module")
 def musdb_tracks():
     with tempfile.TemporaryDirectory() as tmp_dir:
         _dir = tmp_dir if fix_dir is None else fix_dir
         db = musdb.DB(root=_dir, download=True)
         yield db
+
 
 @pytest.fixture(scope="module")
 def toy_datasets():
@@ -50,6 +55,7 @@ def toy_datasets():
             _unzip(data, target_folder)
             dataset_locations[k] = target_folder
         yield dataset_locations
+
 
 @pytest.fixture(scope="module")
 def mix_source_folder(toy_datasets):
@@ -76,7 +82,6 @@ def mix_source_folder(toy_datasets):
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 sources[n].truncate_samples(min_length)
                 sources[n].write_audio_to_file(output_path)
-            
 
             mix = sum(sources)
             output_path = os.path.join(_dir, 'mix', f'{i}.wav')
@@ -120,8 +125,9 @@ def scaper_folder(toy_datasets):
             audio_path = os.path.join(_dir, f'{i}.wav')
             jams_path = os.path.join(_dir, f'{i}.jams')
             sc.generate(audio_path, jams_path, save_isolated_events=True)
-            
+
         yield _dir
+
 
 @pytest.fixture(scope="module")
 def mix_and_sources(scaper_folder):
@@ -129,14 +135,16 @@ def mix_and_sources(scaper_folder):
     item = dataset[0]
     return item['mix'], item['sources']
 
+
 @pytest.fixture(scope="module")
 def music_mix_and_sources(musdb_tracks):
     dataset = datasets.MUSDB18(
-        folder=musdb_tracks.root, download=False, 
+        folder=musdb_tracks.root, download=False,
         transform=transforms.SumSources(
             [['drums', 'bass', 'other']]))
     item = dataset[0]
     return item['mix'], item['sources']
+
 
 @pytest.fixture(scope="module")
 def drum_and_vocals(musdb_tracks):
@@ -181,8 +189,9 @@ def bad_scaper_folder(toy_datasets):
             audio_path = os.path.join(_dir, f'{i}.wav')
             jams_path = os.path.join(_dir, f'{i}.jams')
             sc.generate(audio_path, jams_path, save_isolated_events=False)
-            
+
         yield _dir
+
 
 @pytest.fixture(scope="module")
 def one_item(scaper_folder):
@@ -204,6 +213,7 @@ def one_item(scaper_folder):
             data[k] = data[k].unsqueeze(0)
     yield data
 
+
 @pytest.fixture(scope="module")
 def check_against_regression_data():
     def check(scores, path):
@@ -220,4 +230,5 @@ def check_against_regression_data():
                 if key not in ['permutation', 'combination']:
                     for metric in scores[key]:
                         assert scores[key][metric] == reg_scores[key][metric]
+
     return check

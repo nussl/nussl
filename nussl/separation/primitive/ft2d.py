@@ -78,7 +78,8 @@ class FT2D(MaskSeparationBase):
         super().__init__(
             input_audio_signal=input_audio_signal,
             mask_type=mask_type,
-            mask_threshold=mask_threshold)
+            mask_threshold=mask_threshold
+        )
 
         self.neighborhood_size = neighborhood_size
         self.result_masks = None
@@ -88,12 +89,14 @@ class FT2D(MaskSeparationBase):
         self.bg_ft2d = None
         self.fg_ft2d = None
 
-        allowed_filter_approaches = ['original', 'local_std']
-        if filter_approach not in allowed_filter_approaches:
+        if filter_approach == 'original':
+            self.filter_func = self.filter_local_maxima
+        elif filter_approach == 'local_std':
+            self.filter_func = self.filter_local_maxima_with_std
+        else:
+            allowed_filter_approaches = ['original', 'local_std']
             raise SeparationException(
                 f'filter approach must be one of {allowed_filter_approaches}')
-
-        self.filter_approach = filter_approach
 
     def run(self):
         high_low = HighLowPassFilter(self.audio_signal, self.high_pass_cutoff)
@@ -104,7 +107,8 @@ class FT2D(MaskSeparationBase):
 
         for ch in range(self.audio_signal.num_channels):
             background_mask, foreground_mask = self.compute_ft2d_mask(
-                self.ft2d, ch)
+                self.ft2d, ch
+            )
             background_masks.append(background_mask)
             foreground_masks.append(foreground_mask)
 
@@ -175,10 +179,7 @@ class FT2D(MaskSeparationBase):
         return data
 
     def compute_ft2d_mask(self, ft2d, ch):
-        if self.filter_approach == 'original':
-            bg_ft2d, fg_ft2d = self.filter_local_maxima(ft2d[:, :, ch])
-        elif self.filter_approach == 'local_std':
-            bg_ft2d, fg_ft2d = self.filter_local_maxima_with_std(ft2d[:, :, ch])
+        bg_ft2d, fg_ft2d = self.filter_func(ft2d[:, :, ch])
 
         self.bg_ft2d = self.filter_quadrants(bg_ft2d, self.quadrants_to_keep)
         self.fg_ft2d = self.filter_quadrants(fg_ft2d, self.quadrants_to_keep)
