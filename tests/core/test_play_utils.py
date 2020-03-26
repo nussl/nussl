@@ -92,6 +92,10 @@ def test_multitrack():
     # names are optional
     html = nussl.play_utils.multitrack(estimates, display=False)
 
+    # can take a dictionary
+    _estimates = {i: e for i, e in enumerate(estimates)}
+    html = nussl.play_utils.multitrack(_estimates, display=False)
+
     # names should match length
     pytest.raises(ValueError,
                   nussl.play_utils.multitrack, estimates, ['not enough names'])

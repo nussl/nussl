@@ -1544,14 +1544,17 @@ class AudioSignal(object):
             If ``overwrite=True`` (default) this will overwrite any data in :attr:`audio_data`!
 
         Returns:
-            (:obj:`np.array`): Mono-ed version of :attr:`audio_data`.
+            (:obj:`AudioSignal`): Mono-ed version of AudioSignal, either in place or not.
 
         """
         mono = np.mean(self.audio_data, axis=constants.CHAN_INDEX, keepdims=keep_dims)
 
         if overwrite:
             self.audio_data = mono
-        return mono
+            return self
+        else:
+            mono_signal = self.make_copy_with_audio_data(mono)
+            return mono_signal
 
     ##################################################
     #                 Utility hooks                  #

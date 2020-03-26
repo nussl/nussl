@@ -26,7 +26,6 @@ def test_efz_download_audio():
     available_audio_files = nussl.efz_utils.get_available_audio_files()
     best = get_smallest_file(available_audio_files)
     key = available_audio_files[best]['file_name']
-    print(key)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         path1 = nussl.efz_utils.download_audio_file(key)

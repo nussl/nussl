@@ -6,7 +6,8 @@ import pytest
 
 import torch
 import random
-
+import matplotlib.pyplot as plt
+import os
 
 def test_utils_seed():
     seeds = [0, 123, 666, 15, 2]
@@ -228,3 +229,69 @@ def test_utils_slice_along_dim():
     data = np.random.rand(10, 10)
     pytest.raises(ValueError, nussl.utils._slice_along_dim,
                   data, 2, 0, 10)
+
+PLOT_DIRECTORY = 'tests/utils/plots'
+os.makedirs(PLOT_DIRECTORY, exist_ok=True)
+
+def test_utils_visualize_spectrogram(music_mix_and_sources):
+    mix, sources = music_mix_and_sources
+
+    plt.figure(figsize=(10, 6))
+    plt.subplot(211)
+    nussl.utils.visualize_spectrogram(mix)
+
+    plt.subplot(212)
+    nussl.utils.visualize_spectrogram(mix, do_mono=True)
+
+    OUTPUT = os.path.join(PLOT_DIRECTORY, 'viz_spectrogram.png')
+    plt.tight_layout()
+    plt.savefig(OUTPUT)
+
+def test_utils_visualize_waveplot(music_mix_and_sources):
+    mix, sources = music_mix_and_sources
+
+    plt.figure(figsize=(10, 6))
+    plt.subplot(211)
+    nussl.utils.visualize_waveform(mix)
+
+    plt.subplot(212)
+    nussl.utils.visualize_waveform(mix, do_mono=True)
+
+    OUTPUT = os.path.join(PLOT_DIRECTORY, 'viz_waveform.png')
+    plt.tight_layout()
+    plt.savefig(OUTPUT)
+
+
+def test_utils_visualize_sources(music_mix_and_sources):
+    mix, sources = music_mix_and_sources
+    colors = None
+
+    plt.figure(figsize=(10, 6))
+    plt.subplot(211)
+    nussl.utils.visualize_sources_as_masks(
+        sources, db_cutoff=-70, alpha_amount=2.0,
+        y_axis='mel', colors=colors)
+    plt.subplot(212)
+    nussl.utils.visualize_sources_as_waveform(
+        sources, colors=colors, show_legend=True)
+
+    OUTPUT = os.path.join(PLOT_DIRECTORY, 'viz_sources_dict.png')
+    plt.tight_layout()
+    plt.savefig(OUTPUT)
+
+    sources = list(sources.values())
+    colors = ['blue', 'red']
+
+    plt.figure(figsize=(10, 6))
+    plt.subplot(211)
+    nussl.utils.visualize_sources_as_masks(
+        sources, db_cutoff=-70, alpha_amount=2.0,
+        y_axis='mel', do_mono=True, colors=colors)
+    plt.subplot(212)
+    nussl.utils.visualize_sources_as_waveform(
+        sources, do_mono=True, colors=colors, 
+        show_legend=False)
+
+    OUTPUT = os.path.join(PLOT_DIRECTORY, 'viz_sources_list.png')
+    plt.tight_layout()
+    plt.savefig(OUTPUT)

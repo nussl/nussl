@@ -91,15 +91,23 @@ def multitrack(audio_signals, names=None, ext='.mp3', display=True):
     """
     ffmpy, IPython = _check_imports()
     div_id = ''.join(random.choice(string.ascii_uppercase) for _ in range(20))
+    _names = None
+
+    if isinstance(audio_signals, dict):
+        _names = list(audio_signals.keys())
+        audio_signals = [audio_signals[k] for k in _names]
 
     if names is not None:
         if len(names) != len(audio_signals):
             raise ValueError("len(names) must be equal to len(audio_signals)!")
     else:
-        names = [
-            f"{i}:{s.path_to_input_file}"
-            for i, s in enumerate(audio_signals)
-        ]
+        if _names is not None:
+            names = _names
+        else:
+            names = [
+                f"{i}:{s.path_to_input_file}"
+                for i, s in enumerate(audio_signals)
+            ]
 
     template = (
         f"<div id={div_id} class=audio-container "

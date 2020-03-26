@@ -9,8 +9,8 @@ import numpy as np
 import torch
 import random
 import musdb
-import matplotlib.pyplot as plt
-
+import librosa
+from . import constants
 
 def seed(random_seed, set_cudnn=False):
     """
@@ -368,6 +368,8 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
           for each layer in a PyTorch model.
         n_bins (int): Number of bins to use for each histogram. Defaults to 50.
     """
+    import matplotlib.pyplot as plt
+
     data = []
 
     for n, p in named_parameters:
@@ -387,3 +389,202 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
              stacked=True, label=_names)
 
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)
+
+def visualize_spectrogram(audio_signal, ch=0, do_mono=False, x_axis='time', 
+                          y_axis='linear',  **kwargs):
+    """
+    Wrapper around `librosa.display.specshow` for usage with AudioSignals.
+    
+    Args:
+        audio_signal (AudioSignal): AudioSignal to plot
+        ch (int, optional): Which channel to plot. Defaults to 0.
+        do_mono (bool, optional): Make the AudioSignal mono. Defaults to False.
+        x_axis (str, optional): x_axis argument to librosa.display.specshow. Defaults to 'time'.
+        y_axis (str, optional): y_axis argument to librosa.display.specshow. Defaults to 'linear'.
+        kwargs: Additional keyword arguments to librosa.display.specshow.
+    """
+    import librosa.display
+
+    if do_mono:
+        audio_signal = audio_signal.to_mono(overwrite=False)
+    
+    data = librosa.amplitude_to_db(np.abs(audio_signal.stft()), ref=np.max)
+    librosa.display.specshow(data[..., ch], x_axis=x_axis, y_axis=y_axis, 
+        sr=audio_signal.sample_rate, hop_length=audio_signal.stft_params.hop_length,
+        **kwargs)
+
+def visualize_waveform(audio_signal, ch=0, do_mono=False, x_axis='time', **kwargs):
+    """
+    Wrapper around `librosa.display.waveplot` for usage with AudioSignals.
+    
+    Args:
+        audio_signal (AudioSignal): AudioSignal to plot
+        ch (int, optional): Which channel to plot. Defaults to 0.
+        do_mono (bool, optional): Make the AudioSignal mono. Defaults to False.
+        x_axis (str, optional): x_axis argument to librosa.display.waveplot. Defaults to 'time'.
+        kwargs: Additional keyword arguments to librosa.display.waveplot.
+    """
+    import librosa.display
+
+    if do_mono:
+        audio_signal = audio_signal.to_mono(overwrite=False)
+    
+    data = np.asfortranarray(audio_signal.audio_data[ch])
+    librosa.display.waveplot(data, sr=audio_signal.sample_rate, x_axis=x_axis, **kwargs)
+
+def visualize_sources_as_waveform(audio_signals, ch=0, do_mono=False, x_axis='time', 
+                                  colors=None, alphas=None, show_legend=True, **kwargs):
+    """
+    Visualizes a dictionary or list of sources with overlapping waveforms with transparency.
+    
+    The labels of each source are either the key, if a dictionary, or the 
+    path to the input audio file, if a list.
+    
+    Args:
+        audio_signals (list or dict): List or dictionary of audio signal objects to be
+          plotted.
+        ch (int, optional): Which channel to plot. Defaults to 0.
+        do_mono (bool, optional): Make each AudioSignal mono. Defaults to False.
+        x_axis (str, optional): x_axis argument to librosa.display.waveplot. Defaults to 'time'.
+        colors (list, optional): Sequence of colors to use for each signal. 
+          Defaults to None, which uses the default matplotlib color cycle.
+        alphas (list, optional): Sequence of alpha transparency to use for each signal. 
+          Defaults to None.
+        kwargs: Additional keyword arguments to librosa.display.waveplot.
+    """
+    import matplotlib.pyplot as plt
+
+    if isinstance(audio_signals, list):
+        audio_signals = {
+            f'{i}:{a.path_to_input_file}': a 
+            for i, a in enumerate(audio_signals)
+        }
+
+    sorted_keys = sorted(
+        audio_signals.keys(),
+        key=lambda k: audio_signals[k].rms().mean(),
+        reverse=True
+    )
+
+    alphas = (
+        np.linspace(0.25, .75, len(audio_signals)) 
+        if alphas is None else alphas
+    )
+    colors = (
+        plt.rcParams['axes.prop_cycle'].by_key()['color'] 
+        if colors is None else colors
+    )
+
+    for i, key in enumerate(sorted_keys):
+        val = audio_signals[key]
+        color = colors[i % len(audio_signals)]
+        visualize_waveform(val, ch=ch, do_mono=do_mono, x_axis=x_axis, 
+                           alpha=alphas[i % len(audio_signals)],
+                           label=key, color=color)
+
+    if show_legend:
+        plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)
+
+def visualize_sources_as_masks(audio_signals, ch=0, do_mono=False, x_axis='time', 
+                               y_axis='linear', db_cutoff=-60, colors=None, alphas=None, 
+                               alpha_amount=1.0, show_legend=True, **kwargs):
+    """
+    Visualizes a dictionary or list of sources with overlapping waveforms with transparency.
+    
+    The labels of each source are either the key, if a dictionary, or the 
+    path to the input audio file, if a list.
+    
+    Args:
+        audio_signals (list or dict): List or dictionary of audio signal objects to be
+          plotted.
+        ch (int, optional): Which channel to plot. Defaults to 0.
+        do_mono (bool, optional): Make each AudioSignal mono. Defaults to False.
+        x_axis (str, optional): x_axis argument to librosa.display.waveplot. Defaults to 'time'.
+        colors (list, optional): Sequence of colors to use for each signal. 
+          Defaults to None, which uses the default matplotlib color cycle.
+        alphas (list, optional): Sequence of alpha transparency to use for each signal. 
+          Defaults to None.
+        kwargs: Additional keyword arguments to librosa.display.specshow.
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib
+    import librosa.display
+    from .. import datasets
+
+    if isinstance(audio_signals, list):
+        audio_signals = {
+            f'{i}:{a.path_to_input_file}': a 
+            for i, a in enumerate(audio_signals)
+        }
+
+    if do_mono:
+        for key in audio_signals:
+            audio_signals[key] = audio_signals[key].to_mono()
+
+    sorted_keys = sorted(
+        audio_signals.keys(),
+        key=lambda k: audio_signals[k].rms().mean(),
+        reverse=True
+    )
+
+    source_names = sorted(list(audio_signals.keys()))
+    mix = sum(audio_signals.values())
+    data = {
+        'mix': mix,
+        'sources': audio_signals
+    }
+    data = datasets.transforms.PhaseSensitiveSpectrumApproximation()(data)
+
+    colors = (
+        plt.rcParams['axes.prop_cycle'].by_key()['color'] 
+        if colors is None else colors
+    )
+
+    # construct each image with alpha values
+    masks = data['source_magnitudes'] / (np.maximum(
+            data['mix_magnitude'][..., None], data['source_magnitudes']) 
+            + constants.EPSILON
+        )
+    legend_elements = []
+
+    silence_mask = librosa.amplitude_to_db(np.abs(mix.stft()), ref=np.max) > db_cutoff
+    masks *= silence_mask[..., None]
+
+    y_coords = librosa.display.__mesh_coords(y_axis, None, masks.shape[0], 
+        sr=mix.sample_rate, hop_length=mix.stft_params.hop_length)
+    x_coords = librosa.display.__mesh_coords(x_axis, None, masks.shape[1],
+        sr=mix.sample_rate, hop_length=mix.stft_params.hop_length)
+
+    extent = [x_coords.min(), x_coords.max(), y_coords.min(), y_coords.max()]
+
+    for j, key in enumerate(sorted_keys):
+        i = source_names.index(key)
+        mask = masks[..., ch, i]
+        color = colors[j % len(colors)]
+
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            'custom', ['white', color])
+        image = cmap(mask)
+        image[:, :, -1] = mask ** alpha_amount
+        plt.imshow(image, origin='lower', aspect='auto', extent=extent)
+
+        legend_elements.append(
+            matplotlib.patches.Patch(facecolor=color, label=key))
+
+    axes = librosa.display.__check_axes(None)
+
+    axes.set_xlim(x_coords.min(), x_coords.max())
+    axes.set_ylim(y_coords.min(), y_coords.max())
+
+    # Set up axis scaling
+    librosa.display.__scale_axes(axes, x_axis, 'x')
+    librosa.display.__scale_axes(axes, y_axis, 'y')
+
+    # Construct tickers and locators
+    librosa.display.__decorate_axis(axes.xaxis, x_axis)
+    librosa.display.__decorate_axis(axes.yaxis, y_axis)
+
+    
+    if show_legend:
+        plt.legend(handles=legend_elements,  
+            bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)
