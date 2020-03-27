@@ -1,3 +1,33 @@
+"""
+Machine Learning
+================
+
+SeparationModel
+---------------
+
+.. autoclass:: nussl.ml.SeparationModel
+    :members:
+    :autosummary:
+
+Building blocks for SeparationModel
+-----------------------------------
+
+.. automodule:: nussl.ml.networks.modules
+    :members:
+    :autosummary:
+
+.. automodule:: nussl.ml.cluster
+    :members:
+    :autosummary:
+
+Training
+--------
+
+.. automodule:: nussl.ml.train
+    :members:
+    :autosummary:
+"""
+
 from .networks import SeparationModel
 from .networks import modules
 

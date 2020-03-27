@@ -12,6 +12,7 @@
 #
 import os
 import sys
+sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../nussl/'))
 
 
@@ -32,15 +33,15 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
-with open('../requirements.txt', 'r') as f:
-    MOCK_MODULES = f.readlines()
-    MOCK_MODULES = [_mock.rstrip() for _mock in MOCK_MODULES]
-MOCK_MODULES += [
-    'matplotlib.pyplot', 
-    'torch.utils', 
-    'torch.utils.data', 
-    'torch.nn',
-    'torch.utils.checkpoint'
+MOCK_MODULES = [
+    'matplotlib.pyplot',
+    'vamp',
+    'ffmpy',
+    'norbert',
+    'zarr',
+    'numcodecs',
+    'librosa',
+    'jams',
 ]
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
@@ -55,26 +56,14 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
-    'autoapi.extension',
+    'sphinx.ext.autosummary',
+    'autodocsumm',
 ]
 
-autoapi_type = 'python'
-autoapi_dirs = ['../nussl']
-exclude_folders = [
-    'composite', 
-    'factorization', 
-    'primitive', 
-    'spatial'
-]
-autoapi_ignore = [f'*/separation/{x}/*' for x in exclude_folders]
-autoapi_add_toctree_entry = False
-autoapi_template_dir = '_templates/'
-autoapi_options = [
-    'members', 'undoc-members', 'private-members', 
-    'show-inheritance', 'special-members']
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -93,3 +82,9 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+html_context = {
+    'css_files': [
+        '_static/theme_overrides.css',  # override wide tables in RTD theme
+        ],
+     }

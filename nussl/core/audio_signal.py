@@ -18,16 +18,16 @@ from . import masks
 
 __all__ = ['AudioSignal', 'STFTParams', 'AudioSignalException']
 
-"""
-STFTParams object is a container that holds STFT parameters - window_length, 
-hop_length, and window_type. Not all parameters need to be specified. Ones that
-are not specified will be inferred by the AudioSignal parameters and the settings
-in nussl.constants.
-"""
 STFTParams = namedtuple('STFTParams',
                         ['window_length', 'hop_length', 'window_type'],
                         defaults=(None, None, None)
                         )
+"""
+STFTParams object is a container that holds STFT parameters - window_length, 
+hop_length, and window_type. Not all parameters need to be specified. Ones that
+are not specified will be inferred by the AudioSignal parameters and the settings
+in `nussl.core.constants`.
+"""
 
 
 class AudioSignal(object):

@@ -38,13 +38,13 @@ class FT2D(MaskSeparationBase):
 
     References:
 
-    [1] Seetharaman, Prem, Fatemeh Pishdadian, and Bryan Pardo.
-        "Music/Voice Separation Using the 2D Fourier Transform." 
-        2017 IEEE Workshop on Applications of Signal Processing to 
-        Audio and Acoustics (WASPAA). IEEE, 2017.
+        [1] Seetharaman, Prem, Fatemeh Pishdadian, and Bryan Pardo.
+            "Music/Voice Separation Using the 2D Fourier Transform." 
+            2017 IEEE Workshop on Applications of Signal Processing to 
+            Audio and Acoustics (WASPAA). IEEE, 2017.
 
-    [2] Seetharaman, Prem. Bootstrapping the Learning Process for Computer Audition. 
-        Diss. Northwestern University, 2019.
+        [2] Seetharaman, Prem. Bootstrapping the Learning Process for Computer Audition. 
+            Diss. Northwestern University, 2019.
 
     Args:
         input_audio_signal (AudioSignal): Signal to separate.

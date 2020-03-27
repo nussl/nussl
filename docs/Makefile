@@ -15,7 +15,7 @@ help:
 .PHONY: help Makefile
 
 apidoc:
-	sphinx-apidoc --templatedir _templates/ -o ./api ../nussl/
+	sphinx-apidoc -MT --templatedir _templates/ -o ./api ../nussl/
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

@@ -33,9 +33,13 @@ Examples
 API Documentation
 -----------------
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 1
 
-   API Documentation <autoapi/nussl/index>
+   core
+   datasets
+   evaluation
+   ml
+   separation
 
 Contributing
 ------------
