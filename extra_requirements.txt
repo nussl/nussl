@@ -2,6 +2,7 @@ sphinx
 sphinx-rtd-theme
 sphinx-autoapi
 m2r
+autodocsumm
 pytest
 pytest-cov
 IPython
