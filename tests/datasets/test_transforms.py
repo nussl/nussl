@@ -129,12 +129,12 @@ def test_transform_sum_sources(musdb_tracks):
         _data = tfm(_data)
         for g in group:
             assert g not in _data['sources']
-        assert 'group0' in _data['sources']
+        assert '+'.join(group) in _data['sources']
 
         summed_sources = sum([sources[k] for k in group])
 
         assert np.allclose(
-            _data['sources']['group0'].audio_data,
+            _data['sources']['+'.join(group)].audio_data,
             summed_sources.audio_data
         )
 

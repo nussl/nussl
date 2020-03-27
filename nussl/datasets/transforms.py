@@ -34,7 +34,8 @@ class SumSources(object):
     a source belongs to a group, it is popped from the ``data[self.source_key]`` and
     summed with the other sources in the group. If there is a corresponding 
     group_name in group_names, it is named that in ``data[self.source_key]``. If
-    group_names are not given, then the names are ``['group0', 'group1', ...]``.
+    group_names are not given, then the names are constructed using the keys
+    in each group (e.g. `drums+bass+other`).
 
     If using Scaper datasets, then there may be multiple sources with the same
     label but different counts. The Scaper dataset hook organizes the source
@@ -94,7 +95,7 @@ class SumSources(object):
         self.groupings = groupings
         self.source_key = source_key
         if group_names is None:
-            group_names = [f"group{i}" for i in range(len(groupings))]
+            group_names = ['+'.join(groupings[i]) for i in range(len(groupings))]
         self.group_names = group_names
 
     def __call__(self, data):

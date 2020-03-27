@@ -17,7 +17,7 @@ def test_rpca(
     mix, sources = music_mix_and_sources
     mix = copy.deepcopy(mix)
     vox = copy.deepcopy(sources['vocals'])
-    acc = copy.deepcopy(sources['group0'])
+    acc = copy.deepcopy(sources['drums+bass+other'])
 
     config = [
         ({}, 'defaults'),

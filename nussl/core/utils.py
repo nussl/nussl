@@ -425,12 +425,14 @@ def visualize_waveform(audio_signal, ch=0, do_mono=False, x_axis='time', **kwarg
         kwargs: Additional keyword arguments to librosa.display.waveplot.
     """
     import librosa.display
+    import matplotlib.pyplot as plt
 
     if do_mono:
         audio_signal = audio_signal.to_mono(overwrite=False)
     
     data = np.asfortranarray(audio_signal.audio_data[ch])
     librosa.display.waveplot(data, sr=audio_signal.sample_rate, x_axis=x_axis, **kwargs)
+    plt.ylabel('Amplitude')
 
 def visualize_sources_as_waveform(audio_signals, ch=0, do_mono=False, x_axis='time', 
                                   colors=None, alphas=None, show_legend=True, **kwargs):
@@ -566,7 +568,8 @@ def visualize_sources_as_masks(audio_signals, ch=0, do_mono=False, x_axis='time'
             'custom', ['white', color])
         image = cmap(mask)
         image[:, :, -1] = mask ** alpha_amount
-        plt.imshow(image, origin='lower', aspect='auto', extent=extent)
+        plt.imshow(image, origin='lower', aspect='auto', 
+            interpolation='none', extent=extent)
 
         legend_elements.append(
             matplotlib.patches.Patch(facecolor=color, label=key))

@@ -43,7 +43,7 @@ def test_ft2d(
 ):
     mix, sources = music_mix_and_sources
     vox = sources['vocals']
-    acc = sources['group0']
+    acc = sources['drums+bass+other']
 
     pytest.raises(SeparationException, primitive.FT2D, mix, 
         filter_approach='none of the above')
@@ -100,7 +100,7 @@ def test_repet(
 ):
     mix, sources = music_mix_and_sources
     vox = sources['vocals']
-    acc = sources['group0']
+    acc = sources['drums+bass+other']
 
     pytest.raises(
         SeparationException, primitive.Repet, mix, min_period=.8, 
@@ -179,7 +179,7 @@ def test_repet_sim(
     mix, sources = music_mix_and_sources
     mix = copy.deepcopy(mix)
     vox = copy.deepcopy(sources['vocals'])
-    acc = copy.deepcopy(sources['group0'])
+    acc = copy.deepcopy(sources['drums+bass+other'])
 
     config = [
         ({}, 'defaults'),
