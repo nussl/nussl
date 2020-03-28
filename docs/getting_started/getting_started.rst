@@ -9,4 +9,6 @@ Getting Started
 
     Installation <install>
     Introduction to AudioSignals <audio_signal>
-    Example: Using REPET <repet>
+    Separation via Time-Frequency Masking <masking_audio_signals>
+    Example: Running REPET <repet>
+    
