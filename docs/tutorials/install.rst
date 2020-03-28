@@ -16,15 +16,19 @@ Requirements
 
 The requirements are listed in ``requirements.txt`` and should be installed automatically
 with `pip`. There is one additional optional requirement that is only needed if you 
-want to use `nussl.separation.primitive.Melodia`: `vamp`.
+want to use ``nussl.separation.primitive.Melodia``: ``vamp``.
 
 If you want to use Melodia, then you will also need to follow the instructions 
-`here <https://github.com/justinsalamon/melodia_python_tutorial/blob/master/melodia_python_tutorial.ipynb>`_
+`here <https://github.com/justinsalamon/melodia_python_tutorial/blob/master/melodia_python_tutorial.ipynb>`_.
 
 If you are installing from source then you will need to install the requirements manually.
 
 Finally, there are extra requirements you will need to run the recipes. Those are in
 ``extra_requirements.txt``.
+
+To make use of `Scaper <https://github.com/justinsalamon/scaper>`_, you will also need 
+to install ``sox`` and ``ffmpeg``. You'll also need ``ffmpeg`` to make use of some of the
+functionality in ``nussl.play_utils``.
 
 .. _anaconda_env:
 
