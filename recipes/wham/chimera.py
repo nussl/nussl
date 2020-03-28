@@ -36,7 +36,7 @@ logging.basicConfig(
 WHAM_ROOT = os.getenv("WHAM_ROOT")
 CACHE_ROOT = os.getenv("CACHE_ROOT")
 NUM_WORKERS = multiprocessing.cpu_count() // 4
-OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_chimera/run12_1e-4_.2_.8')
+OUTPUT_DIR = os.path.expanduser('~/.nussl/recipes/wham_chimera/run13_2e-5_.975_.025')
 RESULTS_DIR = os.path.join(OUTPUT_DIR, 'results')
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'checkpoints', 'best.model.pth')
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -45,7 +45,7 @@ MAX_EPOCHS = 100
 CACHE_POPULATED = True
 LEARNING_RATE = 1e-3
 PATIENCE = 5
-GRAD_NORM = 1e-4
+GRAD_NORM = 2e-5
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -110,8 +110,8 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(
 
 # set up the loss function
 loss_dictionary = {
-    'PermutationInvariantLoss': {'args': ['L1Loss'], 'weight': 1 - 1e-4},
-    'DeepClusteringLoss': {'weight': 1e-4}
+    'PermutationInvariantLoss': {'args': ['L1Loss'], 'weight': 0.975},
+    'DeepClusteringLoss': {'weight': 0.025}
 }
 
 # set up closures for the forward and backward pass on one batch

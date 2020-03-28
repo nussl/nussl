@@ -38,8 +38,6 @@ class MUSDB18(BaseDataset):
                 'labels': ['bass', 'drums', 'other', 'vocals']
             }
         }
-
-
     
     Args:
         folder (str, optional): Location that should be processed to produce the 

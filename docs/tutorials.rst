@@ -9,4 +9,5 @@ Tutorials
 
     Running REPET <tutorials/repet>
     Evaluating performance <tutorials/evaluation>
+    Handling data <tutorials/datasets>
     

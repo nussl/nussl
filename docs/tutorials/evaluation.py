@@ -16,10 +16,12 @@
 # Evaluating separation performance
 # =================================
 #
-# In this notebook, we will demonstrate how one can use *nussl* to quickly and easily compare different separation approaches. 
-# Here, we will evaluate the performance of several simple vocal separation algorithms on a subset of the MUSDB18 dataset.
+# In this notebook, we will demonstrate how one can use *nussl* to quickly and easily 
+# compare different separation approaches. Here, we will evaluate the performance of 
+# several simple vocal separation algorithms on a subset of the MUSDB18 dataset.
 #
-# First, let's load the dataset using *nussl*'s dataset utilities, and inspect an item from the dataset using *nussl*'s plotting and playing utlities:
+# First, let's load the dataset using *nussl*'s dataset utilities, and inspect an 
+# item from the dataset using *nussl*'s plotting and playing utlities:
 
 # +
 import nussl
@@ -55,7 +57,10 @@ sources = item['sources']
 visualize_and_embed(sources)
 # -
 
-# So, there are four sources in each item of the MUSDB18 dataset: drums, bass, other, and vocals. Since we're doing vocal separation, what we really care about is two sources: vocals and accompaniment (drums + bass + other). So it'd be great if each item in the dataset looked more like this:
+# So, there are four sources in each item of the MUSDB18 dataset: drums, bass, other, 
+# and vocals. Since we're doing vocal separation, what we really care about is two 
+# sources: vocals and accompaniment (drums + bass + other). So it'd be great if each 
+# item in the dataset looked more like this:
 
 # +
 vocals = sources['vocals']
@@ -65,7 +70,10 @@ new_sources = {'vocals': vocals, 'accompaniment': accompaniment}
 visualize_and_embed(new_sources)
 # -
 
-# When evaluating vocals separation, what we'll do is compare our estimate for the vocals and the accompanient to the above ground truth isolated sources. But first, there's a way in *nussl* to automatically group sources in a dataset by type, using `nussl.datasets.transforms.SumSources`:
+# When evaluating vocals separation, what we'll do is compare our estimate for 
+# the vocals and the accompanient to the above ground truth isolated sources. 
+# But first, there's a way in *nussl* to automatically group sources in a dataset 
+# by type, using `nussl.datasets.transforms.SumSources`:
 
 # +
 tfm = nussl.datasets.transforms.SumSources([['drums', 'bass', 'other']])
@@ -80,7 +88,8 @@ sources = item['sources']
 visualize_and_embed(sources)
 # -
 
-# Now that we have a mixture and corresponding ground truth sources, let's pump the mix through some of *nussl*'s separation algorithms and see what they sound like!
+# Now that we have a mixture and corresponding ground truth sources, let's 
+# pump the mix through some of *nussl*'s separation algorithms and see what they sound like!
 
 # REPET
 # -----
@@ -108,17 +117,23 @@ visualize_and_embed(hpss_estimates)
 # Putting it all together
 # -----------------------
 #
-# Now that we have some estimates, let's evaluate the performance. There are many ways to do this in *nussl*:
+# Now that we have some estimates, let's evaluate the performance. 
+# There are many ways to do this in *nussl*:
 #
 # 1. Original BSS Evaluation metrics:
-#     - Source-to-distortion ratio (SDR): how well does the estimate match the ground truth source?
-#     - Source-to-interference ratio (SIR): how well does the estimate suppress the other sources?
-#     - Source-to-artifact ratio (SAR): how much musical/random noise is in the estimate?
-#     - Source to Spatial Distortion Image (ISR): how well does the algorithm keep the source in the same spatial location?
-# 2. New BSS Evaluation metrics: these metrics are refined versions of the originals
-#    and are argued to be more robust.
-# 3. Precision and recall on binary masks: an older way to evaluate methods is to look at the values of the 
-#    actual mask and the estimated mask and compute precision/recall over each time-frequency bin.
+#     - Source-to-distortion ratio (SDR): how well does the estimate 
+#       match the ground truth source?
+#     - Source-to-interference ratio (SIR): how well does the estimate 
+#       suppress the other sources?
+#     - Source-to-artifact ratio (SAR): how much musical/random noise 
+#       is in the estimate?
+#     - Source to Spatial Distortion Image (ISR): how well does the 
+#       algorithm keep the source in the same spatial location?
+# 2. New BSS Evaluation metrics: these metrics are refined versions 
+#    of the originals and are argued to be more robust.
+# 3. Precision and recall on binary masks: an older way to evaluate methods 
+#    is to look at the values of the actual mask and the estimated mask and 
+#    compute precision/recall over each time-frequency bin.
 #    
 # Let's extract each of these measures on the REPET estimates computed before.
 
@@ -134,14 +149,20 @@ scores = original_bss.evaluate()
 print(json.dumps(scores, indent=2))
 # -
 
-# The output dictionary of an evaluation method always looks like this: there is a combination key, which indicates what combination of the estimates provided best matched to the sources, the permutation key, which can permute the estimates to match the sources (both of these are only computed when `compute_permutation = True`), and dictionaries with each metric: SDR/SIR/ISR/SAR. Computing the other BSS Eval metrics is just as easy:
+# The output dictionary of an evaluation method always looks like this: there is a 
+# combination key, which indicates what combination of the estimates provided best
+# matched to the sources, the permutation key, which can permute the estimates to
+# match the sources (both of these are only computed when `compute_permutation = True`), 
+# and dictionaries with each metric: SDR/SIR/ISR/SAR. Computing the other BSS Eval metrics 
+# is just as easy:
 
 new_bss = nussl.evaluation.BSSEvalScale(
     sources_list, repet_estimates, scaling=False)
 scores = new_bss.evaluate()
 print(json.dumps(scores, indent=2))
 
-# To do the last, precision-recall one, we need ground truth binary masks to compare to. First, let's convert the masks in our `repet` instance to be binary.
+# To do the last, precision-recall one, we need ground truth binary masks to 
+# compare to. First, let's convert the masks in our `repet` instance to be binary.
 
 repet_binary_masks = [r.mask_to_binary(0.5) for r in repet.result_masks]
 
@@ -160,11 +181,16 @@ scores = prf.evaluate()
 print(json.dumps(scores, indent=2))
 
 
-# Great! But what do all of these numbers even mean? To establish the bounds of performance of a separation algorithm, we need *upper* and *lower* baselines. These numbers can be found by using the benchmark methods in *nussl*. Let's get two lower baseline and an upper baseline. 
+# Great! But what do all of these numbers even mean? To establish the bounds 
+# of performance of a separation algorithm, we need *upper* and *lower* baselines. 
+# These numbers can be found by using the benchmark methods in *nussl*. 
+# Let's get two lower baseline and an upper baseline. 
 #
-# **For the sake of brevity of output, let's look at just one metric: scale-dependent metrics from the new BSSEval metrics.**
+# **For the sake of brevity of output, let's look at just one metric: 
+# scale-dependent metrics from the new BSSEval metrics.**
 #
-# We already have one upper baseline - the ideal binary mask. How did that do?
+# We already have one upper baseline - the ideal binary mask. 
+# How did that do?
 
 # +
 def _report_sdr(approach, scores):
@@ -191,7 +217,8 @@ scores = bss.evaluate()
 _report_sdr('Ideal Binary Mask', scores)
 # -
 
-# Let's get two lower baselines: using a simple high low pass filter, and using the mixture as the estimate:
+# Let's get two lower baselines: using a simple high low pass filter, 
+# and using the mixture as the estimate:
 
 # +
 mae = nussl.separation.benchmark.MixAsEstimate(
@@ -214,7 +241,9 @@ scores = bss.evaluate()
 _report_sdr('High/low pass filter', scores)
 # -
 
-# Now that we've established upper and lower baselines, how did our methods do? Let's write a function to run a separation algorithm, evaluate it, and report its result on the mix.
+# Now that we've established upper and lower baselines, how did our methods do? 
+# Let's write a function to run a separation algorithm, evaluate it, and 
+# report its result on the mix.
 
 # +
 mae = nussl.separation.benchmark.MixAsEstimate(
@@ -231,6 +260,9 @@ repet = nussl.separation.primitive.Repet(mix)
 
 def run_and_evaluate(alg):
     alg_estimates = alg()
+    
+    if isinstance(alg, nussl.separation.primitive.HPSS):
+        alg_estimates = alg_estimates[::-1]
 
     bss = nussl.evaluation.BSSEvalScale(
         sources_list, alg_estimates, scaling=False,
@@ -242,4 +274,9 @@ for alg in [mae, hlp, hpss, repet, ft2d, ibm]:
     run_and_evaluate(alg)
 # -
 
-# We've now evaluated a bunch of algorithms on a single 7-second audio file. Is this enough to say definitively one algorithm is better than others? Probably not. When evaluating algorithms, one should always *listen* to the separations as well as looking at metrics to report. One should also make sure to compare against logical baselines, as well as do this on challenging mixtures. 
+# We've now evaluated a bunch of algorithms on a single 7-second audio file. 
+# Is this enough to say definitively one algorithm is better than others? 
+# Probably not. When evaluating algorithms, one should always *listen* to 
+# the separations as well as looking at metrics to report. One should also 
+# make sure to compare against logical baselines, as well as do this on 
+# challenging mixtures. 

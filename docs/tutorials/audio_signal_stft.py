@@ -39,8 +39,9 @@ print('STFT Data:', signal1.stft_data)
 stft = signal1.stft()
 print(stft.shape)
 
-# Aha! Now we can examine how STFT data is stored in the :class:`AudioSignal`: object. Similar to ``signal1.audio_data``,
-# STFT data is stored in a (complex-valued) numpy array called ``signal1.stft_data``.
+# Aha! Now we can examine how STFT data is stored in the :class:`AudioSignal`: object. 
+# Similar to ``signal1.audio_data``, STFT data is stored in a (complex-valued) 
+# numpy array called ``signal1.stft_data``.
 #
 # By inspecting the shape we see that the first dimension represents the number of FFT bins taken at each hop,
 # the second represents the length of our signal (in hops), and the third dimension is number of channels.
@@ -130,7 +131,8 @@ plt.show()
 # 2. `hop_length`: How much to hop between windows?
 # 3. `window_type`: What sort of windowing function to use?
 #
-# These three parameters are grouped into a `namedtuple` object that belongs to every AudioSignal object. This is the `STFTParams` object:
+# These three parameters are grouped into a `namedtuple` object that 
+# belongs to every AudioSignal object. This is the `STFTParams` object:
 
 nussl.STFTParams
 
@@ -138,7 +140,11 @@ nussl.STFTParams
 
 signal1.stft_params
 
-# The STFT parameters are built using helpful defaults based on properties of the audo signal. 32 millisecond windows are used with an 8 millisecond hop between windows. At 44100 Hz, this results in 2048 for the window length and 512 for the hop length. The window type is the `sqrt_hann` window, which generally has better separation performance. There are many windows that can be used:
+# The STFT parameters are built using helpful defaults based on properties of the audo signal. 
+# 32 millisecond windows are used with an 8 millisecond hop between windows. At 44100 Hz, 
+# this results in 2048 for the window length and 512 for the hop length. The window 
+# type is the `sqrt_hann` window, which generally has better separation performance. 
+# There are many windows that can be used:
 
 nussl.constants.ALL_WINDOWS
 
@@ -148,4 +154,7 @@ signal1.stft_params = nussl.STFTParams(
     window_length=256, hop_length=128)
 signal1.stft().shape
 
-# The shape of the resultant STFT is now different. Note that 256 resulted in 129 frequencies of analysis per frame. In general, the rule is `(window_length // 2) + 1`.
+# The shape of the resultant STFT is now different. Note that 256 resulted in 129 
+# frequencies of analysis per frame. In general, the rule is `(window_length // 2) + 1`.
+
+

@@ -105,8 +105,10 @@ signal3 = signal1 + signal2
 
 print(signal1.to_mono(overwrite=True))
 
-# If we hadn’t set ``overwrite=True`` then ``to_mono()`` would just return a new audio signal that is an exact copy of ``signal1`` except it is mono. You will see this pattern come up again. In certain
-# places, :class:`AudioSignal`:'s default behavior is to overwrite its internal data, and in other places the default is to
+# If we hadn’t set ``overwrite=True`` then ``to_mono()`` would just return a new audio signal 
+# that is an exact copy of ``signal1`` except it is mono. You will see this pattern 
+# come up again. In certain places, :class:`AudioSignal`:'s default behavior is to 
+# overwrite its internal data, and in other places the default is to
 # **not** overwrite data. See the reference pages for more info. Let's try:
 
 signal3 = signal1 + signal2
@@ -123,7 +125,8 @@ signal3.peak_normalize()
 signal3.embed_audio()
 print(signal3)
 
-# No exceptions this time! Great! ``signal3`` is now a new :class:`AudioSignal`: object. We can similarly subtract two signals.
+# No exceptions this time! Great! ``signal3`` is now a new AudioSignal 
+# object. We can similarly subtract two signals.
 #
 # Let’s write this to a file:
 

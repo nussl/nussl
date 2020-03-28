@@ -33,7 +33,8 @@ mix = item['mix']
 sources = item['sources']
 # -
 
-# Let's listen to the mixture. Note that it contains 4 sources: drums, bass, vocals, and all other sounds (considered as one source: other).
+# Let's listen to the mixture. Note that it contains 4 sources: drums, bass, 
+# vocals, and all other sounds (considered as one source: other).
 
 mix.embed_audio()
 print(mix)
@@ -46,7 +47,12 @@ nussl.utils.visualize_spectrogram(mix, y_axis='mel')
 plt.tight_layout()
 plt.show()
 
-# Masking means to assign each of these time-frequency bins to one of the four sources in part or in whole. The first method involves creating a *soft* mask on the time-frequency representation, while the second is a *binary* mask. How do we assign each time-frequency bin to each source? This is a very hard problem, in general. For now, let's consider that we *know* the actual assignment of each time-frequency bin. If we know that, how do we separate the sounds?
+# Masking means to assign each of these time-frequency bins to one of the four 
+# sources in part or in whole. The first method involves creating a *soft* mask 
+# on the time-frequency representation, while the second is a *binary* mask. How 
+# do we assign each time-frequency bin to each source? This is a very hard problem, 
+# in general. For now, let's consider that we *know* the actual assignment of each 
+# time-frequency bin. If we know that, how do we separate the sounds?
 #
 # First let's look at one of the sources, say the drums:
 
@@ -56,11 +62,18 @@ nussl.utils.visualize_spectrogram(sources['drums'], y_axis='mel')
 plt.tight_layout()
 plt.show()
 
-# Looking at this versus the mixture spectrogram, one can see which time-frequency bins belong to the drum. Now, let's build a *mask* on the mixture spectrogram using a soft mask. We construct the soft mask using the drum STFT data and the mixture STFT data, like so:
+# Looking at this versus the mixture spectrogram, one can see which time-frequency 
+# bins belong to the drum. Now, let's build a *mask* on the mixture spectrogram 
+# using a soft mask. We construct the soft mask using the drum STFT data and the 
+# mixture STFT data, like so:
 
 mask_data = np.abs(sources['drums'].stft()) / np.abs(mix.stft())
 
-# Hmm, this may not be a safe way to do this. What if there's a `0` in both the source and the mix? Then we would get `0/0`, which would result in NaN in the mask. Or what if the source STFT is louder than the mix at some time-frequency bin due to cancellation between sources when mixed? Let's do things a bit more safely by using the maximum and some checking...
+# Hmm, this may not be a safe way to do this. What if there's a `0` in both the source 
+# and the mix? Then we would get `0/0`, which would result in NaN in the mask. Or 
+# what if the source STFT is louder than the mix at some time-frequency bin due to 
+# cancellation between sources when mixed? Let's do things a bit more safely by 
+# using the maximum and some checking...
 
 mask_data = (
     np.abs(sources['drums'].stft()) / 
@@ -70,7 +83,9 @@ mask_data = (
     ) + nussl.constants.EPSILON
 )
 
-# Great, some peace of mind. Now let's apply the soft mask to the mixture to separate the drums. We can do this by element-wise multiplying the STFT and adding the mixture phase.
+# Great, some peace of mind. Now let's apply the soft mask to the mixture to 
+# separate the drums. We can do this by element-wise multiplying the STFT and 
+# adding the mixture phase.
 
 # +
 magnitude, phase = np.abs(mix.stft_data), np.angle(mix.stft_data)
@@ -88,12 +103,17 @@ plt.tight_layout()
 plt.show()
 # -
 
-# Cool! Sounds pretty good! But it'd be a drag if we had to type all of that every time we wanted to separate something. Lucky for you, we built this stuff into the core functionality of *nussl*!
+# Cool! Sounds pretty good! But it'd be a drag if we had to type all of 
+# that every time we wanted to separate something. Lucky for you, we 
+# built this stuff into the core functionality of *nussl*!
 #
 # `SoftMask` and `BinaryMask`
 # ---------------------------
 #
-# At the core of *nussl*'s separation functionality are the classes `SoftMask` and `BinaryMask`. These are classes that contain some logic for masking and can be used with AudioSignal objects. We have a soft mask already, so let's build a `SoftMask` object.
+# At the core of *nussl*'s separation functionality are the classes 
+# `SoftMask` and `BinaryMask`. These are classes that contain some logic 
+# for masking and can be used with AudioSignal objects. We have a soft mask 
+# already, so let's build a `SoftMask` object.
 
 soft_mask = nussl.core.masks.SoftMask(mask_data)
 
@@ -101,7 +121,8 @@ soft_mask = nussl.core.masks.SoftMask(mask_data)
 
 soft_mask.mask.shape
 
-# We can apply the soft mask to our mix and return the separated drums easily, using the `apply_mask` method:
+# We can apply the soft mask to our mix and return the separated drums easily, 
+# using the `apply_mask` method:
 
 # +
 drum_est = mix.apply_mask(soft_mask)
@@ -145,9 +166,12 @@ plt.tight_layout()
 plt.show()
 # -
 
-# You can hear the vocals slightly in the background as well as the other sources. 
+# You can hear the vocals slightly in the background as well as the 
+# other sources. 
 #
-# Finally, given a list of separated sources, we can use some handy nussl functionality to easily visualize the masks and listen to the original sources that make up the mixture.
+# Finally, given a list of separated sources, we can use some handy nussl 
+# functionality to easily visualize the masks and listen to the original 
+# sources that make up the mixture.
 
 # +
 plt.figure(figsize=(10, 7))

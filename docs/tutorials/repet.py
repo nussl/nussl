@@ -63,20 +63,24 @@ repet_exact_period = nussl.separation.primitive.Repet(
 repet_period_guess = nussl.separation.primitive.Repet(
     history, min_period=3.4, max_period=3.6)  # guess the period
 
-# But! If we have no clue, then ``Repet`` will try to find the repeating period for us, automatically. So we're back to
-# this:
+# But! If we have no clue, then ``Repet`` will try to find the repeating period for 
+# us, automatically. So we're back to this:
 
 repet = nussl.separation.primitive.Repet(history)
 
 # Running Repet
 # -------------
 #
-# Now, we can run the algorithm, and **all nussl algorithms**, in a few ways. Every *nussl* algorithm has two important functions:
+# Now, we can run the algorithm, and **all nussl algorithms**, in a few ways. 
+# Every *nussl* algorithm has two important functions:
 #
 # 1. `run()`
 # 2. `make_audio_signals()`
 #
-# The first one runs all of the necessary things to make the algorithm work. If it's a masking-based algorithm, then `run()` returns a list of `SoftMask` or `BinaryMask` objects. The second actually creates the audio signals that correspond to the separated sources.
+# The first one runs all of the necessary things to make the algorithm work. 
+# If it's a masking-based algorithm, then `run()` returns a list of `SoftMask` 
+# or `BinaryMask` objects. The second actually creates the audio signals that 
+# correspond to the separated sources.
 #
 # But if we do `make_audio_signals` before doing `run`, this happens:
 
@@ -94,7 +98,7 @@ estimates = repet.make_audio_signals()
 
 # Or we can chain both operations together by calling the object directly, like so:
 
-estimates = repet()
+estimates = repet() # does run then make_audio_signals
 
 # Now Repet has been run, so we can check out properties of ``Repet``.
 
@@ -107,7 +111,8 @@ plt.ylabel('Intensity')
 plt.title('Beat spectrum')
 plt.show()
 
-# We can see a regularly repeating period happening. REPET uses this periodicity to separate the background (repeating) from the foreground (non-repeating).
+# We can see a regularly repeating period happening. REPET uses this 
+# periodicity to separate the background (repeating) from the foreground (non-repeating).
 
 # Output of REPET
 # ---------------
