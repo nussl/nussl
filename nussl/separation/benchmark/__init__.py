@@ -3,28 +3,24 @@ High pass filter
 ----------------
 
 .. autoclass:: nussl.separation.benchmark.HighLowPassFilter
-    :members:
     :autosummary:
 
 Ideal binary mask
 -----------------
 
 .. autoclass:: nussl.separation.benchmark.IdealBinaryMask
-    :members:
     :autosummary:
 
 Ideal ratio mask
 ----------------
 
 .. autoclass:: nussl.separation.benchmark.IdealRatioMask
-    :members:
     :autosummary:
 
 Wiener filter
 -------------
 
 .. autoclass:: nussl.separation.benchmark.WienerFilter
-    :members:
     :autosummary:
 
 """

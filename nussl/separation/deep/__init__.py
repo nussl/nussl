@@ -1,16 +1,14 @@
 """
-Deep Clustering
+Deep clustering
 ---------------
 
 .. autoclass:: nussl.separation.deep.DeepClustering
-    :members:
     :autosummary:
 
-Deep Mask Estimation
+Deep mask estimation
 --------------------
 
 .. autoclass:: nussl.separation.deep.DeepMaskEstimation
-    :members:
     :autosummary:
 
 """
