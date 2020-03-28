@@ -36,11 +36,17 @@ the *nussl* installation. Use the following command::
 
         pip install nussl
 
-or::
-
-        sudo pip install nussl
-
 to install.
+
+Running the tests
+-----------------
+
+To run the tests, clone the repository, then `cd` into the directory and do:
+
+        pip install -r requirements
+        pip install -r extra_requirements
+        # install vamp and melodia as above
+        pytest
 
 Installing from source and downloading
 --------------------------------------
