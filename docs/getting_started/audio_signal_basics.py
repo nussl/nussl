@@ -93,13 +93,9 @@ print(f"Default sample rate: {nussl.constants.DEFAULT_SAMPLE_RATE}")
 # -------------------------
 #
 # If we want to add the audio data in these two signals, it's simple. But there are some gotchas:
-#
-# ``signal3 = signal1 + signal2``
-#
-# This throws the following error:
-#
-# ``AudioSignalException: Cannot do operation with two signals that have a different number of channels!``
-#
+
+signal3 = signal1 + signal2
+
 # Uh oh! I guess it doesn’t make sense to add a stereo signal (``signal1``) and mono signal (``signal2``).
 # But if we really want to add these two signals, we can make one of them mono.
 #
@@ -111,16 +107,10 @@ print(signal1.to_mono(overwrite=True))
 
 # If we hadn’t set ``overwrite=True`` then ``to_mono()`` would just return a new audio signal that is an exact copy of ``signal1`` except it is mono. You will see this pattern come up again. In certain
 # places, :class:`AudioSignal`:'s default behavior is to overwrite its internal data, and in other places the default is to
-# **not** overwrite data. See the reference pages for more info.
-#
-# Now when we try:
-#
-# ``signal3 = signal1 + signal2``
-#
-# we get:
-#
-# ``AudioSignalException: Cannot do arithmetic with signals of different length!``
-#
+# **not** overwrite data. See the reference pages for more info. Let's try:
+
+signal3 = signal1 + signal2
+
 # Uh oh! Let's fix this by truncating the longer `signal1` to match `signal2` duration in seconds.
 
 signal1.truncate_seconds(signal2.signal_duration)

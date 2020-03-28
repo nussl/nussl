@@ -24,7 +24,7 @@
 # into "frames" of the same length of the repeating period and "overlays" those frames. Once the frames are overlayed,
 # REPET extracts the non-repeating part by filtering out values that are far from the median value at each frame.
 #
-# In order to run REPET in *nussl*, we first must create an `AudioSignal`: object. We're going to load a file as before.
+# In order to run REPET in *nussl*, we first must create an `AudioSignal` object. We're going to load a file as before.
 #
 
 # +
@@ -33,6 +33,13 @@ import matplotlib.pyplot as plt
 
 audio_path = nussl.efz_utils.download_audio_file('historyrepeating_7olLrex.wav')
 history = nussl.AudioSignal(audio_path)
+history.embed_audio()
+
+plt.figure(figsize=(10, 3))
+nussl.utils.visualize_spectrogram(history)
+plt.title(str(history))
+plt.tight_layout()
+plt.show()
 # -
 
 # Neat. Now, we need to instantiate a ``Repet`` object. **Like all source separation algorithms** in *nussl*, ``Repet``
@@ -97,6 +104,7 @@ plt.figure(figsize=(10, 4))
 plt.plot(repet.beat_spectrum)
 plt.xlabel('Time (frames)')
 plt.ylabel('Intensity')
+plt.title('Beat spectrum')
 plt.show()
 
 # We can see a regularly repeating period happening. REPET uses this periodicity to separate the background (repeating) from the foreground (non-repeating).
