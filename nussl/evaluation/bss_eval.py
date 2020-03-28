@@ -132,7 +132,10 @@ class BSSEvalV4(BSSEvaluationBase):
         scores = []
         for j in range(references.shape[0]):
             score = {
-                'SDR': sdr[j], 'ISR': isr[j], 'SIR': sir[j], 'SAR': sar[j],
+                'SDR': sdr[j].tolist(), 
+                'ISR': isr[j].tolist(), 
+                'SIR': sir[j].tolist(), 
+                'SAR': sar[j].tolist(),
             }
             scores.append(score)
         return scores

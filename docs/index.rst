@@ -20,15 +20,22 @@ First steps
 .. toctree::
     :maxdepth: 4
 
-    getting_started/getting_started
-
+    getting_started
 
 Examples
 --------
+
+.. toctree::
+    :maxdepth: 4
+
+    examples
+
+Demos
+-----
 .. toctree::
     :maxdepth: 2
 
-   examples/examples
+   demos/demos
 
 API Documentation
 -----------------

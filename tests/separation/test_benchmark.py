@@ -111,3 +111,22 @@ def test_wiener_filter(
 
     pytest.raises(SeparationException, nussl.separation.benchmark.WienerFilter,
                   mix, 'not a list or dict')
+
+
+def test_mix_as_estimate(
+        music_mix_and_sources,
+        check_against_regression_data
+):
+    mix, sources = music_mix_and_sources
+
+    sources = list(sources.values())
+    mae = nussl.separation.benchmark.MixAsEstimate(
+        mix, len(sources))
+    estimates = mae()
+
+    evaluator = nussl.evaluation.BSSEvalScale(
+        sources, estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+
+    reg_path = os.path.join(REGRESSION_PATH, 'mix_as_estimate.json')
+    check_against_regression_data(scores, reg_path)
