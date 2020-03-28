@@ -1341,6 +1341,12 @@ class AudioSignal(object):
 
         return np.squeeze(result)
 
+    def peak_normalize(self):
+        """
+        Peak normalizes the audio signal.
+        """
+        self.apply_gain(1 / self.audio_data.max())
+
     def apply_gain(self, value):
         """
         Apply a gain to :attr:`audio_data`

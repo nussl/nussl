@@ -28,7 +28,7 @@ Examples
 .. toctree::
     :maxdepth: 2
 
-   examples
+   examples/examples
 
 API Documentation
 -----------------

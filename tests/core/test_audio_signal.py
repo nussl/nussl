@@ -251,6 +251,15 @@ def test_rms():
     answer = np.array([ans for _ in range(n_seconds*2+1)])
     assert np.allclose(answer, rms, atol=1e-06)
 
+def test_peak_normalize():
+    num_samples = nussl.constants.DEFAULT_SAMPLE_RATE  # 1 second
+    np_sin = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
+    signal = np.vstack([np_sin, -np_sin])
+
+    sig = nussl.AudioSignal(audio_data_array=signal)
+    sig.peak_normalize()
+
+    assert sig.audio_data.max() == 1.0
 
 def test_to_mono():
     """

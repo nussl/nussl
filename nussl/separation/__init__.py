@@ -10,7 +10,7 @@ algorithm currently in nussl. They provide helpful utilities
 and make it such that the end-user only has to implement
 one or two functions to create a new separation algorithm,
 depending on what sort of algorithm they are trying to 
-immplement.
+implement.
 
 .. automodule:: nussl.separation.base
     :members:

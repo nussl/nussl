@@ -3,6 +3,8 @@ sphinx-rtd-theme
 sphinx-autoapi
 m2r
 autodocsumm
+jupytext
+nbsphinx
 pytest
 pytest-cov
 IPython

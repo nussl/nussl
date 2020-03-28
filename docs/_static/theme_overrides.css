@@ -11,3 +11,7 @@
        overflow: visible !important;
     }
  }
+
+.audio-container ul.tracks>li {
+   margin-left: -1px
+}

@@ -2,7 +2,7 @@
 Ensemble clustering
 -------------------
 
-.. autoclass:: nussl.separation.deep.DeepClustering
+.. autoclass:: nussl.separation.composite.EnsembleClustering
     :autosummary:
 """
 

@@ -14,7 +14,7 @@ Foreground/background via 2DFT
 Harmonic/percussive separation
 ------------------------------
 
-.. autoclass:: nussl.separation.primitive.FT2D
+.. autoclass:: nussl.separation.primitive.HPSS
     :autosummary:
 
 Foreground/background via REPET

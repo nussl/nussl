@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../nussl/'))
 
+import jupytext
 
 # -- Project information -----------------------------------------------------
 
@@ -58,6 +59,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
     'autodocsumm',
+    'nbsphinx',
 ]
 
 autosummary_generate = True
@@ -68,7 +70,14 @@ autosummary_generate = True
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [
+    '_build', 'Thumbs.db', '.DS_Store', 
+    '**.ipynb_checkpoints', '*.ipynb']
+
+
+nbsphinx_custom_formats = {
+    '.py': lambda s: jupytext.reads(s, '.py'),
+}
 
 
 # -- Options for HTML output -------------------------------------------------
