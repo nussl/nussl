@@ -110,24 +110,24 @@ class InstanceNorm(nn.Module):
 
 
 class MelProjection(nn.Module):
+    """
+    MelProjection takes as input a time-frequency representation (e.g. a spectrogram, or a mask) and outputs a mel
+    project that can be learned or fixed. The initialization uses librosa to get a mel filterbank. Direction
+    controls whether it is a forward transform or the inverse transform (e.g. back to spectrogram).
+
+    Args:
+        sample_rate: (int) Sample rate of audio for computing the mel filters.
+        num_frequencies: (int) Number of frequency bins in input spectrogram.
+        num_mels: (int) Number of mel bins in output mel spectrogram. if num_mels < 0, this does nothing
+            other than clamping the output if clamp is True.
+        direction: (str) Which direction to go in (either 'forward' - to mel, or 'backward' - to frequencies).
+            Defaults to 'forward'.
+        clamp: (bool) Whether to clamp the output values of the transform between 0.0 and 1.0. Used for transforming
+            a mask in and out of the mel-domain. Defaults to False.
+        trainable: (bool) Whether the mel transform can be adjusted by the optimizer. Defaults to False.
+    """
     def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward',
                  clamp=False, trainable=False):
-        """
-        MelProjection takes as input a time-frequency representation (e.g. a spectrogram, or a mask) and outputs a mel
-        project that can be learned or fixed. The initialization uses librosa to get a mel filterbank. Direction
-        controls whether it is a forward transform or the inverse transform (e.g. back to spectrogram).
-
-        Args:
-            sample_rate: (int) Sample rate of audio for computing the mel filters.
-            num_frequencies: (int) Number of frequency bins in input spectrogram.
-            num_mels: (int) Number of mel bins in output mel spectrogram. if num_mels < 0, this does nothing
-              other than clamping the output if clamp is True.
-            direction: (str) Which direction to go in (either 'forward' - to mel, or 'backward' - to frequencies).
-              Defaults to 'forward'.
-            clamp: (bool) Whether to clamp the output values of the transform between 0.0 and 1.0. Used for transforming
-              a mask in and out of the mel-domain. Defaults to False.
-            trainable: (bool) Whether the mel transform can be adjusted by the optimizer. Defaults to False.
-        """
         super(MelProjection, self).__init__()
         self.num_mels = num_mels
         if direction not in ['backward', 'forward']:
@@ -180,35 +180,35 @@ class MelProjection(nn.Module):
 
 
 class Embedding(nn.Module):
+    """
+    Maps output from an audio representation module (e.g. RecurrentStack, 
+    DilatedConvolutionalStack) to an embedding space. The output shape is 
+    (batch_size, sequence_length, num_features, embedding_size). The embeddings can
+    be passed through an activation function. If activation is 'softmax' or 
+    'sigmoid', and embedding_size is equal to the number of sources, this module 
+    can be used to implement a mask inference network (or a mask inference
+    head in a Chimera network setup).
+
+    Args:
+        num_features (int): Number of features being mapped for each frame. 
+            Either num_frequencies, or if used with MelProjection, num_mels if using 
+            RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
+
+        hidden_size (int): Size of output from RecurrentStack (hidden_size) or 
+            DilatedConvolutionalStack (num_filters). If RecurrentStack is bidirectional, 
+            this should be set to 2 * hidden_size.
+        
+        embedding_size (int): Dimensionality of embedding.
+        
+        activation (list of str): Activation functions to be applied. Options 
+            are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
+            adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
+
+        dim_to_embed (int): Which dimension of the input to apply the embedding to.
+            Defaults to -1 (the last dimension).
+    """
     def __init__(self, num_features, hidden_size, embedding_size, activation,
                  num_audio_channels=1, dim_to_embed=-1):
-        """
-        Maps output from an audio representation module (e.g. RecurrentStack, 
-        DilatedConvolutionalStack) to an embedding space. The output shape is 
-        (batch_size, sequence_length, num_features, embedding_size). The embeddings can
-        be passed through an activation function. If activation is 'softmax' or 
-        'sigmoid', and embedding_size is equal to the number of sources, this module 
-        can be used to implement a mask inference network (or a mask inference
-        head in a Chimera network setup).
-
-        Args:
-            num_features (int): Number of features being mapped for each frame. 
-              Either num_frequencies, or if used with MelProjection, num_mels if using 
-              RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
-
-            hidden_size (int): Size of output from RecurrentStack (hidden_size) or 
-              DilatedConvolutionalStack (num_filters). If RecurrentStack is bidirectional, 
-              this should be set to 2 * hidden_size.
-            
-            embedding_size (int): Dimensionality of embedding.
-            
-            activation (list of str): Activation functions to be applied. Options 
-              are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
-              adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
-
-            dim_to_embed (int): Which dimension of the input to apply the embedding to.
-              Defaults to -1 (the last dimension).
-        """
         super(Embedding, self).__init__()
         self.add_module(
             'linear',
@@ -283,25 +283,25 @@ class Mask(nn.Module):
 
 
 class RecurrentStack(nn.Module):
+    """
+    Creates a stack of RNNs used to process an audio sequence represented as 
+    (sequence_length, num_features). With bidirectional = True, hidden_size = 600, 
+    num_layers = 4, rnn_type='lstm', and dropout = .3, this becomes the 
+    audio processor used in deep clustering networks, deep attractor networks, etc. 
+    Note that batch_first is set to True here.
+
+    Args:
+        num_features: (int) Number of features being mapped for each frame. 
+            Either num_frequencies, or if used with MelProjection, num_mels.
+        hidden_size: (int) Hidden size of recurrent stack for each layer.
+        num_layers: (int) Number of layers in stack.
+        bidirectional: (int) True makes this a BiLSTM or a BiGRU. Note that this 
+            doubles the hidden size.
+        dropout: (float) Dropout between layers.
+        rnn_type: (str) LSTM ('lstm') or GRU ('gru').
+    """
     def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout,
                  rnn_type='lstm'):
-        """
-        Creates a stack of RNNs used to process an audio sequence represented as 
-        (sequence_length, num_features). With bidirectional = True, hidden_size = 600, 
-        num_layers = 4, rnn_type='lstm', and dropout = .3, this becomes the 
-        audio processor used in deep clustering networks, deep attractor networks, etc. 
-        Note that batch_first is set to True here.
-
-        Args:
-            num_features: (int) Number of features being mapped for each frame. 
-              Either num_frequencies, or if used with MelProjection, num_mels.
-            hidden_size: (int) Hidden size of recurrent stack for each layer.
-            num_layers: (int) Number of layers in stack.
-            bidirectional: (int) True makes this a BiLSTM or a BiGRU. Note that this 
-              doubles the hidden size.
-            dropout: (float) Dropout between layers.
-            rnn_type: (str) LSTM ('lstm') or GRU ('gru').
-        """
         super(RecurrentStack, self).__init__()
         if rnn_type not in ['lstm', 'gru']:
             raise ValueError("rnn_type must be one of ['lstm', 'gru']!")
@@ -344,37 +344,38 @@ class RecurrentStack(nn.Module):
 
 
 class ConvolutionalStack2D(nn.Module):
+    """
+    Implements a stack of dilated convolutional layers for source separation from 
+    the following papers:
+
+        Mobin, Shariq, Brian Cheung, and Bruno Olshausen. "Convolutional vs. recurrent 
+        neural networks for audio source separation." 
+        arXiv preprint arXiv:1803.08629 (2018). https://arxiv.org/pdf/1803.08629.pdf
+
+        Yu, Fisher, Vladlen Koltun, and Thomas Funkhouser. "Dilated residual networks." 
+        Proceedings of the IEEE conference on computer vision and pattern recognition. 
+        2017. https://arxiv.org/abs/1705.09914
+    
+    Args:
+        in_channels (int): Number of channels in input
+        channels (list of int): Number of channels for each layer
+        dilations (list of ints or int tuples): Dilation rate for each layer. If 
+            int, it is same in both height and width. If tuple, tuple is defined as
+            (height, width). 
+        filter_shapes (list of ints or int tuples): Filter shape for each layer. If 
+            int, it is same in both height and width. If tuple, tuple is defined as
+            (height, width).
+        residuals (list of bool): Whether or not to keep a residual connection at
+            each layer.
+        batch_norm (bool): Whether to use BatchNorm or not at each layer (default: True)
+        use_checkpointing (bool): Whether to use torch's checkpointing functionality 
+            to reduce memory usage.
+    
+    Raises:
+        ValueError -- All the input lists must be the same length.
+    """
     def __init__(self, in_channels, channels, dilations, filter_shapes, residuals,
                  batch_norm=True, use_checkpointing=False):
-        """Implements a stack of dilated convolutional layers for source separation from 
-        the following papers:
-
-            Mobin, Shariq, Brian Cheung, and Bruno Olshausen. "Convolutional vs. recurrent 
-            neural networks for audio source separation." 
-            arXiv preprint arXiv:1803.08629 (2018). https://arxiv.org/pdf/1803.08629.pdf
-
-            Yu, Fisher, Vladlen Koltun, and Thomas Funkhouser. "Dilated residual networks." 
-            Proceedings of the IEEE conference on computer vision and pattern recognition. 
-            2017. https://arxiv.org/abs/1705.09914
-        
-        Args:
-            in_channels (int): Number of channels in input
-            channels (list of int): Number of channels for each layer
-            dilations (list of ints or int tuples): Dilation rate for each layer. If 
-              int, it is same in both height and width. If tuple, tuple is defined as
-              (height, width). 
-            filter_shapes (list of ints or int tuples): Filter shape for each layer. If 
-              int, it is same in both height and width. If tuple, tuple is defined as
-              (height, width).
-            residuals (list of bool): Whether or not to keep a residual connection at
-              each layer.
-            batch_norm (bool): Whether to use BatchNorm or not at each layer (default: True)
-            use_checkpointing (bool): Whether to use torch's checkpointing functionality 
-              to reduce memory usage.
-        
-        Raises:
-            ValueError -- All the input lists must be the same length.
-        """
         for x in [dilations, filter_shapes, residuals]:
             if len(x) != len(channels):
                 raise ValueError(

@@ -14,15 +14,18 @@ Training
 
 .. autoclass:: nussl.ml.train.ValidationEvents
     :members:
+    :undoc-members:
 
 .. autoclass:: nussl.ml.train.BackwardsEvents
     :members:
+    :undoc-members:
 
 Loss functions
 --------------
 
 .. automodule:: nussl.ml.train.loss
     :members:
+    :undoc-members:
     :autosummary:
 
 Closures
@@ -30,6 +33,7 @@ Closures
 
 .. automodule:: nussl.ml.train.closures
     :members:
+    :undoc-members:
     :autosummary:
 
 """
