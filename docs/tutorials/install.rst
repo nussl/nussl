@@ -8,69 +8,25 @@ which is used through the command line with
 `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_. pip comes pre-installed with most
 python distributions and will automatically install *nussl's* required dependencies.
 
-**It is highly recommended to install** *nussl* **inside a virtual environment because it is under
-active development.**
-We also recommend installing `anaconda <https://www.continuum.io/>`_ and setting up an anaconda
-virtual environment (see :ref:`Making an anaconda env <anaconda_env>`) prior to using this package.
 
 Requirements
 ------------
 
-Before we get started installing, *nussl* requires the following::
+*nussl* is compatible with only **Python 3**.
 
-        python 2.7
-        numpy version >= 1.8.0
-        scipy version >= 0.13.0
-        matplotlib version >= 1.3.1
-        audioread >= 2.1.2
-        librosa >= 0.4.1
+The requirements are listed in ``requirements.txt`` and should be installed automatically
+with `pip`. There is one additional optional requirement that is only needed if you 
+want to use `nussl.separation.primitive.Melodia`: `vamp`.
 
-These will be installed automatically with pip, but if you are installing from source then you will need to
-get these manually.
+If you want to use Melodia, then you will also need to follow the instructions 
+`here <https://github.com/justinsalamon/melodia_python_tutorial/blob/master/melodia_python_tutorial.ipynb>`_
+
+If you are installing from source then you will need to install the requirements manually.
+
+Finally, there are extra requirements you will need to run the recipes. Those are in
+``extra_requirements.txt``.
 
 .. _anaconda_env:
-
-Making an anaconda env (Recommended)
-------------------------------------
-
-If you have `anaconda <https://www.continuum.io/>`_, it is easy to make a separate environment to sandbox work with
-*nussl*. Follow these instructions (adopted from `here <https://conda.io/docs/using/envs.html>`_):
-
-1. First, create the ``conda`` env::
-
-    $ conda create --name new_nussl_env numpy scipy matplotlib
-
-    . . .
-
-    Proceed ([y]/n)? y
-
-    . . .
-
-    #
-    # To activate this environment, use:
-    # $ source activate new_nussl_env
-    #
-    # To deactivate this environment, use:
-    # $ source deactivate
-    #
-    $
-
-``conda`` will create a new env named ``new_nussl_env`` with ``numpy``, ``scipy``, and ``matplotlib`` installed in it.
-For full output, see :ref:`conda_env_output` .
-
-Note that we don't have ``conda`` install ``librosa``, ``audioread``, or ``nussl`` yet because these packages will be
-pip installed (next section).
-
-2. Now, we need to activate the env. Run the following command::
-
-    $ source activate new_nussl_env
-    (new_nussl_env) $
-
-Now we're in the ``conda`` env. We can exit it with the following command::
-
-    (new_nussl_env) $ source deactivate
-
-From within the ``conda`` env, you can do a regular pip install; proceed to the next section.
 
 pip install
 -----------
@@ -95,7 +51,6 @@ and install with the following command::
         python setup.py nussl
 
 
-
 It is also possible to download from github and copy the *nussl* folder into your working directory and
 directly import the modules in your python code.
 
@@ -104,50 +59,6 @@ directly import the modules in your python code.
 
 Troubleshooting
 ---------------
-
-Making sure you have the correct version
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sometimes issues arise that can be fixed by making sure you version of *nussl* is up to date. To check if you have the
-most up-to-date version of nussl, check the version number here: https://pypi.python.org/pypi/nussl and compare it with
-the one you are accessing in your python like so:
-
->>> import nussl
->>> nussl.version
-0.1.5a10
-
-If the version numbers match then you're set. If not you can get the most recent version in a few ways. From the
-terminal, the command::
-
-        pip install -U nussl
-
-will force pip to install the newest version of nussl and all of its dependencies.
-
-In the case that this fails, you can force pip to install a specific version like this::
-
-        pip install nussl==[version]
-
-So if I find that version 0.1.5a10 is the most recent (by checking PyPI), my command would look like the following::
-
-        pip install nussl==0.1.5a10
-
-
-pip issues with anaconda
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you have anaconda installed on your machine and after a ``pip`` install doing ``import nussl`` is crashing, it might
-be the case that pip is installing *nussl* to a (non-anaconda) python binary elsewhere on your machine.
-You can target the directory where pip installs *nussl* by adding this flag to your pip command:
-``--target=d:\somewhere\other\than\the\default``. See: http://stackoverflow.com/q/2915471/5768001
-If you find your anaconda (or anaconda2) folder on your machine, the directory to target should be
-``anaconda2/lib/python2.7/site-packages``.
-
-The more inelegant solution is to find your pre-existing *nussl* installation and move them, which means
-locating two directories named ``nussl`` and ``nussl-[version].dist-info`` (where [version]
-is the version string as above). These are usually in a directory structure like ``lib/python2.7/site-packages``
-as above, but not anaconda related, presumably where pip installed them. Once you find those two folders copy and paste
-them to the anaconda directory above.
-
 
 Matplotlib issues
 ^^^^^^^^^^^^^^^^^
