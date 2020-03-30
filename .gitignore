@@ -5,7 +5,10 @@
 .mypy_cache
 *.swp
 *.wav
-**/*.ipynb
+docs/examples/**/*.ipynb
+docs/tutorials/**/*.ipynb
+docs/examples/**/*.html
+docs/tutorials/**/*.html
 nussl.egg-info/*
 .vscode/
 **/.ipynb_checkpoints
@@ -13,4 +16,3 @@ tests/ignored_tests/
 .coverage*
 docs/_build/
 tests/local/
-nussl/ml/train/trainer copy.py

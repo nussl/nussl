@@ -12,6 +12,92 @@ Contributing to *nussl* is just like contributing to any other open source proje
 most part. The process is exactly the same for fixing bugs or adding utility functions: make
 a pull request, write some tests, make sure all of the code is up to snuff, and it'll be approved.
 
+Documentation
+-------------
+
+Documentation for *nussl* is built with Sphinx. The source code for making docs
+is kept in the `docs/` folder. There are two parts to the documentation. The first
+is API documentation which is maintained alongside the code. The second part is
+tutorials and examples, which are maintained as Jupyter *notebooks* and compiled into 
+the docs via [nbsphinx](https://nbsphinx.readthedocs.io/en/0.5.1/).
+
+The installation requirements for maintaining docs are kept in `extra_requirements`::
+
+   pip install -r extra_requirements.txt
+
+You'll also need Jupyter installed to edit or create new tutorials, or make new 
+examples.
+
+However, notebooks are NOT kept in the docs repository as is, as notebooks are very
+hard to keep track of in git diffs and can get very large. Instead, they are kept as only 
+[jupytext](https://jupytext.readthedocs.io/en/latest/index.html) representations. 
+So to build new docs, one will have to keep a local copy of every notebook executed. The
+only notebooks that get committed are the ones in `docs/recipes/`, as these require
+access to large datasets and GPU resources. These are run once and committed in an 
+executed format to the repository from a specific machine.
+
+So, to contribute a notebook demonstrating or explaining some facet of *nussl*, do the
+following:
+
+1. Execute all of the notebooks present in the docs (this only has to happen once on 
+   your machine)::
+
+      python create_and_execute_notebooks.py
+
+   This will find every *.py script in docs/examples and docs/tutorials, create the 
+   associated notebook, execute the cells, and convert your notebook to HTML so you 
+   can quickly see what it looks like without having to launch it in Jupyter notebook.
+   When you run ``make html``, the executed notebooks are used in the documentation.
+
+2. Create a new notebook in either `tutorials` or `examples`. Work in the notebook 
+   until you are satisifed with your explanation/demo. Note: your notebook is NOT yet
+   in version control!
+
+3. Run the following command on your notebook::
+
+      jupytext --set-formats ipynb,py docs/path/to/notebook.ipynb
+
+   The light text representation of your notebook is now tracked by Git and it is 
+   identical to your notebook, except for the outputs. Since your notebook is already
+   executed (manually), when you make the docs you'll see it in there as long as you
+   do the next step:
+
+4. Add your notebook to the toctree of the associated folder. For example, 
+   `examples/primitives/primitives.rst` has the following contents::
+
+      Primitives
+      ==========
+
+      .. toctree::
+         :maxdepth: 4
+
+         FT2D <2dft.py>
+         REPET <repet.py>
+         REPETSIM <repet_sim.py>
+         Melodia <melodia.py>
+         TimbreClustering <timbre.py>
+         HPSS <hpss.py>
+   
+   So if you are adding examples for a new primitive algorithm, be sure to edit 
+   this like so::
+
+      Primitives
+      ==========
+
+      .. toctree::
+         :maxdepth: 4
+
+         FT2D <2dft.py>
+         REPET <repet.py>
+         REPETSIM <repet_sim.py>
+         Melodia <melodia.py>
+         TimbreClustering <timbre.py>
+         HPSS <hpss.py>
+         [Your algorithm] <path/to/light/script.py>
+
+5. Run ``make html`` from the docs folder. Then look at ``_build/html/index.html`` to see 
+   what got generated.
+
 
 Adding your own algorithm
 -------------------------

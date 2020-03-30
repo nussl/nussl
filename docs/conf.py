@@ -72,7 +72,8 @@ autosummary_generate = True
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
     '_build', 'Thumbs.db', '.DS_Store', 
-    '**.ipynb_checkpoints', '*.ipynb']
+    '**.ipynb_checkpoints', '*.ipynb',
+    'create_and_execute_notebooks.py']
 
 
 nbsphinx_custom_formats = {
