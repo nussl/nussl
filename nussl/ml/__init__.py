@@ -12,13 +12,21 @@ SeparationModel
 Building blocks for SeparationModel
 -----------------------------------
 
-.. automodule:: nussl.ml.networks.modules
+.. automodule:: nussl.ml.modules
     :members:
     :autosummary:
 
 .. automodule:: nussl.ml.cluster
     :members:
     :autosummary:
+
+Helpers for common deep networks
+--------------------------------
+
+.. automodule:: nussl.ml.networks.builders
+    :members:
+    :autosummary:
+
 
 Training
 --------

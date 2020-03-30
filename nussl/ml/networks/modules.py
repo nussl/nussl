@@ -218,6 +218,10 @@ class Embedding(nn.Module):
         self.num_audio_channels = num_audio_channels
         self.activation = activation
         self.embedding_size = embedding_size
+
+        if isinstance(dim_to_embed, int):
+            dim_to_embed = [dim_to_embed]
+
         self.dim_to_embed = dim_to_embed
 
         for name, param in self.linear.named_parameters():
@@ -236,12 +240,22 @@ class Embedding(nn.Module):
             An embedding (with an optional activation) for each point in the 
               representation of shape (num_batch, ..., embedding_size).
         """
-        shape = data.shape
-        data = data.transpose(self.dim_to_embed, -1)
-        data = self.linear(data)
-        data = data.transpose(-1, self.dim_to_embed)
+        shape = list(data.shape)
+        for _dim in self.dim_to_embed:
+            # move each dimension to embed to end of tensor
+            data = data.transpose(_dim, -1)
 
-        shape = shape[:-1] + (
+        # the new shape doesn't have the embedded dimensions
+        shape = [
+            v for i, v in enumerate(shape) 
+            if i not in self.dim_to_embed
+        ]
+        
+        shape = tuple(shape)
+        data = data.reshape(shape + (-1,))
+        data = self.linear(data)
+
+        shape = shape + (
             self.num_features, self.num_audio_channels, self.embedding_size,)
         data = data.reshape(shape)
 

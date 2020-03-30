@@ -13,6 +13,7 @@
 #     name: python3
 # ---
 
+# + [markdown] raw_mimetype="text/restructuredtext"
 # Time-frequency representations
 # ==============================
 #
@@ -25,6 +26,7 @@
 #
 # Let's reinitialize ``signal1`` from the previous page. We should be able to get frequency domain data by looking
 # at ``signal1.stft_data``. Let's try that.
+# -
 
 import nussl
 input_file_path = nussl.efz_utils.download_audio_file(
@@ -156,5 +158,3 @@ signal1.stft().shape
 
 # The shape of the resultant STFT is now different. Note that 256 resulted in 129 
 # frequencies of analysis per frame. In general, the rule is `(window_length // 2) + 1`.
-
-

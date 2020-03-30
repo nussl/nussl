@@ -76,11 +76,11 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
 
     # define the topology
     connections = [
-        ['log_spectrogram', ['mix_magnitude', ]],
+        ['log_spectrogram', [mix_key, ]],
         ['normalization', ['log_spectrogram', ]],
         ['recurrent_stack', ['normalization', ]],
         ['mask', ['recurrent_stack', ]],
-        ['estimates', ['mask', 'mix_magnitude']]
+        ['estimates', ['mask', mix_key]]
     ]
 
     # define the outputs

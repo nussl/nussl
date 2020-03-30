@@ -519,3 +519,19 @@ for key in keys:
         plt.title(f'{key}: {source_names[i]}')
     plt.tight_layout()
     plt.show()
+# -
+
+# Finally, all datasets just return dictionaries containing AudioSignal objects. Grabbing the audio data is as simple as:
+
+plt.figure(figsize=(10, 3))
+plt.plot(mix.audio_data[0])
+plt.title(f'mix.audio_data, shape: {mix.audio_data.shape}')
+plt.xlabel('Sample index')
+plt.ylabel('Amplitude')
+plt.show()
+
+# Accessing the STFT can be done by:
+
+mix.stft().shape
+
+# If you so choose, you can use *nussl* datasets in your own machine learning pipeline instead of using *nussl* features. However, if you want to use *nussl* for training a deep model, read on to the next tutorial!

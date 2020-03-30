@@ -88,7 +88,7 @@ class Closure(object):
                     "Each key in loss dictionary must point to a dict!")
 
             for val_key in val:
-                if val_key not in ['weight', 'args', 'kwargs']:
+                if val_key not in ['weight', 'keys', 'args', 'kwargs']:
                     raise ClosureException(
                         f"{key} in loss_dictionary not in ['weight', 'args', 'kwargs'")
 
@@ -145,7 +145,8 @@ class TrainClosure(Closure):
 
         loss_ = self.compute_loss(output, data)
         loss_['loss'].backward()
-        engine.fire_event(BackwardsEvents.BACKWARDS_COMPLETED)
+        if engine is not None:
+            engine.fire_event(BackwardsEvents.BACKWARDS_COMPLETED)
         self.optimizer.step()
         loss_ = {key: loss_[key].item() for key in loss_}
 

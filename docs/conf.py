@@ -78,6 +78,7 @@ exclude_patterns = [
 nbsphinx_custom_formats = {
     '.py': lambda s: jupytext.reads(s, '.py'),
 }
+nbsphinx_allow_errors = True
 
 
 # -- Options for HTML output -------------------------------------------------
