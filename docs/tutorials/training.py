@@ -911,7 +911,8 @@ for key in saved_model['metadata']:
 # deep mask estimation networks. Let's build our dataset
 # again, this time *without* transforms, so we have access to
 # the actual AudioSignal objects. Then let's instantiate the
-# separation algorithm and use to separate an item from the dataset.
+# separation algorithm and use it to separate an item from the 
+# dataset.
 
 # +
 sine_wave_dataset = SineWaves(

@@ -37,6 +37,13 @@ Examples
 
    examples/examples
 
+Recipes
+-------
+.. toctree::
+    :maxdepth: 4
+
+   recipes/recipes
+
 API Documentation
 -----------------
 .. toctree::
