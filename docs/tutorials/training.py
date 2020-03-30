@@ -56,6 +56,9 @@ import shutil
 import termtables
 import glob
 import tqdm
+import time
+
+start_time = time.time()
 
 # seed this notebook
 nussl.utils.seed(0)
@@ -364,6 +367,14 @@ def make_sine_wave(freq, sample_rate, duration):
     return x
 
 class SineWaves(nussl.datasets.BaseDataset):
+    def __init__(self, *args, num_sources=3, num_frequencies=20, **kwargs):
+        self.num_sources = num_sources
+        self.frequencies = np.random.choice(
+            np.arange(110, 4000, 100), num_frequencies,
+            replace=False)
+        
+        super().__init__(*args, **kwargs)
+        
     def get_items(self, folder):
         # ignore folder and return a list
         # 100 items in this dataset
@@ -375,15 +386,17 @@ class SineWaves(nussl.datasets.BaseDataset):
         # sums of random sine waves
         sources = {}
         freqs = []
-        for i in range(3):
-            freq = np.random.randint(110, 1000)
-            freqs.append(freq)
+        freqs = np.random.choice(
+            self.frequencies, self.num_sources,
+            replace=False)
+        for i in range(self.num_sources):
+            freq = freqs[i]
             _data = make_sine_wave(freq, self.sample_rate, 2)
             # this is a helper function in BaseDataset for
             # making an audio signal from data
             signal = self._load_audio_from_array(_data)
             signal.path_to_input_file = f'{item}.wav'
-            sources[f'sine{i}'] = signal * 1/3
+            sources[f'sine{i}'] = signal * 1 / self.num_sources
         
         mix = sum(sources.values())
         
@@ -406,6 +419,7 @@ class SineWaves(nussl.datasets.BaseDataset):
 # in 129 frequencies in the spectrogram.
 
 # +
+nussl.utils.seed(0) # make sure this does the same thing each time
 folder = 'ignored'
 stft_params = nussl.STFTParams(window_length=256, hop_length=64)
 sine_wave_dataset = SineWaves(
@@ -424,6 +438,7 @@ def visualize_and_embed(sources, y_axis='mel'):
     nussl.play_utils.multitrack(sources, ext='.wav')
     
 visualize_and_embed(item['sources'])
+print(item['metadata'])
 # -
 
 # Let's check the shape of the `mix` stft:
@@ -693,6 +708,7 @@ output = model(item)
 loss_output = closure.compute_loss(output, item)
 loss_output['loss'].backward()
 optimizer.step()
+print(loss_output)
 # -
 
 # Cool, we did a single step. Instead of manually defining this all above, we can 
@@ -784,7 +800,8 @@ for i in range(output['estimates'].shape[-1]):
 # ### Putting it all together ###
 #
 # Let's put this all together. Let's build the dataset, model and
-# optimizer, train and validation closures, and engines.
+# optimizer, train and validation closures, and engines. Let's also
+# use the GPU if it's available.
 
 # +
 BATCH_SIZE = 5
@@ -792,6 +809,7 @@ LEARNING_RATE = 1e-3
 OUTPUT_FOLDER = os.path.expanduser('~/.nussl/tutorial/sinewave')
 RESULTS_DIR = os.path.join(OUTPUT_FOLDER, 'results')
 NUM_WORKERS = 2
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 shutil.rmtree(os.path.join(RESULTS_DIR), ignore_errors=True)
 
@@ -816,7 +834,7 @@ dataloader = torch.utils.data.DataLoader(
     sine_wave_dataset, batch_size=BATCH_SIZE)
 
 # Build our simple model
-model = nussl.ml.SeparationModel(config)
+model = nussl.ml.SeparationModel(config).to(DEVICE)
 
 # Build an optimizer
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -839,7 +857,7 @@ val_closure = nussl.ml.train.closures.ValidationClosure(
 
 # Build the engine and add handlers
 train_engine, val_engine = nussl.ml.train.create_train_and_validation_engines(
-    train_closure, val_closure)
+    train_closure, val_closure, device=DEVICE)
 nussl.ml.train.add_validate_and_checkpoint(
     OUTPUT_FOLDER, model, optimizer, sine_wave_dataset, train_engine,
     val_data=dataloader, validator=val_engine)
@@ -915,9 +933,10 @@ for key in saved_model['metadata']:
 # dataset.
 
 # +
-sine_wave_dataset = SineWaves(
+tt_dataset = SineWaves(
     'ignored', sample_rate=8000)
-item = sine_wave_dataset[0]
+tt_dataset.frequencies = sine_wave_dataset.frequencies
+item = tt_dataset[0]
 MODEL_PATH = os.path.join(OUTPUT_FOLDER, 'checkpoints/best.model.pth')
 
 separator = nussl.separation.deep.DeepMaskEstimation(
@@ -960,7 +979,7 @@ def separate_and_evaluate(item, masks):
         json.dump(scores, f)
 
 pool = ThreadPoolExecutor(max_workers=NUM_WORKERS)
-for i, item in enumerate(tqdm.tqdm(sine_wave_dataset)):
+for i, item in enumerate(tqdm.tqdm(tt_dataset)):
     masks = forward_on_gpu(item['mix'])
     if i == 0:
         separate_and_evaluate(item, masks)
@@ -997,3 +1016,9 @@ df
 # item in `sine_wave_dataset`:
 
 # !tree --filelimit 20 {OUTPUT_FOLDER}
+
+# +
+end_time = time.time()
+time_taken = end_time - start_time
+
+print(f'Time taken: {time_taken:.4f} seconds')

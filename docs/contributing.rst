@@ -16,12 +16,12 @@ Documentation
 -------------
 
 Documentation for *nussl* is built with Sphinx. The source code for making docs
-is kept in the `docs/` folder. There are two parts to the documentation. The first
+is kept in the ``docs/`` folder. There are two parts to the documentation. The first
 is API documentation which is maintained alongside the code. The second part is
 tutorials and examples, which are maintained as Jupyter *notebooks* and compiled into 
 the docs via [nbsphinx](https://nbsphinx.readthedocs.io/en/0.5.1/).
 
-The installation requirements for maintaining docs are kept in `extra_requirements`::
+The installation requirements for maintaining docs are kept in ``extra_requirements``::
 
    pip install -r extra_requirements.txt
 
@@ -32,7 +32,7 @@ However, notebooks are NOT kept in the docs repository as is, as notebooks are v
 hard to keep track of in git diffs and can get very large. Instead, they are kept as only 
 [jupytext](https://jupytext.readthedocs.io/en/latest/index.html) representations. 
 So to build new docs, one will have to keep a local copy of every notebook executed. The
-only notebooks that get committed are the ones in `docs/recipes/`, as these require
+only notebooks that get committed are the ones in ``docs/recipes/``, as these require
 access to large datasets and GPU resources. These are run once and committed in an 
 executed format to the repository from a specific machine.
 
@@ -42,18 +42,22 @@ following:
 1. Execute all of the notebooks present in the docs (this only has to happen once on 
    your machine)::
 
-      python create_and_execute_notebooks.py
+      python create_and_execute_notebook.py all            # make all notebooks
+      # OR 
+      make notebooks # this just runs what is above
+
+      python create_and_execute_notebook path/to/script.py # make just one notebook
 
    This will find every *.py script in docs/examples and docs/tutorials, create the 
    associated notebook, execute the cells, and convert your notebook to HTML so you 
    can quickly see what it looks like without having to launch it in Jupyter notebook.
    When you run ``make html``, the executed notebooks are used in the documentation.
 
-2. Create a new notebook in either `tutorials` or `examples`. Work in the notebook 
+2. Option 1: create a new notebook in either ``tutorials`` or ``examples``. Work in the notebook 
    until you are satisifed with your explanation/demo. Note: your notebook is NOT yet
    in version control!
 
-3. Run the following command on your notebook::
+   Now run the following command on your notebook::
 
       jupytext --set-formats ipynb,py docs/path/to/notebook.ipynb
 
@@ -62,8 +66,15 @@ following:
    executed (manually), when you make the docs you'll see it in there as long as you
    do the next step:
 
-4. Add your notebook to the toctree of the associated folder. For example, 
-   `examples/primitives/primitives.rst` has the following contents::
+   Option 2: create a script that you will later link to a notebook. Work in this script
+   until you're satisfied like above. Then when done with it, run::
+
+      python create_and_execute_notebook path/to/script.py
+
+   to link the script with a notebook and an HTML file.
+
+3. Add your notebook to the toctree of the associated folder. For example, 
+   ``examples/primitives/primitives.rst`` has the following contents::
 
       Primitives
       ==========
@@ -95,8 +106,21 @@ following:
          HPSS <hpss.py>
          [Your algorithm] <path/to/light/script.py>
 
-5. Run ``make html`` from the docs folder. Then look at ``_build/html/index.html`` to see 
-   what got generated.
+4. Run ``make html`` from the docs folder. Then look at ``_build/html/index.html`` to see 
+   what got generated. 
+
+5. Finally, it's best to run the light script from scratch to make sure it's doing what 
+   you expect::
+
+      python create_and_execute_notebook path/to/your_script.py
+
+   Inspect the resultant HTML file to make sure it's doing what you want. Then run
+   ``make html`` again.
+
+This process results in rich and interactive documentation but also results in 
+large files. For this reason, the actual compiled documentation is kept in a [separate
+repository](https://github.com/nussl/docs), so that the main code repository stays
+light. 
 
 
 Adding your own algorithm

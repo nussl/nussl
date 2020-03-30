@@ -23,12 +23,21 @@ If you want to use Melodia, then you will also need to follow the instructions
 
 If you are installing from source then you will need to install the requirements manually.
 
-Finally, there are extra requirements you will need to run the recipes. Those are in
-``extra_requirements.txt``.
+Finally, there are extra requirements you will need to run the examples, tutorials, and 
+recipes. These extra requirements are mostly for the sake of visualization. 
+Those are in ``extra_requirements.txt``::
+
+      pip install -r extra_requirements.txt
 
 To make use of `Scaper <https://github.com/justinsalamon/scaper>`_, you will also need 
 to install ``sox`` and ``ffmpeg``. You'll also need ``ffmpeg`` to make use of some of the
 functionality in ``nussl.play_utils``.
+
+Finally, try to install ``tree`` for the tutorials. This is a useful command line tool 
+that shows you the structure of a directory. Install it via a package manager::
+
+      brew install tree # on macosx
+      sudo apt-get install tree # on ubuntu
 
 .. _anaconda_env:
 
