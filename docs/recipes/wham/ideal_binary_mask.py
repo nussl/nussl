@@ -24,8 +24,8 @@
 # as a notebook for documentation but can be run directly
 # as a script in `docs/recipes/ideal_binary_mask.py`.
 #
-# Setting up
-# ----------
+# Imports
+# -------
 
 # +
 from nussl import datasets, separation, evaluation
@@ -44,8 +44,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 # -
 
-# Environment setup
-# -----------------
+# Setting up
+# ----------
 #
 # Make sure to point `WHAM_ROOT` where you've actually
 # built and saved the WHAM dataset.

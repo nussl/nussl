@@ -241,14 +241,18 @@ class Embedding(nn.Module):
               representation of shape (num_batch, ..., embedding_size).
         """
         shape = list(data.shape)
+        _dims = []
         for _dim in self.dim_to_embed:
             # move each dimension to embed to end of tensor
+            if _dim == -1:
+                _dim = len(shape) - 1
             data = data.transpose(_dim, -1)
+            _dims.append(_dim)
 
         # the new shape doesn't have the embedded dimensions
         shape = [
             v for i, v in enumerate(shape) 
-            if i not in self.dim_to_embed
+            if i not in _dims
         ]
         
         shape = tuple(shape)

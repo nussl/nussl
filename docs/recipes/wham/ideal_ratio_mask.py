@@ -30,7 +30,7 @@
 # - Phase sensitive spectrum approximation
 # - Truncated phase sensitive spectrum approximation
 #
-# Setting up
+# Imports
 # ----------
 
 # +
@@ -50,8 +50,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 # -
 
-# Environment setup
-# -----------------
+# Setting up
+# ----------
 #
 # Make sure to point `WHAM_ROOT` where you've actually
 # built and saved the WHAM dataset. There's a few different

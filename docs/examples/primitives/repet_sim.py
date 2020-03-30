@@ -13,21 +13,33 @@
 #     name: python3
 # ---
 
-# # Separation via 2DFT
+# REPETSIM
+# ========
 #
-# This notebook demonstrates how vocals can be separated from accompaniment via
-# a simple image processing technique.
+# Rafii, Zafar, and Bryan Pardo. 
+# "Online REPET-SIM for real-time speech enhancement." 
+# 2013 IEEE International Conference on Acoustics, 
+# Speech and Signal Processing. IEEE, 2013.
+#
+#     @inproceedings{rafii2013online,
+#       title={Online REPET-SIM for real-time speech enhancement},
+#       author={Rafii, Zafar and Pardo, Bryan},
+#       booktitle={2013 IEEE International Conference on Acoustics, Speech and Signal Processing},
+#       pages={848--852},
+#       year={2013},
+#       organization={IEEE}
+#     }
 
 # +
 import nussl
 import matplotlib.pyplot as plt
 
 audio_path = nussl.efz_utils.download_audio_file(
-    'schoolboy_fascination_excerpt.wav')
+    'historyrepeating_7olLrex.wav')
 audio_signal = nussl.AudioSignal(audio_path)
-ft2d = nussl.separation.primitive.FT2D(
+separator = nussl.separation.primitive.RepetSim(
     audio_signal, mask_type='binary')
-estimates = ft2d()
+estimates = separator()
 
 plt.figure(figsize=(10, 6))
 plt.subplot(211)

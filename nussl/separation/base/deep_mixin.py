@@ -39,6 +39,7 @@ class DeepMixin:
         model = model.to(device).eval()
         metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
         self.model = model
+        self.config = model_dict['config']
         self.metadata = metadata
         self.transform = self._get_transforms(
             self.metadata['transforms'])
