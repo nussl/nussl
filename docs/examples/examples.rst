@@ -11,3 +11,5 @@ with multiple settings for the arguments to the algorithm.
 
    Primitives <primitives/primitives.rst>
    Deep learning <deep/deep.rst>
+   Composite methods <composite/composite.rst>
+   Factorization <factorization/factorization.rst>

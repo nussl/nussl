@@ -73,8 +73,6 @@ sources = item['sources']
 visualize_and_embed(sources)
 
 # +
-import nussl
-
 separator = nussl.separation.primitive.HPSS(
     mix, mask_type='binary')
 estimates = separator()

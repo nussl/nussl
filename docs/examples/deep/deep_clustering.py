@@ -35,7 +35,7 @@
 #     }
 #
 #
-#     @inproceedings{wang2018alternative,#
+#     @inproceedings{wang2018alternative,
 #       title={Alternative objective functions for deep clustering},
 #       author={Wang, Zhong-Qiu and Le Roux, Jonathan and Hershey, John R},
 #       booktitle={2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
