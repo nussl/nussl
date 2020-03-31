@@ -35,6 +35,7 @@ setup(
     url='https://github.com/interactiveaudiolab/nussl',
     license='MIT',
     packages=find_packages(),
+    package_data={'': ['core/templates/multitrack.html']},
     keywords=['audio', 'source', 'separation', 'music', 'sound', 'source separation'],
     install_requires=requirements,
     extras_require={
