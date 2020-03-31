@@ -9,7 +9,10 @@ with multiple settings for the arguments to the algorithm.
 .. toctree::
    :maxdepth: 4
 
-   Primitives <primitives/primitives.rst>
+   Benchmark <benchmark/benchmark.rst>
    Deep learning <deep/deep.rst>
    Composite methods <composite/composite.rst>
    Factorization <factorization/factorization.rst>
+   Primitives <primitives/primitives.rst>
+   Spatial <spatial/spatial.rst>
+   

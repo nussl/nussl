@@ -13,38 +13,36 @@
 #     name: python3
 # ---
 
-# # Robust Principal Component Analysis
+# # DUET
 #
-# Huang, Po-Sen, et al. "Singing-voice separation from monaural 
-# recordings using robust principal component analysis." 
-# 2012 IEEE International Conference on Acoustics, Speech 
-# and Signal Processing (ICASSP). IEEE, 2012.
+# Rickard, Scott. "The DUET blind source separation algorithm." 
+# Blind speech separation. Springer, Dordrecht, 2007. 217-241.
 #
-#
-#     @inproceedings{huang2012singing,
-#       title={Singing-voice separation from monaural recordings using robust principal component analysis},
-#       author={Huang, Po-Sen and Chen, Scott Deeann and Smaragdis, Paris and Hasegawa-Johnson, Mark},
-#       booktitle={2012 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
-#       pages={57--60},
-#       year={2012},
-#       organization={IEEE}
-#     }
+#       @incollection{rickard2007duet,
+#         title={The DUET blind source separation algorithm},
+#         author={Rickard, Scott},
+#         booktitle={Blind speech separation},
+#         pages={217--241},
+#         year={2007},
+#         publisher={Springer}
+#       }
 
 # +
 import nussl
 import matplotlib.pyplot as plt
 import time
 import warnings
-import numpy as np
 
 warnings.filterwarnings("ignore")
 start_time = time.time()
+
+nussl.utils.seed(0)
 
 def visualize_and_embed(sources):
     plt.figure(figsize=(10, 6))
     plt.subplot(211)
     nussl.utils.visualize_sources_as_masks(sources,
-        y_axis='mel', db_cutoff=-40, alpha_amount=2.0)
+        y_axis='linear', db_cutoff=-40, alpha_amount=2.0)
     plt.subplot(212)
     nussl.utils.visualize_sources_as_waveform(
         sources, show_legend=False)
@@ -52,15 +50,14 @@ def visualize_and_embed(sources):
     nussl.play_utils.multitrack(sources)
 
 audio_path = nussl.efz_utils.download_audio_file(
-    'schoolboy_fascination_excerpt.wav')
+    'wsj_speech_mixture_ViCfBJj.mp3')
 audio_signal = nussl.AudioSignal(audio_path)
-          
-separator = nussl.separation.factorization.RPCA(audio_signal)
+separator = nussl.separation.spatial.Duet(
+    audio_signal, num_sources=2)
 estimates = separator()
 
 estimates = {
-    'Low-rank source': estimates[0],
-    'Sparse source': estimates[1]
+    f'Speaker {i}': e for i, e in enumerate(estimates)
 }
 
 visualize_and_embed(estimates)

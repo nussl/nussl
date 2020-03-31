@@ -86,7 +86,7 @@ separator = nussl.separation.factorization.ICA(audio_signals)
 estimates = separator()
 
 estimates = {
-    f'Cluster {i}': e for i, e in enumerate(estimates)
+    f'Source {i}': e for i, e in enumerate(estimates)
 }
 
 visualize_and_embed(estimates)

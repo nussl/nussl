@@ -1,5 +1,5 @@
-Composite methods
-=================
+Factorization
+=============
 
 .. toctree::
    :maxdepth: 4
