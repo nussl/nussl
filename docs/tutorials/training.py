@@ -1017,8 +1017,6 @@ df
 
 # !tree --filelimit 20 {OUTPUT_FOLDER}
 
-# +
 end_time = time.time()
 time_taken = end_time - start_time
-
 print(f'Time taken: {time_taken:.4f} seconds')

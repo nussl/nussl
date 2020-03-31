@@ -31,6 +31,9 @@
 import nussl
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+
+start_time = time.time()
 
 folder = 'ignored'
 base_dataset = nussl.datasets.BaseDataset(folder)
@@ -491,8 +494,9 @@ mix = item['mix']
 sources = item['sources']
 # -
 
-# This applied both transforms in sequence. First the sources are summed, then the spectrograms and masks 
-# of the resultant summmed sources are computed. Here's the result:
+# This applied both transforms in sequence. First the sources are summed, then the 
+# spectrograms and masks of the resultant summmed sources are computed. 
+# Here's the result:
 
 # +
 num_frequencies, num_time, num_channels, num_sources = item['source_magnitudes'].shape
@@ -521,7 +525,8 @@ for key in keys:
     plt.show()
 # -
 
-# Finally, all datasets just return dictionaries containing AudioSignal objects. Grabbing the audio data is as simple as:
+# Finally, all datasets just return dictionaries containing AudioSignal objects. 
+# Grabbing the audio data is as simple as:
 
 plt.figure(figsize=(10, 3))
 plt.plot(mix.audio_data[0])
@@ -534,4 +539,10 @@ plt.show()
 
 mix.stft().shape
 
-# If you so choose, you can use *nussl* datasets in your own machine learning pipeline instead of using *nussl* features. However, if you want to use *nussl* for training a deep model, read on to the next tutorial!
+# If you so choose, you can use *nussl* datasets in your own machine learning pipeline 
+# instead of using *nussl* features. However, if you want to use *nussl* for training 
+# a deep model, read on to the next tutorial!
+
+end_time = time.time()
+time_taken = end_time - start_time
+print(f'Time taken: {time_taken:.4f} seconds')

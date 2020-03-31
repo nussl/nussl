@@ -73,6 +73,7 @@ autosummary_generate = True
 exclude_patterns = [
     '_build', 'Thumbs.db', '.DS_Store', 
     '**.ipynb_checkpoints', '*.ipynb',
+    'stage_docs.py',
     'create_and_execute_notebooks.py']
 
 
@@ -80,6 +81,7 @@ nbsphinx_custom_formats = {
     '.py': lambda s: jupytext.reads(s, '.py'),
 }
 nbsphinx_allow_errors = True
+highlight_language = 'none'
 
 
 # -- Options for HTML output -------------------------------------------------

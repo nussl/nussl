@@ -29,6 +29,9 @@
 #
 
 import nussl
+import time
+start_time = time.time()
+
 input_file_path = nussl.efz_utils.download_audio_file(
     'schoolboy_fascination_excerpt.wav')
 
@@ -133,3 +136,7 @@ print(signal3)
 signal3.write_audio_to_file('/tmp/signal3.wav')
 
 # Awesome! Now lets see how we can manipulate the audio in the frequency domain...
+
+end_time = time.time()
+time_taken = end_time - start_time
+print(f'Time taken: {time_taken:.4f} seconds')

@@ -33,6 +33,9 @@
 # +
 import nussl
 import matplotlib.pyplot as plt
+import time
+
+start_time = time.time()
 
 audio_path = nussl.efz_utils.download_audio_file(
     'historyrepeating_7olLrex.wav')
@@ -53,3 +56,8 @@ nussl.utils.visualize_sources_as_waveform({
     show_legend=False)
 plt.show()
 nussl.play_utils.multitrack(estimates, ['Background', 'Foreground'])
+# -
+
+end_time = time.time()
+time_taken = end_time - start_time
+print(f'Time taken: {time_taken:.4f} seconds')

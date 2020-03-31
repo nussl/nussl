@@ -29,6 +29,9 @@
 # -
 
 import nussl
+import time
+start_time = time.time()
+
 input_file_path = nussl.efz_utils.download_audio_file(
     'schoolboy_fascination_excerpt.wav')
 signal1 = nussl.AudioSignal(input_file_path)
@@ -158,3 +161,7 @@ signal1.stft().shape
 
 # The shape of the resultant STFT is now different. Note that 256 resulted in 129 
 # frequencies of analysis per frame. In general, the rule is `(window_length // 2) + 1`.
+
+end_time = time.time()
+time_taken = end_time - start_time
+print(f'Time taken: {time_taken:.4f} seconds')

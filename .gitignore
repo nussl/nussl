@@ -7,8 +7,7 @@
 *.wav
 docs/examples/**/*.ipynb
 docs/tutorials/**/*.ipynb
-docs/examples/**/*.html
-docs/tutorials/**/*.html
+**/*.html
 nussl.egg-info/*
 .vscode/
 **/.ipynb_checkpoints

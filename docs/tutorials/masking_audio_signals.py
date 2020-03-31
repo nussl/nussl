@@ -26,6 +26,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import copy
 
+import time 
+start_time = time.time()
+
 musdb = nussl.datasets.MUSDB18(download=True)
 
 item = musdb[40]
@@ -185,3 +188,8 @@ plt.tight_layout()
 plt.show()
 
 nussl.play_utils.multitrack(sources, ext='.wav')
+# -
+
+end_time = time.time()
+time_taken = end_time - start_time
+print(f'Time taken: {time_taken:.4f} seconds')

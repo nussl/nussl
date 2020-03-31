@@ -28,6 +28,9 @@ import nussl
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import time
+
+start_time = time.time()
 
 # seed this notebook
 nussl.utils.seed(0)
@@ -280,3 +283,7 @@ for alg in [mae, hlp, hpss, repet, ft2d, ibm]:
 # the separations as well as looking at metrics to report. One should also 
 # make sure to compare against logical baselines, as well as do this on 
 # challenging mixtures. 
+
+end_time = time.time()
+time_taken = end_time - start_time
+print(f'Time taken: {time_taken:.4f} seconds')

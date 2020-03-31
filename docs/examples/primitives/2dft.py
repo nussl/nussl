@@ -33,6 +33,9 @@
 # +
 import nussl
 import matplotlib.pyplot as plt
+import time
+
+start_time = time.time()
 
 def visualize_and_embed(estimates):
     plt.figure(figsize=(10, 6))
@@ -66,3 +69,7 @@ ft2d = nussl.separation.primitive.FT2D(
     audio_signal, mask_type='binary', use_bg_2dft=False)
 estimates = ft2d()
 visualize_and_embed(estimates)
+
+end_time = time.time()
+time_taken = end_time - start_time
+print(f'Time taken: {time_taken:.4f} seconds')

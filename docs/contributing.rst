@@ -15,6 +15,9 @@ a pull request, write some tests, make sure all of the code is up to snuff, and 
 Documentation
 -------------
 
+Developing
+^^^^^^^^^^
+
 Documentation for *nussl* is built with Sphinx. The source code for making docs
 is kept in the ``docs/`` folder. There are two parts to the documentation. The first
 is API documentation which is maintained alongside the code. The second part is
@@ -71,7 +74,9 @@ following:
 
       python create_and_execute_notebook path/to/script.py
 
-   to link the script with a notebook and an HTML file.
+   to link the script with a notebook and an HTML file. If you so wish, you can work 
+   entirely in a script and just check the HTML file in your browser to make sure
+   everything renders okay.
 
 3. Add your notebook to the toctree of the associated folder. For example, 
    ``examples/primitives/primitives.rst`` has the following contents::
@@ -117,10 +122,29 @@ following:
    Inspect the resultant HTML file to make sure it's doing what you want. Then run
    ``make html`` again.
 
+
+Deploying
+^^^^^^^^^
+
 This process results in rich and interactive documentation but also results in 
 large files. For this reason, the actual compiled documentation is kept in a [separate
 repository](https://github.com/nussl/docs), so that the main code repository stays
-light. 
+small. To deploy the documentation, first use the staging script. This script takes in 
+an as an argument the path to the cloned documentation repository (if the path does not 
+exist, then the documentation is cloned into that folder). It will first copy the contents of 
+``_build/html/`` into the compiled docs repo. Then it will make a commit with update to 
+the docs. Then it will tell you to push the docs after a manual inspection of it. The
+sequence of commands looks like this::
+
+      python stage_docs.py path/to/docs/repo/
+      cd path/to/docs/repo
+      # inspect the docs by opening index.html in your browser
+      # make sure everything is okay
+      git push origin master
+
+Then visit https://nussl.github.io/docs/ to make sure everything is okay.
+
+
 
 
 Adding your own algorithm
