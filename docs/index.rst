@@ -51,6 +51,13 @@ API Documentation
 
    api
 
+Citing *nussl*
+--------------
+.. toctree::
+   :maxdepth: 1
+
+   citation
+
 Contributing
 ------------
 .. toctree::

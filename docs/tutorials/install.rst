@@ -56,8 +56,8 @@ Running the tests
 
 To run the tests, clone the repository, then `cd` into the directory and do::
 
-        pip install -r requirements
-        pip install -r extra_requirements
+        pip install -r requirements.txt
+        pip install -r extra_requirements.txt
         # install vamp and melodia as above
         pytest
 
