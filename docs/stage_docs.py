@@ -22,8 +22,11 @@ if __name__ == "__main__":
     if not os.path.exists(docs_repo_path):
         run(f"git clone https://github.com/nussl/docs {docs_repo_path}")
     
-    run(f"cp -r _build/html/* {docs_repo_path}")
-    run(f"cd {docs_repo_path} && git commit -am 'updating docs'")
+    excluded_files = ['.git', '.gitignore', '.nojekyll']
+    exclude_args = [f'--exclude {x} ' for x in excluded_files]
+    exclude_args = ''.join(exclude_args)
+    run(f"rsync -v -r --delete {exclude_args} _build/html/ {docs_repo_path}/")
+    run(f"cd {docs_repo_path} && git add . && git commit -am 'updating docs'")
     print(
         f"Inspect what was just committed in {docs_repo_path} \n"
         f"Then run: \n"

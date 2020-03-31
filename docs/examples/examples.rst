@@ -10,4 +10,4 @@ with multiple settings for the arguments to the algorithm.
    :maxdepth: 4
 
    Primitives <primitives/primitives.rst>
-
+   Deep learning <deep/deep.rst>

@@ -74,7 +74,7 @@ exclude_patterns = [
     '_build', 'Thumbs.db', '.DS_Store', 
     '**.ipynb_checkpoints', '*.ipynb',
     'stage_docs.py',
-    'create_and_execute_notebooks.py']
+    'create_and_execute_notebook.py']
 
 
 nbsphinx_custom_formats = {

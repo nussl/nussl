@@ -12,8 +12,10 @@ def convert_execute_and_sync_script(script_path):
     
     notebook_path = script_path.replace('py', 'ipynb')
     run(f"jupytext --update --to notebook {script_path}")
-    run(f"jupyter nbconvert --ExecutePreprocessor.allow_errors=True "
+    run(f"jupyter nbconvert "
+        f"--ExecutePreprocessor.allow_errors=True "
         f"--ExecutePreprocessor.timeout=-1 "
+        f"--ExecutePreprocessor.iopub_timeout=5 "
         f"--to notebook --execute --inplace {notebook_path}")
     run(f"jupyter nbconvert {notebook_path}")
     run(f"jupytext --sync {script_path}")
