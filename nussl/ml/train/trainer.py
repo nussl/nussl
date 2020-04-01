@@ -6,6 +6,8 @@ import time
 
 from ignite.engine import Events, Engine
 from ignite.handlers import Timer
+from ignite.contrib.handlers import ProgressBar
+from ignite.metrics import RunningAverage
 from torch.utils.tensorboard import SummaryWriter
 import torch
 from torch import nn
@@ -339,6 +341,21 @@ def add_stdout_handler(trainer, validator=None):
 
         logging.info(logging_str)
 
+
+def add_progress_bar_handler(*engines):
+    """
+    Adds a progress bar to each engine. Usage::
+
+    .. code-block:: python
+
+        tr_engine, val_engine = ...
+        add_progress_bar_handler(tr_engine, val_engine)
+    """
+    for engine in engines:
+        output_transform = lambda x: x['loss']
+        RunningAverage(output_transform=output_transform).attach(engine, 'avg_loss')
+        ProgressBar().attach(engine, ['avg_loss'])
+        
 
 def add_tensorboard_handler(output_folder, engine):
     """

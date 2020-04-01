@@ -12,6 +12,8 @@ Training
 
 .. autofunction:: nussl.ml.train.add_stdout_handler
 
+.. autofunction:: nussl.ml.train.add_progress_bar_handler
+
 .. autoclass:: nussl.ml.train.ValidationEvents
     :members:
     :undoc-members:
@@ -44,6 +46,7 @@ from .trainer import (
     cache_dataset,
     add_validate_and_checkpoint,
     add_stdout_handler,
+    add_progress_bar_handler,
     ValidationEvents,
     BackwardsEvents
 )
