@@ -57,7 +57,10 @@ class SeparationModel(nn.Module):
         for module_key in config['modules']:
             module = config['modules'][module_key]
             if 'class' in module:
-                class_func = getattr(modules, module['class'])
+                if module['class'] in dir(modules): 
+                    class_func = getattr(modules, module['class'])
+                else:
+                    class_func = getattr(nn, module['class'])
                 if 'args' not in module:
                     module['args'] = {}
                 module_dict[module_key] = class_func(**module['args'])

@@ -39,6 +39,19 @@ gmm_unfold_config['connections'].extend(
 
 gmm_unfold_config['output'].append('estimates')
 
+add_torch_module_config = copy.deepcopy(dpcl_config)
+add_torch_module_config['modules']['mask'] = {
+    'class': 'Linear',
+    'args': {
+        'in_features': 20,
+        'out_features': 2
+    }
+}
+add_torch_module_config['connections'].extend(
+    [['mask', ['embedding']]]
+)
+add_torch_module_config['output'].append('mask')
+
 class MyModule(nn.Module):
     def __init__(self):
         super().__init__()
@@ -164,6 +177,31 @@ def test_separation_model_gmm_unfold(one_item):
                 output['embedding'].shape == (
                     one_item['mix_magnitude'].shape + (20,)))
 
+def test_separation_model_add_torch(one_item):
+    n_features = one_item['mix_magnitude'].shape[2]
+    
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
+        with open(tmp.name, 'w') as f:
+            json.dump(add_torch_module_config, f)
+
+        configs = [
+            add_torch_module_config, 
+            tmp.name, 
+            json.dumps(add_torch_module_config)
+        ]
+
+        for config in configs:    
+            model = SeparationModel(config)
+            output = model(one_item)
+
+            assert (
+                output['mask'].shape == (
+                    one_item['mix_magnitude'].shape + (2,))
+            )
+
+            assert (
+                output['embedding'].shape == (
+                    one_item['mix_magnitude'].shape + (20,)))
 
 def test_separation_model_extra_modules(one_item):
     with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
