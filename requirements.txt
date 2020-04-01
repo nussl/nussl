@@ -11,3 +11,4 @@ torch
 pytorch-ignite
 tensorboard
 norbert
+tqdm

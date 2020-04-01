@@ -344,7 +344,10 @@ def add_stdout_handler(trainer, validator=None):
 
 def add_progress_bar_handler(*engines):
     """
-    Adds a progress bar to each engine. Usage::
+    Adds a progress bar to each engine. Keeps track of a running
+    average of the loss as well.
+    
+    Usage::
 
     .. code-block:: python
 
