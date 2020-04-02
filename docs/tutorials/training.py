@@ -8,9 +8,9 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.4.1
 #   kernelspec:
-#     display_name: Python (nussl)
+#     display_name: Python 3
 #     language: python
-#     name: nussl
+#     name: python3
 # ---
 
 # Training deep models in *nussl*
@@ -49,7 +49,6 @@ from concurrent.futures import ThreadPoolExecutor
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-import termtables
 import tqdm
 
 import nussl
@@ -459,7 +458,7 @@ class SineWaves(nussl.datasets.BaseDataset):
 # -
 
 # As a reminder, this dataset makes random mixtures of sine waves with fundamental frequencies
-# between 110 Hz and 1000 Hz. Let's now set it up with appropriate STFT parameters that result
+# between 110 Hz and 4000 Hz. Let's now set it up with appropriate STFT parameters that result
 # in 129 frequencies in the spectrogram.
 
 # +
@@ -1035,6 +1034,7 @@ print(saved_model['metadata'].keys())
 for key in saved_model['metadata']:
     print(f"{key}: {saved_model['metadata'][key]}")
 
+
 #
 # **Importantly**, everything saved with the model makes training it *entirely reproduceable*. We have everything we need to recreate another model exactly like this if we need to.
 #
@@ -1096,7 +1096,9 @@ def separate_and_evaluate(item, masks):
     estimates = separator(masks)
 
     evaluator = nussl.evaluation.BSSEvalScale(
-        list(item['sources'].values()), estimates, compute_permutation=True
+        list(item['sources'].values()), estimates, 
+        compute_permutation=True,
+        source_labels=['sine1', 'sine2', 'sine3']
     )
     scores = evaluator.evaluate()
     output_path = os.path.join(
@@ -1116,16 +1118,9 @@ pool.shutdown(wait=True)
 
 json_files = glob.glob(f"{RESULTS_DIR}/*.json")
 df = nussl.evaluation.aggregate_score_files(json_files)
-
-overall = df.mean()
-headers = ["", f"OVERALL (N = {df.shape[0]})", ""]
-metrics = ["Mean SAR (dB)", "Mean SDR (dB)", "Mean SIR (dB)"]
-means = [f'{m:.02f}' for m in np.array(df.mean()).T]
-stds = [f'{s:.02f}' for s in np.array(df.std()).T]
-data = [f'{m} +/- {s}' for m, s in zip(means, stds)]
-
-data = [metrics, data]
-termtables.print(data, header=headers, padding=(0, 1), alignment="ccc")
+report_card = nussl.evaluation.report_card(
+    df, notes="Testing on sine waves", report_each_source=True)
+print(report_card)
 # -
 
 # We parallelized the evaluation across 2 workers, kept two copies of
@@ -1134,9 +1129,9 @@ termtables.print(data, header=headers, padding=(0, 1), alignment="ccc")
 # and then hands it to the other separator which actually computes the
 # estimates and evaluates the metrics in parallel. After we're done, 
 # we aggregate all the results (each of which was saved to a JSON file)
-# using `nussl.evaluation.aggregate_score_files` and use a nice package
-# called `termtables` to print the output. We also now have the results 
-# as a pandas DataFrame:
+# using `nussl.evaluation.aggregate_score_files` and then use the
+# nussl report card at `nussl.evaluation.report_card` to view the results.
+# We also now have the results as a pandas DataFrame:
 
 df
 
@@ -1149,5 +1144,3 @@ df
 end_time = time.time()
 time_taken = end_time - start_time
 print(f'Time taken: {time_taken:.4f} seconds')
-
-

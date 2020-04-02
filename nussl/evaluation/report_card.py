@@ -69,10 +69,12 @@ def _get_mean_and_std(df):
     excluded_columns = ['source', 'file']
 
     metrics = [x for x in list(df.columns) if x not in excluded_columns]
+    metrics.insert(0, '#')
 
     means = [f'{m:.03f}' for m in np.array(df.mean()).T]
     stds = [f'{s:.03f}' for s in np.array(df.std()).T]
     data = [f'{m} +/- {s}' for m, s in zip(means, stds)]
+    data.insert(0, df.shape[0])
 
     return metrics, data
 
@@ -84,9 +86,11 @@ def _get_medians(df):
     excluded_columns = ['source', 'file']
 
     metrics = [x for x in list(df.columns) if x not in excluded_columns]
+    metrics.insert(0, '#')
 
     # this strange padding is so the reports look nice when printed back to back
     data = [f'     {m:.03f}     ' for m in np.array(df.median()).T]
+    data.insert(0, df.shape[0])
     return metrics, data
 
 def _get_report_card(df, func, report_each_source=True):
