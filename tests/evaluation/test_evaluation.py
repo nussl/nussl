@@ -249,28 +249,35 @@ def test_scale_bss_eval(estimated_and_true_sources):
     estimated_sources = estimated_and_true_sources['oracle']
     random_sources = estimated_and_true_sources['random']
 
-    evaluator = nussl.evaluation.BSSEvalScale(
-        true_sources, estimated_sources)
-    references, estimates = evaluator.preprocess()
-    _references = references[:, 0, :]
-    _estimates = estimates[:, 0, :]
+    eval_args = [
+        {'scaling': True},
+        {'scaling': False},
+        {'scale_dependent': True}
+    ]
 
-    tSDR, tSIR, tSAR = nussl.evaluation.scale_bss_eval(
-        _references, _estimates[..., 0], 0, scaling=True
-    )
+    for eval_arg in eval_args:
+        evaluator = nussl.evaluation.BSSEvalScale(
+            true_sources, estimated_sources)
+        references, estimates = evaluator.preprocess()
+        _references = references[:, 0, :]
+        _estimates = estimates[:, 0, :]
 
-    evaluator = nussl.evaluation.BSSEvalScale(
-        true_sources, random_sources)
-    references, estimates = evaluator.preprocess()
-    _references = references[:, 0, :]
-    _estimates = estimates[:, 0, :]
+        tSDR, tSIR, tSAR = nussl.evaluation.scale_bss_eval(
+            _references, _estimates[..., 0], 0, **eval_arg
+        )
 
-    rSDR, rSIR, rSAR = nussl.evaluation.scale_bss_eval(
-        _references, _estimates[..., 0], 0, scaling=True
-    )
+        evaluator = nussl.evaluation.BSSEvalScale(
+            true_sources, random_sources)
+        references, estimates = evaluator.preprocess()
+        _references = references[:, 0, :]
+        _estimates = estimates[:, 0, :]
 
-    assert tSDR > rSIR
-    assert tSIR > rSIR
+        rSDR, rSIR, rSAR = nussl.evaluation.scale_bss_eval(
+            _references, _estimates[..., 0], 0, **eval_arg
+        )
+
+        assert tSDR > rSIR
+        assert tSIR > rSIR
 
 
 def test_bss_eval_scale(estimated_and_true_sources):

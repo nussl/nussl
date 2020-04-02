@@ -4,7 +4,8 @@ import museval
 from .evaluation_base import EvaluationBase
 
 
-def scale_bss_eval(references, estimates, idx, scaling=True):
+def scale_bss_eval(references, estimates, idx, scaling=True, 
+                   scale_dependent=False):
     """
     Computes SDR, SIR, SAR for references[idx] relative to the
     chosen estimates. This only works for mono audio. Each
@@ -14,27 +15,32 @@ def scale_bss_eval(references, estimates, idx, scaling=True):
     
     Args:
         references (np.ndarray): object containing the
-        references data. Of shape (n_samples, n_sources).
-        
+          references data. Of shape (n_samples, n_sources).
+         
         estimates (np.ndarray): object containing the
-        estimates data. Of shape (n_samples, 1).
+          estimates data. Of shape (n_samples, 1).
 
         idx (int): Which estimates to compute metrics for.
 
         scaling (bool, optional): Whether to use scale-invariant (True) or
-        scale-dependent (False) metrics. Defaults to True.
+          signal-to-noise ratio (False). Defaults to True.
+
+        scale_dependent (bool, optional): If this is true, then scaling will 
+          be False. This will then compute the scale-dependent metrics. 
+          Defaults to False.
     
     Returns:
         tuple: SDR, SIR, SAR if inputs are numpy arrays.
     """
+    scaling = False if scale_dependent else scaling
+    
     references_projection = references.T @ references
     source = references[..., idx]
-    scale = (
-        (source @ estimates) /
-        references_projection[idx, idx]
-        if scaling else 1
+    multiplier = (
+        source @ estimates / references_projection[idx, idx]
     )
 
+    scale = multiplier if scaling else 1
     e_true = scale * source
     e_res = estimates - e_true
 
@@ -51,6 +57,13 @@ def scale_bss_eval(references, estimates, idx, scaling=True):
 
     sir = 10 * np.log10(signal / (e_interf ** 2).sum())
     sar = 10 * np.log10(signal / (e_artif ** 2).sum())
+
+    if scale_dependent:
+        sdr += 10 * np.log10(multiplier)
+        # TODO: implemenet sd-sir, sd-sar
+        # sir += 10 * np.log10(multiplier)
+        # sar += 10 * np.log10(multiplier)
+
     return sdr, sir, sar
 
 
@@ -69,22 +82,22 @@ class BSSEvaluationBase(EvaluationBase):
     
     Args:
         true_sources_list (list): List of objects that contain one ground truth source per object.
-            In some instances (such as the :class:`BSSEval` objects) this list is filled with
-            :class:`AudioSignals` but in other cases it is populated with
-            :class:`MaskBase` -derived objects (i.e., either a :class:`BinaryMask` or
-            :class:`SoftMask` object).
+          In some instances (such as the :class:`BSSEval` objects) this list is filled with
+          :class:`AudioSignals` but in other cases it is populated with
+          :class:`MaskBase` -derived objects (i.e., either a :class:`BinaryMask` or
+          :class:`SoftMask` object).
         estimated_sources_list (list): List of objects that contain source estimations from a source
-            separation algorithm. List should be populated with the same type of objects and in the
-            same order as :param:`true_sources_list`.
+          separation algorithm. List should be populated with the same type of objects and in the
+          same order as :param:`true_sources_list`.
         source_labels (list): List of strings that are labels for each source to be used as keys for
-            the scores. Default value is `None` and in that case labels use the file_name attribute.
-            If that is also `None`, then the source labels are `Source 0`, `Source 1`, etc.
+          the scores. Default value is `None` and in that case labels use the file_name attribute.
+          If that is also `None`, then the source labels are `Source 0`, `Source 1`, etc.
         compute_permutation (bool): Whether or not to evaluate in a permutation-invariant 
-            fashion, where the estimates are permuted to match the true sources. Only the 
-            best permutation according to ``best_permutation_key`` is returned to the 
-            scores dict. Defaults to False.
+          fashion, where the estimates are permuted to match the true sources. Only the 
+          best permutation according to ``best_permutation_key`` is returned to the 
+          scores dict. Defaults to False.
         best_permutation_key (str): Which metric to use to decide which permutation of 
-            the sources was best.
+          the sources was best.
         **kwargs (dict): Any additional arguments are passed on to evaluate_helper.
     """
 
@@ -151,9 +164,12 @@ class BSSEvalScale(BSSEvaluationBase):
         estimates -= estimates.mean(axis=0)
         return references, estimates
 
-    def evaluate_helper(self, references, estimates, scaling=True, **kwargs):
+    def evaluate_helper(self, references, estimates, scaling=True, 
+                        scale_dependent=False, **kwargs):
         """
-        Implements evaluation using scale-invariant BSSEval metrics [1].
+        Implements evaluation using scale-invariant BSSEval metrics [1]. If
+        called with scaling = False, then this is signal-to-noise ratio. If
+        scale_dependent = True, then these are scale-dependent metrics.
 
         [1] Le Roux, J., Wisdom, S., Erdogan, H., & Hershey, J. R. 
         (2019, May). SDR–half-baked or well done?. In ICASSP 2019-2019 IEEE 
@@ -167,7 +183,7 @@ class BSSEvalScale(BSSEvaluationBase):
             for ch in range(references.shape[-2]):
                 _SDR, _SIR, _SAR = scale_bss_eval(
                     references[..., ch, :], estimates[..., ch, j],
-                    j, scaling=scaling
+                    j, scaling=scaling, scale_dependent=scale_dependent 
                 )
                 cSDR.append(_SDR)
                 cSIR.append(_SIR)
