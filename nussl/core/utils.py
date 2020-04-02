@@ -250,7 +250,7 @@ def audio_signals_to_musdb_track(mixture, sources_dict, targets_dict):
             and `documentation<http://musdb.readthedocs.io/>`
         * More information on ``mus_eval``: `Github<https://github.com/sigsep/sigsep-mus-eval>`
             and `documentation<https://sigsep.github.io/sigsep-mus-eval/>`
-        * :class:`BSSEvalV4` for ``nussl``'s interface to BSS-Eval v4.
+        * :class:`BSSEvalV4` for *nussl*'s interface to BSS-Eval v4.
 
     Examples:
         .. code-block:: python

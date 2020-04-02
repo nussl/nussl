@@ -3,13 +3,13 @@
 
 import subprocess
 import glob
-import os
 import argparse
+
 
 def convert_execute_and_sync_script(script_path):
     def run(cmd):
         subprocess.run([cmd], shell=True)
-    
+
     notebook_path = script_path.replace('py', 'ipynb')
     run(f"jupytext --update --to notebook {script_path}")
     run(f"jupyter nbconvert "
@@ -20,11 +20,13 @@ def convert_execute_and_sync_script(script_path):
     run(f"jupyter nbconvert {notebook_path}")
     run(f"jupytext --sync {script_path}")
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('script_path', type=str)
     args = parser.parse_args()
     return args
+
 
 if __name__ == "__main__":
     args = parse_arguments()

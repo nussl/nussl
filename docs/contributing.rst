@@ -26,12 +26,23 @@ the docs via [nbsphinx](https://nbsphinx.readthedocs.io/en/0.5.1/).
 
 The installation requirements for maintaining docs are kept in ``extra_requirements``::
 
-   pip install -r extra_requirements.txt
+   $ pip install -r extra_requirements.txt
 
-You'll also need Jupyter installed to edit or create new tutorials, or make new 
-examples.
+Also make sure that nussl itself is installed in your env by navigating to the top-level
+*nussl* directory and running::
 
-However, notebooks are NOT kept in the docs repository as is, as notebooks are very
+   $ pip install -e .
+
+You will also need both of the following installed to edit or create new tutorials or examples:
+
+- [Jupyter](https://jupyter.org/install)
+- [Pandoc](https://pandoc.org/installing.html)
+
+Follow the links for installation instructions for each of these projects.
+(You may need to pip install extra_requirements.txt outside a conda env so that the
+jupyter extensions can register correctly.)
+
+Notebooks are NOT kept in the docs repository as is, as notebooks are very
 hard to keep track of in git diffs and can get very large. Instead, they are kept as only 
 [jupytext](https://jupytext.readthedocs.io/en/latest/index.html) representations. 
 So to build new docs, one will have to keep a local copy of every notebook executed. The
@@ -42,27 +53,28 @@ executed format to the repository from a specific machine.
 So, to contribute a notebook demonstrating or explaining some facet of *nussl*, do the
 following:
 
-1. Execute all of the notebooks present in the docs (this only has to happen once on 
-   your machine)::
+1. Before you begin, navigate to the ``docs/`` directory and execute all of the notebooks present
+   in the docs (this only has to happen once on your machine)::
 
-      python create_and_execute_notebook.py all            # make all notebooks
-      # OR 
-      make notebooks # this just runs what is above
+      $ make notebooks
 
-      python create_and_execute_notebook path/to/script.py # make just one notebook
-
-   This will find every *.py script in docs/examples and docs/tutorials, create the 
-   associated notebook, execute the cells, and convert your notebook to HTML so you 
+   This will find every ``*.py`` script in docs/examples and docs/tutorials, create the
+   associated notebook, execute the cells, and convert your notebook to HTML so you
    can quickly see what it looks like without having to launch it in Jupyter notebook.
    When you run ``make html``, the executed notebooks are used in the documentation.
 
-2. Option 1: create a new notebook in either ``tutorials`` or ``examples``. Work in the notebook 
-   until you are satisifed with your explanation/demo. Note: your notebook is NOT yet
+   To just make one notebook, run the following command::
+
+      $ python create_and_execute_notebook path/to/script.py # make just one notebook
+
+2. To actually
+ Option 1: create a new notebook in either ``tutorials`` or ``examples``. Work in the notebook
+   until you are satisfied with your explanation/demo. Note: your notebook is NOT yet
    in version control!
 
    Now run the following command on your notebook::
 
-      jupytext --set-formats ipynb,py docs/path/to/notebook.ipynb
+      $ jupytext --set-formats ipynb,py docs/path/to/notebook.ipynb
 
    The light text representation of your notebook is now tracked by Git and it is 
    identical to your notebook, except for the outputs. Since your notebook is already
@@ -72,7 +84,7 @@ following:
    Option 2: create a script that you will later link to a notebook. Work in this script
    until you're satisfied like above. Then when done with it, run::
 
-      python create_and_execute_notebook path/to/script.py
+      $ python create_and_execute_notebook path/to/script.py
 
    to link the script with a notebook and an HTML file. If you so wish, you can work 
    entirely in a script and just check the HTML file in your browser to make sure
@@ -117,7 +129,7 @@ following:
 5. Finally, it's best to run the light script from scratch to make sure it's doing what 
    you expect::
 
-      python create_and_execute_notebook path/to/your_script.py
+      $ python create_and_execute_notebook path/to/your_script.py
 
    Inspect the resultant HTML file to make sure it's doing what you want. Then run
    ``make html`` again.

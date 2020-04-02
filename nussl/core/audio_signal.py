@@ -36,7 +36,7 @@ class AudioSignal(object):
     **Overview**
 
     :class:`AudioSignal` is the main entry and exit point for all source separation algorithms
-    in ``nussl``. The :class:`AudioSignal` class is a general container for all things related to
+    in *nussl*. The :class:`AudioSignal` class is a general container for all things related to
     audio data. It contains utilities for:
 
     * Input and output from an array or from a file,
@@ -45,7 +45,7 @@ class AudioSignal(object):
     * Playing audio within a terminal or jupyter notebook,
     * Applying a mask to estimate signals
 
-    and more. The :class:`AudioSignal` class is used in all source separation objects in ``nussl``.
+    and more. The :class:`AudioSignal` class is used in all source separation objects in *nussl*.
 
     :class:`AudioSignal` object stores time-series audio data as a 2D ``numpy`` array in
     :attr:`audio_data` (see :attr:`audio_data` for details) and stores Short-Time Fourier Transform
@@ -108,7 +108,7 @@ class AudioSignal(object):
 
     When initializing from a path, :class:`AudioSignal` can read many types of audio files,
     provided that your computer has the backends installed to understand the corresponding codecs.
-    ``nussl`` uses ``librosa``'s `load` function to read in audio data. See librosa's documentation
+    *nussl* uses ``librosa``'s `load` function to read in audio data. See librosa's documentation
     for details: https://github.com/librosa/librosa#audioread
 
     Once initialized with a single type of data (time-series or time-frequency), there are methods

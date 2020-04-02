@@ -1,7 +1,7 @@
 nussl
 =====
 
-This branch is an update/refactor of ``nussl`` to update to Python 3 and have complete 
+This branch is an update/refactor of *nussl* to update to Python 3 and have complete 
 code coverage via the tests.
 
 Current test coverage
