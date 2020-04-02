@@ -12,3 +12,4 @@ pytorch-ignite
 tensorboard
 norbert
 tqdm
+termtables
