@@ -31,7 +31,7 @@ class BackwardsEvents(Enum):
     BACKWARDS_COMPLETED = 'backwards_completed'
 
 
-def cache_dataset(dataset, log_frequency=.1):
+def cache_dataset(dataset):
     """
     Runs through an entire dataset and caches it if there nussl.datasets.transforms.Cache
     is in dataset.transform. If there is no caching, or dataset.cache_populated = True,
@@ -43,24 +43,13 @@ def cache_dataset(dataset, log_frequency=.1):
     Args:
         dataset (nussl.datasets.BaseDataset): Must be a subclass of 
           `nussl.datasets.BaseDataset`.
-
-        log_frequency (float, optional): How often to log progress, as a fraction between
-          0.0 and 1.0 of the total dataset length. Defaults to .1 
-          (10x over the course of caching).
     """
 
     def dummy_process(engine, data):
         pass
 
     cache = Engine(dummy_process)
-    log_frequency = max(int(len(dataset) * log_frequency), 1)
-
-    @cache.on(Events.ITERATION_STARTED(every=log_frequency))
-    def log_progress(engine):
-        logging.info(
-            f"Cached {engine.state.iteration} / "
-            f"{engine.state.epoch_length} batches")
-
+    ProgressBar().attach(cache)
     cache.run(dataset)
     dataset.cache_populated = True
 
