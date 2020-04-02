@@ -1008,7 +1008,8 @@ plt.show()
 # What's in a model?
 # ------------------
 #
-# After we're finished training the model, it will be saved by our `add_validate_and_checkpoint` handler. What gets saved in our model? Let's see:
+# After we're finished training the model, it will be saved by our 
+# `add_validate_and_checkpoint` handler. What gets saved in our model? Let's see:
 
 saved_model = torch.load(train_engine.state.saved_model_path)
 print(saved_model.keys())

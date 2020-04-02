@@ -91,7 +91,7 @@ class DeepClusteringLoss(nn.Module):
         weights = weights.view(batch_size, -1, 1)
 
         # make everything unit norm
-        embedding = embedding.view(batch_size, -1, embedding_size)
+        embedding = embedding.reshape(batch_size, -1, embedding_size)
         embedding = nn.functional.normalize(embedding, dim=-1, p=2)
 
         assignments = assignments.view(batch_size, -1, num_sources)
@@ -139,8 +139,8 @@ class PermutationInvariantLoss(nn.Module):
     def forward(self, estimates, targets):
         num_batch = estimates.shape[0]
         num_sources = estimates.shape[-1]
-        estimates = estimates.view(num_batch, -1, num_sources)
-        targets = targets.view(num_batch, -1, num_sources)
+        estimates = estimates.reshape(num_batch, -1, num_sources)
+        targets = targets.reshape(num_batch, -1, num_sources)
         
         losses = []
         for p in permutations(range(num_sources)):
@@ -180,8 +180,8 @@ class CombinationInvariantLoss(nn.Module):
         num_target_sources = targets.shape[-1]
         num_estimate_sources = estimates.shape[-1]
         
-        estimates = estimates.view(num_batch, -1, num_estimate_sources)
-        targets = targets.view(num_batch, -1, num_target_sources)
+        estimates = estimates.reshape(num_batch, -1, num_estimate_sources)
+        targets = targets.reshape(num_batch, -1, num_target_sources)
         
         losses = []
         for c in combinations(range(num_estimate_sources), num_target_sources):

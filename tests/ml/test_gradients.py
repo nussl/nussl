@@ -19,7 +19,9 @@ def test_gradients(mix_source_folder):
     n_features = dataset[0]['mix_magnitude'].shape[1]
 
     # make some configs
-    names = ['dpcl', 'mask_inference_l1', 'mask_inference_mse_loss', 'chimera']
+    names = ['dpcl', 'mask_inference_l1', 'mask_inference_mse_loss', 'chimera',
+             'open_unmix']
+    config_has_batch_norm = ['open_unmix']
     configs = [
         ml.networks.builders.build_recurrent_dpcl(
             n_features, 50, 1, True, 0.0, 20, ['sigmoid'],
@@ -35,6 +37,10 @@ def test_gradients(mix_source_folder):
         ml.networks.builders.build_recurrent_chimera(
             n_features, 50, 1, True, 0.0, 20, ['sigmoid'], 2,
             ['softmax'], normalization_class='InstanceNorm'
+        ),
+        ml.networks.builders.build_open_unmix_like(
+            n_features, 50, 1, True, .4, 2, 1, add_embedding=True,
+            embedding_size=20, embedding_activation=['sigmoid', 'unit_norm'],
         )
     ]
 
@@ -125,4 +131,5 @@ def test_gradients(mix_source_folder):
         # if they don't, then the items in a batch are talking to each other in the loss
         for param1, param2 in zip(model_grad.parameters(), model_acc.parameters()):
             assert torch.allclose(param1, param2)
-            assert torch.allclose(param1.grad, param2.grad, atol=1e-3)
+            if name not in config_has_batch_norm:
+                assert torch.allclose(param1.grad, param2.grad, atol=1e-3)
