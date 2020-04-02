@@ -6,6 +6,7 @@ from torch import nn
 import numpy as np
 
 from . import modules
+from ... import __version__
 
 
 class SeparationModel(nn.Module):
@@ -140,7 +141,10 @@ class SeparationModel(nn.Module):
             'state_dict': self.state_dict(),
             'config': json.dumps(self.config)
         }
-        save_dict = {**save_dict, **(metadata if metadata else {})}
+
+        metadata = metadata if metadata else {}
+        metadata['nussl_version'] = __version__
+        save_dict = {**save_dict, **metadata}
         torch.save(save_dict, location)
         return location
     

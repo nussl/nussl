@@ -31,17 +31,16 @@ class AmplitudeToDB(nn.Module):
         data = 10.0 * (torch.log10(torch.clamp(data, min=amin)) - ref)
         return data
 
-
 class BatchNorm(nn.Module):
     """
     Applies a batch norm layer. Defaults to using only 1 feature, commonly
     used at the very beginning of the network to normalize the input spectrogram.
 
-    Data comes and goes as (nb, nt, nf, nc). Inside this module, the data undergoes
+    Data comes and goes as (nb, nt, nf, nc, ...). Inside this module, the data undergoes
     the following procedure:
 
-    1. It is first reshaped to (nb, nf, nt, nc)
-    2. Data is reshaped to (nb, nf, nt * nc).
+    1. It is first reshaped to (nb, nf, nt, nc, ...)
+    2. Data is reshaped to (nb, nf, -1).
     3. ``BatchNorm1d`` is applied with ``num_features`` to data.
     4. Data is reshaped back to (nb, nt, nf, nc) and returned.
     
@@ -53,20 +52,21 @@ class BatchNorm(nn.Module):
         torch.Tensor: modified input data tensor with batch norm.
     """
 
-    def __init__(self, num_features=1, **kwargs):
+    def __init__(self, num_features=1, feature_dim=2, **kwargs):
         super(BatchNorm, self).__init__()
         self.num_features = num_features
+        self.feature_dim = feature_dim
         self.add_module('batch_norm', nn.BatchNorm1d(self.num_features, **kwargs))
 
     def forward(self, data):
-        data = data.transpose(2, 1)
+        data = data.transpose(self.feature_dim, 1)
         shape = data.shape
         new_shape = (shape[0], self.num_features, -1)
 
         data = data.reshape(new_shape)
         data = self.batch_norm(data)
         data = data.reshape(shape)
-        data = data.transpose(2, 1)
+        data = data.transpose(self.feature_dim, 1)
         return data
 
 
@@ -107,7 +107,6 @@ class InstanceNorm(nn.Module):
         data = data.reshape(shape)
         data = data.transpose(2, 1)
         return data
-
 
 class MelProjection(nn.Module):
     """
@@ -191,33 +190,45 @@ class Embedding(nn.Module):
 
     Args:
         num_features (int): Number of features being mapped for each frame. 
-            Either num_frequencies, or if used with MelProjection, num_mels if using 
-            RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
+          Either num_frequencies, or if used with MelProjection, num_mels if using 
+          RecurrentStack. Should be 1 if using DilatedConvolutionalStack. 
 
         hidden_size (int): Size of output from RecurrentStack (hidden_size) or 
-            DilatedConvolutionalStack (num_filters). If RecurrentStack is bidirectional, 
-            this should be set to 2 * hidden_size.
+          DilatedConvolutionalStack (num_filters). If RecurrentStack is bidirectional, 
+          this should be set to 2 * hidden_size.
         
         embedding_size (int): Dimensionality of embedding.
         
         activation (list of str): Activation functions to be applied. Options 
-            are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
-            adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
+          are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
+          adding 'unit_norm' in list (e.g. ['sigmoid', unit_norm']).
 
         dim_to_embed (int): Which dimension of the input to apply the embedding to.
-            Defaults to -1 (the last dimension).
+          Defaults to -1 (the last dimension).
+
+        bias (bool): Whether or not to place a bias on the linear layer. Defaults to
+          True.
+
+        reshape (bool): Whether to reshape the output of the linear layer to look
+          like a time-frequency representation (nb, nt, nf, nc, ...). Defaults to
+          True.
     """
     def __init__(self, num_features, hidden_size, embedding_size, activation,
-                 num_audio_channels=1, dim_to_embed=-1):
+                 num_audio_channels=1, dim_to_embed=-1, bias=True, reshape=True):
         super(Embedding, self).__init__()
         self.add_module(
             'linear',
-            nn.Linear(hidden_size, num_features * num_audio_channels * embedding_size)
+            nn.Linear(
+                hidden_size, 
+                num_features * num_audio_channels * embedding_size,
+                bias=bias
+            )
         )
         self.num_features = num_features
         self.num_audio_channels = num_audio_channels
         self.activation = activation
         self.embedding_size = embedding_size
+        self.reshape = reshape
 
         if isinstance(dim_to_embed, int):
             dim_to_embed = [dim_to_embed]
@@ -259,9 +270,10 @@ class Embedding(nn.Module):
         data = data.reshape(shape + (-1,))
         data = self.linear(data)
 
-        shape = shape + (
-            self.num_features, self.num_audio_channels, self.embedding_size,)
-        data = data.reshape(shape)
+        if self.reshape:
+            shape = shape + (
+                self.num_features, self.num_audio_channels, self.embedding_size,)
+            data = data.reshape(shape)
 
         if 'sigmoid' in self.activation:
             data = torch.sigmoid(data)
@@ -299,6 +311,18 @@ class Mask(nn.Module):
         representation = representation.unsqueeze(-1).expand_as(mask)
         return mask * representation
 
+class Concatenate(nn.Module):
+    """
+    Concatenates two or more pieces of data together along a 
+    specified dimension. Takes in a list of tensors and a 
+    concatenation dimension.
+    """
+    def __init__(self, dim=-1):
+        self.dim = dim
+        super(Concatenate, self).__init__()
+    
+    def forward(self, *data):
+        return torch.cat(data, dim=self.dim)
 
 class RecurrentStack(nn.Module):
     """

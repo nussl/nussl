@@ -22,6 +22,11 @@ chimera_config = builders.build_recurrent_chimera(
     2, 'softmax', 
 )
 
+open_unmix_like_config = builders.build_open_unmix_like(
+    n_features, 50, 2, True, .4, 2, 1, add_embedding=True,
+    embedding_size=20, embedding_activation=['sigmoid', 'unit_norm'],
+)
+
 gmm_unfold_config = copy.deepcopy(dpcl_config)
 gmm_unfold_config['modules']['mask'] = {
     'class': 'GaussianMixtureTorch',
@@ -152,6 +157,36 @@ def test_separation_model_chimera(one_item):
                     one_item['mix_magnitude'].shape + (20,)))
 
 
+
+def test_separation_model_open_unmix_like(one_item):
+    n_features = one_item['mix_magnitude'].shape[2]
+
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
+        with open(tmp.name, 'w') as f:
+            json.dump(open_unmix_like_config, f)
+        configs = [
+            open_unmix_like_config, 
+            tmp.name, 
+            json.dumps(open_unmix_like_config)
+        ]
+
+        for config in configs:    
+            model = SeparationModel(config)
+            output = model(one_item)
+
+            assert (
+                output['estimates'].shape == (
+                    one_item['mix_magnitude'].shape + (2,))
+            )
+            assert (
+                output['mask'].shape == (
+                    one_item['mix_magnitude'].shape + (2,))
+            )
+            assert (
+                output['embedding'].shape == (
+                    one_item['mix_magnitude'].shape + (20,)))
+
+
 def test_separation_model_gmm_unfold(one_item):
     n_features = one_item['mix_magnitude'].shape[2]
 
@@ -237,6 +272,8 @@ def test_separation_model_save():
     with tempfile.NamedTemporaryFile(suffix='.pth', delete=True) as tmp:
         loc = model.save(tmp.name)
         checkpoint = torch.load(loc)
+
+        assert checkpoint['nussl_version'] == nussl.__version__
 
         new_model = SeparationModel(checkpoint['config'])
         new_model.load_state_dict(checkpoint['state_dict'])

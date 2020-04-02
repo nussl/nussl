@@ -770,8 +770,6 @@ print(loss_output)
 # Cool, we did a single step. Instead of manually defining this all above, we can 
 # instead use the TrainClosure from *nussl*.
 
-# ?nussl.ml.train.closures.TrainClosure
-
 train_closure = nussl.ml.train.closures.TrainClosure(
     loss_dictionary, optimizer, model
 )

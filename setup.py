@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from nussl import __version__
 
 with open('README.md') as f:
     long_description = f.read()
@@ -11,7 +12,7 @@ with open('extra_requirements.txt') as f:
 
 setup(
     name='nussl',
-    version='1.0.0',
+    version=__version__,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

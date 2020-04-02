@@ -169,6 +169,15 @@ def test_ml_mask(one_item):
     assert torch.allclose(output, masked_data)
 
 
+def test_ml_concatenate(one_item):
+    data = one_item['mix_magnitude']
+    dims = range(len(data.shape))
+
+    for dim in dims:
+        module = ml.networks.modules.Concatenate(dim=dim)
+        output = module(data, data)
+        assert output.shape[dim] == 2 * data.shape[dim]
+
 def test_ml_recurrent_stack(one_item):
     data = one_item['mix_magnitude']
     num_features = data.shape[2]

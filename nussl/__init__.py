@@ -4,6 +4,8 @@ try:
 except Exception:
     vamp_imported = False
 
+# Current nussl version
+__version__ = '1.0.0'
 
 class ImportErrorClass(object):
     def __init__(self, lib, **kwargs):
@@ -18,3 +20,4 @@ from . import evaluation
 from . import datasets
 from . import ml
 from . import separation
+
