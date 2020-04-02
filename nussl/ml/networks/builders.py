@@ -367,7 +367,7 @@ def build_open_unmix_like(num_features, hidden_size, num_layers,
         },
         'output_scalar': {
             'class': 'BatchNorm'
-        }
+        },
         'bn1': {
             'class': 'BatchNorm',
             'args': {
