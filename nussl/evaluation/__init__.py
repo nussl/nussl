@@ -39,8 +39,15 @@ Precision and recall on masks
     :members:
     :autosummary:
 
+Aggregators
+-----------
+
+.. autofunction:: nussl.evaluation.aggregate_score_files
+
+
 """
 
-from .evaluation_base import EvaluationBase, aggregate_score_files
+from .report_card import aggregate_score_files, report_card
+from .evaluation_base import EvaluationBase
 from .bss_eval import BSSEvaluationBase, BSSEvalV4, BSSEvalScale, scale_bss_eval
 from .precision_recall_fscore import PrecisionRecallFScore
