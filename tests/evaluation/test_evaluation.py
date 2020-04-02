@@ -324,9 +324,13 @@ def check_aggregate(directory):
     json_files = glob.glob(f"{directory}/*.json")
     df = nussl.evaluation.aggregate_score_files(json_files)
     report_card = nussl.evaluation.report_card(df, 'Testing notes')
+    print(report_card)
 
     assert 'Testing notes' in report_card
-    print(report_card)
+    report_card_overall = nussl.evaluation.report_card(
+        df, 'Testing notes', report_each_source=False)
+    print(report_card_overall)
+    assert len(report_card_overall) < len(report_card)
 
 def test_eval_permutation(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true'][:2]

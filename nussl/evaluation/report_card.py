@@ -89,7 +89,7 @@ def _get_medians(df):
     data = [f'     {m:.03f}     ' for m in np.array(df.median()).T]
     return metrics, data
 
-def _get_report_card(df, func):
+def _get_report_card(df, func, report_each_source=True):
     """
     Gets a report card for a DataFrame using a specific function.
     """
@@ -98,11 +98,12 @@ def _get_report_card(df, func):
     data.insert(0, 'OVERALL')
     data = [data]
 
-    for name in np.unique(df['source']):
-        _df = df[df['source'] == name]
-        _, _data = func(_df)
-        _data.insert(0, name.upper())
-        data.append(_data)
+    if report_each_source:
+        for name in np.unique(df['source']):
+            _df = df[df['source'] == name]
+            _, _data = func(_df)
+            _data.insert(0, name.upper())
+            data.append(_data)
         
     alignment = ["c" for _ in labels]
     alignment[0] = "l"
@@ -113,7 +114,7 @@ def _get_report_card(df, func):
 
     return report_card
 
-def report_card(df, notes=None):
+def report_card(df, notes=None, report_each_source=True):
     """
     Given a Pandas dataframe, usually the output of ``aggregate_score_files``,
     returns a string that looks like this::
@@ -162,12 +163,16 @@ def report_card(df, notes=None):
           evaluation.
         notes (str, optional): Any additional notes you want to be printed at the
           bottom of the report card. Defaults to None.
+        report_each_source (bool, optional): Whether or not to report the metrics
+          for each individual source type. Defaults to True.
     
     Returns:
         str: A report card for your experiment.
     """
-    mean_report_card = _get_report_card(df, _get_mean_and_std)
-    median_report_card = _get_report_card(df, _get_medians)
+    mean_report_card = _get_report_card(
+        df, _get_mean_and_std, report_each_source=report_each_source)
+    median_report_card = _get_report_card(
+        df, _get_medians, report_each_source=report_each_source)
 
     line_break = mean_report_card.index('\n')
 
