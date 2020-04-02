@@ -255,8 +255,10 @@ def test_scale_bss_eval(estimated_and_true_sources):
     _references = references[:, 0, :]
     _estimates = estimates[:, 0, :]
 
-    tSISDR, tSISIR, tSISAR, tSDSDR, tSNR, tSRR = nussl.evaluation.scale_bss_eval(
-        _references, _estimates[..., 0], 0,
+    tSISDR, tSISIR, tSISAR, tSDSDR, tSNR, tSRR, tSDRi, tSDSDRi, tSNRi = (
+        nussl.evaluation.scale_bss_eval(
+            _references, _estimates[..., 0], 0,
+        )
     )
 
     evaluator = nussl.evaluation.BSSEvalScale(
@@ -265,8 +267,10 @@ def test_scale_bss_eval(estimated_and_true_sources):
     _references = references[:, 0, :]
     _estimates = estimates[:, 0, :]
 
-    rSISDR, rSISIR, rSISAR, rSDSDR, rSNR, rSRR = nussl.evaluation.scale_bss_eval(
-        _references, _estimates[..., 0], 0,
+    rSISDR, rSISIR, rSISAR, rSDSDR, rSNR, rSRR, tSDRi, tSDSDRi, tSNRi = (
+        nussl.evaluation.scale_bss_eval(
+            _references, _estimates[..., 0], 0,
+        )
     )
 
     assert tSISDR > rSISDR

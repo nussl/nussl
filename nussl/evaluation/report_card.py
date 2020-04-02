@@ -105,10 +105,7 @@ def _get_report_card(df, func, report_each_source=True):
     Gets a report card for a DataFrame using a specific function.
     """
     labels, data = func(df)
-    for i in range(1, len(labels)):
-        labels[i] = _format_title(labels[i], 16)
-    labels.insert(0, '')
-    
+
     data.insert(0, 'OVERALL')
     data = [data]
 
@@ -118,13 +115,22 @@ def _get_report_card(df, func, report_each_source=True):
             _, _data = func(_df)
             _data.insert(0, name.upper())
             data.append(_data)
+    
+    # transposing data so each column has the source and its metrics
+    data = list(map(list, zip(*data)))
+    header = data.pop(0)
+    header.insert(0, 'METRIC')
+    for i in range(1, len(header)):
+        header[i] = _format_title(header[i], 16)
+    for l, d in zip(labels, data):
+        d.insert(0, l)
         
-    alignment = ["c" for _ in labels]
+    alignment = ["c" for _ in header]
     alignment[0] = "l"
     alignment = ''.join(alignment)
     
     report_card = termtables.to_string(
-        data, header=labels, padding=(0, 1), alignment=alignment)
+        data, header=header, padding=(0, 1), alignment=alignment)
 
     return report_card
 

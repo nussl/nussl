@@ -3,48 +3,10 @@ import museval
 
 from .evaluation_base import EvaluationBase
 
-
-def scale_bss_eval(references, estimate, idx):
+def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
     """
-    Computes metrics for references[idx] relative to the
-    chosen estimates. This only works for mono audio. Each
-    channel should be done independently when calling this
-    function. Lovingly borrowed from Gordon Wichern and 
-    Jonathan Le Roux at Mitsubishi Electric Research Labs.
-
-    This returns 6 numbers (in this order):
-
-    - SI-SDR: Scale-invariant source-to-distortion ratio. Higher is better.
-    - SI-SIR: Scale-invariant source-to-interference ratio. Higher is better.
-    - SI-SAR: Scale-invariant source-to-artifact ratio. Higher is better.
-    - SD-SDR: Scale-dependent source-to-distortion ratio. Higher is better.
-    - SNR: Signal-to-noise ratio. Higher is better.
-    - SRR: The source-to-rescaled-source ratio. This corresponds to 
-      a term that punishes the estimate if its scale is off relative
-      to the reference. This is an unnumbered equation in [1], but
-      is the term on page 2, second column, second to last line:
-      ||s - alpha*s||**2. s here is factored out. Note that for
-      this term, LOWER is better.
-
-    References:
-
-    [1] Le Roux, J., Wisdom, S., Erdogan, H., & Hershey, J. R. 
-        (2019, May). SDR–half-baked or well done?. In ICASSP 2019-2019 IEEE 
-        International Conference on Acoustics, Speech and Signal 
-        Processing (ICASSP) (pp. 626-630). IEEE.
-    
-    Args:
-        references (np.ndarray): object containing the
-          references data. Of shape (n_samples, n_sources).
-         
-        estimate (np.ndarray): object containing the
-          estimate data. Of shape (n_samples, 1).
-
-        idx (int): Which reference to compute metrics against.
-
-    Returns:
-        tuple: SI-SDR, SI-SIR, SI-SAR, SD-SDR, SNR, SRR.
-    """    
+    Helper for scale_bss_eval to avoid infinite recursion loop.
+    """
     references_projection = references.T @ references
     source = references[..., idx]
     alpha = (
@@ -67,19 +29,77 @@ def scale_bss_eval(references, estimate, idx):
 
     si_sdr = 10 * np.log10(signal / noise)
 
-    srr = 10 * np.log10((1 - (1/alpha)) ** 2)
+    srr = -10 * np.log10((1 - (1/alpha)) ** 2)
     sd_sdr = snr + 10 * np.log10(alpha ** 2)
 
-    references_onto_residual = np.dot(references.transpose(), e_res)
-    b = np.linalg.solve(references_projection, references_onto_residual)
+    si_sir = None
+    si_sar = None
 
-    e_interf = np.dot(references, b)
-    e_artif = e_res - e_interf
+    if compute_sir_sar:
+        references_onto_residual = np.dot(references.transpose(), e_res)
+        b = np.linalg.solve(references_projection, references_onto_residual)
 
-    si_sir = 10 * np.log10(signal / (e_interf ** 2).sum())
-    si_sar = 10 * np.log10(signal / (e_artif ** 2).sum())
+        e_interf = np.dot(references, b)
+        e_artif = e_res - e_interf
+
+        si_sir = 10 * np.log10(signal / (e_interf ** 2).sum())
+        si_sar = 10 * np.log10(signal / (e_artif ** 2).sum())
 
     return si_sdr, si_sir, si_sar, sd_sdr, snr, srr
+
+def scale_bss_eval(references, estimate, idx, compute_improvement=True):
+    """
+    Computes metrics for references[idx] relative to the
+    chosen estimates. This only works for mono audio. Each
+    channel should be done independently when calling this
+    function. Lovingly borrowed from Gordon Wichern and 
+    Jonathan Le Roux at Mitsubishi Electric Research Labs.
+
+    This returns 9 numbers (in this order):
+
+    - SI-SDR: Scale-invariant source-to-distortion ratio. Higher is better.
+    - SI-SIR: Scale-invariant source-to-interference ratio. Higher is better.
+    - SI-SAR: Scale-invariant source-to-artifact ratio. Higher is better.
+    - SD-SDR: Scale-dependent source-to-distortion ratio. Higher is better.
+    - SNR: Signal-to-noise ratio. Higher is better.
+    - SRR: The source-to-rescaled-source ratio. This corresponds to 
+      a term that punishes the estimate if its scale is off relative
+      to the reference. This is an unnumbered equation in [1], but
+      is the term on page 2, second column, second to last line:
+      ||s - alpha*s||**2. s here is factored out. Higher is better.
+    - SI-SDRi: Improvement in SI-SDR over using the mixture as the estimate.
+    - SD-SDRi: Improvement in SD-SDR over using the mixture as the estimate.
+    - SNRi: Improvement in SNR over using the mixture as the estimate.
+
+    References:
+
+    [1] Le Roux, J., Wisdom, S., Erdogan, H., & Hershey, J. R. 
+        (2019, May). SDR–half-baked or well done?. In ICASSP 2019-2019 IEEE 
+        International Conference on Acoustics, Speech and Signal 
+        Processing (ICASSP) (pp. 626-630). IEEE.
+    
+    Args:
+        references (np.ndarray): object containing the
+          references data. Of shape (n_samples, n_sources).
+         
+        estimate (np.ndarray): object containing the
+          estimate data. Of shape (n_samples, 1).
+
+        idx (int): Which reference to compute metrics against.
+
+    Returns:
+        tuple: SI-SDR, SI-SIR, SI-SAR, SD-SDR, SNR, SRR, SI-SDRi, SD-SDRi, SNRi
+    """    
+    si_sdr, si_sir, si_sar, sd_sdr, snr, srr = _scale_bss_eval(
+        references, estimate, idx)
+    mix = references.mean(axis=-1)
+    mix_metrics = _scale_bss_eval(references, mix, 0, compute_sir_sar=False)
+
+    si_sdri = si_sdr - mix_metrics[0]
+    sd_sdri = sd_sdr - mix_metrics[3]
+    snri = snr - mix_metrics[4]
+
+    return si_sdr, si_sir, si_sar, sd_sdr, snr, srr, si_sdri, sd_sdri, snri
 
 
 class BSSEvaluationBase(EvaluationBase):
@@ -181,9 +201,25 @@ class BSSEvalScale(BSSEvaluationBase):
 
     def evaluate_helper(self, references, estimates):
         """
-        Implements evaluation using scale-invariant BSSEval metrics [1]. If
-        called with scaling = False, then this is signal-to-noise ratio. If
-        scale_dependent = True, then these are scale-dependent metrics.
+        Implements evaluation using new BSSEval metrics [1]. This computes every
+        metric described in [1], including:
+
+        - SI-SDR: Scale-invariant source-to-distortion ratio. Higher is better.
+        - SI-SIR: Scale-invariant source-to-interference ratio. Higher is better.
+        - SI-SAR: Scale-invariant source-to-artifact ratio. Higher is better.
+        - SD-SDR: Scale-dependent source-to-distortion ratio. Higher is better.
+        - SNR: Signal-to-noise ratio. Higher is better.
+        - SRR: The source-to-rescaled-source ratio. This corresponds to 
+          a term that punishes the estimate if its scale is off relative
+          to the reference. This is an unnumbered equation in [1], but
+          is the term on page 2, second column, second to last line:
+          ||s - alpha*s||**2. s is factored out. Higher is better.
+        - SI-SDRi: Improvement in SI-SDR over using the mixture as the estimate. Higher 
+          is better.
+        - SD-SDRi: Improvement in SD-SDR over using the mixture as the estimate. Higher
+          is better.
+        - SNRi: Improvement in SNR over using the mixture as the estimate. Higher is
+          better.
 
         [1] Le Roux, J., Wisdom, S., Erdogan, H., & Hershey, J. R. 
         (2019, May). SDR–half-baked or well done?. In ICASSP 2019-2019 IEEE 
@@ -191,14 +227,16 @@ class BSSEvalScale(BSSEvaluationBase):
         Processing (ICASSP) (pp. 626-630). IEEE.
         """
 
-        sisdr, sisir, sisar, sdsdr, snr, srr = \
-            [], [], [], [], [], []
+        sisdr, sisir, sisar, sdsdr, snr, srr, sisdri, sdsdri, snri = \
+            [], [], [], [], [], [], [], [], []
         for j in range(references.shape[-1]):
-            cSISDR, cSISIR, cSISAR, cSDSDR, cSNR, cSRR = \
-                [], [], [], [], [], []
+            cSISDR, cSISIR, cSISAR, cSDSDR, cSNR, cSRR, cSISDRi, cSDSDRi, cSNRi = \
+                [], [], [], [], [], [], [], [], []
             for ch in range(references.shape[-2]):
-                _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR = scale_bss_eval(
-                    references[..., ch, :], estimates[..., ch, j], j 
+                _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, _SISDRi, _SDSDRi, _SNRi = (
+                    scale_bss_eval(
+                        references[..., ch, :], estimates[..., ch, j], j 
+                    )
                 )
                 cSISDR.append(_SISDR)
                 cSISIR.append(_SISIR)
@@ -206,6 +244,9 @@ class BSSEvalScale(BSSEvaluationBase):
                 cSDSDR.append(_SDSDR)
                 cSNR.append(_SNR)
                 cSRR.append(_SRR)
+                cSISDRi.append(_SISDRi)
+                cSDSDRi.append(_SDSDRi)
+                cSNRi.append(_SNRi)
 
             sisdr.append(cSISDR)
             sisir.append(cSISIR)
@@ -215,11 +256,16 @@ class BSSEvalScale(BSSEvaluationBase):
             snr.append(cSNR)
             srr.append(cSRR)
 
+            sisdri.append(cSISDRi)
+            sdsdri.append(cSDSDRi)
+            snri.append(cSNRi)
+
         scores = []
         for j in range(references.shape[-1]):
             score = {
                 'SI-SDR': sisdr[j], 'SI-SIR': sisir[j], 'SI-SAR': sisar[j],
-                'SD-SDR': sdsdr[j], 'SNR': snr[j], 'SRR': srr[j],
+                'SD-SDR': sdsdr[j], 'SNR': snr[j], 'SRR': srr[j], 
+                'SI-SDRi': sisdri[j], 'SD-SDRi': sdsdri[j], 'SNRi': snri[j]
             }
             scores.append(score)
         return scores
