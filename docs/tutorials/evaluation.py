@@ -204,12 +204,12 @@ def _report_sdr(approach, scores):
     print(''.join(['-' for i in range(len(approach))]))
     for key in scores:
         if key not in ['combination', 'permutation']:
-            SDR[key] = np.mean(scores[key]['SDR'])
-            SIR[key] = np.mean(scores[key]['SIR'])
-            SAR[key] = np.mean(scores[key]['SAR'])
-            print(f'{key} SDR: {SDR[key]:.2f} dB')
-            print(f'{key} SIR: {SIR[key]:.2f} dB')
-            print(f'{key} SAR: {SAR[key]:.2f} dB')
+            SDR[key] = np.mean(scores[key]['SI-SDR'])
+            SIR[key] = np.mean(scores[key]['SI-SIR'])
+            SAR[key] = np.mean(scores[key]['SI-SAR'])
+            print(f'{key} SI-SDR: {SDR[key]:.2f} dB')
+            print(f'{key} SI-SIR: {SIR[key]:.2f} dB')
+            print(f'{key} SI-SAR: {SAR[key]:.2f} dB')
             print()
     print()
 

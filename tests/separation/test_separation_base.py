@@ -178,7 +178,7 @@ def test_clustering_separation_base(scaper_folder, monkeypatch):
         scores = evaluator.evaluate()
 
         for key in evaluator.source_labels:
-            for metric in ['SDR', 'SIR']:
+            for metric in ['SI-SDR', 'SI-SIR']:
                 _score = scores[key][metric]  
                 for val in _score:
                     assert val > 5
@@ -193,7 +193,7 @@ def test_clustering_separation_base(scaper_folder, monkeypatch):
         scores = evaluator.evaluate()
 
         for key in evaluator.source_labels:
-            for metric in ['SDR', 'SIR']:
+            for metric in ['SI-SDR', 'SI-SIR']:
                 _score = scores[key][metric]  
                 for val in _score:
                     assert val > 9  

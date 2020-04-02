@@ -71,8 +71,8 @@ def _get_mean_and_std(df):
     metrics = [x for x in list(df.columns) if x not in excluded_columns]
     metrics.insert(0, '#')
 
-    means = [f'{m:.03f}' for m in np.array(df.mean()).T]
-    stds = [f'{s:.03f}' for s in np.array(df.std()).T]
+    means = [f'{m:5.1f}' for m in np.array(df.mean()).T]
+    stds = [f'{s:4.1f}' for s in np.array(df.std()).T]
     data = [f'{m} +/- {s}' for m, s in zip(means, stds)]
     data.insert(0, df.shape[0])
 
@@ -88,17 +88,27 @@ def _get_medians(df):
     metrics = [x for x in list(df.columns) if x not in excluded_columns]
     metrics.insert(0, '#')
 
-    # this strange padding is so the reports look nice when printed back to back
-    data = [f'     {m:.03f}     ' for m in np.array(df.median()).T]
+    data = [f'{m:5.1f}' for m in np.array(df.median()).T]
     data.insert(0, df.shape[0])
     return metrics, data
+
+def _format_title(title, length, marker=" "):
+    pad = (length - len(title)) // 2
+    pad = ''.join([marker for _ in range(pad)])
+    border = pad + title + pad
+    if len(title) % 2:
+        border = border + marker
+    return border
 
 def _get_report_card(df, func, report_each_source=True):
     """
     Gets a report card for a DataFrame using a specific function.
     """
     labels, data = func(df)
+    for i in range(1, len(labels)):
+        labels[i] = _format_title(labels[i], 16)
     labels.insert(0, '')
+    
     data.insert(0, 'OVERALL')
     data = [data]
 
@@ -180,31 +190,23 @@ def report_card(df, notes=None, report_each_source=True):
 
     line_break = mean_report_card.index('\n')
 
-    def _format_title(title, marker=" "):
-        pad = (line_break - len(title)) // 2
-        pad = ''.join([marker for _ in range(pad)])
-        border = pad + title + pad
-        if len(title) % 2:
-            border = border + marker
-        return border
-
     report_card = (
-        f"{_format_title('')}\n"
-        f"{_format_title(' MEAN +/- STD OF METRICS ')}\n"
-        f"{_format_title('')}\n"
+        f"{_format_title('', line_break)}\n"
+        f"{_format_title(' MEAN +/- STD OF METRICS ', line_break)}\n"
+        f"{_format_title('', line_break)}\n"
         f"{mean_report_card}\n"
-        f"{_format_title('')}\n"
-        f"{_format_title(' MEDIAN OF METRICS ')}\n"
-        f"{_format_title('')}\n"
+        f"{_format_title('', line_break)}\n"
+        f"{_format_title(' MEDIAN OF METRICS ', line_break)}\n"
+        f"{_format_title('', line_break)}\n"
         f"{median_report_card}\n"
     )
     
     if notes is not None:
         notes = '\n'.join(textwrap.wrap(notes, line_break))
         report_card += (
-            f"{_format_title('')}\n"
-            f"{_format_title(' NOTES ')}\n"
-            f"{_format_title('')}\n"
+            f"{_format_title('', line_break)}\n"
+            f"{_format_title(' NOTES ', line_break)}\n"
+            f"{_format_title('', line_break)}\n"
             f"{notes}"
         )
     return report_card

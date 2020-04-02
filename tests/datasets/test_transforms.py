@@ -106,7 +106,7 @@ def test_transform_msa_psa(musdb_tracks):
     psa_scores = separate_and_evaluate(mix, data['sources'], mask_data)
 
     for key in msa_scores:
-        if key in ['SDR', 'SIR', 'SAR']:
+        if key in ['SI-SDR', 'SI-SIR', 'SI-SAR']:
             diff = np.array(psa_scores[key]) - np.array(mix_scores[key])
             assert diff.mean() > 10
 
@@ -196,7 +196,7 @@ def test_transform_compose(musdb_tracks):
     mix_scores = separate_and_evaluate(mix, data['sources'], mask_data)
 
     for key in msa_scores:
-        if key in ['SDR', 'SIR', 'SAR']:
+        if key in ['SI-SDR', 'SI-SIR', 'SI-SAR']:
             diff = np.array(msa_scores[key]) - np.array(mix_scores[key])
             assert diff.mean() > 10
 

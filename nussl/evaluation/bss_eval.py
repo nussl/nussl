@@ -4,50 +4,71 @@ import museval
 from .evaluation_base import EvaluationBase
 
 
-def scale_bss_eval(references, estimates, idx, scaling=True, 
-                   scale_dependent=False):
+def scale_bss_eval(references, estimate, idx):
     """
-    Computes SDR, SIR, SAR for references[idx] relative to the
+    Computes metrics for references[idx] relative to the
     chosen estimates. This only works for mono audio. Each
     channel should be done independently when calling this
     function. Lovingly borrowed from Gordon Wichern and 
     Jonathan Le Roux at Mitsubishi Electric Research Labs.
+
+    This returns 6 numbers (in this order):
+
+    - SI-SDR: Scale-invariant source-to-distortion ratio. Higher is better.
+    - SI-SIR: Scale-invariant source-to-interference ratio. Higher is better.
+    - SI-SAR: Scale-invariant source-to-artifact ratio. Higher is better.
+    - SD-SDR: Scale-dependent source-to-distortion ratio. Higher is better.
+    - SNR: Signal-to-noise ratio. Higher is better.
+    - SRR: The source-to-rescaled-source ratio. This corresponds to 
+      a term that punishes the estimate if its scale is off relative
+      to the reference. This is an unnumbered equation in [1], but
+      is the term on page 2, second column, second to last line:
+      ||s - alpha*s||**2. s here is factored out. Note that for
+      this term, LOWER is better.
+
+    References:
+
+    [1] Le Roux, J., Wisdom, S., Erdogan, H., & Hershey, J. R. 
+        (2019, May). SDR–half-baked or well done?. In ICASSP 2019-2019 IEEE 
+        International Conference on Acoustics, Speech and Signal 
+        Processing (ICASSP) (pp. 626-630). IEEE.
     
     Args:
         references (np.ndarray): object containing the
           references data. Of shape (n_samples, n_sources).
          
-        estimates (np.ndarray): object containing the
-          estimates data. Of shape (n_samples, 1).
+        estimate (np.ndarray): object containing the
+          estimate data. Of shape (n_samples, 1).
 
-        idx (int): Which estimates to compute metrics for.
+        idx (int): Which reference to compute metrics against.
 
-        scaling (bool, optional): Whether to use scale-invariant (True) or
-          signal-to-noise ratio (False). Defaults to True.
-
-        scale_dependent (bool, optional): If this is true, then scaling will 
-          be False. This will then compute the scale-dependent metrics. 
-          Defaults to False.
-    
     Returns:
-        tuple: SDR, SIR, SAR if inputs are numpy arrays.
-    """
-    scaling = False if scale_dependent else scaling
-    
+        tuple: SI-SDR, SI-SIR, SI-SAR, SD-SDR, SNR, SRR.
+    """    
     references_projection = references.T @ references
     source = references[..., idx]
-    multiplier = (
-        source @ estimates / references_projection[idx, idx]
+    alpha = (
+        source @ estimate / references_projection[idx, idx]
     )
 
-    scale = multiplier if scaling else 1
-    e_true = scale * source
-    e_res = estimates - e_true
+    e_true = source
+    e_res = estimate - e_true
 
     signal = (e_true ** 2).sum()
     noise = (e_res ** 2).sum()
 
-    sdr = 10 * np.log10(signal / noise)
+    snr = 10 * np.log10(signal / noise)
+
+    e_true = source * alpha
+    e_res = estimate - e_true
+
+    signal = (e_true ** 2).sum()
+    noise = (e_res ** 2).sum()
+
+    si_sdr = 10 * np.log10(signal / noise)
+
+    srr = 10 * np.log10((1 - (1/alpha)) ** 2)
+    sd_sdr = snr + 10 * np.log10(alpha ** 2)
 
     references_onto_residual = np.dot(references.transpose(), e_res)
     b = np.linalg.solve(references_projection, references_onto_residual)
@@ -55,16 +76,10 @@ def scale_bss_eval(references, estimates, idx, scaling=True,
     e_interf = np.dot(references, b)
     e_artif = e_res - e_interf
 
-    sir = 10 * np.log10(signal / (e_interf ** 2).sum())
-    sar = 10 * np.log10(signal / (e_artif ** 2).sum())
+    si_sir = 10 * np.log10(signal / (e_interf ** 2).sum())
+    si_sar = 10 * np.log10(signal / (e_artif ** 2).sum())
 
-    if scale_dependent:
-        sdr += 10 * np.log10(multiplier)
-        # TODO: implemenet sd-sir, sd-sar
-        # sir += 10 * np.log10(multiplier)
-        # sar += 10 * np.log10(multiplier)
-
-    return sdr, sir, sar
+    return si_sdr, si_sir, si_sar, sd_sdr, snr, srr
 
 
 class BSSEvaluationBase(EvaluationBase):
@@ -164,8 +179,7 @@ class BSSEvalScale(BSSEvaluationBase):
         estimates -= estimates.mean(axis=0)
         return references, estimates
 
-    def evaluate_helper(self, references, estimates, scaling=True, 
-                        scale_dependent=False, **kwargs):
+    def evaluate_helper(self, references, estimates):
         """
         Implements evaluation using scale-invariant BSSEval metrics [1]. If
         called with scaling = False, then this is signal-to-noise ratio. If
@@ -177,25 +191,35 @@ class BSSEvalScale(BSSEvaluationBase):
         Processing (ICASSP) (pp. 626-630). IEEE.
         """
 
-        sdr, sir, sar = [], [], []
+        sisdr, sisir, sisar, sdsdr, snr, srr = \
+            [], [], [], [], [], []
         for j in range(references.shape[-1]):
-            cSDR, cSIR, cSAR = [], [], []
+            cSISDR, cSISIR, cSISAR, cSDSDR, cSNR, cSRR = \
+                [], [], [], [], [], []
             for ch in range(references.shape[-2]):
-                _SDR, _SIR, _SAR = scale_bss_eval(
-                    references[..., ch, :], estimates[..., ch, j],
-                    j, scaling=scaling, scale_dependent=scale_dependent 
+                _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR = scale_bss_eval(
+                    references[..., ch, :], estimates[..., ch, j], j 
                 )
-                cSDR.append(_SDR)
-                cSIR.append(_SIR)
-                cSAR.append(_SAR)
-            sdr.append(cSDR)
-            sir.append(cSIR)
-            sar.append(cSAR)
+                cSISDR.append(_SISDR)
+                cSISIR.append(_SISIR)
+                cSISAR.append(_SISAR)
+                cSDSDR.append(_SDSDR)
+                cSNR.append(_SNR)
+                cSRR.append(_SRR)
+
+            sisdr.append(cSISDR)
+            sisir.append(cSISIR)
+            sisar.append(cSISAR)
+
+            sdsdr.append(cSDSDR)
+            snr.append(cSNR)
+            srr.append(cSRR)
 
         scores = []
         for j in range(references.shape[-1]):
             score = {
-                'SDR': sdr[j], 'SIR': sir[j], 'SAR': sar[j],
+                'SI-SDR': sisdr[j], 'SI-SIR': sisir[j], 'SI-SAR': sisar[j],
+                'SD-SDR': sdsdr[j], 'SNR': snr[j], 'SRR': srr[j],
             }
             scores.append(score)
         return scores
