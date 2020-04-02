@@ -420,8 +420,8 @@ def build_open_unmix_like(num_features, hidden_size, num_layers,
 
     # define the topology
     connections = [
-        ['input_scaler', [mix_key]]
-        ['projection', 'input_scaler'],
+        ['input_scalar', [mix_key]],
+        ['projection', ['input_scalar']],
         ['bn1', ['projection']],
         ['tanh_before_lstm', ['bn1']],
         ['recurrent_stack', ['tanh_before_lstm']],
@@ -430,8 +430,8 @@ def build_open_unmix_like(num_features, hidden_size, num_layers,
         ['bn2', ['dense_after_lstm']],
         ['inverse_projection', ['bn2']],
         ['bn3', ['inverse_projection']],
-        ['output_scaler', ['bn3']],
-        ['mask', ['output_scaler']],
+        ['output_scalar', ['bn3']],
+        ['mask', ['output_scalar']],
         ['estimates', ['mask', mix_key]]
     ]
     
