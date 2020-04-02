@@ -92,7 +92,7 @@ def scale_bss_eval(references, estimate, idx, compute_improvement=True):
     """    
     si_sdr, si_sir, si_sar, sd_sdr, snr, srr = _scale_bss_eval(
         references, estimate, idx)
-    mix = references.mean(axis=-1)
+    mix = references.sum(axis=-1)
     mix_metrics = _scale_bss_eval(references, mix, 0, compute_sir_sar=False)
 
     si_sdri = si_sdr - mix_metrics[0]

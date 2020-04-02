@@ -19,7 +19,7 @@ class MixAsEstimate(SeparationBase):
         pass
 
     def make_audio_signals(self):
-        scalar = 1 / self.num_sources
+        scalar = 1
         estimates = [
             self.audio_signal * scalar for i in range(self.num_sources)
         ]
