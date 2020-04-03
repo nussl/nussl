@@ -47,7 +47,8 @@ def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
 
     return si_sdr, si_sir, si_sar, sd_sdr, snr, srr
 
-def scale_bss_eval(references, estimate, idx, compute_improvement=True):
+def scale_bss_eval(references, estimate, mixture, idx, 
+                   compute_improvement=True):
     """
     Computes metrics for references[idx] relative to the
     chosen estimates. This only works for mono audio. Each
@@ -85,6 +86,9 @@ def scale_bss_eval(references, estimate, idx, compute_improvement=True):
         estimate (np.ndarray): object containing the
           estimate data. Of shape (n_samples, 1).
 
+        mixture (np.ndarray): objct containingthe
+          mixture data. Of shape (n_samples, 1).
+
         idx (int): Which reference to compute metrics against.
 
     Returns:
@@ -92,8 +96,7 @@ def scale_bss_eval(references, estimate, idx, compute_improvement=True):
     """    
     si_sdr, si_sir, si_sar, sd_sdr, snr, srr = _scale_bss_eval(
         references, estimate, idx)
-    mix = references.sum(axis=-1)
-    mix_metrics = _scale_bss_eval(references, mix, 0, compute_sir_sar=False)
+    mix_metrics = _scale_bss_eval(references, mixture, idx, compute_sir_sar=False)
 
     si_sdri = si_sdr - mix_metrics[0]
     sd_sdri = sd_sdr - mix_metrics[3]
@@ -227,6 +230,9 @@ class BSSEvalScale(BSSEvaluationBase):
         Processing (ICASSP) (pp. 626-630). IEEE.
         """
 
+        mixture = sum(self.true_sources_list).audio_data.T
+        mixture -= mixture.mean(axis=0)
+
         sisdr, sisir, sisar, sdsdr, snr, srr, sisdri, sdsdri, snri = \
             [], [], [], [], [], [], [], [], []
         for j in range(references.shape[-1]):
@@ -235,7 +241,8 @@ class BSSEvalScale(BSSEvaluationBase):
             for ch in range(references.shape[-2]):
                 _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, _SISDRi, _SDSDRi, _SNRi = (
                     scale_bss_eval(
-                        references[..., ch, :], estimates[..., ch, j], j 
+                        references[..., ch, :], estimates[..., ch, j], 
+                        mixture[..., ch], j 
                     )
                 )
                 cSISDR.append(_SISDR)

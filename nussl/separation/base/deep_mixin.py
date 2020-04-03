@@ -83,7 +83,7 @@ class DeepMixin:
                 self.audio_signal.resample(self.metadata['sample_rate'])
 
         self.audio_signal.stft_params = self.metadata['stft_params']
-        self._preprocess_audio_signal()
+        self.audio_signal.stft()
 
         data = {'mix': self.audio_signal}
         data = self.transform(data)

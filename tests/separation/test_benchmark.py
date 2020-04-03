@@ -125,7 +125,7 @@ def test_mix_as_estimate(
     estimates = mae()
 
     evaluator = nussl.evaluation.BSSEvalScale(
-        sources, estimates, compute_permutation=True)
+        sources, estimates, compute_permutation=False)
     scores = evaluator.evaluate()
 
     reg_path = os.path.join(REGRESSION_PATH, 'mix_as_estimate.json')
