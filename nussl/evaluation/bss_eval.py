@@ -8,9 +8,7 @@ def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
     Helper for scale_bss_eval to avoid infinite recursion loop.
     """
     source = references[..., idx]
-    source_energy = source @ source.T
-    
-    references_projection = references.T @ references
+    source_energy = (source ** 2).sum()
 
     alpha = (
         source @ estimate / source_energy
@@ -165,14 +163,14 @@ class BSSEvaluationBase(EvaluationBase):
             tuple: Tuple containing reference and estimate arrays.
         """
         references = np.stack(
-            [np.copy(x.audio_data.T) for x in self.true_sources_list],
+            [x.audio_data for x in self.true_sources_list],
             axis=-1
         )
         estimates = np.stack(
-            [np.copy(x.audio_data.T) for x in self.estimated_sources_list],
+            [x.audio_data for x in self.estimated_sources_list],
             axis=-1
         )
-        return references, estimates
+        return references.transpose(1, 0, 2), estimates.transpose(1, 0, 2)
 
 
 class BSSEvalV4(BSSEvaluationBase):
@@ -208,8 +206,14 @@ class BSSEvalScale(BSSEvaluationBase):
         Scale invariant metrics expects zero-mean centered references and sources.
         """
         references, estimates = super().preprocess()
+
+        mixture = references.sum(axis=-1)
+        mixture -= mixture.mean(axis=0)
+
+        self.mixture = mixture
         references -= references.mean(axis=0)
         estimates -= estimates.mean(axis=0)
+
         return references, estimates
 
     def evaluate_helper(self, references, estimates, compute_sir_sar=True):
@@ -247,9 +251,6 @@ class BSSEvalScale(BSSEvaluationBase):
         Processing (ICASSP) (pp. 626-630). IEEE.
         """
 
-        mixture = sum(self.true_sources_list).audio_data.T
-        mixture -= mixture.mean(axis=0)
-
         sisdr, sisir, sisar, sdsdr, snr, srr, sisdri, sdsdri, snri = \
             [], [], [], [], [], [], [], [], []
         for j in range(references.shape[-1]):
@@ -259,9 +260,10 @@ class BSSEvalScale(BSSEvaluationBase):
                 _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, _SISDRi, _SDSDRi, _SNRi = (
                     scale_bss_eval(
                         references[..., ch, :], estimates[..., ch, j], 
-                        mixture[..., ch], j, compute_sir_sar=compute_sir_sar
+                        self.mixture[..., ch], j, compute_sir_sar=compute_sir_sar
                     )
                 )
+            
                 cSISDR.append(_SISDR)
                 cSISIR.append(_SISIR)
                 cSISAR.append(_SISAR)
