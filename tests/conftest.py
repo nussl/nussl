@@ -21,7 +21,7 @@ def _unzip(path_to_zip, target_path):
 
 
 fix_dir = os.path.expanduser('~/.nussl/tests/')
-OVERWRITE_REGRESSION_DATA = True
+OVERWRITE_REGRESSION_DATA = False
 
 
 @pytest.fixture(scope="module")
