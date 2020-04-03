@@ -5,7 +5,7 @@ import numpy as np
 import os
 import textwrap
 
-def aggregate_score_files(json_files, aggregator=np.median):
+def aggregate_score_files(json_files, aggregator=np.nanmedian):
     """
     Takes a list of json files output by an Evaluation method in nussl
     and aggregates all the metrics into a Pandas dataframe. Sample

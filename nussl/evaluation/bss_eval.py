@@ -32,8 +32,8 @@ def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
     srr = -10 * np.log10((1 - (1/alpha)) ** 2)
     sd_sdr = snr + 10 * np.log10(alpha ** 2)
 
-    si_sir = None
-    si_sar = None
+    si_sir = np.nan
+    si_sar = np.nan
 
     if compute_sir_sar:
         references_onto_residual = np.dot(references.transpose(), e_res)
@@ -48,7 +48,7 @@ def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
     return si_sdr, si_sir, si_sar, sd_sdr, snr, srr
 
 def scale_bss_eval(references, estimate, mixture, idx, 
-                   compute_improvement=True):
+                   compute_sir_sar=True):
     """
     Computes metrics for references[idx] relative to the
     chosen estimates. This only works for mono audio. Each
@@ -91,12 +91,17 @@ def scale_bss_eval(references, estimate, mixture, idx,
 
         idx (int): Which reference to compute metrics against.
 
+        compute_sir_sar (bool, optional): Whether or not to compute SIR/SAR
+          metrics, which can be computationally expensive and may not be
+          relevant for your evaluation. Defaults to True
+
     Returns:
         tuple: SI-SDR, SI-SIR, SI-SAR, SD-SDR, SNR, SRR, SI-SDRi, SD-SDRi, SNRi
     """    
     si_sdr, si_sir, si_sar, sd_sdr, snr, srr = _scale_bss_eval(
-        references, estimate, idx)
-    mix_metrics = _scale_bss_eval(references, mixture, idx, compute_sir_sar=False)
+        references, estimate, idx, compute_sir_sar=compute_sir_sar)
+    mix_metrics = _scale_bss_eval(
+        references, mixture, idx, compute_sir_sar=False)
 
     si_sdri = si_sdr - mix_metrics[0]
     sd_sdri = sd_sdr - mix_metrics[3]
@@ -202,7 +207,7 @@ class BSSEvalScale(BSSEvaluationBase):
         estimates -= estimates.mean(axis=0)
         return references, estimates
 
-    def evaluate_helper(self, references, estimates):
+    def evaluate_helper(self, references, estimates, compute_sir_sar=True):
         """
         Implements evaluation using new BSSEval metrics [1]. This computes every
         metric described in [1], including:
@@ -224,6 +229,13 @@ class BSSEvalScale(BSSEvaluationBase):
         - SNRi: Improvement in SNR over using the mixture as the estimate. Higher is
           better.
 
+        Note:
+
+        If `compute_sir_sar = False`, then you'll get `np.nan` for SI-SIR and 
+        SI-SAR!
+
+        References:
+
         [1] Le Roux, J., Wisdom, S., Erdogan, H., & Hershey, J. R. 
         (2019, May). SDR–half-baked or well done?. In ICASSP 2019-2019 IEEE 
         International Conference on Acoustics, Speech and Signal 
@@ -242,7 +254,7 @@ class BSSEvalScale(BSSEvaluationBase):
                 _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, _SISDRi, _SDSDRi, _SNRi = (
                     scale_bss_eval(
                         references[..., ch, :], estimates[..., ch, j], 
-                        mixture[..., ch], j 
+                        mixture[..., ch], j, compute_sir_sar=compute_sir_sar
                     )
                 )
                 cSISDR.append(_SISDR)

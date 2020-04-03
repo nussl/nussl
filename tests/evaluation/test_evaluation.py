@@ -282,42 +282,47 @@ def test_scale_bss_eval(estimated_and_true_sources):
 
 
 def test_bss_eval_scale(estimated_and_true_sources):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        true_sources = estimated_and_true_sources['true']
-        estimated_sources = estimated_and_true_sources['random']
-        keys = estimated_and_true_sources['keys']
+    compute_sir_sar = [True, False]
 
-        for k, t in zip(keys, true_sources):
-            t.path_to_input_file = k
+    for _compute_sir_sar in compute_sir_sar:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            true_sources = estimated_and_true_sources['true']
+            estimated_sources = estimated_and_true_sources['random']
+            keys = estimated_and_true_sources['keys']
 
-        evaluator = nussl.evaluation.BSSEvalScale(
-            true_sources, estimated_sources)
-        references, estimates = evaluator.preprocess()
-        scores = evaluator.evaluate_helper(references, estimates)
-        assert isinstance(scores, list)
+            for k, t in zip(keys, true_sources):
+                t.path_to_input_file = k
 
-        random_scores = evaluator.evaluate()
-        check_scores(evaluator)
+            evaluator = nussl.evaluation.BSSEvalScale(
+                true_sources, estimated_sources, 
+                compute_sir_sar=_compute_sir_sar)
+            references, estimates = evaluator.preprocess()
+            scores = evaluator.evaluate_helper(references, estimates)
+            assert isinstance(scores, list)
 
-        estimated_sources = estimated_and_true_sources['oracle']
+            random_scores = evaluator.evaluate()
+            check_scores(evaluator)
 
-        evaluator = nussl.evaluation.BSSEvalScale(
-            true_sources, estimated_sources)
-        oracle_scores = evaluator.evaluate()
+            estimated_sources = estimated_and_true_sources['oracle']
 
-        # the oracle score should beat the random score by a lot on average
-        # for SDR and SIR
-        for key in evaluator.source_labels:
-            for metric in ['SI-SDR', 'SI-SIR', 'SNR', 'SD-SDR']:
-                _oracle = oracle_scores[key][metric]
-                _random = random_scores[key][metric]
+            evaluator = nussl.evaluation.BSSEvalScale(
+                true_sources, estimated_sources,
+                compute_sir_sar=_compute_sir_sar)
+            oracle_scores = evaluator.evaluate()
 
-                assert np.alltrue(_oracle > _random)
+            # the oracle score should beat the random score by a lot on average
+            # for SDR and SIR
+            for key in evaluator.source_labels:
+                for metric in ['SI-SDR', 'SNR', 'SD-SDR']:
+                    _oracle = oracle_scores[key][metric]
+                    _random = random_scores[key][metric]
 
-        save_scores(tmpdir, oracle_scores, f'oracle.json')
-        save_scores(tmpdir, random_scores, f'random.json')
+                    assert np.alltrue(_oracle > _random)
 
-        check_aggregate(tmpdir)
+            save_scores(tmpdir, oracle_scores, f'oracle.json')
+            save_scores(tmpdir, random_scores, f'random.json')
+
+            check_aggregate(tmpdir)
 
 
 def save_scores(directory, scores, name):
