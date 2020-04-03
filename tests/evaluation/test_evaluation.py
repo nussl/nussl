@@ -297,7 +297,9 @@ def test_bss_eval_scale(estimated_and_true_sources):
                 true_sources, estimated_sources, 
                 compute_sir_sar=_compute_sir_sar)
             references, estimates = evaluator.preprocess()
-            scores = evaluator.evaluate_helper(references, estimates)
+            scores = evaluator.evaluate_helper(
+                references, estimates, 
+                compute_sir_sar=_compute_sir_sar)
             assert isinstance(scores, list)
 
             random_scores = evaluator.evaluate()
