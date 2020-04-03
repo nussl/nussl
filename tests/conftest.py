@@ -229,6 +229,9 @@ def check_against_regression_data():
             for key in scores:
                 if key not in ['permutation', 'combination']:
                     for metric in scores[key]:
-                        assert scores[key][metric] == reg_scores[key][metric]
+                        assert np.allclose(
+                            scores[key][metric],
+                            reg_scores[key][metric]
+                        )
 
     return check

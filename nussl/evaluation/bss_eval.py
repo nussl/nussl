@@ -7,10 +7,13 @@ def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
     """
     Helper for scale_bss_eval to avoid infinite recursion loop.
     """
-    references_projection = references.T @ references
     source = references[..., idx]
+    source_energy = source @ source.T
+    
+    references_projection = references.T @ references
+
     alpha = (
-        source @ estimate / references_projection[idx, idx]
+        source @ estimate / source_energy
     )
 
     e_true = source
@@ -36,6 +39,8 @@ def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
     si_sar = np.nan
 
     if compute_sir_sar:
+        references_projection = references.T @ references
+
         references_onto_residual = np.dot(references.transpose(), e_res)
         b = np.linalg.solve(references_projection, references_onto_residual)
 
