@@ -12,6 +12,9 @@ import musdb
 import librosa
 from . import constants
 
+import os
+from contextlib import contextmanager
+
 def seed(random_seed, set_cudnn=False):
     """
     Seeds all random states in nussl with the same random seed
@@ -592,3 +595,29 @@ def visualize_sources_as_masks(audio_signals, ch=0, do_mono=False, x_axis='time'
         plt.legend(handles=legend_elements,  
             bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)
 
+@contextmanager
+def _close_temp_files(tmpfiles):
+    """
+    Utility function for creating a context and closing all temporary files
+    once the context is exited. For correct functionality, all temporary file
+    handles created inside the context must be appended to the ```tmpfiles```
+    list.
+
+    This function is taken wholesale from Scaper.
+
+    Args:
+        tmpfiles (list): List of temporary file handles
+    """
+    def _close():
+        for t in tmpfiles:
+            try:
+                t.close()
+                os.unlink(t.name)
+            except:
+                pass
+    try:
+        yield
+    except:
+        _close()
+        raise
+    _close()

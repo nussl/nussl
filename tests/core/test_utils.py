@@ -8,6 +8,7 @@ import torch
 import random
 import matplotlib.pyplot as plt
 import os
+import tempfile
 
 def test_utils_seed():
     seeds = [0, 123, 666, 15, 2]
@@ -295,3 +296,44 @@ def test_utils_visualize_sources(music_mix_and_sources):
     OUTPUT = os.path.join(PLOT_DIRECTORY, 'viz_sources_list.png')
     plt.tight_layout()
     plt.savefig(OUTPUT)
+
+def test_close_temp_files():
+    '''
+    Create a bunch of temp files and then make sure they've been closed and
+    deleted. This test is taken wholesale from Scaper.
+    '''
+    # With delete=True
+    tmpfiles = []
+    with nussl.utils._close_temp_files(tmpfiles):
+        for _ in range(5):
+            tmpfiles.append(
+                tempfile.NamedTemporaryFile(suffix='.wav', delete=True))
+
+    for tf in tmpfiles:
+        assert tf.file.closed
+        assert not os.path.isfile(tf.name)
+
+    # With delete=False
+    tmpfiles = []
+    with nussl.utils._close_temp_files(tmpfiles):
+        for _ in range(5):
+            tmpfiles.append(
+                tempfile.NamedTemporaryFile(suffix='.wav', delete=False))
+
+    for tf in tmpfiles:
+        assert tf.file.closed
+        assert not os.path.isfile(tf.name)
+
+    # with an exception before exiting
+    try:
+        tmpfiles = []
+        with nussl.utils._close_temp_files(tmpfiles):
+            tmpfiles.append(
+                tempfile.NamedTemporaryFile(suffix='.wav', delete=True))
+            raise ValueError
+    except ValueError:
+        for tf in tmpfiles:
+            assert tf.file.closed
+            assert not os.path.isfile(tf.name)
+    else:
+        assert False, 'Exception was not reraised.'

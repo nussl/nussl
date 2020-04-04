@@ -77,13 +77,8 @@ def test_multitrack():
     os.makedirs('tests/core/regression/', exist_ok=True)
     regression_path = 'tests/core/regression/multitrack_test.html'
 
-    if os.path.exists(regression_path):
-        with open(regression_path, 'r') as f:
-            html_reg = f.read()
-            assert html_reg == html.data
-    else:
-        with open(regression_path, 'w') as f:
-            f.write(html.data)
+    with open(regression_path, 'w') as f:
+        f.write(html.data)
 
     # once more for coverage
     html = nussl.play_utils.multitrack(
