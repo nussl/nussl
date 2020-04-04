@@ -12,6 +12,9 @@ from sklearn.preprocessing import OneHotEncoder
 
 from .. import utils
 
+# This is for when you're running multiple
+# training threads
+numcodecs.blosc.use_threads = False
 
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
@@ -622,7 +625,8 @@ class Cache(object):
     def _open_cache(self, location):
         if self.overwrite:
             self.cache = zarr.open(location, mode='w', shape=(self.cache_size,),
-                                   chunks=(1,), dtype=object, object_codec=numcodecs.Pickle(),
+                                   chunks=(1,), dtype=object, 
+                                   object_codec=numcodecs.Pickle(),
                                    synchronizer=zarr.ThreadSynchronizer())
         else:
             if os.path.exists(location):
