@@ -591,3 +591,4 @@ def visualize_sources_as_masks(audio_signals, ch=0, do_mono=False, x_axis='time'
     if show_legend:
         plt.legend(handles=legend_elements,  
             bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)
+
