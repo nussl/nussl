@@ -343,7 +343,7 @@ class RecurrentStack(nn.Module):
         rnn_type: (str) LSTM ('lstm') or GRU ('gru').
     """
     def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout,
-                 rnn_type='lstm'):
+                 rnn_type='lstm', batch_first=True):
         super(RecurrentStack, self).__init__()
         if rnn_type not in ['lstm', 'gru']:
             raise ValueError("rnn_type must be one of ['lstm', 'gru']!")
@@ -351,7 +351,7 @@ class RecurrentStack(nn.Module):
         RNNClass = nn.LSTM if rnn_type == 'lstm' else nn.GRU
         self.add_module(
             'rnn', RNNClass(
-                num_features, hidden_size, num_layers, batch_first=True,
+                num_features, hidden_size, num_layers, batch_first=batch_first,
                 bidirectional=bidirectional, dropout=dropout))
 
         for name, param in self.rnn.named_parameters():
