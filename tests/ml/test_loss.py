@@ -1,4 +1,5 @@
 import torch
+import nussl
 from nussl import ml
 from torch import nn
 import numpy as np
@@ -112,15 +113,26 @@ def test_sdr_loss():
         assert _loss > prev_loss
         prev_loss = _loss
 
-    LossSDR = ml.train.loss.SISDRLoss(reduction='sum')
+    LossSDR = ml.train.loss.SISDRLoss(reduction='none')
     prev_loss = -np.inf
 
     for n in noise_amount:
         estimates = references + n * torch.randn(n_batch, n_samples, n_sources)
-        _loss = LossSDR(estimates, references).item()
-        assert _loss > prev_loss
-        prev_loss = _loss
+        _loss = LossSDR(estimates, references)
+        assert _loss.sum().item() > prev_loss
+        prev_loss = _loss.sum().item()
 
+        idx = np.random.randint(n_batch)
+        _numpy_si_sdr = nussl.evaluation.scale_bss_eval(
+            references.data.numpy()[idx], 
+            estimates.data.numpy()[idx, ..., 0],
+            references.data.numpy()[idx].sum(axis=-1),
+            0
+        )[0]
+
+        _torch_loss_on_one = -1 * _loss[idx][0]
+
+        assert np.allclose(_torch_loss_on_one.item(), _numpy_si_sdr, atol=1e-3)
 
 def test_permutation_invariant_loss_sdr():
     n_batch = 40
