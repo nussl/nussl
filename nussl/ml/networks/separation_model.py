@@ -8,7 +8,6 @@ import numpy as np
 from . import modules
 from ... import __version__
 
-
 class SeparationModel(nn.Module):
     """
     SeparationModel takes a configuration file or dictionary that describes the model

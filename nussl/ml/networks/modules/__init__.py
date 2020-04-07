@@ -6,7 +6,9 @@ import librosa
 import numpy as np
 from torch.utils.checkpoint import checkpoint
 
-from ..unfold import GaussianMixtureTorch
+from ...unfold import GaussianMixtureTorch
+
+from .filter_bank import FilterBank, STFT, LearnedFilterBank
 
 class AmplitudeToDB(nn.Module):
     """

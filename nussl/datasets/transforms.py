@@ -199,7 +199,7 @@ class MagnitudeSpectrumApproximation(object):
     Args:
         mix_key (str, optional): The key to look for in data for the mixture AudioSignal. 
           Defaults to 'mix'.
-        source_key (str, optional): The key to look for in the data containing the list of
+        source_key (str, optional): The key to look for in the data containing the dict of
           source AudioSignals. Defaults to 'sources'.
     
     Raises:
@@ -649,6 +649,47 @@ class Cache(object):
                 f"Maybe you haven't written to index {index} yet in "
                 f"the cache?")
 
+        return data
+
+class GetAudio(object):
+    """
+    Extracts the audio from each signal in `mix_key` and `source_key`. 
+    These will be at new keys, called `mix_audio` and `source_audio`.
+    Can be used for training end-to-end models.
+    
+    Args:
+        mix_key (str, optional): The key to look for in data for the mixture AudioSignal. 
+          Defaults to 'mix'.
+        source_key (str, optional): The key to look for in the data containing the dict of
+          source AudioSignals. Defaults to 'sources'.
+    """
+    def __init__(self, mix_key='mix', source_key='sources'):
+        self.mix_key = mix_key
+        self.source_key = source_key
+
+    def __call__(self, data):
+        if self.mix_key not in data:
+            raise TransformException(
+                f"Expected {self.mix_key} in dictionary "
+                f"passed to this Transform! Got {list(data.keys())}."
+            )
+        
+        mix = data[self.mix_key]
+        data['mix_audio'] = mix.audio_data
+
+        if self.source_key not in data:
+            return data
+
+        _sources = data[self.source_key]
+        source_names = sorted(list(_sources.keys()))
+        
+        source_audio = []
+        for key in source_names:
+            source_audio.append(_sources[key].audio_data)
+        # sources on last axis
+        source_audio = np.stack(source_audio, axis=-1)
+
+        data['source_audio'] = source_audio
         return data
 
 

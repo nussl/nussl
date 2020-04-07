@@ -398,3 +398,30 @@ def test_transforms_index_sources(mix_source_folder):
             item['source_magnitudes'],
             msa_output['source_magnitudes'][..., index, None])
     )
+
+def test_transform_get_audio(mix_source_folder):
+    dataset = nussl.datasets.MixSourceFolder(mix_source_folder)
+    item = dataset[0]
+
+    index = 1
+    tfm = transforms.GetAudio()
+    pytest.raises(TransformException, tfm, {'sources': []})
+
+    ga_output = tfm(item)
+
+    assert np.allclose(
+        ga_output['mix_audio'], item['mix'].audio_data)
+    source_names = sorted(list(item['sources'].keys()))
+
+    for i, key in enumerate(source_names):
+        assert np.allclose(
+            ga_output['source_audio'][..., i], item['sources'][key].audio_data)
+
+    item.pop('sources')
+    item.pop('source_audio')
+
+    ga_output = tfm(item)
+
+    assert np.allclose(
+        ga_output['mix_audio'], item['mix'].audio_data)
+

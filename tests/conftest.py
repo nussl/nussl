@@ -201,6 +201,7 @@ def one_item(scaper_folder):
     )
     tfms = transforms.Compose([
         transforms.PhaseSensitiveSpectrumApproximation(),
+        transforms.GetAudio(),
         transforms.ToSeparationModel()
     ])
     dataset = nussl.datasets.Scaper(
