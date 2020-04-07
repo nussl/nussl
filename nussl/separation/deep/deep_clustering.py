@@ -41,7 +41,7 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             if 'embedding' not in output:
                 raise SeparationException(
                     "This model is not a deep clustering model! "
-                    "Did not find 'estimates' key in output dictionary.")
+                    "Did not find 'embedding' key in output dictionary.")
             embedding = output['embedding']
             # swap back batch and sample dims
             if self.metadata['num_channels'] == 1:
