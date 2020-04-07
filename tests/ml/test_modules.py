@@ -178,6 +178,35 @@ def test_ml_concatenate(one_item):
         output = module(data, data)
         assert output.shape[dim] == 2 * data.shape[dim]
 
+def test_ml_split(one_item):
+    data = one_item['mix_magnitude']
+    dims = range(len(data.shape))
+
+    for dim in dims:
+        split_point = np.random.randint(data.shape[dim])
+        split_sizes = (split_point, data.shape[dim] - split_point)
+        if split_sizes[-1] > 0:
+            module = ml.networks.modules.Split(
+                split_sizes=split_sizes, dim=dim)
+            output = module(data)
+            assert len(output) == len(split_sizes)
+            for i, o in enumerate(output):
+                assert o.shape[dim] == split_sizes[i]
+
+def test_ml_expand():
+    tensor_a = torch.rand(100, 10, 5)
+    tensor_b = torch.rand(100, 10)
+
+    module = ml.networks.modules.Expand()
+    tensor_b = module(tensor_a, tensor_b)
+
+    assert tensor_b.ndim == tensor_a.ndim
+
+    bad_tensor = torch.rand(100, 10, 5, 2)
+
+    pytest.raises(ValueError, module, tensor_a, bad_tensor)
+
+
 def test_ml_recurrent_stack(one_item):
     data = one_item['mix_magnitude']
     num_features = data.shape[2]

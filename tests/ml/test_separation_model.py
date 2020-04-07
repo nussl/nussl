@@ -27,6 +27,19 @@ open_unmix_like_config = builders.build_open_unmix_like(
     embedding_size=20, embedding_activation=['sigmoid', 'unit_norm'],
 )
 
+end_to_end_real_config = builders.build_recurrent_end_to_end(
+    512, 512, 128, 'sqrt_hann', 50, 2, 
+   True, 0.3, 2, 'softmax', num_audio_channels=1, 
+   mask_complex=False, rnn_type='lstm', 
+   mix_key='mix_audio')
+
+end_to_end_complex_config = builders.build_recurrent_end_to_end(
+    512, 512, 128, 'sqrt_hann', 50, 2, 
+   True, 0.3, 2, 'softmax', num_audio_channels=1, 
+   mask_complex=True, rnn_type='lstm', 
+   mix_key='mix_audio')
+
+
 gmm_unfold_config = copy.deepcopy(dpcl_config)
 gmm_unfold_config['modules']['mask'] = {
     'class': 'GaussianMixtureTorch',
@@ -56,6 +69,23 @@ add_torch_module_config['connections'].extend(
     [['mask', ['embedding']]]
 )
 add_torch_module_config['output'].append('mask')
+
+split_config = copy.deepcopy(gmm_unfold_config)
+split_config['modules']['split'] = {
+    'class': 'Split',
+    'args': {
+        'split_sizes': (100, 157),
+        'dim': 2
+    }
+}
+
+split_config['connections'].extend([
+    ['split', ['estimates',]],
+])
+
+split_config['output'].append('split:0')
+split_config['output'].append('split:1')
+
 
 class MyModule(nn.Module):
     def __init__(self):
@@ -130,6 +160,26 @@ def test_separation_model_dpcl(one_item):
             assert (
                 output['embedding'].shape == (
                     one_item['mix_magnitude'].shape + (20,)))
+
+def test_separation_end_to_end(one_item):
+    # dpcl network
+    for c in [end_to_end_real_config, end_to_end_complex_config]:
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
+            with open(tmp.name, 'w') as f:
+                json.dump(c, f)
+            configs = [
+                c, 
+                tmp.name, 
+                json.dumps(c)
+            ]
+
+            for config in configs:    
+                model = SeparationModel(config)
+                output = model(one_item)
+
+                assert (
+                    output['audio'].shape == one_item['source_audio'].shape
+                )
 
 def test_separation_model_chimera(one_item):
     n_features = one_item['mix_magnitude'].shape[2]
@@ -211,6 +261,37 @@ def test_separation_model_gmm_unfold(one_item):
             assert (
                 output['embedding'].shape == (
                     one_item['mix_magnitude'].shape + (20,)))
+
+def test_separation_model_split(one_item):
+    n_features = one_item['mix_magnitude'].shape[2]
+
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
+        with open(tmp.name, 'w') as f:
+            json.dump(split_config, f)
+        configs = [split_config, tmp.name, json.dumps(split_config)]
+
+        for config in configs:    
+            model = SeparationModel(config)
+            output = model(one_item)
+
+            assert (
+                output['estimates'].shape == (
+                    one_item['mix_magnitude'].shape + (2,))
+            )
+            assert  (
+                torch.allclose(
+                    output['estimates'].sum(dim=-1), 
+                    one_item['mix_magnitude']))
+
+            assert (
+                output['embedding'].shape == (
+                    one_item['mix_magnitude'].shape + (20,)))
+
+            assert (
+                output['split:0'].shape[2] == 100)
+            assert (
+                output['split:1'].shape[2] == 157)
+
 
 def test_separation_model_add_torch(one_item):
     n_features = one_item['mix_magnitude'].shape[2]

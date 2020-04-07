@@ -27,7 +27,7 @@ class SISDRLoss(nn.Module):
         scaling (bool, optional): Whether to use scale-invariant (True) or
           scale-dependent SDR. Defaults to True.
     """
-    DEFAULT_KEYS = {'estimates': 'estimates', 'references': 'references'}
+    DEFAULT_KEYS = {'audio': 'estimates', 'source_audio': 'references'}
 
     def __init__(self, scaling=True, reduction='mean'):
         self.scaling = scaling

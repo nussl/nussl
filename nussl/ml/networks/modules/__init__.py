@@ -313,6 +313,49 @@ class Mask(nn.Module):
         representation = representation.unsqueeze(-1).expand_as(mask)
         return mask * representation
 
+class Split(nn.Module):
+    """
+    Splits a piece of data on a specified axis into a tuple of
+    specified splits. Defaults to splitting on the last axis.
+
+    Example:
+    
+    .. code-block:: python
+
+        data = torch.randn(100, 10)
+        split = Split((3, 7), dim=-1)
+        split1, split2 = split(data)
+
+        split1 # has shape (100, 3)
+        split2 # has shape (100, 7)
+
+    """
+    def __init__(self, split_sizes, dim=-1):
+        self.dim = dim
+        self.split_sizes = split_sizes
+        super().__init__()
+
+    def forward(self, data):
+        data = torch.split_with_sizes(
+            data, self.split_sizes, dim=self.dim)
+        return data
+
+class Expand(nn.Module):
+    """
+    Expand a seconod tensor to match the dimensions of the first
+    tensor, if possible. Just wraps `.expand_as`. Expands on
+    the last axis.
+    """
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, tensor_a, tensor_b):
+        if tensor_a.ndim < tensor_b.ndim:
+            raise ValueError("tensor_a should have more dimensions than tensor b!")
+        for _ in range(tensor_a.ndim - tensor_b.ndim):
+            tensor_b = tensor_b.unsqueeze(-1)
+        return tensor_b.expand_as(tensor_a)
+
 class Concatenate(nn.Module):
     """
     Concatenates two or more pieces of data together along a 

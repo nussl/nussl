@@ -536,7 +536,7 @@ class GetExcerpt(object):
 
     def __call__(self, data):
         offset, pad_amount = self._get_offset(
-            data, time_frequency_keys[0])
+            data, self.time_frequency_keys[0])
 
         for key in data:
             if key in self.time_frequency_keys:

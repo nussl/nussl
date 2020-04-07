@@ -113,13 +113,21 @@ class SeparationModel(nn.Module):
                 for c in connection[1]:
                     if isinstance(c, dict):
                         for key, val in c.items():
-                            kwargs[key] = output[val] if val in output else data[val]
+                            if val in output:
+                                kwargs[key] = output[val]
+                            elif val in data:
+                                kwargs[key] = data
+                            else:
+                                kwargs[key] = val
                     else:
                         input_data.append(output[c] if c in output else data[c])
             _output = layer(*input_data, **kwargs)
             if isinstance(_output, dict):
                 for k in _output:
                     output[f'{connection[0]}:{k}'] = _output[k]
+            elif isinstance(_output, tuple):
+                for i, val in enumerate(_output):
+                    output[f'{connection[0]}:{i}'] = val
             else:
                 output[connection[0]] = _output
                 

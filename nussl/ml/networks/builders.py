@@ -463,3 +463,137 @@ def build_open_unmix_like(num_features, hidden_size, num_layers,
     }
 
     return config
+
+def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_type, 
+                               hidden_size, num_layers, bidirectional, dropout, 
+                               num_sources, mask_activation, num_audio_channels=1,
+                               mask_complex=False, trainable=False, rnn_type='lstm', 
+                               mix_key='mix_audio'):
+    """
+    Builds a config for a BLSTM-based network that operates on the time-series. 
+    Uses an STFT within the network and can apply the mixture phase to
+    the estimate, or can learn a mask on the phase as well as the magnitude.
+    
+    Args:
+        num_filters (int): Number of learnable filters in the front end network.
+        filter_length (int): Length of the filters.
+        hop_length (int): Hop length between frames.
+        window_type (str): Type of windowing function on apply to each frame.
+        hidden_size (int): Hidden size of the RNN.
+        num_layers (int): Number of layers in the RNN.
+        bidirectional (int): Whether the RNN is bidirectional.
+        dropout (float): Amount of dropout to be used between layers of RNN.
+        num_sources (int): Number of sources to create masks for. 
+        mask_activation (list of str): Activation of the mask ('sigmoid', 'softmax', etc.). 
+          See ``nussl.ml.networks.modules.Embedding``.
+        num_audio_channels (int): Number of audio channels in input (e.g. mono or stereo).
+          Defaults to 1.
+        mask_complex (bool, optional): Whether to also place a mask on the complex part, or
+          whether to just use the mixture phase.
+        trainable (bool, optional): Whether to learn the filters, which start from a 
+          Fourier basis.
+        rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
+        normalization_class (str, optional): Type of normalization to apply, either
+          'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+        mix_key (str, optional): The key to look for in the input dictionary that contains
+          the mixture spectrogram. Defaults to 'mix_magnitude'.
+    
+    Returns:
+        dict: A recurrent end-to-end network configuration that can be passed to
+          SeparationModel.
+    """
+    
+    cutoff = num_filters // 2 + 1
+    num_features = 2 * cutoff if mask_complex else cutoff
+
+    # define the building blocks
+    modules = {
+        mix_key: {},
+        'audio': {
+            'class': 'STFT',
+            'args': {
+                'num_filters': num_filters,
+                'filter_length': filter_length,
+                'hop_length': hop_length,
+                'window_type': window_type,
+                'requires_grad': trainable
+            }
+        },
+        'log_spectrogram': {
+            'class': 'AmplitudeToDB'
+        },
+        'split': {
+            'class': 'Split',
+            'args': {
+                'split_sizes': (cutoff, cutoff),
+                'dim': 2
+            }
+        },
+        'concatenate': {
+            'class': 'Concatenate',
+            'args': {
+                'dim': 2
+            }
+        },
+        'expand': {
+            'class': 'Expand',
+        },
+        'recurrent_stack': {
+            'class': 'RecurrentStack',
+            'args': {
+                'num_features': num_features,
+                'hidden_size': hidden_size,
+                'num_layers': num_layers,
+                'bidirectional': bidirectional,
+                'dropout': dropout,
+                'rnn_type': rnn_type
+            }
+        },
+        'mask': {
+            'class': 'Embedding',
+            'args': {
+                'num_features': num_features,
+                'hidden_size': hidden_size * 2 if bidirectional else hidden_size,
+                'embedding_size': num_sources,
+                'activation': mask_activation,
+                'num_audio_channels': num_audio_channels
+            }
+        },
+        'estimates': {
+            'class': 'Mask',
+        },
+    }
+    
+    # define the topology
+    if not mask_complex:
+        connections = [
+            ['audio', [mix_key, {'direction': 'transform'}]],
+            ['split', ['audio',]],
+            ['log_spectrogram', ['split:0', ]],
+            ['recurrent_stack', ['log_spectrogram', ]],
+            ['mask', ['recurrent_stack', ]],
+            ['estimates', ['mask', 'split:0']],
+            ['expand', ['mask', 'split:1']],
+            ['concatenate', ['estimates', 'expand']],
+            ['audio', ['concatenate', {'direction': 'inverse'}]]
+        ]
+    else:
+        connections = [
+            ['audio', [mix_key, {'direction': 'transform'}]],
+            ['recurrent_stack', ['audio', ]],
+            ['mask', ['recurrent_stack', ]],
+            ['estimates', ['mask', 'audio']],
+            ['audio', ['estimates', {'direction': 'inverse'}]]
+        ]
+
+    # define the outputs
+    output = ['audio', 'mask']
+
+    # put it together
+    config = {
+        'modules': modules,
+        'connections': connections,
+        'output': output
+    }
+
+    return config
