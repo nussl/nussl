@@ -331,6 +331,64 @@ class Scaper(BaseDataset):
         }
         return output
 
+class FUSS(Scaper):
+    """
+    The Free Universal Sound Separation (FUSS) Dataset is a database of arbitrary 
+    sound mixtures and source-level references, for use in experiments on 
+    arbitrary sound separation. 
+
+    This is the official sound separation data for the DCASE2020 Challenge Task 4: 
+    Sound Event Detection and Separation in Domestic Environments.
+
+    This is a hook for reading in this dataset, and making sure that the mix and 
+    source paths are massaged to be relative paths.
+
+    References:
+
+    [1]  Scott Wisdom, Hakan Erdogan, Daniel P. W. Ellis, Romain Serizel, 
+    Nicolas Turpault, Eduardo Fonseca, Justin Salamon, Prem Seetharaman, 
+    John R. Hershey, "What's All the FUSS About Free Universal Sound Separation 
+    Data?", 2020, in preparation.
+
+    [2] Eduardo Fonseca, Jordi Pons, Xavier Favory, Frederic Font Corbera, 
+    Dmitry Bogdanov, Andrés Ferraro, Sergio Oramas, Alastair Porter, and 
+    Xavier Serra. "Freesound Datasets: A Platform for the Creation of Open Audio 
+    Datasets." International Society for Music Information Retrieval Conference 
+    (ISMIR), pp. 486–493. Suzhou, China, 2017.
+    
+    Args:
+        root (str): Folder where the FUSS data is. Either points to ssdata or 
+          ssdata_reverb.
+        split (str): Either the ``train``, ``validation``, or ``eval`` split. 
+        kwargs: Additional keyword arguments to BaseDataset.
+    """
+    def __init__(self, root, split='train', **kwargs):
+        if split not in ['train', 'validation', 'eval']:
+            raise DataSetException(
+                f"split '{split}' not one of the accepted splits: "
+                f"'train', 'validation', 'eval'.")
+        
+        folder = os.path.join(root, split)
+        super().__init__(folder, sample_rate=16000, strict_sample_rate=True, 
+                         **kwargs)
+
+    def _get_info_from_item(self, item):
+        path_to_item = os.path.join(self.folder, item)
+        item_base_name = os.path.splitext(item)[0]
+
+        jam = jams.load(path_to_item)
+        ann = jam.annotations.search(namespace='scaper')[0]
+        mix_path = ann.sandbox.scaper['soundscape_audio_path']
+        source_paths = ann.sandbox.scaper['isolated_events_audio_path']
+
+        mix_path = os.path.join(
+            self.folder, item_base_name + mix_path.split(item_base_name)[-1])
+        for i, source_path in enumerate(source_paths):
+            source_paths[i] = os.path.join(
+                self.folder, item_base_name + source_path.split(item_base_name)[-1])
+
+        return jam, ann, mix_path, source_paths
+
 
 class WHAM(MixSourceFolder):
     """

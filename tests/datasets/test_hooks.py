@@ -6,7 +6,7 @@ import numpy as np
 from nussl.datasets.base_dataset import DataSetException
 from nussl.datasets import transforms
 import tempfile
-
+import shutil
 
 def test_dataset_hook_musdb18(musdb_tracks):
     dataset = nussl.datasets.MUSDB18(
@@ -124,3 +124,13 @@ def test_dataset_hook_wham(benchmark_audio):
 
         pytest.raises(DataSetException, nussl.datasets.WHAM,
                       tmpdir, sample_rate=44100)
+
+def test_dataset_hook_fuss(scaper_folder):
+    pytest.raises(DataSetException, nussl.datasets.FUSS, 'folder', 
+        split='bad split')
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        train_folder = os.path.join(tmpdir, 'train')
+        shutil.copytree(scaper_folder, train_folder)
+
+        fuss = nussl.datasets.FUSS(tmpdir)
