@@ -93,6 +93,6 @@ class DeepMixin:
                 data[key] = data[key].unsqueeze(0).to(self.device).float()
                 if self.metadata['num_channels'] == 1:
                     # then each channel is processed indep
-                    data[key] = data[key].transpose(0, -1)
+                    data[key] = data[key].transpose(0, self.channel_dim)
         self.input_data = data
         return self.input_data

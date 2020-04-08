@@ -24,6 +24,8 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
             self.load_model(model_path, device=device)
         super().__init__(input_audio_signal, **kwargs)
         self.model_output = None
+        # audio channel dimension in a mask estimation model
+        self.channel_dim = -1
 
     def forward(self):
         input_data = self._get_input_data_for_model()

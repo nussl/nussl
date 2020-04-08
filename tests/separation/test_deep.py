@@ -159,3 +159,86 @@ def test_separation_deep_mask_estimation(overfit_model):
 
         dme.model.output_keys = []
         pytest.raises(SeparationException, dme.run)
+
+
+@pytest.fixture(scope="module")
+def overfit_audio_model(scaper_folder):
+    nussl.utils.seed(0)
+    tfms = datasets.transforms.Compose([
+        datasets.transforms.GetAudio(),
+        datasets.transforms.ToSeparationModel(),
+        datasets.transforms.GetExcerpt(
+         64000, time_dim=1, tf_keys=['mix_audio', 'source_audio'])
+    ])
+    dataset = datasets.Scaper(
+        scaper_folder, transform=tfms)
+    dataset.items = [dataset.items[5]]
+
+    dataloader = torch.utils.data.DataLoader(
+        dataset, batch_size=1)
+
+    config = ml.networks.builders.build_recurrent_end_to_end(
+        512, 512, 128, 'sqrt_hann', 50, 2, 
+        True, 0.3, 2, 'softmax', num_audio_channels=1, 
+        mask_complex=True, rnn_type='lstm', 
+        mix_key='mix_audio')
+
+    model = ml.SeparationModel(config)
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = model.to(device)
+
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+
+    loss_dictionary = {
+        'PermutationInvariantLoss': {
+            'args': ['SISDRLoss'],
+            'weight': 1.0,
+            'keys': {'audio': 'estimates', 'source_audio': 'targets'}
+        }
+    }
+
+    train_closure = ml.train.closures.TrainClosure(
+        loss_dictionary, optimizer, model)
+    
+    trainer, _ = ml.train.create_train_and_validation_engines(
+        train_closure, device=device
+    )
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        _dir = os.path.join(fix_dir, 'dae') if fix_dir else tmpdir
+
+        ml.train.add_stdout_handler(trainer)
+        ml.train.add_validate_and_checkpoint(
+            _dir, model, optimizer, dataset, trainer)
+        ml.train.add_progress_bar_handler(trainer)
+
+        trainer.run(dataloader, max_epochs=1, epoch_length=EPOCH_LENGTH)
+
+        model_path = os.path.join(
+            trainer.state.output_folder, 'checkpoints', 'best.model.pth')
+        yield model_path, dataset.process_item(dataset.items[0])
+
+
+def test_separation_deep_audio_estimation(overfit_audio_model):
+    model_path, item = overfit_audio_model
+    dae = separation.deep.DeepAudioEstimation(item['mix'], model_path)
+
+    item['mix'].write_audio_to_file('tests/local/dae_mix.wav')
+    sources = item['sources']
+    estimates = dae()
+    for i, e in enumerate(estimates):
+        e.write_audio_to_file(f'tests/local/dae_overfit{i}.wav')
+
+    evaluator = evaluation.BSSEvalScale(
+        list(sources.values()), estimates, compute_permutation=True)
+    scores = evaluator.evaluate()
+
+    for key in evaluator.source_labels:
+        for metric in ['SI-SDR', 'SI-SIR']:
+            _score = scores[key][metric]
+            for val in _score:
+                assert val > SDR_CUTOFF
+
+    dae.model.output_keys = []
+    pytest.raises(SeparationException, dae.run)

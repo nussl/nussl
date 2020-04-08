@@ -303,6 +303,8 @@ class Mask(nn.Module):
     Representation gets unsqueezed to (nb, nt, nf, 1). Multiplying with the mask
     broadcasts, resulting in (nb, nt, nf, ns) output corresponding to each separated
     source from the representation.
+
+    Detaches the representation before multiplying the mask element-wise.
     """
 
     def __init__(self):
@@ -311,7 +313,7 @@ class Mask(nn.Module):
     def forward(self, mask, representation):
         # add a source dimension
         representation = representation.unsqueeze(-1).expand_as(mask)
-        return mask * representation
+        return mask * representation.detach()
 
 class Split(nn.Module):
     """

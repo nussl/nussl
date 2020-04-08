@@ -468,7 +468,7 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
                                hidden_size, num_layers, bidirectional, dropout, 
                                num_sources, mask_activation, num_audio_channels=1,
                                mask_complex=False, trainable=False, rnn_type='lstm', 
-                               mix_key='mix_audio'):
+                               mix_key='mix_audio', normalization_class='BatchNorm'):
     """
     Builds a config for a BLSTM-based network that operates on the time-series. 
     Uses an STFT within the network and can apply the mixture phase to
@@ -522,6 +522,9 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
         'log_spectrogram': {
             'class': 'AmplitudeToDB'
         },
+        'normalization': {
+            'class': normalization_class
+        },
         'split': {
             'class': 'Split',
             'args': {
@@ -570,7 +573,8 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
             ['audio', [mix_key, {'direction': 'transform'}]],
             ['split', ['audio',]],
             ['log_spectrogram', ['split:0', ]],
-            ['recurrent_stack', ['log_spectrogram', ]],
+            ['normalization', ['log_spectrogram']],
+            ['recurrent_stack', ['normalization', ]],
             ['mask', ['recurrent_stack', ]],
             ['estimates', ['mask', 'split:0']],
             ['expand', ['mask', 'split:1']],
@@ -580,7 +584,8 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
     else:
         connections = [
             ['audio', [mix_key, {'direction': 'transform'}]],
-            ['recurrent_stack', ['audio', ]],
+            ['normalization', ['audio']],
+            ['recurrent_stack', ['normalization', ]],
             ['mask', ['recurrent_stack', ]],
             ['estimates', ['mask', 'audio']],
             ['audio', ['estimates', {'direction': 'inverse'}]]

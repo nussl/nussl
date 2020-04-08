@@ -31,8 +31,12 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
                  device='cpu', **kwargs):
         if model_path is not None:
             self.load_model(model_path, device=device)
-
+        # audio channel dimension in a dpcl model
+        self.channel_dim = -1
         super().__init__(input_audio_signal, num_sources, **kwargs)
+
+    def forward(self):
+        return self.extract_features()
 
     def extract_features(self):
         input_data = self._get_input_data_for_model()

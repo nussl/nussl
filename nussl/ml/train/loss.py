@@ -35,16 +35,20 @@ class SISDRLoss(nn.Module):
         super().__init__()
 
     def forward(self, estimates, references):
+        _shape = references.shape
+        references = references.reshape(-1, _shape[-2], _shape[-1])
+        estimates = estimates.reshape(-1, _shape[-2], _shape[-1])
+
         references_projection = references.transpose(2, 1) @ references
 
         references_projection = torch.diagonal(
-            references_projection, dim1=-2, dim2=-1)
+            references_projection, dim1=-2, dim2=-1) + 1e-10
     
         references_on_estimates = torch.diagonal(
-            references.transpose(2, 1) @ estimates, dim1=-2, dim2=-1)
+            references.transpose(2, 1) @ estimates, dim1=-2, dim2=-1) + 1e-10
 
         scale = (
-            (references_on_estimates / references_projection).unsqueeze(1)
+            (references_on_estimates / references_projection).unsqueeze(1).detach()
             if self.scaling else 1)
 
         e_true = scale * references

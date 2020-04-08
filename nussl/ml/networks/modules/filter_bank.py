@@ -189,6 +189,7 @@ class FilterBank(nn.Module):
             data = data.reshape(-1, *data.shape[2:])
         
         data = self.apply_filter(data, **kwargs)
+
         data *= self.window.sum()
         data = data * self.window
         
@@ -273,7 +274,7 @@ class STFT(FilterBank):
                 real_part ** 2 + imag_part ** 2)
             phase = torch.atan2(imag_part, real_part)      
             data = torch.cat([magnitude, phase], dim=2)
-            
+
         elif self.direction == 'inverse':
             cutoff = 1 + self.filter_length // 2
             magnitude = data[..., :cutoff, :]
