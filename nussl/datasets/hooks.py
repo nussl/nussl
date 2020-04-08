@@ -295,12 +295,15 @@ class Scaper(BaseDataset):
         ])
         return items
 
-    def process_item(self, item):
+    def _get_info_from_item(self, item):
         jam = jams.load(os.path.join(self.folder, item))
         ann = jam.annotations.search(namespace='scaper')[0]
         mix_path = ann.sandbox.scaper['soundscape_audio_path']
         source_paths = ann.sandbox.scaper['isolated_events_audio_path']
+        return jam, ann, mix_path, source_paths
 
+    def process_item(self, item):
+        jam, ann, mix_path, source_paths = self._get_info_from_item(item)
         if not source_paths:
             raise DataSetException(
                 "No paths to isolated events found! Did you generate "
