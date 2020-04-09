@@ -14,7 +14,8 @@ from .. import utils
 
 # This is for when you're running multiple
 # training threads
-numcodecs.blosc.use_threads = False
+if hasattr(numcodecs, 'blosc'):
+    numcodecs.blosc.use_threads = False
 
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
