@@ -116,7 +116,7 @@ class Closure(object):
                     if not isinstance(val[val_key], dict):
                         raise ClosureException("kwargs must be a dict")
 
-        return loss_dictionary.copy()
+        return loss_dictionary
 
     def __call__(self, engine, data):
         raise NotImplementedError()
