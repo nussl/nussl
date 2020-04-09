@@ -117,6 +117,8 @@ def test_base_closure():
                   )
 
     closure = ml.train.closures.Closure(loss_dictionary)
+    # doing it twice should work
+    closure = ml.train.closures.Closure(loss_dictionary)
     loss_b = closure.compute_loss(output, target)
     weighted_sum = 0
 
@@ -146,7 +148,7 @@ def test_base_closure():
 
 def test_multitask_combination():
     nussl.utils.seed(0)
-    
+
     n_batch = 40
     n_time = 400
     n_freq = 129
