@@ -167,10 +167,10 @@ class WhitenedKMeansLoss(nn.Module):
         # where o denotes element-wise product
         # this is the trace trick
         # http://andreweckford.blogspot.com/2009/09/trace-tricks.html
-        trace = (ivTv_vTy * vTy_iyTy).sum(dim=[-1, -2])
-        D = embedding_size + num_sources
+        trace = (ivTv_vTy * vTy_iyTy).sum()
+        D = (embedding_size + num_sources) * batch_size
         loss = D - 2 * trace
-        return loss.mean()
+        return loss / batch_size
 
 class PermutationInvariantLoss(nn.Module):
     """
