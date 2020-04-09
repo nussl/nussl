@@ -183,8 +183,8 @@ class TrainClosure(Closure):
         model (SeparationModel): The model to be trained.
     """
 
-    def __init__(self, loss_dictionary, optimizer, model):
-        super().__init__(loss_dictionary)
+    def __init__(self, loss_dictionary, optimizer, model, *args, **kwargs):
+        super().__init__(loss_dictionary, *args, **kwargs)
         self.optimizer = optimizer
         self.model = model
 
@@ -213,8 +213,8 @@ class ValidationClosure(Closure):
         model (SeparationModel): The model to be validated.
     """
 
-    def __init__(self, loss_dictionary, model):
-        super().__init__(loss_dictionary)
+    def __init__(self, loss_dictionary, model, *args, **kwargs):
+        super().__init__(loss_dictionary, *args, **kwargs)
         self.model = model
 
     def __call__(self, engine, data):
