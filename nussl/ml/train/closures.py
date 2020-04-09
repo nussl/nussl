@@ -115,7 +115,7 @@ class Closure(object):
                 elif val_key == 'kwargs':
                     if not isinstance(val[val_key], dict):
                         raise ClosureException("kwargs must be a dict")
-
+        
         return loss_dictionary
 
     def __call__(self, engine, data):

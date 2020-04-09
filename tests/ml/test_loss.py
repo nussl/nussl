@@ -43,6 +43,27 @@ def test_deep_clustering_loss():
     assert _loss_b > _loss_a
     assert _loss_b <= 1
 
+def test_whitened_kmeans_loss():
+    n_batch = 40
+    n_time = 400
+    n_freq = 129
+    n_sources = 4
+    n_embedding = 20
+
+    embedding = torch.rand(n_batch, n_time, n_freq, n_embedding)
+    embedding = torch.nn.functional.normalize(
+        embedding, dim=-1, p=2)
+
+    assignments = torch.rand(n_batch, n_time, n_freq, n_sources) > .5
+    assignments = assignments.float()
+
+    weights = torch.ones(n_batch, n_time, n_freq)
+
+    LossWKM = ml.train.loss.WhitenedKMeansLoss()
+    _loss_a = LossWKM(assignments, assignments, weights).item()
+    _loss_b = LossWKM(embedding, assignments, weights).item()
+    assert _loss_b > _loss_a
+
 
 def test_permutation_invariant_loss_tf():
     n_batch = 10
