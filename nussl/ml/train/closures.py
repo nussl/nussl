@@ -49,18 +49,31 @@ class Closure(object):
 
     Args:
         loss_dictionary (dict): Dictionary of losses described above.
+        combination_approach (str): How to combine losses, if there are multiple
+         losses. The default is that the losses will be combined via a weighted
+         sum ('combine_by_sum'). Can also do 'combine_by_multiply'. Defaults to
+         'combine_by_sum'.
+        args: Positional arguments to ``combination_approach``.
+        kwargs: Keyword arguments to ``combination_approach``.
 
     See also:
         ml.register_loss to register your loss functions with this closure.
-
     """
 
-    def __init__(self, loss_dictionary):
+    def __init__(self, loss_dictionary, combination_approach='combine_by_sum', 
+                 *args, **kwargs):
         loss_dictionary = self._validate_loss_dictionary(loss_dictionary)
+
+        self.combination_func = getattr(self, combination_approach)
+        self.args = args
+        self.kwargs = kwargs
 
         self.losses = []
         for key, val in loss_dictionary.items():
-            loss_class = getattr(loss, key)
+            if 'class' in val:
+                loss_class = getattr(loss, val['class'])
+            else:
+                loss_class = getattr(loss, key)
             weight = 1 if 'weight' not in val else val['weight']
             keys = loss_class.DEFAULT_KEYS if 'keys' not in val else val['keys']
             args = [] if 'args' not in val else val['args']
@@ -79,21 +92,22 @@ class Closure(object):
                 "class and arguments for each loss function! ")
 
         for key, val in loss_dictionary.items():
-            if key not in dir(loss):
+            _loss = val['class'] if 'class' in val else key
+            if _loss not in dir(loss):
                 raise ClosureException(
-                    f"Loss function {key} not found in loss which has {dir(loss)}")
+                    f"Loss function {_loss} not found in loss which has {dir(loss)}")
 
             if not isinstance(val, dict):
                 raise ClosureException(
                     "Each key in loss dictionary must point to a dict!")
 
             for val_key in val:
-                if val_key not in ['weight', 'keys', 'args', 'kwargs']:
+                if val_key not in ['weight', 'keys', 'args', 'kwargs', 'class']:
                     raise ClosureException(
                         f"{key} in loss_dictionary not in ['weight', 'args', 'kwargs'")
 
                 elif val_key == 'weight':
-                    if not isinstance(val[val_key], float) and not isinstance(val[val_key], int):
+                    if not isinstance(val[val_key], (float, int)) and not torch.is_tensor(val[val_key]):
                         raise ClosureException(f"weight can only be an int or a float")
 
                 elif val_key == 'args':
@@ -104,22 +118,59 @@ class Closure(object):
                     if not isinstance(val[val_key], dict):
                         raise ClosureException("kwargs must be a dict")
 
-        return copy.deepcopy(loss_dictionary)
+        return loss_dictionary.copy()
 
     def __call__(self, engine, data):
         raise NotImplementedError()
 
+    def combine_by_multitask(self, loss_output):
+        """
+        Implements a multitask learning objective [1] where each loss
+        is weighted by a learned parameter with the following
+        function:
+
+        combined_loss = \sum_i exp(-weight_i) * loss_i + weight_i
+
+        where i indexes each loss. The weights come from the loss 
+        dictionary and can point to nn.Parameter teensors that get 
+        learned jointly with the model.
+
+        References:
+
+        [1] Kendall, Alex, Yarin Gal, and Roberto Cipolla. 
+            "Multi-task learning using uncertainty to weigh losses 
+            for scene geometry and semantics." Proceedings of the 
+            IEEE conference on computer vision and pattern recognition. 2018.
+        """
+        combined_loss = 0
+        for _, weight, _, name in self.losses:
+            sigma = torch.exp(-weight)
+            combined_loss += sigma * loss_output[name] + weight
+        return combined_loss
+
+    def combine_by_multiply(self, loss_output):
+        combined_loss = 1
+        for _, weight, _, name in self.losses:
+            combined_loss *= weight * loss_output[name]
+        return combined_loss
+
+    def combine_by_sum(self, loss_output):
+        combined_loss = 0
+        for _, weight, _, name in self.losses:
+            combined_loss += weight * loss_output[name]
+        return combined_loss
+
     def compute_loss(self, output, target):
         loss_output = {}
         output.update(target)
-        loss_output['loss'] = 0
 
         for loss_obj, weight, keys, name in self.losses:
             kwargs = {keys[k]: output[k] for k in keys}
             loss_output[name] = loss_obj(**kwargs)
-            loss_output['loss'] += weight * loss_output[name]
+        
+        loss_output['loss'] = self.combination_func(
+            loss_output, *self.args, **self.kwargs)
         return loss_output
-
 
 class TrainClosure(Closure):
     """

@@ -3,7 +3,6 @@ from itertools import permutations, combinations
 import torch
 import torch.nn as nn
 
-
 class L1Loss(nn.L1Loss):
     DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
 

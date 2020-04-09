@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from nussl.ml.train.closures import ClosureException
 import pytest
+import nussl
 
 
 def test_base_closure():
@@ -41,6 +42,18 @@ def test_base_closure():
             'weight': .8
         }
     }
+
+    closure = ml.train.closures.Closure(
+        loss_dictionary, combination_approach='combine_by_multiply')
+    loss_a = closure.compute_loss(output, target)
+    weighted_product = 1
+
+    for key in loss_dictionary:
+        assert key in loss_a
+        weighted_product *= loss_a[key].item() * loss_dictionary[key]['weight']
+
+    assert 'loss' in loss_a
+    assert np.allclose(loss_a['loss'].item(), weighted_product, atol=1e-4)
 
     closure = ml.train.closures.Closure(loss_dictionary)
     loss_a = closure.compute_loss(output, target)
@@ -131,6 +144,68 @@ def test_base_closure():
     closure = ml.train.closures.Closure(custom_loss_dictionary)
     assert isinstance(closure.losses[0][0], CustomLoss)
 
+def test_multitask_combination():
+    nussl.utils.seed(0)
+    
+    n_batch = 40
+    n_time = 400
+    n_freq = 129
+    n_sources = 4
+
+    output = {
+        'estimates_a': 3 * torch.rand(n_batch, n_time, n_freq, n_sources),
+        'estimates_b': .1 * torch.rand(n_batch, n_time, n_freq, n_sources)
+    }
+
+    target = {
+        'source_magnitudes_a': 3 * torch.rand(n_batch, n_time, n_freq, n_sources),
+        'source_magnitudes_b': .1 * torch.rand(n_batch, n_time, n_freq, n_sources)
+    }
+
+    weights = nn.ParameterList([
+        nn.Parameter(torch.zeros(1)) for i in range(2)
+    ])
+    optimizer = optim.Adam(weights.parameters(), lr=1e-1)
+
+    loss_dictionary = {
+        'BigLoss': {
+            'class': 'L1Loss',
+            'weight': weights[0],
+            'keys': {
+                'estimates_a': 'input',
+                'source_magnitudes_a': 'target',
+            }
+        },
+        'SmallLoss': {
+            'class': 'L1Loss',
+            'weight': weights[1],
+            'keys': {
+                'estimates_b': 'input',
+                'source_magnitudes_b': 'target',
+            }
+        }
+    }
+
+    closure = ml.train.closures.Closure(
+        loss_dictionary, combination_approach='combine_by_multitask')
+    loss_a = closure.compute_loss(output, target)
+
+    for i in range(1000):
+        optimizer.zero_grad()
+        loss = closure.compute_loss(output, target)
+        loss['loss'].backward()
+        optimizer.step()
+
+    
+    var = []
+    for p in weights.parameters():
+        var.append(np.exp(-p.item()) ** 1)
+    assert (
+        var[0] * loss['BigLoss'] -
+        var[1] * loss['SmallLoss']
+    ) < 1e-2
+    
+    
 
 def test_train_and_validate_closure():
     n_batch = 5
