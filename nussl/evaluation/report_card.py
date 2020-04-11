@@ -5,6 +5,9 @@ import numpy as np
 import os
 import textwrap
 
+def truncate(values, decs=2):
+    return np.trunc(values*10**decs)/(10**decs)
+
 def aggregate_score_files(json_files, aggregator=np.nanmedian):
     """
     Takes a list of json files output by an Evaluation method in nussl
@@ -61,7 +64,7 @@ def aggregate_score_files(json_files, aggregator=np.nanmedian):
     
     return df
 
-def _get_mean_and_std(df):
+def _get_mean_and_std(df, decs=2):
     """
     Gets the mean and standard deviation of each metric in the pandas
     DataFrame and returns it as a list of strings.
@@ -71,14 +74,20 @@ def _get_mean_and_std(df):
     metrics = [x for x in list(df.columns) if x not in excluded_columns]
     metrics.insert(0, '#')
 
-    means = [f'{m:5.1f}' for m in np.array(df.mean()).T]
-    stds = [f'{s:4.1f}' for s in np.array(df.std()).T]
+    means = [
+        f'{truncate(m, decs=decs):{4+decs}.{decs}f}' 
+        for m in np.array(df.mean()).T
+    ]
+    stds = [
+        f'{truncate(s, decs=decs):{3+decs}.{decs}f}' 
+        for s in np.array(df.std()).T
+    ]
     data = [f'{m} +/- {s}' for m, s in zip(means, stds)]
     data.insert(0, df.shape[0])
 
     return metrics, data
 
-def _get_medians(df):
+def _get_medians(df, decs=2):
     """
     Gets the median of each metric in the pandas
     DataFrame and returns it as a list of strings.
@@ -88,7 +97,10 @@ def _get_medians(df):
     metrics = [x for x in list(df.columns) if x not in excluded_columns]
     metrics.insert(0, '#')
 
-    data = [f'{m:5.1f}' for m in np.array(df.median()).T]
+    data = [
+        f'{truncate(m, decs=decs):{4+decs}.{decs}f}' 
+        for m in np.array(df.median()).T
+    ]
     data.insert(0, df.shape[0])
     return metrics, data
 
@@ -100,11 +112,11 @@ def _format_title(title, length, marker=" "):
         border = border + marker
     return border
 
-def _get_report_card(df, func, report_each_source=True):
+def _get_report_card(df, func, report_each_source=True, decs=2):
     """
     Gets a report card for a DataFrame using a specific function.
     """
-    labels, data = func(df)
+    labels, data = func(df, decs=decs)
 
     data.insert(0, 'OVERALL')
     data = [data]
@@ -112,7 +124,7 @@ def _get_report_card(df, func, report_each_source=True):
     if report_each_source:
         for name in np.unique(df['source']):
             _df = df[df['source'] == name]
-            _, _data = func(_df)
+            _, _data = func(_df, decs=decs)
             _data.insert(0, name.upper())
             data.append(_data)
     
@@ -134,49 +146,71 @@ def _get_report_card(df, func, report_each_source=True):
 
     return report_card
 
-def report_card(df, notes=None, report_each_source=True):
+def report_card(df, notes=None, report_each_source=True, decs=2):
     """
     Given a Pandas dataframe, usually the output of ``aggregate_score_files``,
     returns a string that looks like this::
 
     .. code-block:: none
                                                       
-                            MEAN +/- STD OF METRICS                      
-                                                                        
-        ┌─────────┬─────────────────┬─────────────────┬──────────────────┐
-        │         │       SAR       │       SDR       │       SIR        │
-        ╞═════════╪═════════════════╪═════════════════╪══════════════════╡
-        │ OVERALL │ 7.630 +/- 2.769 │ 5.298 +/- 2.955 │ 10.322 +/- 4.714 │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │  BASS   │ 7.060 +/- 2.501 │ 4.665 +/- 3.351 │ 9.323 +/- 5.132  │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │  DRUMS  │ 8.571 +/- 2.026 │ 6.487 +/- 2.472 │ 11.448 +/- 4.018 │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │  OTHER  │ 7.296 +/- 3.439 │ 3.906 +/- 2.041 │ 7.859 +/- 3.606  │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │ VOCALS  │ 7.594 +/- 2.756 │ 6.133 +/- 3.067 │ 12.657 +/- 4.549 │
-        └─────────┴─────────────────┴─────────────────┴──────────────────┘
-                                                                        
-                                MEDIAN OF METRICS                         
-                                                                        
-        ┌─────────┬─────────────────┬─────────────────┬──────────────────┐
-        │         │       SAR       │       SDR       │       SIR        │
-        ╞═════════╪═════════════════╪═════════════════╪══════════════════╡
-        │ OVERALL │      7.437      │      5.201      │      10.274      │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │  BASS   │      6.940      │      4.448      │      9.450       │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │  DRUMS  │      8.255      │      6.409      │      11.144      │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │  OTHER  │      6.819      │      4.600      │      8.634       │
-        ├─────────┼─────────────────┼─────────────────┼──────────────────┤
-        │ VOCALS  │      7.934      │      6.657      │      14.270      │
-        └─────────┴─────────────────┴─────────────────┴──────────────────┘
+                                                                           
+                            MEAN +/- STD OF METRICS                       
+                                                                            
+        ┌─────────┬──────────────────┬──────────────────┬──────────────────┐
+        │ METRIC  │     OVERALL      │        S1        │        S2        │
+        ╞═════════╪══════════════════╪══════════════════╪══════════════════╡
+        │ #       │       6000       │       3000       │       3000       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SDR  │   11.2 +/-  3.8  │   12.5 +/-  3.5  │    9.8 +/-  3.5  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SIR  │   22.7 +/-  5.4  │   22.9 +/-  5.0  │   22.6 +/-  5.7  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SAR  │   11.6 +/-  3.6  │   13.0 +/-  3.3  │   10.1 +/-  3.3  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SD-SDR  │   10.8 +/-  4.0  │   12.2 +/-  3.8  │    9.3 +/-  3.7  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SNR     │   11.6 +/-  3.3  │   12.9 +/-  3.1  │   10.3 +/-  3.0  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SRR     │   22.8 +/-  6.5  │   25.5 +/-  6.3  │   20.0 +/-  5.6  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SDRi │   11.2 +/-  3.7  │   10.0 +/-  3.4  │   12.3 +/-  3.6  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SD-SDRi │   10.8 +/-  3.8  │    9.7 +/-  3.6  │   11.8 +/-  3.7  │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SNRi    │   11.6 +/-  3.3  │   10.3 +/-  3.0  │   12.9 +/-  3.1  │
+        └─────────┴──────────────────┴──────────────────┴──────────────────┘
+                                                                            
+                                MEDIAN OF METRICS                          
+                                                                            
+        ┌─────────┬──────────────────┬──────────────────┬──────────────────┐
+        │ METRIC  │     OVERALL      │        S1        │        S2        │
+        ╞═════════╪══════════════════╪══════════════════╪══════════════════╡
+        │ #       │       6000       │       3000       │       3000       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SDR  │       11.6       │       13.1       │       10.4       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SIR  │       23.6       │       23.6       │       23.6       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SAR  │       12.0       │       13.5       │       10.6       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SD-SDR  │       11.3       │       12.9       │       10.0       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SNR     │       11.9       │       13.3       │       10.7       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SRR     │       23.4       │       26.5       │       20.6       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SI-SDRi │       11.6       │       10.5       │       12.9       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SD-SDRi │       11.3       │       10.3       │       12.5       │
+        ├─────────┼──────────────────┼──────────────────┼──────────────────┤
+        │ SNRi    │       11.9       │       10.7       │       13.3       │
+        └─────────┴──────────────────┴──────────────────┴──────────────────┘
+
                                                                         
                                     NOTES                               
                                                                         
-        Uses scale-dependent BSSEval metrics. Evaluated on MUSDB18 at
-        44100 Hz sample rate.
+        Uses scale-invariant BSSEval metrics. Evaluated on WSJ0-2Mix at
+        8000 Hz sample rate.
     
     Args:
         df (pandas.DataFrame): DataFrame containing the metrics computed during
@@ -190,9 +224,9 @@ def report_card(df, notes=None, report_each_source=True):
         str: A report card for your experiment.
     """
     mean_report_card = _get_report_card(
-        df, _get_mean_and_std, report_each_source=report_each_source)
+        df, _get_mean_and_std, report_each_source=report_each_source, decs=decs)
     median_report_card = _get_report_card(
-        df, _get_medians, report_each_source=report_each_source)
+        df, _get_medians, report_each_source=report_each_source, decs=decs)
 
     line_break = mean_report_card.index('\n')
 

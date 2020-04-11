@@ -53,7 +53,7 @@ def test_create_engine(mix_source_folder):
         ml.train.add_stdout_handler(trainer, validator)
         ml.train.add_validate_and_checkpoint(_dir, model, optimizer, dataset,
                                              trainer, dataset, validator)
-        ml.train.add_tensorboard_handler(_dir, trainer)
+        ml.train.add_tensorboard_handler(_dir, trainer, every_iteration=True)
         ml.train.add_progress_bar_handler(trainer)
 
         # run engine

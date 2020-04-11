@@ -349,14 +349,15 @@ def add_progress_bar_handler(*engines):
         ProgressBar().attach(engine, ['avg_loss'])
         
 
-def add_tensorboard_handler(tensorboard_folder, engine):
+def add_tensorboard_handler(tensorboard_folder, engine, every_iteration=False):
     """
     Every key in engine.state.epoch_history[-1] is logged to TensorBoard.
     
     Args:
         tensorboard_folder (str): Where the tensorboard logs should go.
-
         trainer (ignite.Engine): The engine to log.
+        every_iteration (bool, optional): Whether to also log the values at every 
+          iteration.
     """
 
     @engine.on(ValidationEvents.VALIDATION_COMPLETED)
@@ -365,3 +366,10 @@ def add_tensorboard_handler(tensorboard_folder, engine):
         for key in engine.state.epoch_history:
             writer.add_scalar(
                 key, engine.state.epoch_history[key][-1], engine.state.epoch)
+
+    @engine.on(Events.ITERATION_COMPLETED)
+    def log_iteration_to_tensorboard(engine):
+        writer = SummaryWriter(tensorboard_folder)
+        for key in engine.state.iter_history:
+            writer.add_scalar(
+                key, engine.state.iter_history[key][-1], engine.state.iteration)
