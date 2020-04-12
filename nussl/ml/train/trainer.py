@@ -367,9 +367,10 @@ def add_tensorboard_handler(tensorboard_folder, engine, every_iteration=False):
             writer.add_scalar(
                 key, engine.state.epoch_history[key][-1], engine.state.epoch)
 
-    @engine.on(Events.ITERATION_COMPLETED)
-    def log_iteration_to_tensorboard(engine):
-        writer = SummaryWriter(tensorboard_folder)
-        for key in engine.state.iter_history:
-            writer.add_scalar(
-                key, engine.state.iter_history[key][-1], engine.state.iteration)
+    if every_iteration:
+        @engine.on(Events.ITERATION_COMPLETED)
+        def log_iteration_to_tensorboard(engine):
+            writer = SummaryWriter(tensorboard_folder)
+            for key in engine.state.iter_history:
+                writer.add_scalar(
+                    key, engine.state.iter_history[key][-1], engine.state.iteration)
