@@ -1,6 +1,7 @@
 # nussl
 
 [![codecov](https://codecov.io/gh/interactiveaudiolab/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/interactiveaudiolab/nussl)
+![codecov](https://github.com/interactiveaudiolab/nussl/workflows/Build/badge.svg)
 
 
 **The Northwestern University Source Separation Library (nussl)**
