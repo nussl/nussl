@@ -236,5 +236,4 @@ def check_against_regression_data():
                             reg_scores[key][metric],
                             atol=1e-3
                         )
-
     return check
