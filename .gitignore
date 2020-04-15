@@ -17,3 +17,5 @@ docs/_build/
 tests/local/
 scratch/
 coverage.xml
+dist/
+build/

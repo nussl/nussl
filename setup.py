@@ -11,7 +11,7 @@ with open('extra_requirements.txt') as f:
 
 setup(
     name='nussl',
-    version='1.0.0',
+    version='1.0.1',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
@@ -28,6 +28,8 @@ setup(
         'Topic :: Software Development :: Libraries',
     ],
     description='A flexible sound source separation library.',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, B. Pardo',
     author_email='ethanmanilow@u.northwestern.edu',
     maintainer='E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, B. Pardo',
