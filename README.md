@@ -1,5 +1,7 @@
 # The Northwestern University Source Separation Library
 
+[![codecov](https://codecov.io/gh/interactiveaudiolab/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/interactiveaudiolab/nussl)
+
 
 **The Northwestern University Source Separation Library (nussl)**
 (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
