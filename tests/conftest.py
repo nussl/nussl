@@ -233,7 +233,8 @@ def check_against_regression_data():
                     for metric in scores[key]:
                         assert np.allclose(
                             scores[key][metric],
-                            reg_scores[key][metric]
+                            reg_scores[key][metric],
+                            atol=1e-3
                         )
 
     return check
