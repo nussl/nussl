@@ -56,9 +56,9 @@ We provide the following architectures available out of the box:
 * Mask Inference
 * Deep Clustering
 * Chimera
-* OpenUnmix
-* TasNet
-* DualPath RNN
+* OpenUnmix (Soon!)
+* TasNet (Soon!)
+* DualPath RNN (Soon!)
 
 (See docs for corresponding citations)
 
