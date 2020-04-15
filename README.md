@@ -1,179 +1,98 @@
-nussl
-=====
-
-This branch is an update/refactor of *nussl* to update to Python 3 and have complete 
-code coverage via the tests.
-
-Current test coverage
----------------------
-
-Clone this repo, then run
-
-```
-pip install -r requirements.txt
-pip install -r extra_requirements.txt
-pytest
-```
-
-```
----------- coverage: platform darwin, python 3.7.6-final-0 -----------
-Name                                                  Stmts   Miss  Cover   Missing
------------------------------------------------------------------------------------
-nussl/__init__.py                                        11      0   100%
-nussl/core/__init__.py                                    6      0   100%
-nussl/core/audio_signal.py                              453      0   100%
-nussl/core/constants.py                                  39      0   100%
-nussl/core/efz_utils.py                                 145      0   100%
-nussl/core/masks/__init__.py                              4      0   100%
-nussl/core/masks/binary_mask.py                          23      0   100%
-nussl/core/masks/mask_base.py                            92      0   100%
-nussl/core/masks/soft_mask.py                            16      0   100%
-nussl/core/mixing.py                                     32      0   100%
-nussl/core/play_utils.py                                 37      0   100%
-nussl/core/utils.py                                     138      0   100%
-nussl/datasets/__init__.py                                2      0   100%
-nussl/datasets/base_dataset.py                           80      0   100%
-nussl/datasets/hooks.py                                  87      0   100%
-nussl/datasets/transforms.py                            271      0   100%
-nussl/evaluation/__init__.py                              3      0   100%
-nussl/evaluation/bss_eval.py                             60      0   100%
-nussl/evaluation/evaluation_base.py                      84      0   100%
-nussl/evaluation/precision_recall_fscore.py              34      0   100%
-nussl/ml/__init__.py                                     10      0   100%
-nussl/ml/cluster.py                                       2      0   100%
-nussl/ml/networks/__init__.py                             2      0   100%
-nussl/ml/networks/builders.py                            18      0   100%
-nussl/ml/networks/modules.py                            182      0   100%
-nussl/ml/networks/separation_model.py                    74      0   100%
-nussl/ml/train/__init__.py                                3      0   100%
-nussl/ml/train/closures.py                               78      0   100%
-nussl/ml/train/loss.py                                   98      0   100%
-nussl/ml/train/trainer.py                               122      0   100%
-nussl/ml/unfold/__init__.py                               1      0   100%
-nussl/ml/unfold/gaussian_mixture.py                      74      0   100%
-nussl/separation/__init__.py                              2      0   100%
-nussl/separation/base/__init__.py                         5      0   100%
-nussl/separation/base/clustering_separation_base.py      56      0   100%
-nussl/separation/base/deep_mixin.py                      42      0   100%
-nussl/separation/base/mask_separation_base.py            56      0   100%
-nussl/separation/base/nmf_mixin.py                       35      0   100%
-nussl/separation/base/separation_base.py                 50      0   100%
-nussl/separation/benchmark/__init__.py                    4      0   100%
-nussl/separation/benchmark/high_low_pass_filter.py       13      0   100%
-nussl/separation/benchmark/ideal_binary_mask.py          21      0   100%
-nussl/separation/benchmark/ideal_ratio_mask.py           27      0   100%
-nussl/separation/benchmark/wiener_filter.py              25      0   100%
-nussl/separation/composite/__init__.py                    1      0   100%
-nussl/separation/composite/ensemble_clustering.py        71      0   100%
-nussl/separation/deep/__init__.py                         2      0   100%
-nussl/separation/deep/deep_clustering.py                 20      0   100%
-nussl/separation/deep/deep_mask_estimation.py            33      0   100%
-nussl/separation/factorization/__init__.py                2      0   100%
-nussl/separation/factorization/ica.py                    39      0   100%
-nussl/separation/factorization/rpca.py                   73      0   100%
-nussl/separation/primitive/__init__.py                    6      0   100%
-nussl/separation/primitive/ft2d.py                      109      0   100%
-nussl/separation/primitive/hpss.py                       25      0   100%
-nussl/separation/primitive/melodia.py                   123      0   100%
-nussl/separation/primitive/repet.py                     101      0   100%
-nussl/separation/primitive/repet_sim.py                  78      0   100%
-nussl/separation/primitive/timbre.py                     24      0   100%
-nussl/separation/spatial/__init__.py                      3      0   100%
-nussl/separation/spatial/duet.py                        106      0   100%
-nussl/separation/spatial/projet.py                      132      0   100%
-nussl/separation/spatial/spatial_clustering.py            9      0   100%
------------------------------------------------------------------------------------
-TOTAL                                                  3574      0   100%
-
-============================================================================== 311 passed, 21 warnings in 1047.44s (0:17:27) 
-```
+# The Northwestern University Source Separation Library
 
 
 **The Northwestern University Source Separation Library (nussl)**
 (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
 python audio source separation library created by the 
 [Interactive Audio Lab](http://music.cs.northwestern.edu/) 
-at Northwestern University. At its core, nussl provides implementations of common source separation
-algorithms as well as an easy-to-use framework for prototyping and adding new algorithms. The aim of
+at Northwestern University. Whether you're a researcher or just need an out-of-the-box source 
+separation model, nussl contains everything you need for modern source separation.
 nussl is to create a low barrier to entry for using popular source separation algorithms, while also
 allowing the user fine tuned control of low-level parameters.
 
 
+# Documentation
 
-Please see the issues page before contacting the authors.
-
-
-Documentation
--------------
-
-Full documentation is [available here.](https://interactiveaudiolab.github.io/nussl/)
+Tutorials, code examples, and the API reference are available at the documentation
+website which is [available here.](https://interactiveaudiolab.github.io/nussl/)
 
 
-Features
---------
+# Features
 
-At its core, nussl contains implementations of the following source separation algorithms:
 
-Spatialization algorithms:
-* Degenerate Unmixing Estimation Technique (DUET)
-* PROJET 
+## Deep Learning
 
-Repetition algorithms:
-* REpeating Pattern Extraction Technique (REPET)
-* REPET using the cosine similarity matrix (REPET-SIM)
-* Separation via 2DFT
 
-General matrix decomposition/Component Analysis:
-* Non-negative Matrix Factorization with MFCC clustering (NMF)
-* Robust Principal Component Analysis (RPCA) 
-* Independent Component Analysis (ICA)
+nussl contains a rich feature set for deep learning models, including a 
+built in trainer with support for many common datasets in music and speech separation.
+nussl also has a External File Zoo where users are able to download pre-trained
+models on many different datasets with a number of different configurations. It is also 
 
-Benchmarking
-* Ideal Mask
-* High/Low Pass Filtering
+### Training Your Own Algorithms
 
-Composite Methods
-* Overlap Add
-* Algorithm Picker (multicue separation)
+nussl makes it easy to train your own algorithms, with many common architectures,
+datasets, and configurations ready-built for many use cases, and an easy way to
+extend our built-in functionality for your own needs. There are many pre-built useful
+modules that are easy to piece together, such as LSTMs, GRUs, convolutional layers,
+FC layers, mask layers, embedding layers. Everything is built on Pytorch, so adding
+a brand new module is seemless.
 
-Other Foreground/Background Decompositions
-* Harmonic/Percussive Source Separation (HPSS)
-* Melody Tracking separation (Melodia)
+### Using Your Own Data
 
-Deep Learning
+nussl has existing support for many popular source separation datasets, like MUSDB18,
+WSJ0, WHAM! nussl also defines a simple directory structure to add in any data you want.
+Want to augment your data? We have support for Scaper output, built in so you
+can train on magnitudes more training data. 
+
+### Downloading Pre-trained Models
+
+Pre-trained models on speech separation, music separation, and more are available
+for download at the [External File Zoo (EFZ)](http://nussl.ci.northwestern.edu/),
+and there is a build in python API to download models you want from within your code.
+
+## Deep Learning Architectures
+
+We provide the following architectures available out of the box:
+* Mask Inference
 * Deep Clustering
+* Chimera
+* OpenUnmix
+* TasNet
+* DualPath RNN
 
-*Your Algorithm Here*
+(See docs for corresponding citations)
 
-The nussl also has an evaluation framework, which provides interoperability
-between nussl and [mir_eval](https://github.com/craffel/mir_eval) (a python implementation of
- [BSSEval](http://bass-db.gforge.inria.fr/bss_eval)) as well as implementations of other 
- evaluation methods. 
+## Classical Algorithms
+
+Additionally, nussl also contains implementations of many classical source separation
+algorithms, including:
+
+* Spatialization algorithms (DUET, PROJET)
+* Factorization-based Methods (RPCA, ICA)
+* Primitive Methods (Repetition [REPET, 2DFT], Harmonic/Percussive, Vocal melody extraction, Timbre clustering)
+* Benchmark Methods (High Pass filter, Binary Masks, Ratio Masks, Weiner Filtering)
 
 
-Installation
-------------
+## Evaluation
 
-We recommend getting installing anaconda prior to using this package.
+nussl has many built in evaluation measures to determine how well your algorithm did, including
+the museval measure (BSSEvalV4), SI-SDR, and others.
 
-Installation is easy if you have pip (recommended):
+
+
+# Installation
+
+
+nussl is on the Python Package Index (PyPI), so it is easy to install with pip:
 
 ```
 $ pip install nussl
 ```
 
-Or if you want to install from source (some sort of Python environment is recommended):
+**Note: Requires python 3.7+**
 
-```
-$ git clone https://github.com/interactiveaudiolab/nussl.git
-$ cd nussl
-$ pip install -r requirements.txt
-# or
-$ pip install -e .
-```
 
-Citing
-------
+# Citing
 
 If you are using nussl for your research project, we please ask that you cite it using one of the 
 following bibtex citations:
@@ -186,22 +105,15 @@ following bibtex citations:
         year = 2018
     }
 
-    @Misc{nussl,
-        author =       {Ethan Manilow and Prem Seetharaman and Fatemeh Pishdadian and Bryan Pardo},
-        title =        {{NUSSL}: the Northwestern University Source Separation Library},
-        howpublished = {\url{https://github.com/interactiveaudiolab/nussl}},
-        year =        {2018}
-    }
 
-Contributions
--------------
+# Issues and Contributions
 
 See the [contribution guide](https://interactiveaudiolab.github.io/nussl/contributing.html) for
 detailed information. But the basics are: bug fixes/enhancements/etc have the standard github
 process; but, when adding new algorithms, contributors must provide benchmark files, paper 
-references, and trained models (if applicable).
+references, and trained models (if applicable). Please see the issues page before contacting the authors.
 
-## Contributors
+# Contributors
 
 - Ethan Manilow <http://github.com/ethman>
 - Prem Seetharaman <http://github.com/pseeth>
@@ -222,15 +134,16 @@ Similarly for most of the algorithms in nussl.
 See documentation and inline comments for each algorithm for more information about citations and authorship.
 
 
-Contact
--------
-Contact Ethan Manilow (ethanmanilow [at] u [dot] northwestern [dot] edu) with any questions or 
+# Contact
+
+Contact Ethan Manilow (ethanm [at] u [dot] northwestern [dot] edu) or 
+Prem Seetharaman (prem [at] u [dot] northwestern [dot] edu) with any questions or 
 issues. Please look at the "issues" page before reporting problems.
 
 
-License
--------
-nussl 0.1.6* is under an [MIT License](https://opensource.org/licenses/MIT)
+# License
+
+nussl 1.0 is under an [MIT License](https://opensource.org/licenses/MIT)
 
 The MIT License (MIT)
 
