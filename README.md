@@ -1,7 +1,7 @@
 # nussl
 
-[![codecov](https://codecov.io/gh/interactiveaudiolab/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/interactiveaudiolab/nussl)
-![codecov](https://github.com/interactiveaudiolab/nussl/workflows/Build/badge.svg)
+[![codecov](https://codecov.io/gh/nussl/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/interactiveaudiolab/nussl)
+![codecov](https://github.com/nussl/nussl/workflows/Build/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
