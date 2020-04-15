@@ -151,8 +151,8 @@ See documentation and inline comments for each algorithm for more information ab
 
 ## Acknowledgements
 
-In addition to all of the authors of the work reproduced by nussl, we'd like to also thank Jonathan Le Roux and
-Gordon Wichern for very helpful discussions throughout the creation this package! 
+We'd like to also thank Jonathan Le Roux and Gordon Wichern for very helpful discussions 
+throughout the development of this package! 
 
 # License
 
