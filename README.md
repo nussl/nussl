@@ -1,4 +1,4 @@
-# The Northwestern University Source Separation Library
+# nussl
 
 [![codecov](https://codecov.io/gh/interactiveaudiolab/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/interactiveaudiolab/nussl)
 
