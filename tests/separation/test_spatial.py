@@ -30,7 +30,8 @@ def test_spatial_clustering(mix_and_sources, check_against_regression_data):
         s.to_mono()
 
     evaluator = nussl.evaluation.BSSEvalScale(
-        [a, b], estimates, compute_permutation=True)
+        [a, b], estimates, compute_permutation=True, 
+        source_labels=['s1', 's2'])
     scores = evaluator.evaluate()
 
     reg_path = os.path.join(REGRESSION_PATH, 'spatial_clustering.json')
@@ -61,7 +62,8 @@ def test_duet(mix_and_sources, check_against_regression_data):
         s.to_mono()
 
     evaluator = nussl.evaluation.BSSEvalScale(
-        [a, b], estimates, compute_permutation=True)
+        [a, b], estimates, compute_permutation=True,
+        source_labels=['s1', 's2'])
     scores = evaluator.evaluate()
 
     reg_path = os.path.join(REGRESSION_PATH, 'duet.json')

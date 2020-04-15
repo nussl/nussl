@@ -116,7 +116,7 @@ class SeparationModel(nn.Module):
                             if val in output:
                                 kwargs[key] = output[val]
                             elif val in data:
-                                kwargs[key] = data
+                                kwargs[key] = data[val]
                             else:
                                 kwargs[key] = val
                     else:

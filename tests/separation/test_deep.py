@@ -9,9 +9,9 @@ import pytest
 import os
 
 fix_dir = 'tests/local/trainer'
-EPOCH_LENGTH = 500  # use 1 for quick testing, 500 for actual testing
-SDR_CUTOFF = 5  # use -10 for quick testing, 5 for actual testing
-
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+EPOCH_LENGTH = 500 if DEVICE == 'cuda' else 1  # use 1 for quick testing, 500 for actual testing
+SDR_CUTOFF = 5 if DEVICE == 'cuda' else -20 # use -10 for quick testing, 5 for actual testing
 
 @pytest.fixture(scope="module")
 def overfit_model(scaper_folder):
@@ -34,9 +34,7 @@ def overfit_model(scaper_folder):
         normalization_class='InstanceNorm'
     )
     model = ml.SeparationModel(config)
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = model.to(device)
+    model = model.to(DEVICE)
 
     optimizer = optim.Adam(model.parameters(), lr=1e-2)
 
@@ -54,7 +52,7 @@ def overfit_model(scaper_folder):
         loss_dictionary, optimizer, model)
 
     trainer, _ = ml.train.create_train_and_validation_engines(
-        train_closure, device=device
+        train_closure, device=DEVICE
     )
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -77,6 +75,7 @@ def test_deep_mixin(overfit_model):
     deep_mixin.load_model(model_path)
 
     deep_mixin.audio_signal = item['mix']
+    deep_mixin.channel_dim = -1
 
     assert not isinstance(deep_mixin.transform, OMITTED_TRANSFORMS)
     if isinstance(deep_mixin.transform, datasets.transforms.Compose):
@@ -114,6 +113,7 @@ def test_separation_deep_clustering(overfit_model):
     model_path, item = overfit_model
     dpcl = separation.deep.DeepClustering(
         item['mix'], 2, model_path, mask_type='binary')
+    dpcl.forward() # calls extract_features, for coverage
 
     item['mix'].write_audio_to_file('tests/local/dpcl_mix.wav')
     sources = item['sources']
@@ -184,9 +184,7 @@ def overfit_audio_model(scaper_folder):
         mix_key='mix_audio')
 
     model = ml.SeparationModel(config)
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = model.to(device)
+    model = model.to(DEVICE)
 
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
@@ -202,7 +200,7 @@ def overfit_audio_model(scaper_folder):
         loss_dictionary, optimizer, model)
     
     trainer, _ = ml.train.create_train_and_validation_engines(
-        train_closure, device=device
+        train_closure, device=DEVICE
     )
 
     with tempfile.TemporaryDirectory() as tmpdir:

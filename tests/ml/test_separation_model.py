@@ -50,10 +50,10 @@ gmm_unfold_config['modules']['mask'] = {
 
 gmm_unfold_config['modules']['estimates'] = {'class': 'Mask',}
 
-gmm_unfold_config['connections'].extend(
-    [['mask', ['embedding',]],
-    ['estimates', ['mask:resp', 'mix_magnitude',]]]
-)
+gmm_unfold_config['connections'].extend([
+    ['mask', ['embedding', {'means': 'init_means'}]],
+    ['estimates', ['mask:resp', 'mix_magnitude',]]
+])
 
 gmm_unfold_config['output'].append('estimates')
 
@@ -70,7 +70,7 @@ add_torch_module_config['connections'].extend(
 )
 add_torch_module_config['output'].append('mask')
 
-split_config = copy.deepcopy(gmm_unfold_config)
+split_config = copy.deepcopy(mi_config)
 split_config['modules']['split'] = {
     'class': 'Split',
     'args': {
@@ -247,6 +247,9 @@ def test_separation_model_gmm_unfold(one_item):
 
         for config in configs:    
             model = SeparationModel(config)
+            one_item['init_means'] = torch.randn(
+                one_item['mix_magnitude'].shape[0], 2, 20
+            ).to(one_item['mix_magnitude'].device)
             output = model(one_item)
 
             assert (
@@ -282,10 +285,6 @@ def test_separation_model_split(one_item):
                 torch.allclose(
                     output['estimates'].sum(dim=-1), 
                     one_item['mix_magnitude']))
-
-            assert (
-                output['embedding'].shape == (
-                    one_item['mix_magnitude'].shape + (20,)))
 
             assert (
                 output['split:0'].shape[2] == 100)

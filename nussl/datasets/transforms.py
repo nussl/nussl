@@ -31,7 +31,6 @@ def compute_ideal_binary_mask(source_magnitudes):
 # the transforms here.
 time_frequency_keys = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask', 'weights']
 
-
 class SumSources(object):
     """
     Sums sources together. Looks for sources in ``data[self.source_key]``. If 

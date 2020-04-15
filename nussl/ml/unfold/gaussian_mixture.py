@@ -165,19 +165,17 @@ class GaussianMixtureTorch(nn.Module):
 
     def forward(self, data, means=None, covariance=None):
         """
-        [summary]
-        
-        [extended_summary]
+        Does a forward pass of the GMM.
         
         Args:
             data (torch.Tensor): Data, shape is (n_batch, ..., n_features)
-            means (torch.Tensor): Means, shape (n_batch, n_components, n_features). Defaults
-            to None.
+            means (torch.Tensor): Means, shape (n_batch, n_components, n_features). 
+              Defaults to None.
             covariance (torch.Tensor): (n_batch, n_components, n_features, n_features) 
-            or (n_batch, n_components, n_features). 
+              or (n_batch, n_components, n_features). 
         
         Returns:
-            [type]: [description]
+            dict: Containing keys 'resp', 'log_prob', 'means', 'covariance', 'prior'.
         """
         shape = data.shape
         data = data.view(shape[0], -1, shape[-1])

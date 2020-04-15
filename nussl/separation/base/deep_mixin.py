@@ -30,9 +30,7 @@ class DeepMixin:
         model_dict = torch.load(model_path, map_location='cpu')
         model = SeparationModel(model_dict['config'])
         model.load_state_dict(model_dict['state_dict'])
-
-        if not torch.cuda.is_available():
-            device = 'cpu'
+        device = device if torch.cuda.is_available() else 'cpu'
 
         self.device = device
 

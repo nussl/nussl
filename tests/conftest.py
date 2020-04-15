@@ -167,7 +167,8 @@ def bad_scaper_folder(toy_datasets):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         _dir = tmp_dir if fix_dir is None else fix_dir
-        _dir = os.path.join(_dir, 'scaper')
+        _dir = os.path.join(_dir, 'bad_scaper')
+        os.makedirs(_dir, exist_ok=True)
         for i in range(n_mixtures):
             sc = scaper.Scaper(
                 duration, fg_path, fg_path, random_state=i)

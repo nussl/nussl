@@ -186,6 +186,10 @@ class TrainClosure(Closure):
         self.optimizer = optimizer
         self.model = model
 
+    def _fire_event(self, engine, event):
+        if engine is not None:
+            engine.fire_event(event)
+
     def __call__(self, engine, data):
         self.model.train()
         self.optimizer.zero_grad()
@@ -194,8 +198,7 @@ class TrainClosure(Closure):
 
         loss_ = self.compute_loss(output, data)
         loss_['loss'].backward()
-        if engine is not None:
-            engine.fire_event(BackwardsEvents.BACKWARDS_COMPLETED)
+        self._fire_event(engine, BackwardsEvents.BACKWARDS_COMPLETED)
         self.optimizer.step()
         loss_ = {key: loss_[key].item() for key in loss_}
 

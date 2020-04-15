@@ -90,9 +90,8 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
     # Before a batch starts, the items should be float and moved to the 
     # correct device, for both training and validation. Checks to make
     # sure "cuda" is available if user requested cuda.
+    device = device if torch.cuda.is_available() else 'cpu'
     device = torch.device(device)
-    if not torch.cuda.is_available():
-        device = torch.device('cpu')
 
     def prepare_batch(engine):
         batch = engine.state.batch

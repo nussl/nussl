@@ -166,10 +166,14 @@ def test_permutation_invariant_loss_sdr():
     LossPIT = ml.train.loss.PermutationInvariantLoss(
         loss_function=ml.train.loss.SISDRLoss())
     LossSDR = ml.train.loss.SISDRLoss()
+    LossSumSDR = ml.train.loss.SISDRLoss(reduction='sum')
 
     for n in noise_amount:
         estimates = references + n * torch.randn(n_batch, n_samples, n_sources)
         _loss_a = LossSDR(estimates, references).item()
+        _loss_sum_a = LossSumSDR(estimates, references).item()
+
+        assert np.allclose(n_batch * n_sources * _loss_a, _loss_sum_a)
 
         for shift in range(n_sources):
             sources_a = estimates[..., shift:]

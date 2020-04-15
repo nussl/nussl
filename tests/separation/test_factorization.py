@@ -71,7 +71,8 @@ def test_ica(
         s.to_mono()
 
     evaluator = nussl.evaluation.BSSEvalScale(
-        [a, b], estimates, compute_permutation=True)
+        [a, b], estimates, compute_permutation=True,
+        source_labels=['s1', 's2'])
     scores = evaluator.evaluate()
 
     reg_path = os.path.join(REGRESSION_PATH, 'ica_list.json')
