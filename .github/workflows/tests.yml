@@ -5,9 +5,9 @@ name: Run tests
 
 on:
   push:
-    branches: [ refactor ]
+    branches: [ master ]
   pull_request:
-    branches: [ refactor ]
+    branches: [ master ]
 
 jobs:
   build:
