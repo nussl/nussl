@@ -124,7 +124,7 @@ following bibtex citations:
 
 # Issues and Contributions
 
-See the [contribution guide](https://interactiveaudiolab.github.io/nussl/contributing.html) for
+See the [contribution guide](https://nussl.github.io/docs/contributing.html) for
 detailed information. But the basics are: bug fixes/enhancements/etc have the standard github
 process; but, when adding new algorithms, contributors must provide benchmark files, paper 
 references, and trained models (if applicable). Please see the issues page before contacting the authors.
