@@ -9,6 +9,7 @@ v1.0.1
 v1.0.0
 ------
 
+- Python 3 support!
 - Much improved documentation and API
 - Refactoring of AudioSignal and other parts to be more intuitive
 - Full test coverage
