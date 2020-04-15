@@ -8,10 +8,8 @@
 (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
 python audio source separation library created by the 
 [Interactive Audio Lab](http://music.cs.northwestern.edu/) 
-at Northwestern University. Whether you're a researcher or just need an out-of-the-box source 
+at Northwestern University. Whether you're a researcher creating novel network architectures or classical signal processing algorithms for source separation or you just need an out-of-the-box source 
 separation model, nussl contains everything you need for modern source separation.
-nussl is to create a low barrier to entry for using popular source separation algorithms, while also
-allowing the user fine tuned control of low-level parameters.
 
 
 # Documentation
@@ -25,7 +23,6 @@ website which is [available here.](https://nussl.github.io/docs/)
 
 ## Deep Learning
 
-
 nussl contains a rich feature set for deep learning models, including a 
 built in trainer with support for many common datasets in music and speech separation.
 nussl also has a External File Zoo where users are able to download pre-trained
@@ -37,14 +34,13 @@ nussl makes it easy to train your own algorithms, with many common architectures
 datasets, and configurations ready-built for many use cases, and an easy way to
 extend our built-in functionality for your own needs. There are many pre-built useful
 modules that are easy to piece together, such as LSTMs, GRUs, convolutional layers,
-FC layers, mask layers, embedding layers. Everything is built on Pytorch, so adding
-a brand new module is a snap!
+fully conneected layers, mask layers, embedding layers. Everything is built on Pytorch, so adding a brand new module is a snap!
 
 ### Using Your Own Data
 
 nussl has existing support for many popular source separation datasets, like MUSDB18,
-WSJ0, WHAM! nussl also defines a simple directory structure to add in any data you want.
-Want to augment your data? We have support for Scaper output, built in so you
+WSJ0, WHAM!, and FUSS. nussl also defines a simple directory structure to add in any data you want.
+Want to augment your data? We have support for datasets created with [Scaper](https://scaper.readthedocs.io/en/latest/index.html) built in so you
 can train on magnitudes more training data. 
 
 ### Downloading Pre-trained Models
@@ -80,8 +76,6 @@ algorithms, including:
 
 nussl has many built in evaluation measures to determine how well your algorithm did, including
 the museval measure (BSSEvalV4), SI-SDR, and others.
-
-
 
 # Installation
 
@@ -134,8 +128,6 @@ The DUET implementation is based on MATLAB code from Scott Rickard.
 nussl's PROJET implementation is based on python code from Antoine Liutkus.
 
 See documentation and inline comments for each algorithm for more information about citations and authorship.
-
-
 
 # License
 
