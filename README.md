@@ -14,7 +14,7 @@ allowing the user fine tuned control of low-level parameters.
 # Documentation
 
 Tutorials, code examples, and the API reference are available at the documentation
-website which is [available here.](https://interactiveaudiolab.github.io/nussl/)
+website which is [available here.](https://nussl.github.io/docs/)
 
 
 # Features
@@ -26,7 +26,7 @@ website which is [available here.](https://interactiveaudiolab.github.io/nussl/)
 nussl contains a rich feature set for deep learning models, including a 
 built in trainer with support for many common datasets in music and speech separation.
 nussl also has a External File Zoo where users are able to download pre-trained
-models on many different datasets with a number of different configurations. It is also 
+models on many different datasets with a number of different configurations. 
 
 ### Training Your Own Algorithms
 
@@ -35,7 +35,7 @@ datasets, and configurations ready-built for many use cases, and an easy way to
 extend our built-in functionality for your own needs. There are many pre-built useful
 modules that are easy to piece together, such as LSTMs, GRUs, convolutional layers,
 FC layers, mask layers, embedding layers. Everything is built on Pytorch, so adding
-a brand new module is seemless.
+a brand new module is a.
 
 ### Using Your Own Data
 
@@ -48,7 +48,7 @@ can train on magnitudes more training data.
 
 Pre-trained models on speech separation, music separation, and more are available
 for download at the [External File Zoo (EFZ)](http://nussl.ci.northwestern.edu/),
-and there is a build in python API to download models you want from within your code.
+and there is a built in python API to download models you want from within your code.
 
 ## Deep Learning Architectures
 
@@ -67,10 +67,10 @@ We provide the following architectures available out of the box:
 Additionally, nussl also contains implementations of many classical source separation
 algorithms, including:
 
-* Spatialization algorithms (DUET, PROJET)
-* Factorization-based Methods (RPCA, ICA)
-* Primitive Methods (Repetition [REPET, 2DFT], Harmonic/Percussive, Vocal melody extraction, Timbre clustering)
-* Benchmark Methods (High Pass filter, Binary Masks, Ratio Masks, Weiner Filtering)
+* Spatialization algorithms: DUET, PROJET
+* Factorization-based Methods: RPCA, ICA
+* Primitive Methods: Repetition (REPET, 2DFT), Harmonic/Percussive, Vocal melody extraction, Timbre clustering
+* Benchmark Methods: High Pass filter, Binary Masks, Ratio Masks, Weiner Filtering
 
 
 ## Evaluation
@@ -115,8 +115,8 @@ references, and trained models (if applicable). Please see the issues page befor
 
 # Contributors
 
-- Ethan Manilow <http://github.com/ethman>
 - Prem Seetharaman <http://github.com/pseeth>
+- Ethan Manilow <http://github.com/ethman>
 - Fatemeh Pishdadian <http://github.com/fpishdadian>
 - Nathan Shelly
 
@@ -127,18 +127,11 @@ Former:
 - Ben Kalish
 
 nussl's REPET, REPET-SIM implementations are based on MATLAB code from Zafar Rafii. 
-The DUET implementation is based on MATLAB code from Scott Richard. 
+The DUET implementation is based on MATLAB code from Scott Rickard. 
 nussl's PROJET implementation is based on python code from Antoine Liutkus.
-Similarly for most of the algorithms in nussl. 
 
 See documentation and inline comments for each algorithm for more information about citations and authorship.
 
-
-# Contact
-
-Contact Ethan Manilow (ethanm [at] u [dot] northwestern [dot] edu) or 
-Prem Seetharaman (prem [at] u [dot] northwestern [dot] edu) with any questions or 
-issues. Please look at the "issues" page before reporting problems.
 
 
 # License
