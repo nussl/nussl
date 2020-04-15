@@ -35,7 +35,7 @@ datasets, and configurations ready-built for many use cases, and an easy way to
 extend our built-in functionality for your own needs. There are many pre-built useful
 modules that are easy to piece together, such as LSTMs, GRUs, convolutional layers,
 FC layers, mask layers, embedding layers. Everything is built on Pytorch, so adding
-a brand new module is a.
+a brand new module is a snap!
 
 ### Using Your Own Data
 
