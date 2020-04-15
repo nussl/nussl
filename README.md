@@ -76,7 +76,8 @@ algorithms, including:
 ## Evaluation
 
 nussl has many built in evaluation measures to determine how well your algorithm did, including
-the museval measure (BSSEvalV4), SI-SDR, and others.
+the museval measure (BSSEvalV4), SI-SDR, SI-SIR, SI-SAR, SD-SDR, SNR, and more! We seek to 
+provide a thorough framework for evaluating your source separation research.
 
 # Installation
 
@@ -89,6 +90,23 @@ $ pip install nussl
 
 **Note: Requires python 3.7+**
 
+For the functionality in ``nussl.play_utils``, you'll want IPython, and ``ffmpeg``, installed as well:
+
+```
+$ pip install IPython
+$ brew install ffmpeg # on mac
+$ apt-get install ffmpeg # on linux
+```
+
+To use the Melodia separation algorithm, you'll need one additional package:
+
+```
+$ pip install vamp
+```
+
+`vamp` doesn't install on some MacOS versions, so we can't include it by default.
+To actually use Melodia, you'll also need the Melodia plugin. For installation
+instructions, look [here](https://github.com/justinsalamon/melodia_python_tutorial/blob/master/melodia_python_tutorial.ipynb).
 
 # Citing
 
