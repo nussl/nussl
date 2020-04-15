@@ -126,7 +126,7 @@ Former:
 - Daniel Felix Kim <http://github.com/DanielFelixKim>
 - Ben Kalish
 
-nussl's REPET, REPET-SIM implementations are based on MATLAB code from Zafar Raffi. 
+nussl's REPET, REPET-SIM implementations are based on MATLAB code from Zafar Rafii. 
 The DUET implementation is based on MATLAB code from Scott Richard. 
 nussl's PROJET implementation is based on python code from Antoine Liutkus.
 Similarly for most of the algorithms in nussl. 
