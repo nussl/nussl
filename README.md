@@ -118,13 +118,13 @@ references, and trained models (if applicable). Please see the issues page befor
 - Prem Seetharaman <http://github.com/pseeth>
 - Ethan Manilow <http://github.com/ethman>
 - Fatemeh Pishdadian <http://github.com/fpishdadian>
-- Nathan Shelly
+- Nathan Shelly <https://github.com/nathanshelly>
 
 Former:
 
 - Corey Grief <http://github.com/cegrief>
 - Daniel Felix Kim <http://github.com/DanielFelixKim>
-- Ben Kalish
+- Ben Kalish <https://github.com/BenKalish42>
 
 nussl's REPET, REPET-SIM implementations are based on MATLAB code from Zafar Rafii. 
 The DUET implementation is based on MATLAB code from Scott Rickard. 
