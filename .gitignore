@@ -16,3 +16,4 @@ tests/ignored_tests/
 docs/_build/
 tests/local/
 scratch/
+coverage.xml

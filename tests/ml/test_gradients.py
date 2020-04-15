@@ -2,9 +2,11 @@ from nussl import ml, datasets, utils
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-
+import os
 
 def test_gradients(mix_source_folder):
+    os.makedirs('tests/local/', exist_ok=True)
+    
     tfms = datasets.transforms.Compose([
         datasets.transforms.PhaseSensitiveSpectrumApproximation(),
         datasets.transforms.MagnitudeWeights(),

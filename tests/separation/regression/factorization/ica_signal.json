@@ -7,7 +7,7 @@
         0,
         1
     ],
-    "/home/pseetharaman/.nussl/tests/scaper/0_events/foreground0_050.wav": {
+    "s1": {
         "SI-SDR": [
             -0.4429227520287098
         ],
@@ -36,7 +36,7 @@
             -9.115788076526124
         ]
     },
-    "/home/pseetharaman/.nussl/tests/scaper/0_events/foreground1_050.wav": {
+    "s2": {
         "SI-SDR": [
             -1.2892079479171248
         ],
