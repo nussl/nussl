@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-
+import gpytorch
 
 class GaussianMixtureTorch(nn.Module):
     def __init__(self, n_components, n_iter=5, covariance_type='diag',
@@ -94,7 +94,7 @@ class GaussianMixtureTorch(nn.Module):
         covariance = covariance.view(
             n_batch, 1, n_components, n_features, n_features)
 
-        mvn = torch.distributions.MultivariateNormal(
+        mvn = gpytorch.distributions.MultivariateNormal(
             means, covariance_matrix=covariance
         )
         log_prob = mvn.log_prob(X)
@@ -106,14 +106,12 @@ class GaussianMixtureTorch(nn.Module):
         n_features = covariance.shape[-1]
         diag_mask = torch.eye(n_features, device=covariance.device)
         diag_mask = diag_mask.reshape(1, 1, n_features, n_features)
+        covariance = covariance * diag_mask
 
         if 'spherical' in self.covariance_type:
             covariance[..., :, :] = (
                 covariance.mean(dim=[-2, -1], keepdims=True)
             )
-            covariance = covariance * diag_mask
-
-        if 'diag' in self.covariance_type:
             covariance = covariance * diag_mask
 
         if 'tied' in self.covariance_type:

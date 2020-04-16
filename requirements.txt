@@ -13,3 +13,4 @@ tensorboard
 norbert
 tqdm
 termtables
+gpytorch
