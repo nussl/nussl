@@ -1,9 +1,14 @@
 Changelog
 =========
 
+v1.0.2
+------
+- Fixed an issue with backprop in SI-SDR loss.
+- Added a "verbose" argument to SeparationModel to make it easier
+  to debug.
+
 v1.0.1
 ------
-
 - Added long description to PyPi. Released onto PyPi officially!
 
 v1.0.0
