@@ -79,7 +79,7 @@ def test_ml_gaussian_mixture():
                     labels[nb].reshape(-1), sklearn_predictions)
                 comps.append(nussl_ami >= sklearn_ami)
 
-            assert sum(comps) >= len(comps) * .8
+            assert sum(comps) >= len(comps) * .7
 
         forward_pass = gmm(X)
 
