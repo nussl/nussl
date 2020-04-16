@@ -286,6 +286,31 @@ def test_transform_get_excerpt(musdb_tracks):
         }
 
         pytest.raises(TransformException, exc, data)
+    
+    excerpt_lengths = [1009, 16000, 612140]
+    ga = transforms.GetAudio()
+    for excerpt_length in excerpt_lengths:
+        data = {
+            'mix': sum(sources.values()),
+            'sources': sources,
+            'metadata': {'labels': []}
+        }
+
+        exc = transforms.GetExcerpt(
+            excerpt_length=excerpt_length,
+            tf_keys = ['mix_audio', 'source_audio'],
+            time_dim=1,
+        )
+        com = transforms.Compose([ga, tdl, exc])
+
+        data = com(data)
+
+        for key in data:
+            assert torch.is_tensor(data[key])
+            assert data[key].shape[1] == excerpt_length
+
+        assert torch.allclose(
+            data['source_audio'].sum(dim=-1), data['mix_audio'], atol=1e-3)
 
 
 def test_transform_cache(musdb_tracks):

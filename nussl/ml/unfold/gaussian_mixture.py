@@ -104,14 +104,12 @@ class GaussianMixtureTorch(nn.Module):
 
     def _enforce_covariance_type(self, covariance):
         n_features = covariance.shape[-1]
-        diag_mask = torch.eye(n_features)
+        diag_mask = torch.eye(n_features, device=covariance.device)
         diag_mask = diag_mask.reshape(1, 1, n_features, n_features)
 
         if 'spherical' in self.covariance_type:
             covariance[..., :, :] = (
-                covariance.mean(dim=-2, keepdims=True).mean(
-                    dim=-1, keepdims=True
-                )
+                covariance.mean(dim=[-2, -1], keepdims=True)
             )
             covariance = covariance * diag_mask
 
@@ -149,17 +147,12 @@ class GaussianMixtureTorch(nn.Module):
         if covariance is None:
             covariance = X.new(
                 X.shape[0], self.n_components, X.shape[-1]).fill_(
-                self.covariance_init)
+                self.covariance_init).clone()
 
         if len(covariance.shape) < 4:
             covariance = covariance.unsqueeze(-1).expand(-1, -1, -1, X.shape[-1])
 
-        n_features = covariance.shape[-1]
-        diag_mask = torch.eye(n_features)
-        diag_mask = diag_mask.reshape(1, 1, n_features, n_features)
-        covariance = covariance * diag_mask
-
-        covariance = self._enforce_covariance_type(covariance)
+        covariance = self._enforce_covariance_type(covariance.clone())
 
         return means, covariance
 
