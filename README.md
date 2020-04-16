@@ -160,7 +160,7 @@ nussl 1.0 is under an [MIT License](https://opensource.org/licenses/MIT)
 
 The MIT License (MIT)
 
-Copyright (c) 2018 Interactive Audio Lab
+Copyright (c) 2016-2020 Interactive Audio Lab
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
 associated documentation files (the "Software"), to deal in the Software without restriction, 
