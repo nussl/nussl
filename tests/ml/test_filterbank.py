@@ -56,6 +56,26 @@ def test_filter_bank(one_item, monkeypatch):
 
     assert decoded.shape == data.shape
 
+def test_filter_bank_alignment(one_item):
+    # if we construct a signal with an impulse at a random
+    # offset, it should stay in the same place after the
+    # stft
+    win_length = 256
+    hop_length = 64
+    win_type = 'sqrt_hann'
+
+    representation = ml.networks.modules.STFT(
+        win_length, hop_length=hop_length, window_type=win_type)
+    data = torch.zeros_like(one_item['source_audio'])
+    for _ in range(20):
+        offset = np.random.randint(0, data.shape[-2])
+        data[..., offset, 0] = 1
+
+    encoded = representation(data, 'transform')
+    decoded = representation(encoded, 'inverse')
+
+    assert torch.allclose(decoded, data, atol=1e-6)
+
 sr = nussl.constants.DEFAULT_SAMPLE_RATE
 # Define my window lengths to be powers of 2, ranging from 128 to 8192 samples
 win_min = 7  # 2 ** 7  =  128

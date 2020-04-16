@@ -148,9 +148,8 @@ class FilterBank(nn.Module):
         data = nn.functional.pad(data, pad_tuple)
         self.output_length = data.shape[-1]
         
-        num_batch, num_audio_channels, num_samples = (
-            data.shape
-        )
+        num_batch, num_audio_channels, num_samples = data.shape
+
         unfold = nn.Unfold(
             kernel_size=(1, self.filter_length), 
             stride=(1, self.hop_length),
@@ -180,7 +179,6 @@ class FilterBank(nn.Module):
     
     def inverse(self, data, **kwargs):
         ndim = data.ndim
-
         if ndim > 4:
             # move sources to the batch dimension
             # then fix it later

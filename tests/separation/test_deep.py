@@ -168,7 +168,7 @@ def overfit_audio_model(scaper_folder):
         datasets.transforms.GetAudio(),
         datasets.transforms.ToSeparationModel(),
         datasets.transforms.GetExcerpt(
-         64000, time_dim=1, tf_keys=['mix_audio', 'source_audio'])
+            32000, time_dim=1, tf_keys=['mix_audio', 'source_audio'])
     ])
     dataset = datasets.Scaper(
         scaper_folder, transform=tfms)
@@ -178,9 +178,9 @@ def overfit_audio_model(scaper_folder):
         dataset, batch_size=1)
 
     config = ml.networks.builders.build_recurrent_end_to_end(
-        512, 512, 128, 'sqrt_hann', 50, 2, 
-        True, 0.3, 2, 'softmax', num_audio_channels=1, 
-        mask_complex=True, rnn_type='lstm', 
+        256, 256, 64, 'sqrt_hann', 50, 2, 
+        True, 0.3, 2, 'sigmoid', num_audio_channels=1, 
+        mask_complex=False, rnn_type='lstm', 
         mix_key='mix_audio')
 
     model = ml.SeparationModel(config)

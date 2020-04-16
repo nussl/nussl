@@ -4,14 +4,19 @@ import torch
 import matplotlib.pyplot as plt
 import os
 
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 def test_gradients(mix_source_folder):
     os.makedirs('tests/local/', exist_ok=True)
-    
+
     tfms = datasets.transforms.Compose([
+        datasets.transforms.GetAudio(),
         datasets.transforms.PhaseSensitiveSpectrumApproximation(),
         datasets.transforms.MagnitudeWeights(),
         datasets.transforms.ToSeparationModel(),
-        datasets.transforms.GetExcerpt(400)
+        datasets.transforms.GetExcerpt(50),
+        datasets.transforms.GetExcerpt(
+            3136, time_dim=1, tf_keys=['mix_audio', 'source_audio'])
     ])
     dataset = datasets.MixSourceFolder(
         mix_source_folder, transform=tfms)
@@ -22,7 +27,7 @@ def test_gradients(mix_source_folder):
 
     # make some configs
     names = ['dpcl', 'mask_inference_l1', 'mask_inference_mse_loss', 'chimera',
-             'open_unmix']
+             'open_unmix', 'end_to_end']
     config_has_batch_norm = ['open_unmix']
     configs = [
         ml.networks.builders.build_recurrent_dpcl(
@@ -43,7 +48,12 @@ def test_gradients(mix_source_folder):
         ml.networks.builders.build_open_unmix_like(
             n_features, 50, 1, True, .4, 2, 1, add_embedding=True,
             embedding_size=20, embedding_activation=['sigmoid', 'unit_norm'],
-        )
+        ),
+        ml.networks.builders.build_recurrent_end_to_end(
+            256, 256, 64, 'sqrt_hann', 50, 2, 
+            True, 0.0, 2, 'sigmoid', num_audio_channels=1, 
+            mask_complex=False, rnn_type='lstm', 
+            mix_key='mix_audio', normalization_class='InstanceNorm')
     ]
 
     loss_dictionaries = [
@@ -71,20 +81,44 @@ def test_gradients(mix_source_folder):
                 'weight': 0.8
             }
         },
+        {
+            'DeepClusteringLoss': {
+                'weight': 0.2
+            },
+            'PermutationInvariantLoss': {
+                'args': ['L1Loss'],
+                'weight': 0.8
+            }
+        },
+        {
+            'SISDRLoss': {
+                'weight': 1.0,
+                'keys': {
+                    'audio': 'estimates', 
+                    'source_audio': 'references'
+                    }
+            }
+        },
     ]
+
+    def append_keys_to_model(model):
+        model.output_keys.extend(
+            ['audio', 'recurrent_stack', 'mask', 'estimates']
+        )
 
     for name, config, loss_dictionary in zip(names, configs, loss_dictionaries):
         loss_closure = ml.train.closures.Closure(loss_dictionary)
 
         utils.seed(0, set_cudnn=True)
-        model_grad = ml.SeparationModel(config)
-        model_grad.output_keys.append('normalization')
+        model_grad = ml.SeparationModel(config, verbose=True).to(DEVICE)
+        if name == 'end_to_end':
+            append_keys_to_model(model_grad)
 
         all_data = {}
         for data in dataset:
             for key in data:
                 if torch.is_tensor(data[key]):
-                    data[key] = data[key].float().unsqueeze(0).contiguous()
+                    data[key] = data[key].float().unsqueeze(0).contiguous().to(DEVICE)
                     if key not in all_data:
                         all_data[key] = data[key]
                     else:
@@ -102,13 +136,14 @@ def test_gradients(mix_source_folder):
         plt.savefig(f'tests/local/{name}:batch_gradient.png')
 
         utils.seed(0, set_cudnn=True)
-        model_acc = ml.SeparationModel(config)
-        model_acc.output_keys.append('normalization')
+        model_acc = ml.SeparationModel(config).to(DEVICE)
+        if name == 'end_to_end':
+            append_keys_to_model(model_acc)
 
         for i, data in enumerate(dataset):
             for key in data:
                 if torch.is_tensor(data[key]):
-                    data[key] = data[key].float().unsqueeze(0).contiguous()
+                    data[key] = data[key].float().unsqueeze(0).contiguous().to(DEVICE)
             # do a forward pass on each item individually
             output_acc = model_acc(data)
             for key in output_acc:
@@ -117,7 +152,8 @@ def test_gradients(mix_source_folder):
                 # somehow...
                 _data_a = output_acc[key]
                 _data_b = output_grad[key][i].unsqueeze(0)
-                assert torch.allclose(_data_a, _data_b, atol=1e-4)
+                if name not in config_has_batch_norm:
+                    assert torch.allclose(_data_a, _data_b, atol=1e-3)
 
             _loss = loss_closure.compute_loss(output_acc, data)
             # do a backward pass on each item individually
@@ -134,4 +170,5 @@ def test_gradients(mix_source_folder):
         for param1, param2 in zip(model_grad.parameters(), model_acc.parameters()):
             assert torch.allclose(param1, param2)
             if name not in config_has_batch_norm:
-                assert torch.allclose(param1.grad, param2.grad, atol=1e-3)
+                if param1.requires_grad and param2.requires_grad:
+                    assert torch.allclose(param1.grad, param2.grad, atol=1e-3)

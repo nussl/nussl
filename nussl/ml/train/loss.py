@@ -21,34 +21,45 @@ class SISDRLoss(nn.Module):
     
     Args:
         scaling (bool, optional): Whether to use scale-invariant (True) or
-          scale-dependent SDR. Defaults to True.
+          signal-to-noise ratio (False). Defaults to True.
     """
     DEFAULT_KEYS = {'audio': 'estimates', 'source_audio': 'references'}
 
-    def __init__(self, scaling=True, reduction='mean'):
+    def __init__(self, scaling=True, reduction='mean', zero_mean=True):
         self.scaling = scaling
         self.reduction = reduction
+        self.zero_mean = zero_mean
         super().__init__()
 
     def forward(self, estimates, references):
         _shape = references.shape
-        references = references.reshape(-1, _shape[-2], _shape[-1])
-        estimates = estimates.reshape(-1, _shape[-2], _shape[-1])
-
-        references_projection = references.transpose(2, 1) @ references
+        references = references.view(-1, _shape[-2], _shape[-1])
+        estimates = estimates.view(-1, _shape[-2], _shape[-1])
+        # samples now on axis 1
+        if self.zero_mean:
+            mean_reference = references.mean(dim=1, keepdim=True)
+            mean_estimate = estimates.mean(dim=1, keepdim=True)
+        else:
+            mean_reference = 0
+            mean_estimate = 0
+        
+        _references = references - mean_reference
+        _estimates = estimates - mean_estimate
+        
+        references_projection = _references.transpose(2, 1) @ _references
 
         references_projection = torch.diagonal(
             references_projection, dim1=-2, dim2=-1) + 1e-10
     
         references_on_estimates = torch.diagonal(
-            references.transpose(2, 1) @ estimates, dim1=-2, dim2=-1) + 1e-10
+            references.transpose(2, 1) @ _estimates, dim1=-2, dim2=-1) + 1e-10
 
         scale = (
-            (references_on_estimates / references_projection).unsqueeze(1).detach()
+            (references_on_estimates / references_projection).unsqueeze(1)
             if self.scaling else 1)
 
-        e_true = scale * references
-        e_res = estimates - e_true
+        e_true = scale * _references
+        e_res = _estimates - e_true
 
         signal = (e_true ** 2).sum(dim=1)
         noise = (e_res ** 2).sum(dim=1)

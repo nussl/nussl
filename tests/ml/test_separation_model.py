@@ -373,7 +373,8 @@ def test_separation_model_save():
                 old_model_params[key]
             )
 
-def test_separation_model_repr():
-    model = SeparationModel(dpcl_config)
+def test_separation_model_repr_and_verbose(one_item):
+    model = SeparationModel(end_to_end_real_config, verbose=True)
     print(model)
+    model(one_item)
             

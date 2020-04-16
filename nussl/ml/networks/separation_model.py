@@ -41,7 +41,7 @@ class SeparationModel(nn.Module):
         >>>
         >>> model = SeparationModel(config)
     """
-    def __init__(self, config):
+    def __init__(self, config, verbose=False):
         super(SeparationModel, self).__init__()
         if type(config) is str:
             if os.path.exists(config):
@@ -71,6 +71,7 @@ class SeparationModel(nn.Module):
         self.connections = config['connections']
         self.output_keys = config['output']
         self.config = config
+        self.verbose = verbose
 
     @staticmethod
     def _validate_config(config):
@@ -122,14 +123,35 @@ class SeparationModel(nn.Module):
                     else:
                         input_data.append(output[c] if c in output else data[c])
             _output = layer(*input_data, **kwargs)
+            added_keys = []
             if isinstance(_output, dict):
                 for k in _output:
-                    output[f'{connection[0]}:{k}'] = _output[k]
+                    _key = f'{connection[0]}:{k}'
+                    output[_key] = _output[k]
+                    added_keys.append(_key)
             elif isinstance(_output, tuple):
                 for i, val in enumerate(_output):
-                    output[f'{connection[0]}:{i}'] = val
+                    _key = f'{connection[0]}:{i}'
+                    output[_key] = val
+                    added_keys.append(_key)
             else:
-                output[connection[0]] = _output
+                _key = connection[0]
+                output[_key] = _output
+                added_keys.append(_key)
+            
+            if self.verbose:
+                input_shapes = []
+                for d in input_data:
+                    if torch.is_tensor(d):
+                        input_shapes.append(d.shape)
+                input_desc = ", ".join(map(str, input_shapes))
+                output_desc = ", ".join(
+                    [f'{k}: {output[k].shape}' for k in added_keys])
+                print(
+                    f"{connection[1]} -> {connection[0]} \n"
+                    f"\tTook inputs: {input_desc} \n"
+                    f"\tProduced {output_desc} "
+                )
                 
         return {o: output[o] for o in self.output_keys}
 

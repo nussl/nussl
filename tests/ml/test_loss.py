@@ -5,7 +5,7 @@ from torch import nn
 import numpy as np
 from itertools import permutations
 import random
-
+import copy
 
 def test_register_loss():
     class ExampleLoss(nn.Module):
@@ -125,19 +125,22 @@ def test_sdr_loss():
     references = torch.randn(n_batch, n_samples, n_sources)
 
     noise_amount = [0.01, 0.05, 0.1, 0.2, 0.5, 1]
-    LossSDR = ml.train.loss.SISDRLoss()
+    LossSDR = ml.train.loss.SISDRLoss(zero_mean=True)
     prev_loss = -np.inf
 
     for n in noise_amount:
+        references = copy.deepcopy(references)
         estimates = references + n * torch.randn(n_batch, n_samples, n_sources)
         _loss = LossSDR(estimates, references).item()
         assert _loss > prev_loss
         prev_loss = _loss
 
-    LossSDR = ml.train.loss.SISDRLoss(reduction='none')
+    references = torch.randn(n_batch, n_samples, n_sources)
+    LossSDR = ml.train.loss.SISDRLoss(zero_mean=False, reduction='none')
     prev_loss = -np.inf
 
     for n in noise_amount:
+        references = copy.deepcopy(references)
         estimates = references + n * torch.randn(n_batch, n_samples, n_sources)
         _loss = LossSDR(estimates, references)
         assert _loss.sum().item() > prev_loss
