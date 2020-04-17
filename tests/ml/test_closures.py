@@ -131,6 +131,33 @@ def test_base_closure():
 
     assert np.allclose(loss_a['loss'].item(), loss_b['loss'].item(), atol=1e-2)
 
+    loss_dictionary = {
+        'PITLoss': {
+            'class': 'PermutationInvariantLoss',
+            'keys': {'audio': 'estimates', 'source_audio': 'targets'},
+            'args': [{
+                'class': 'SISDRLoss',
+                'kwargs': {'scaling': False}
+            }]
+        }
+    }
+
+    closure = ml.train.closures.Closure(loss_dictionary)
+    # doing it twice should work
+    closure = ml.train.closures.Closure(loss_dictionary)
+    audio = torch.rand(n_batch, 44100, 2)
+    source_audio = torch.rand(n_batch, 44100, 2)
+
+    output = {
+        'audio': audio,
+    }
+
+    target = {
+        'source_audio': source_audio,
+    }
+
+    loss_b = closure.compute_loss(output, target)
+
     class CustomLoss:
         DEFAULT_KEYS = {}
         pass

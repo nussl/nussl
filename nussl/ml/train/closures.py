@@ -77,7 +77,13 @@ class Closure(object):
             args = [] if 'args' not in val else copy.deepcopy(val['args'])
             kwargs = {} if 'kwargs' not in val else copy.deepcopy(val['kwargs'])
             if _loss_name in ['CombinationInvariantLoss', 'PermutationInvariantLoss']:
-                args[0] = getattr(loss, args[0])()
+                if isinstance(args[0], str):
+                    args[0] = getattr(loss, args[0])()
+                elif isinstance(args[0], dict):
+                    arg_class = getattr(loss, args[0]['class'])
+                    args_to_loss = [] if 'args' not in args[0] else args[0]['args']
+                    kwargs_to_loss = {} if 'kwargs' not in args[0] else args[0]['kwargs']
+                    args[0] = arg_class(*args_to_loss, **kwargs_to_loss)
 
             _loss = (loss_class(*args, **kwargs), weight, keys, key)
             self.losses.append(_loss)
