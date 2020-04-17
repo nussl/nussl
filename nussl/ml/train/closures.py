@@ -43,6 +43,23 @@ class Closure(object):
             }
         }
 
+    Or if you're using permutation invariant loss but need to specify arguments to the
+    loss function being wrapped by PIT, you can do this:
+
+    .. code-block:: python
+
+        loss_dictionary = {
+            'PITLoss': {
+                'class': 'PermutationInvariantLoss',
+                'keys': {'audio': 'estimates', 'source_audio': 'targets'},
+                'args': [{
+                    'class': 'SISDRLoss',
+                    'kwargs': {'scaling': False}
+                }]
+            }
+        }
+
+
     If you have your own loss function classes you wish to use, you can pass those
     into the loss dictionary and make them discoverable by the closure by using
     `ml.register_loss.`
