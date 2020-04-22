@@ -3,7 +3,7 @@
 [![codecov](https://codecov.io/gh/nussl/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/nussl/nussl)
 ![codecov](https://github.com/nussl/nussl/workflows/Build/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
+[![Downloads](https://pepy.tech/badge/nussl)](https://pepy.tech/project/nussl)
 
 **The Northwestern University Source Separation Library (nussl)**
 (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
