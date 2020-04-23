@@ -52,4 +52,11 @@ def test_pitch_shift():
         assert np.allclose(aug_item["sources"][name].audio_data[1, :], 
             librosa.effects.pitch_shift(np.asfortranarray(item["sources"][name].audio_data[1, :]), sample_rate, shift))
 
+def test_big_dataset():
+    shift_range = (-12, 12)
+    stretch_range = (.4, 2)
+
+    augmented_dataset = augment(dataset, num_augments=10, pitch_shift=shift_range, time_stretch=stretch_range)
+    assert len(augmented_dataset) == 10
+
 
