@@ -36,7 +36,7 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
 
         The following are tuples of length 2.
         time_stretch: Indicates range of factors for the time stretch, where (min_stretch, max_stretch)
-        pitch_shift: Indicates range of factors for the pitch shift, where (min_shift, max_shift)
+        pitch_shift: Indicates range of shifts by number of half steps for the pitch shift, where (min_shift, max_shift)
         remix: Indicates range of factors for independent loudness scaling premixing, where (min_factor, max_factor)
         loudness_scale: Indicates range of factors for loudness scalings, where (min_factor, max_factor)
         low_pass: Indicates range of thresholds for low pass filters where (min_threshold, max_thresold)
