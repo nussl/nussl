@@ -349,7 +349,7 @@ def test_dual_path(one_item):
         2, 100, 50, 257, 100, hidden_size=100, 
         intra_processor=linear_layer,
         inter_processor=linear_layer,
-        skip_connection=False
+        skip_connection=True
     )
     output = dual_path(one_item['mix_magnitude'])
     assert output.shape == one_item['mix_magnitude'].shape

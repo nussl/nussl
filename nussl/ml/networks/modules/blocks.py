@@ -146,20 +146,18 @@ class LayerNorm(nn.Module):
     
     Args:
         normalized_shape (int, list, or tuple): normalized_shape argument to LayerNorm.
-        feature_dims (int, or list): The dimensions that the features are on, should be
+        feature_dims (list): The dimensions that the features are on, should be
           the same length as normalized_shape. These features will be moved to the end
           of the tensor in order, then layer norm is applied, then the features are 
           moved back to their original locations.
-        **kwargs (dict): additional keyword arguments that are passed to nn.LayerNorm.
+        kwargs: additional keyword arguments that are passed to nn.LayerNorm.
     
     Returns:
         torch.Tensor: modified input data tensor with layer norm applied.
     """
 
-    def __init__(self, num_features, feature_dims=2, **kwargs):
+    def __init__(self, num_features, feature_dims, **kwargs):
         super().__init__()
-        if isinstance(feature_dims, int):
-            feature_dims = [feature_dims]
         
         self.gamma = nn.Parameter(torch.ones(num_features))
         self.beta = nn.Parameter(torch.zeros(num_features))

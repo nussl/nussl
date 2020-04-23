@@ -171,7 +171,11 @@ def test_clustering_separation_base(scaper_folder, monkeypatch):
         separator = separation.ClusteringSeparationBase(
             mix, 2, clustering_type=clustering_type)
 
+        pytest.raises(SeparationException, separator.confidence)
+
         estimates = separator()
+        confidence = separator.confidence()
+        assert confidence == 1.0
 
         evaluator = evaluation.BSSEvalScale(
             list(sources.values()), estimates, compute_permutation=True)
