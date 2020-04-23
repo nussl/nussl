@@ -3,6 +3,7 @@ import shutil
 import logging
 import random
 from collections import OrderedDict
+import librosa
 
 import torch
 import zarr
@@ -11,6 +12,7 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
 from .. import utils
+from ..core import AudioSignal
 
 # This is for when you're running multiple
 # training threads
@@ -788,3 +790,148 @@ class TransformException(Exception):
     Exception class for errors when working with transforms in nussl.
     """
     pass
+
+## TODO: Finish all the augmented transforms
+
+def _random_range(low, high):
+    return np.random.rand() * (high - low) + low
+
+def _copy_meta_data(new_dict, old_dict):
+    for key, value in old_dict.items():
+        if key != "sources" and key != "mix":
+            new_dict[key] = value
+
+def _time_stretch(item, factor_range):
+    """
+    Linear Stretch on the time axis
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    def _stretch_all_channels(audio_data, scaling, sample_rate):
+        """
+        Returns copy of AudioSignal with all channels stretched
+        """
+        stretched_source = []
+        for row in range(mix_audio_data.shape[0]):
+            audio_row = audio_data[row, :]
+            if librosa.__version__ > "0.6.2":
+                audio_row = np.asfortranarray(audio_row)
+            stretched_source.append(librosa.effects.time_stretch(audio_row, scaling))
+        stretched_signal = AudioSignal(audio_data_array=np.array(stretched_source), sample_rate=sample_rate)
+        print(stretched_signal)
+        print(stretched_signal.audio_data)
+        return stretched_signal
+        
+
+    scaling = _random_range(factor_range[0], factor_range[1])
+    sample_rate = item["mix"].sample_rate
+
+    augmented_item = {}
+    mix_audio_data = item["mix"].audio_data
+    augmented_item["mix"] = _stretch_all_channels(mix_audio_data, scaling, sample_rate)
+
+    augmented_sources = {}
+    for name, source in item["sources"].items():
+        augmented_sources[name] = _stretch_all_channels(source.audio_data, scaling, sample_rate)
+        print(augmented_sources[name].audio_data)
+    augmented_item["sources"] = augmented_sources
+
+    # copy any other keys
+    _copy_meta_data(augmented_item, item)
+    print(augmented_item)
+    return augmented_item
+
+
+def _pitch_shift(item, factor_range):
+    """
+    Linear Stretch on the frequency axis
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def _remix(item, factor_range):
+    """
+    Independent Source Loudness Scaling
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def _loudness_scale(item, factor_range):
+    """
+    Loudness Scaling
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def _low_pass(item, factor_range):
+    """
+    Applies low pass filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for low pass filter. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def _high_pass(item, factor_range):
+    """
+    Applies high pass filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for high pass filter. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def _tremolo(item, factor_range):
+    """
+    Applies tremolo filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
+            First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def _vibrato(item, factor_range):
+    """
+    Applies tremolo filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
+            First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def _igaussian_filter(item, factor_range):
+    """
+    Applies tremolo filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
+            First tuple denotes range for frequency mean, the second denotes range for frequency standard deviation.
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
