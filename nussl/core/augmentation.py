@@ -13,7 +13,7 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
     and with augment a proportion of the the datasets any of the following augmentations:
 
     Time stretching: Linearly scale the time axis in respect to a central portion. 
-    Pitch shifting: Linearly scale the frequency axis in respect to 0Hz. 
+    Pitch shifting: Increase or decrease the sounds of the AudioSignal by a number of half steps
     Remixing: Change the loudness of each source independently.
     Loudness Scaling: Change the loudness of all sources by the same magnitude.
     Inverse gaussian filtering: Multiply each tf bin by the factor
@@ -73,7 +73,7 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
             for function, ranges in kwargs.items():
                 ## This use of exec will allow us to easily support more augmentations
                 augmented_item = eval(f"transforms._{function}(item, ranges)")
-                augmented_dataset.append(augmented_item)
+            augmented_dataset.append(augmented_item)
     
     print(augmented_dataset)
     return augmented_dataset

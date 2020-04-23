@@ -842,13 +842,16 @@ def _time_stretch(item, factor_range):
 
 def _pitch_shift(item, shift_range):
     """
-    Linear Stretch on the frequency axis
+    Pitch shift on the frequency axis
     Args: 
         item: An item from a base_dataset
         shift_range: A tuple of length 2. Denotes minimum and maximum possible half step shift ranges
     Returns:
         augmented_item: A copy of the original item, with augmented sources. 
     """
+    if not isinstance(shift_range[0], int) or not isinstance(shift_range[1], int):
+        raise ValueError("The pitch shift range must be integers.")
+
     def _shift_all_channels(audio_data, shift, sample_rate):
         """
         Returns copy of AudioSignal with all channels shifted
