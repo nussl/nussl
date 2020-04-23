@@ -67,12 +67,25 @@ def jensen_shannon_confidence(audio_signal, features, num_sources, threshold=95,
     “Bootstrapping Single-Channel Source Separation via Unsupervised Spatial 
     Clustering on Stereo Mixtures”. 44th International Conference on Acoustics, 
     Speech, and Signal Processing, Brighton, UK, May, 2019
+
+    Seetharaman, Prem. Bootstrapping the Learning Process for Computer Audition. 
+    Diss. Northwestern University, 2019.
     
     Args:
-        audio_signal ([type]): [description]
-        features ([type]): [description]
-        n_sources ([type]): [description]
-        threshold (int, optional): [description]. Defaults to 95.
+        audio_signal (AudioSignal): AudioSignal object which will be used to compute
+          the mask over which to compute the confidence measure. This can be None, if
+          and only if ``representation`` is passed as a keyword argument to this 
+          function.
+        features (np.ndarray): Numpy array containing the features to be clustered. 
+          Should have the same dimensions as the representation.
+        n_sources (int): Number of sources to cluster the features into.
+        threshold (int, optional): Threshold by loudness. Points below the threshold are
+          excluded from being used in the confidence measure. Defaults to 95.
+        kwargs: Keyword arguments to `_get_loud_bins_mask`. Namely, representation can
+          go here as a keyword argument.
+
+    Returns:
+        float: Confidence given by Jensen-Shannon divergence.
     """
     mask, _ = _get_loud_bins_mask(threshold, audio_signal, **kwargs)
     embedding_size = features.shape[-1]
@@ -92,16 +105,36 @@ def jensen_shannon_confidence(audio_signal, features, num_sources, threshold=95,
 def posterior_confidence(audio_signal, features, num_sources, threshold=95, 
                          **kwargs):
     """
-    Simple 
+    Calculates the clusterability of an embedding space by looking at the
+    strength of the assignments of each point to a specific cluster. The 
+    more points that are "in between" clusters (e.g. no strong assignmment),
+    the lower the clusterability.
+
+    References:
+
+    Seetharaman, Prem, Gordon Wichern, Jonathan Le Roux, and Bryan Pardo. 
+    “Bootstrapping Single-Channel Source Separation via Unsupervised Spatial 
+    Clustering on Stereo Mixtures”. 44th International Conference on Acoustics, 
+    Speech, and Signal Processing, Brighton, UK, May, 2019
+
+    Seetharaman, Prem. Bootstrapping the Learning Process for Computer Audition. 
+    Diss. Northwestern University, 2019.
     
     Args:
-        audio_signal ([type]): [description]
-        features ([type]): [description]
-        num_sources ([type]): [description]
-        threshold (int, optional): [description]. Defaults to 95.
+        audio_signal (AudioSignal): AudioSignal object which will be used to compute
+          the mask over which to compute the confidence measure. This can be None, if
+          and only if ``representation`` is passed as a keyword argument to this 
+          function.
+        features (np.ndarray): Numpy array containing the features to be clustered. 
+          Should have the same dimensions as the representation.
+        n_sources (int): Number of sources to cluster the features into.
+        threshold (int, optional): Threshold by loudness. Points below the threshold are
+          excluded from being used in the confidence measure. Defaults to 95.
+        kwargs: Keyword arguments to `_get_loud_bins_mask`. Namely, representation can
+          go here as a keyword argument.
     
     Returns:
-        [type]: [description]
+        float: Confidence given by posteriors.
     """
     mask, _ = _get_loud_bins_mask(threshold, audio_signal, **kwargs)
     embedding_size = features.shape[-1]
@@ -121,6 +154,43 @@ def posterior_confidence(audio_signal, features, num_sources, threshold=95,
 
 def silhouette_confidence(audio_signal, features, num_sources, threshold=95, 
                           max_points=1000, **kwargs):
+    """
+    Uses the silhouette score to compute the clusterability of the feature space.
+
+    The Silhouette Coefficient is calculated using the 
+    mean intra-cluster distance (a) and the mean nearest-cluster distance (b) 
+    for each sample. The Silhouette Coefficient for a sample is (b - a) / max(a, b). 
+    To clarify, b is the distance between a sample and the nearest cluster 
+    that the sample is not a part of. Note that Silhouette Coefficient is 
+    only defined if number of labels is 2 <= n_labels <= n_samples - 1.
+
+    References:
+
+    Seetharaman, Prem. Bootstrapping the Learning Process for Computer Audition. 
+    Diss. Northwestern University, 2019.
+
+    Peter J. Rousseeuw (1987). “Silhouettes: a Graphical Aid to the 
+    Interpretation and Validation of Cluster Analysis”. Computational and 
+    Applied Mathematics 20: 53-65.
+    
+    Args:
+        audio_signal (AudioSignal): AudioSignal object which will be used to compute
+          the mask over which to compute the confidence measure. This can be None, if
+          and only if ``representation`` is passed as a keyword argument to this 
+          function.
+        features (np.ndarray): Numpy array containing the features to be clustered. 
+          Should have the same dimensions as the representation.
+        n_sources (int): Number of sources to cluster the features into.
+        threshold (int, optional): Threshold by loudness. Points below the threshold are
+          excluded from being used in the confidence measure. Defaults to 95.
+        kwargs: Keyword arguments to `_get_loud_bins_mask`. Namely, representation can
+          go here as a keyword argument.
+        max_points (int, optional): Maximum number of points to compute the Silhouette
+          score for. Silhouette score is a costly operation. Defaults to 1000.
+    
+    Returns:
+        float: Confidence given by Silhouette score.
+    """
     mask, _ = _get_loud_bins_mask(threshold, audio_signal, **kwargs)
     embedding_size = features.shape[-1]
     features = features[mask].reshape(-1, embedding_size)
@@ -140,6 +210,36 @@ def silhouette_confidence(audio_signal, features, num_sources, threshold=95,
 
 def loudness_confidence(audio_signal, features, num_sources, threshold=95, 
                         **kwargs):
+    """
+    Computes the clusterability of the feature space by comparing the absolute
+    size of each cluster.
+    
+    References:
+
+    Seetharaman, Prem, Gordon Wichern, Jonathan Le Roux, and Bryan Pardo. 
+    “Bootstrapping Single-Channel Source Separation via Unsupervised Spatial 
+    Clustering on Stereo Mixtures”. 44th International Conference on Acoustics, 
+    Speech, and Signal Processing, Brighton, UK, May, 2019
+
+    Seetharaman, Prem. Bootstrapping the Learning Process for Computer Audition. 
+    Diss. Northwestern University, 2019.
+    
+    Args:
+        audio_signal (AudioSignal): AudioSignal object which will be used to compute
+          the mask over which to compute the confidence measure. This can be None, if
+          and only if ``representation`` is passed as a keyword argument to this 
+          function.
+        features (np.ndarray): Numpy array containing the features to be clustered. 
+          Should have the same dimensions as the representation.
+        n_sources (int): Number of sources to cluster the features into.
+        threshold (int, optional): Threshold by loudness. Points below the threshold are
+          excluded from being used in the confidence measure. Defaults to 95.
+        kwargs: Keyword arguments to `_get_loud_bins_mask`. Namely, representation can
+          go here as a keyword argument.
+    
+    Returns:
+        float: Confidence given by size of smallest cluster.
+    """
     mask, _ = _get_loud_bins_mask(threshold, audio_signal, **kwargs)
     embedding_size = features.shape[-1]
     features = features[mask].reshape(-1, embedding_size)
@@ -157,6 +257,28 @@ def loudness_confidence(audio_signal, features, num_sources, threshold=95,
 
 def whitened_kmeans_confidence(audio_signal, features, num_sources, threshold=95, 
                                **kwargs):
+    """
+    Computes the clusterability in two steps:
+
+    1. Cluster the feature space using KMeans into assignments
+    2. Compute the Whitened K-Means loss between the features and the assignments.
+    
+    Args:
+        audio_signal (AudioSignal): AudioSignal object which will be used to compute
+          the mask over which to compute the confidence measure. This can be None, if
+          and only if ``representation`` is passed as a keyword argument to this 
+          function.
+        features (np.ndarray): Numpy array containing the features to be clustered. 
+          Should have the same dimensions as the representation.
+        n_sources (int): Number of sources to cluster the features into.
+        threshold (int, optional): Threshold by loudness. Points below the threshold are
+          excluded from being used in the confidence measure. Defaults to 95.
+        kwargs: Keyword arguments to `_get_loud_bins_mask`. Namely, representation can
+          go here as a keyword argument.
+    
+    Returns:
+        float: Confidence given by whitened k-means loss.
+    """
     mask, representation = _get_loud_bins_mask(threshold, audio_signal, **kwargs)
     embedding_size = features.shape[-1]
     features = features[mask].reshape(-1, embedding_size)
@@ -179,6 +301,28 @@ def whitened_kmeans_confidence(audio_signal, features, num_sources, threshold=95
 
 def dpcl_classic_confidence(audio_signal, features, num_sources, threshold=95, 
                             **kwargs):
+    """
+    Computes the clusterability in two steps:
+
+    1. Cluster the feature space using KMeans into assignments
+    2. Compute the classic deep clustering loss between the features and the assignments.
+    
+    Args:
+        audio_signal (AudioSignal): AudioSignal object which will be used to compute
+          the mask over which to compute the confidence measure. This can be None, if
+          and only if ``representation`` is passed as a keyword argument to this 
+          function.
+        features (np.ndarray): Numpy array containing the features to be clustered. 
+          Should have the same dimensions as the representation.
+        n_sources (int): Number of sources to cluster the features into.
+        threshold (int, optional): Threshold by loudness. Points below the threshold are
+          excluded from being used in the confidence measure. Defaults to 95.
+        kwargs: Keyword arguments to `_get_loud_bins_mask`. Namely, representation can
+          go here as a keyword argument.
+    
+    Returns:
+        float: Confidence given by deep clustering loss.
+    """
     mask, representation = _get_loud_bins_mask(threshold, audio_signal, **kwargs)
     embedding_size = features.shape[-1]
     features = features[mask].reshape(-1, embedding_size)
