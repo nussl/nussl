@@ -820,8 +820,6 @@ def _time_stretch(item, factor_range):
                 audio_row = np.asfortranarray(audio_row)
             stretched_source.append(librosa.effects.time_stretch(audio_row, scaling))
         stretched_signal = AudioSignal(audio_data_array=np.array(stretched_source), sample_rate=sample_rate)
-        print(stretched_signal)
-        print(stretched_signal.audio_data)
         return stretched_signal
         
 
@@ -835,25 +833,51 @@ def _time_stretch(item, factor_range):
     augmented_sources = {}
     for name, source in item["sources"].items():
         augmented_sources[name] = _stretch_all_channels(source.audio_data, scaling, sample_rate)
-        print(augmented_sources[name].audio_data)
     augmented_item["sources"] = augmented_sources
 
     # copy any other keys
     _copy_meta_data(augmented_item, item)
-    print(augmented_item)
     return augmented_item
 
 
-def _pitch_shift(item, factor_range):
+def _pitch_shift(item, shift_range):
     """
     Linear Stretch on the frequency axis
     Args: 
         item: An item from a base_dataset
-        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+        shift_range: A tuple of length 2. Denotes minimum and maximum possible half step shift ranges
     Returns:
         augmented_item: A copy of the original item, with augmented sources. 
     """
-    raise NotImplementedError
+    def _shift_all_channels(audio_data, shift, sample_rate):
+        """
+        Returns copy of AudioSignal with all channels shifted
+        """
+        shifted_source = []
+        for row in range(mix_audio_data.shape[0]):
+            audio_row = audio_data[row, :]
+            if librosa.__version__ > "0.6.2":
+                audio_row = np.asfortranarray(audio_row)
+            shifted_source.append(librosa.effects.pitch_shift(audio_row, sample_rate, shift))
+        shifted_signal = AudioSignal(audio_data_array=np.array(shifted_source), sample_rate=sample_rate)
+        return shifted_signal
+        
+
+    shift = np.random.randint(shift_range[0], shift_range[1] + 1)
+    sample_rate = item["mix"].sample_rate
+
+    augmented_item = {}
+    mix_audio_data = item["mix"].audio_data
+    augmented_item["mix"] = _shift_all_channels(mix_audio_data, shift, sample_rate)
+
+    augmented_sources = {}
+    for name, source in item["sources"].items():
+        augmented_sources[name] = _shift_all_channels(source.audio_data, shift, sample_rate)
+    augmented_item["sources"] = augmented_sources
+
+    # copy any other keys
+    _copy_meta_data(augmented_item, item)
+    return augmented_item
 
 def _remix(item, factor_range):
     """
