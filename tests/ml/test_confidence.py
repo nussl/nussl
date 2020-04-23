@@ -27,7 +27,8 @@ def simple_sine_data():
 
     for key in tensorized:
         if torch.is_tensor(tensorized[key]):
-            tensorized[key] = tensorized[key].to(DEVICE).float().unsqueeze(0)
+            tensorized[key] = tensorized[key].to(
+                DEVICE).float().unsqueeze(0).contiguous()
 
     return item, tensorized
 
