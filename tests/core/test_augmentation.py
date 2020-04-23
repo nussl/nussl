@@ -1,5 +1,6 @@
 import numpy as np
 from nussl.core.augmentation import augment
+import nussl.datasets.hooks as hooks
 import tempfile
 import pytest
 import librosa
@@ -11,9 +12,9 @@ item = musdb[40]
 # Put sources in tempfiles
 item_tempfile = tempfile.NamedTemporaryFile()
 mix_loc = item_tempfile.name
-musdb["mix"].write_audio_to_file(item_tempfile.name)
+item["mix"].write_audio_to_file(item_tempfile.name)
 source_tempfiles = {}
-for name, source in musdb["sources"].items():
+for name, source in item["sources"].items():
     source_tempfile = tempfile.NamedTemporaryFile()
     source.write_audio_to_file(source_tempfile.name)
     source_tempfiles[name] = source_tempfile
@@ -31,9 +32,9 @@ def test_augment_params2():
 def test_stretch():
     augmented_dataset = augment(dataset, time_stretch=(.8, .8))
     aug_item = augmented_dataset[0]
-    assert np.close(aug_item["mix"].audio_data, 
-        librosa.time_stretch(item.audio_data, .8))
+    assert np.allclose(aug_item["mix"].audio_data[1, :], 
+        librosa.effects.time_stretch(np.asfortranarray(item["mix"].audio_data[1, :]), .8))
     for name, source in item["sources"].items():
-        assert np.close(aug_item["sources"][name].item_audio_data, 
-            librosa.time_stretch(source.audio_data, .8))
+        assert np.allclose(aug_item["sources"][name].audio_data[1, :], 
+            librosa.effects.time_stretch(np.asfortranarray(item["sources"][name].audio_data[1, :]), .8))
 

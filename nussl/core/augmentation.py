@@ -1,4 +1,4 @@
-from . import base_dataset
+from ..datasets import base_dataset
 from . import AudioSignal
 import numpy as np
 import ffmpeg
@@ -47,7 +47,8 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
             ,(min_modulation_depth, max_modulation_depth))
         vibrato: Indicates ranges for parameters to vibrato function, where ((min_modulation_frequency, max_modulation_frequency)
             ,(min_modulation_depth, max_modulation_depth))
-        igaussian_filter: Indicates ranges for parameters to the Inverse Gaussian, where ((min_mean, max_mean), (min_standard_deviation, max_standard_derivations))
+        igaussian_filter: Indicates ranges for parameters to the Inverse Gaussian, where ((min_mean, max_mean), 
+            (min_standard_deviation, max_standard_derivations))
 
     Returns: 
         augmented_dataset: List of augmented mix-sources dictionaries. 
@@ -58,7 +59,7 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
     if num_augments < 1 and not isinstance(num_augments, (int, np.int)):
         raise ValueError("num_augments should be positive integer.")
     
-    proportion_dataset = np.random.choice(dataset, int(augment_proportion * dataset), replace=False)
+    proportion_dataset = np.random.choice(dataset, int(augment_proportion * len(dataset)), replace=False)
     augmented_dataset = []
 
     if not kwargs:
@@ -71,9 +72,10 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
             augmented_item = None
             for function, ranges in kwargs.items():
                 ## This use of exec will allow us to easily support more augmentations
-                exec(f"augmented_item = transforms.{function}({item}, {ranges})")
-            augmented_dataset.append(augmented_item)
-
+                augmented_item = eval(f"transforms._{function}(item, ranges)")
+                augmented_dataset.append(augmented_item)
+    
+    print(augmented_dataset)
     return augmented_dataset
 
 
