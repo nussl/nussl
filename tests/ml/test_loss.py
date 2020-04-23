@@ -158,6 +158,10 @@ def test_sdr_loss():
 
         assert np.allclose(_torch_loss_on_one.item(), _numpy_si_sdr, atol=1e-3)
 
+    LossSDR = ml.train.loss.SISDRLoss(
+        zero_mean=False, reduction='none', return_scaling=True)
+    LossSDR(estimates, references)
+
 def test_permutation_invariant_loss_sdr():
     n_batch = 40
     n_samples = 16000

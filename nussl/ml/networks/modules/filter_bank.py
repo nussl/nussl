@@ -319,7 +319,7 @@ class LearnedFilterBank(FilterBank):
     """
     def get_transform_filters(self):
         basis = nn.Parameter(
-            torch.ones(self.num_filters, self.filter_length),
+            torch.ones(self.filter_length, self.num_filters),
             requires_grad=True
         )
         nn.init.xavier_normal_(basis)
@@ -327,7 +327,7 @@ class LearnedFilterBank(FilterBank):
 
     def get_inverse_filters(self):
         basis = nn.Parameter(
-            torch.ones(self.filter_length, self.num_filters),
+            torch.ones(self.num_filters, self.filter_length),
             requires_grad=True
         )
         nn.init.xavier_normal_(basis)

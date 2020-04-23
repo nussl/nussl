@@ -1364,7 +1364,7 @@ class AudioSignal(object):
         self.audio_data = self.audio_data * value
         return self
 
-    def resample(self, new_sample_rate):
+    def resample(self, new_sample_rate, **kwargs):
         """
         Resample the data in :attr:`audio_data` to the new sample rate provided by
         :param:`new_sample_rate`. If the :param:`new_sample_rate` is the same as :attr:`sample_rate`
@@ -1372,6 +1372,7 @@ class AudioSignal(object):
 
         Args:
             new_sample_rate (int): The new sample rate of :attr:`audio_data`.
+            kwargs: Keyword arguments to librosa.resample.
 
         """
 
@@ -1382,7 +1383,8 @@ class AudioSignal(object):
         resampled_signal = []
 
         for channel in self.get_channels():
-            resampled_channel = librosa.resample(channel, self.sample_rate, new_sample_rate)
+            resampled_channel = librosa.resample(
+                channel, self.sample_rate, new_sample_rate, **kwargs)
             resampled_signal.append(resampled_channel)
 
         self.audio_data = np.array(resampled_signal)

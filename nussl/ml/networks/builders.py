@@ -602,3 +602,122 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
     }
 
     return config
+
+def build_dual_path_recurrent_end_to_end(
+        num_filters, filter_length, hop_length, 
+        chunk_size, hop_size, hidden_size, num_layers, 
+        bidirectional, bottleneck_size,
+        num_sources, mask_activation, num_audio_channels=1,
+        window_type='sqrt_hann', skip_connection=False,
+        rnn_type='lstm', mix_key='mix_audio'):
+    """
+    Builds a config for a dual path recurrent network that operates on the 
+    time-series. Uses a learned filterbank within the network.
+    
+    Args:
+        num_filters (int): Number of learnable filters in the front end network.
+        filter_length (int): Length of the filters.
+        hop_length (int): Hop length between frames.
+        window_type (str): Type of windowing function on apply to each frame.
+        hidden_size (int): Hidden size of the RNN.
+        num_layers (int): Number of layers in the RNN.
+        bidirectional (int): Whether the RNN is bidirectional.
+        dropout (float): Amount of dropout to be used between layers of RNN.
+        num_sources (int): Number of sources to create masks for. 
+        mask_activation (list of str): Activation of the mask ('sigmoid', 'softmax', etc.). 
+          See ``nussl.ml.networks.modules.Embedding``.
+        num_audio_channels (int): Number of audio channels in input (e.g. mono or stereo).
+          Defaults to 1.
+        rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
+        normalization_class (str, optional): Type of normalization to apply, either
+          'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+        mix_key (str, optional): The key to look for in the input dictionary that contains
+          the mixture spectrogram. Defaults to 'mix_magnitude'.
+    
+    Returns:
+        dict: A TASNet configuration that can be passed to
+          SeparationModel.
+    """
+    
+    # define the building blocks
+    recurrent_hidden_size = hidden_size // 2 if bidirectional else hidden_size
+    recurrent_stack = {
+        'class': 'RecurrentStack',
+        'args': {
+            'num_features': bottleneck_size,
+            'hidden_size': recurrent_hidden_size,
+            'num_layers': 1,
+            'bidirectional': bidirectional,
+            'dropout': 0.0,
+            'rnn_type': rnn_type,
+            'batch_first': True
+        }
+    }
+
+    modules = {
+        mix_key: {},
+        'audio': {
+            'class': 'LearnedFilterBank',
+            'args': {
+                'num_filters': num_filters,
+                'filter_length': filter_length,
+                'hop_length': hop_length,
+                'window_type': window_type,
+                'requires_grad': True
+            }
+        },
+        'mixture_weights': {
+            'class': 'ReLU'
+        },
+        'dual_path': {
+            'class': 'DualPath',
+            'args': {
+                'num_layers': num_layers,
+                'chunk_size': chunk_size,
+                'hop_size': hop_size,
+                'skip_connection': skip_connection,
+                'in_features': num_filters,
+                'bottleneck_size': bottleneck_size,
+                # rest are args to DualPathBlock
+                'hidden_size': hidden_size,
+                'intra_processor': recurrent_stack,
+                'inter_processor': recurrent_stack,
+            } 
+        },
+        'mask': {
+            'class': 'Embedding',
+            'args': {
+                'num_features': num_filters,
+                'hidden_size': num_filters,
+                'embedding_size': num_sources,
+                'activation': mask_activation,
+                'num_audio_channels': num_audio_channels,
+                'dim_to_embed': [2, 3],
+            }
+        },
+        'estimates': {
+            'class': 'Mask',
+        },
+    }
+    
+    # define the topology
+    connections = [
+        ['audio', [mix_key, {'direction': 'transform'}]],
+        ['mixture_weights', ['audio']],
+        ['dual_path', ['mixture_weights', ]],
+        ['mask', ['dual_path', ]],
+        ['estimates', ['mask', 'mixture_weights']],
+        ['audio', ['estimates', {'direction': 'inverse'}]]
+    ]
+
+    # define the outputs
+    output = ['audio', 'mask']
+
+    # put it together
+    config = {
+        'modules': modules,
+        'connections': connections,
+        'output': output
+    }
+
+    return config

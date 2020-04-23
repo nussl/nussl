@@ -377,13 +377,14 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
 
     for n, p in named_parameters:
         if p.requires_grad and "bias" not in n:
-            _data = p.grad.cpu().data.numpy().flatten()
-            lower = np.percentile(_data, 10)
-            upper = np.percentile(_data, 90)
-            _data = _data[_data >= lower]
-            _data = _data[_data <= upper]
-            n = n.split('layers.')[-1]
-            data.append((n, _data, np.abs(_data).mean()))
+            if p.grad is not None:
+                _data = p.grad.cpu().data.numpy().flatten()
+                lower = np.percentile(_data, 10)
+                upper = np.percentile(_data, 90)
+                _data = _data[_data >= lower]
+                _data = _data[_data <= upper]
+                n = n.split('layers.')[-1]
+                data.append((n, _data, np.abs(_data).mean()))
 
     _data = [d[1] for d in sorted(data, key=lambda x: x[-1])]
     _names = [d[0] for d in sorted(data, key=lambda x: x[-1])]

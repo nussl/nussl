@@ -525,8 +525,7 @@ class GetExcerpt(object):
         if is_tensor:
             pad_func = torch.nn.functional.pad
             pad_tuple = [0 for _ in range(2 * len(shape))]
-            pad_tuple[2 * self.time_dim] = 0
-            pad_tuple[2 * self.time_dim + 1] = pad_amount
+            pad_tuple[2 * self.time_dim] = pad_amount
             pad_tuple = pad_tuple[::-1]
         else:
             pad_func = np.pad
