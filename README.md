@@ -3,7 +3,7 @@
 
 **The Northwestern University Source Separation Library**
  
-[![PyPI Status](https://badge.fury.io/py/nussl.svg)](https://badge.fury.io/py/nussl.svg)
+[![PyPI Status](https://badge.fury.io/py/nussl.svg)](https://badge.fury.io/py/nussl)
 [![Downloads](https://pepy.tech/badge/nussl)](https://pepy.tech/project/nussl)
 
 ![Build Status](https://github.com/nussl/nussl/workflows/Build/badge.svg)
