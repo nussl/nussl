@@ -1,4 +1,8 @@
-# nussl
+
+<p align="center">
+  <img width="201" height="150" src="docs/nussl-logo-v1.png">
+</p>
+
 
 [![codecov](https://codecov.io/gh/nussl/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/nussl/nussl)
 ![codecov](https://github.com/nussl/nussl/workflows/Build/badge.svg)
