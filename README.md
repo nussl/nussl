@@ -1,7 +1,7 @@
 <div align="center">
 <img width="201" height="150" src="docs/nussl-logo-v1.png">
 
-**The Northwestern University Source Separation Library**
+**Flexible easy-to-use source separation for researchers and developers**
  
 [![PyPI Status](https://badge.fury.io/py/nussl.svg)](https://badge.fury.io/py/nussl)
 [![Downloads](https://pepy.tech/badge/nussl)](https://pepy.tech/project/nussl)
