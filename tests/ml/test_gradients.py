@@ -9,6 +9,8 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 def test_gradients(mix_source_folder):
     os.makedirs('tests/local/', exist_ok=True)
 
+    utils.seed(0)
+
     tfms = datasets.transforms.Compose([
         datasets.transforms.GetAudio(),
         datasets.transforms.PhaseSensitiveSpectrumApproximation(),
@@ -186,4 +188,4 @@ def test_gradients(mix_source_folder):
             assert torch.allclose(param1, param2)
             if name not in config_has_batch_norm:
                 if param1.requires_grad and param2.requires_grad:
-                    assert torch.allclose(param1.grad, param2.grad, atol=1e-3)
+                    assert torch.allclose(param1.grad, param2.grad, atol=1e-2)
