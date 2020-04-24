@@ -19,8 +19,10 @@
 nussl (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
 Python audio source separation library created by the 
 [Interactive Audio Lab](http://music.cs.northwestern.edu/) 
-at Northwestern University. Whether you're a researcher creating novel network architectures or new signal processing approaches for source separation or you just need an out-of-the-box source 
-separation model, nussl contains everything you need for modern source separation.
+at Northwestern University. It stands for Northwestern University Source Separation Library (or our less-branded backronym: 
+"Need Unmixing? Source Separation Library!"). Whether you're a researcher creating novel network architectures or new signal 
+processing approaches for source separation or you just need an out-of-the-box source separation model, nussl contains 
+everything you need for modern source separation, from prototyping to evaluation to end-use.
 
 
 # Documentation
