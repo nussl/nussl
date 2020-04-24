@@ -1,5 +1,6 @@
 import numpy as np
-from nussl.core.augmentation import augment
+import numpy.random as random
+from nussl.core.augmentation import *
 import nussl.datasets.hooks as hooks
 import tempfile
 import pytest
@@ -19,44 +20,21 @@ for name, source in item["sources"].items():
     source.write_audio_to_file(source_tempfile.name)
     source_tempfiles[name] = source_tempfile
 
-dataset = [item]
-
-@pytest.mark.xfail
-def test_augment_params1():
-    augment(dataset, augment_proportion=2)
-
-@pytest.mark.xfail
-def test_augment_params2():
-    augment(dataset, num_augments=-1)
 
 def test_stretch():
     stretch_factor = .8
 
-    augmented_dataset = augment(dataset, time_stretch=(stretch_factor, stretch_factor))
-    aug_item = augmented_dataset[0]
-    assert np.allclose(aug_item["mix"].audio_data[1, :], 
-        librosa.effects.time_stretch(np.asfortranarray(item["mix"].audio_data[1, :]), stretch_factor))
-    for name, source in item["sources"].items():
-        assert np.allclose(aug_item["sources"][name].audio_data[1, :], 
-            librosa.effects.time_stretch(np.asfortranarray(item["sources"][name].audio_data[1, :]), stretch_factor))
+    augmented = time_stretch(item["mix"], stretch_factor)
+
+    assert np.allclose(augmented.audio_data[1, :], 
+            librosa.effects.time_stretch(np.asfortranarray(item["mix"].audio_data[1, :]), stretch_factor))
 
 def test_pitch_shift():
     shift = 2
     sample_rate = item["mix"].sample_rate
 
-    augmented_dataset = augment(dataset, pitch_shift=(shift, shift))
-    aug_item = augmented_dataset[0]
-    assert np.allclose(aug_item["mix"].audio_data[1, :], 
-        librosa.effects.pitch_shift(np.asfortranarray(item["mix"].audio_data[1, :]), sample_rate, shift))
-    for name, source in item["sources"].items():
-        assert np.allclose(aug_item["sources"][name].audio_data[1, :], 
-            librosa.effects.pitch_shift(np.asfortranarray(item["sources"][name].audio_data[1, :]), sample_rate, shift))
+    augmented = pitch_shift(item["mix"], shift)
 
-def test_big_dataset():
-    shift_range = (-12, 12)
-    stretch_range = (.4, 2)
-
-    augmented_dataset = augment(dataset, num_augments=10, pitch_shift=shift_range, time_stretch=stretch_range)
-    assert len(augmented_dataset) == 10
-
+    assert np.allclose(augmented.audio_data[1, :], 
+            librosa.effects.pitch_shift(np.asfortranarray(item["mix"].audio_data[1, :]), sample_rate, shift))
 
