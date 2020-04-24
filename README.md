@@ -39,7 +39,7 @@ nussl makes it easy to train your own algorithms, with many common architectures
 datasets, and configurations ready-built for many use cases, and an easy way to
 extend our built-in functionality for your own needs. There are many pre-built useful
 modules that are easy to piece together, such as LSTMs, GRUs, convolutional layers,
-fully conneected layers, mask layers, embedding layers. Everything is built on Pytorch, so adding a brand new module is a snap!
+fully conneected layers, mask layers, embedding layers. Everything is built on PyTorch, so adding a brand new module is a snap!
 
 ### Using Your Own Data
 
