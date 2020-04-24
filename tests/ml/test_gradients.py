@@ -30,7 +30,7 @@ def test_gradients(mix_source_folder):
     # make some configs
     names = ['dpcl', 'mask_inference_l1', 'mask_inference_mse_loss', 'chimera',
              'open_unmix', 'end_to_end', 'dual_path']
-    config_has_batch_norm = ['open_unmix']
+    config_has_batch_norm = ['open_unmix', 'dual_path']
     configs = [
         ml.networks.builders.build_recurrent_dpcl(
             n_features, 50, 1, True, 0.0, 20, ['sigmoid'],
@@ -189,4 +189,4 @@ def test_gradients(mix_source_folder):
             if name not in config_has_batch_norm:
                 if param1.requires_grad and param2.requires_grad:
                     assert torch.allclose(
-                        param1.grad.mean(), param2.grad.mean(), atol=1e-2)
+                        param1.grad.mean(), param2.grad.mean(), atol=1e-3)
