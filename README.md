@@ -1,16 +1,22 @@
+<div align="center">
+<img width="201" height="150" src="docs/nussl-logo-v1.png">
 
-<p align="center">
-  <img width="201" height="150" src="docs/nussl-logo-v1.png">
-</p>
-
-
-[![codecov](https://codecov.io/gh/nussl/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/nussl/nussl)
-![codecov](https://github.com/nussl/nussl/workflows/Build/badge.svg)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+**The Northwestern University Source Separation Library**
+ 
+[![PyPI Status](https://badge.fury.io/py/nussl.svg)](https://badge.fury.io/py/nussl.svg)
 [![Downloads](https://pepy.tech/badge/nussl)](https://pepy.tech/project/nussl)
 
-**The Northwestern University Source Separation Library (nussl)**
-(pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
+![Build Status](https://github.com/nussl/nussl/workflows/Build/badge.svg)
+[![codecov](https://codecov.io/gh/nussl/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/nussl/nussl)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+</div>
+
+--------------------------------------------------------------------------------
+
+
+
+nussl (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
 Python audio source separation library created by the 
 [Interactive Audio Lab](http://music.cs.northwestern.edu/) 
 at Northwestern University. Whether you're a researcher creating novel network architectures or new signal processing approaches for source separation or you just need an out-of-the-box source 
