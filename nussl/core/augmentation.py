@@ -1,14 +1,13 @@
-from ..datasets import base_dataset
-from . import AudioSignal
 import numpy as np
 import ffmpeg
 import librosa
 import os
-from ..datasets import transforms
+from .audio_signal import AudioSignal
 
+"""
 
 def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwargs):
-    """
+
     The augment function will take a dataset object that implements base_dataset,
     and with augment a proportion of the the datasets any of the following augmentations:
 
@@ -52,7 +51,7 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
 
     Returns: 
         augmented_dataset: List of augmented mix-sources dictionaries. 
-    """
+
 
     if augment_proportion < 0 or augment_proportion > 1:
         raise ValueError("augment_proportion must be between 0 and 1 inclusive.")
@@ -75,8 +74,123 @@ def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwarg
                 augmented_item = eval(f"transforms._{function}(item, ranges)")
             augmented_dataset.append(augmented_item)
     
-    print(augmented_dataset)
     return augmented_dataset
+"""
 
+def time_stretch(signal, stretch_factor):
+    """
+    Linear Stretch on the time axis
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    if not np.isscalar(stretch_factor) or stretch_factor <= 0:
+        raise ValueError("stretch_factor must be a positve scalar")
+    sample_rate = signal.sample_rate
+    stretched_source = []
+    audio_data = signal.audio_data
 
+    for row in range(audio_data.shape[0]):
+        audio_row = audio_data[row, :]
+        if librosa.__version__ > "0.6.2":
+            audio_row = np.asfortranarray(audio_row)
+        stretched_source.append(librosa.effects.time_stretch(audio_row, stretch_factor))
+    stretched_signal = AudioSignal(audio_data_array=np.array(stretched_source), sample_rate=sample_rate)
 
+    return stretched_signal
+
+def pitch_shift(signal, shift):
+    """
+    Pitch shift on the frequency axis
+    Args: 
+        signal: An Audio signal object
+        shift: The number of half-steps to shift the audio. 
+            Positive values increases the frequency of the signal
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    if not isinstance(shift, int):
+        raise ValueError("The pitch shift must be an integer.")
+
+    sample_rate = signal.sample_rate
+    shifted_source = []
+    audio_data = signal.audio_data
+
+    for row in range(audio_data.shape[0]):
+        audio_row = audio_data[row, :]
+        if librosa.__version__ > "0.6.2":
+            audio_row = np.asfortranarray(audio_row)
+        shifted_source.append(librosa.effects.pitch_shift(audio_row, sample_rate, shift))
+    shifted_signal = AudioSignal(audio_data_array=np.array(shifted_source), sample_rate=sample_rate)
+    return shifted_signal
+
+def loudness_scale(item, factor_range):
+    """
+    Loudness Scaling
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def low_pass(item, factor_range):
+    """
+    Applies low pass filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for low pass filter. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def high_pass(item, factor_range):
+    """
+    Applies high pass filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2. Denotes start and end of possible ranges for high pass filter. 
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def tremolo(item, factor_range):
+    """
+    Applies tremolo filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
+            First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def vibrato(item, factor_range):
+    """
+    Applies vibrato filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
+            First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
+
+def igaussian_filter(item, factor_range):
+    """
+    Applies Inverse Gaussian filter
+    Args: 
+        item: An item from a base_dataset
+        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
+            First tuple denotes range for frequency mean, the second denotes range for frequency standard deviation.
+    Returns:
+        augmented_item: A copy of the original item, with augmented sources. 
+    """
+    raise NotImplementedError
