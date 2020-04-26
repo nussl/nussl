@@ -128,6 +128,14 @@ class InstanceNorm(nn.Module):
         data = data.transpose(self.feature_dim, 1)
         return data
 
+class Alias(nn.Module):
+    """
+    Super simple module that just passes the data through without altering it, so
+    that the output of a model can be renamed in a SeparationModel.
+    """
+    def forward(self, data):
+        return data
+
 class LayerNorm(nn.Module):
     """
     Applies an layer norm layer. Defaults to using only 1 feature, commonly

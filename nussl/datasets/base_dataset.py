@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 
 from .. import AudioSignal
 from . import transforms as tfm
+import tqdm
 
 
 class BaseDataset(Dataset):
@@ -83,6 +84,53 @@ class BaseDataset(Dataset):
         # signals if necessary, if there are any items
         if self.items:
             self.process_item(self.items[0])
+
+    def filter_items_by_condition(self, func):
+        """
+        Filter the items in the list according to a function that takes 
+        in both the dataset as well as the item currently be processed.
+        If the item in the list passes the condition, then it is kept
+        in the list. Otherwise it is taken out of the list. For example,
+        a function that would get rid of an item if it is below some 
+        minimum number of seconds would look like this:
+
+        .. code-block:: python
+
+            min_length = 1 # in seconds
+
+            # self here refers to the dataset
+            def remove_short_audio(self, item):
+                processed_item = self.process_item(item)
+                mix_length = processed_item['mix'].signal_duration
+                if mix_length < min_length:
+                    return False
+                return True
+            
+            dataset.items # contains all items
+            dataset.filter_items_by_condition(remove_short_audio)
+            dataset.items # contains only items longer than min length
+            
+        Args:
+            func (function): A function that takes in two arguments: the dataset and
+              this dataset object (self). The function must return a bool.
+        """
+        filtered_items = []
+        n_removed = 0
+        desc = f"Filtered {n_removed} items out of dataset"
+        pbar = tqdm.tqdm(self.items, desc=desc)
+        for item in pbar:
+            check = func(self, item)
+            if not isinstance(check, bool):
+                raise DataSetException(
+                    "Output of filter function must be True or False!"
+                )
+            if check:
+                filtered_items.append(item)
+            else:
+                n_removed += 1
+            pbar.set_description(f"Filtered {n_removed} items out of dataset")
+        self.items = filtered_items
+
 
     @property
     def cache_populated(self):

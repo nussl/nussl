@@ -98,6 +98,36 @@ def test_dataset_base(benchmark_audio, monkeypatch):
     assert 'ideal_binary_mask' in output
 
 
+def test_dataset_base_filter(benchmark_audio, monkeypatch):
+    keys = [benchmark_audio[k] for k in benchmark_audio]
+
+    def dummy_get(self, folder):
+        return keys
+
+    monkeypatch.setattr(BaseDataset, 'get_items', dummy_get)
+    monkeypatch.setattr(BaseDataset, 'process_item', dummy_process_item)
+
+    _dataset = BaseDataset('test')
+    min_length = 7 # in seconds
+
+    # self here refers to the dataset
+    def remove_short_audio(self, item):
+        processed_item = self.process_item(item)
+        mix_length = processed_item['mix'].signal_duration
+        if mix_length < min_length:
+            return False
+        return True
+    
+    _dataset.filter_items_by_condition(remove_short_audio)
+    for item in _dataset:
+        assert item['mix'].signal_duration >= min_length
+
+    def bad_filter_func(self, item):
+        return 'not a bool!'
+    
+    pytest.raises(
+        DataSetException, _dataset.filter_items_by_condition, bad_filter_func)
+
 def test_dataset_base_audio_signal_params(benchmark_audio, monkeypatch):
     keys = [benchmark_audio[k] for k in benchmark_audio]
 

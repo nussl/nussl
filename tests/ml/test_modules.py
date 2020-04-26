@@ -251,6 +251,42 @@ def test_ml_expand():
     pytest.raises(ValueError, module, tensor_a, bad_tensor)
 
 
+def test_ml_alias():
+    modules = {
+        'split': {
+            'class': 'Split',
+            'args': {
+                'split_sizes': (3, 7),
+                'dim': -1
+            }
+        },
+        'split_zero': {
+            'class': 'Alias',
+        }
+    }
+
+    connections = [
+        ('split', ('data',)),
+        ('split_zero', ('split:0',))
+    ]
+
+    outputs = ['split:0', 'split_zero']
+
+    config = {
+        'modules': modules, 
+        'connections': connections,
+        'output': outputs
+    }
+
+    model = ml.SeparationModel(config)
+    data = {'data': torch.randn(100, 10)}
+    output = model(data)
+
+    assert 'split_zero' in output
+    assert torch.allclose(
+        output['split:0'], output['split_zero']
+    )
+
 def test_ml_recurrent_stack(one_item):
     data = one_item['mix_magnitude']
     num_features = data.shape[2]

@@ -608,7 +608,7 @@ def build_dual_path_recurrent_end_to_end(
         chunk_size, hop_size, hidden_size, num_layers, 
         bidirectional, bottleneck_size,
         num_sources, mask_activation, num_audio_channels=1,
-        window_type='sqrt_hann', skip_connection=False,
+        window_type='rectangular', skip_connection=False,
         rnn_type='lstm', mix_key='mix_audio'):
     """
     Builds a config for a dual path recurrent network that operates on the 

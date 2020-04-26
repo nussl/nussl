@@ -2,6 +2,7 @@ from ...unfold import GaussianMixtureTorch
 from .filter_bank import FilterBank, STFT, LearnedFilterBank
 from .blocks import (
     AmplitudeToDB,
+    Alias,
     ShiftAndScale, 
     BatchNorm,
     InstanceNorm,
