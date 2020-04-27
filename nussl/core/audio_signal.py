@@ -20,8 +20,8 @@ __all__ = ['AudioSignal', 'STFTParams', 'AudioSignalException']
 
 STFTParams = namedtuple('STFTParams',
                         ['window_length', 'hop_length', 'window_type'],
-                        defaults=(None, None, None)
                         )
+STFTParams.__new__.__defaults__ = (None,) * len(STFTParams._fields)
 """
 STFTParams object is a container that holds STFT parameters - window_length, 
 hop_length, and window_type. Not all parameters need to be specified. Ones that

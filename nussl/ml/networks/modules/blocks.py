@@ -758,6 +758,7 @@ class DualPath(nn.Module):
         self.bottleneck_norm = nn.GroupNorm(1, in_features)
         self.inv_bottleneck = nn.Linear(
             bottleneck_size, in_features)
+        self.output_norm = nn.GroupNorm(1, in_features)
     
     def forward(self, data):
         fold = nn.Fold(
@@ -803,6 +804,9 @@ class DualPath(nn.Module):
         # data is still (batch_size, n_chunks, chunk_size, bottleneck_size)
         data = self.inv_bottleneck(data)
         # data is now (batch_size, n_chunks, chunk_size, in_features)
+        data = data.transpose(1, -1)
+        data = self.output_norm(data)
+        data = data.transpose(1, -1)
         
         # resynthesize with overlap/add
         data = data.transpose(1, 3)
