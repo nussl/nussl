@@ -215,7 +215,8 @@ class TrainClosure(Closure):
 
     def _fire_event(self, engine, output, event):
         if engine is not None:
-            engine.state.model_output = output
+            if engine.state is not None:
+                engine.state.model_output = output
             engine.fire_event(event)
 
     def __call__(self, engine, data):
