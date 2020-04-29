@@ -143,9 +143,8 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
 
     return trainer, validator
 
-
 def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, trainer,
-                                val_data=None, validator=None):
+                                val_data=None, validator=None, save_by_epoch=None):
     """
     This adds the following handler to the trainer:
 
@@ -174,6 +173,9 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
 
         val_data (torch.utils.data.Dataset, optional): The validation data. 
           Defaults to None.
+
+        save_by_epoch (int, optional): Save the model by epoch number. If this is set to
+          N, then every Nth model will be saved in the format epoch{N}.model.pth.
     """
 
     # When the trainer finishes an epoch, it should validate and save 
@@ -237,16 +239,22 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
             'trainer.state.epoch_history': trainer.state.epoch_history,
         }
 
+        if isinstance(model, nn.DataParallel):
+            _model = model.module
+        else:
+            _model = model
+
         for _path in output_paths:
             os.makedirs(os.path.join(
                 output_folder, 'checkpoints'), exist_ok=True)
-            if isinstance(model, nn.DataParallel):
-                _model = model.module
-            else:
-                _model = model
             _model.save(_path, {'metadata': metadata})
             torch.save(optimizer.state_dict(),
                        _path.replace('model.pth', 'optimizer.pth'))
+        
+        if save_by_epoch is not None:
+            if trainer.state.epoch % save_by_epoch == 0:
+                _path = output_paths[0].replace('latest', f'epoch{trainer.state.epoch}')
+                _model.save(_path, {'metadata': metadata})
 
         trainer.state.saved_model_path = output_paths[-1]
         trainer.state.output_folder = output_folder

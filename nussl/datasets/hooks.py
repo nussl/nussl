@@ -181,7 +181,7 @@ class MixSourceFolder(BaseDataset):
         ])
         return items
 
-    def process_item(self, item):
+    def get_mix_and_sources(self, item):
         mix_path = os.path.join(self.folder, self.mix_folder, item)
         mix = self._load_audio_file(mix_path)
         sources = {}
@@ -189,6 +189,10 @@ class MixSourceFolder(BaseDataset):
             source_path = os.path.join(self.folder, k, item)
             if os.path.exists(source_path):
                 sources[k] = self._load_audio_file(source_path)
+        return mix, sources
+
+    def process_item(self, item):
+        mix, sources = self.get_mix_and_sources(item)
         output = {
             'mix': mix,
             'sources': sources,
@@ -197,7 +201,6 @@ class MixSourceFolder(BaseDataset):
             }
         }
         return output
-
 
 class Scaper(BaseDataset):
     """

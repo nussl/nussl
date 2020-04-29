@@ -52,7 +52,8 @@ def test_create_engine(mix_source_folder):
         # add handlers to engine
         ml.train.add_stdout_handler(trainer, validator)
         ml.train.add_validate_and_checkpoint(_dir, model, optimizer, dataset,
-                                             trainer, dataset, validator)
+                                             trainer, dataset, validator, 
+                                             save_by_epoch=1)
         ml.train.add_tensorboard_handler(_dir, trainer, every_iteration=True)
         ml.train.add_progress_bar_handler(trainer)
 
@@ -68,6 +69,12 @@ def test_create_engine(mix_source_folder):
             trainer.state.output_folder, 'checkpoints', 'latest.optimizer.pth'))
         assert os.path.exists(os.path.join(
             trainer.state.output_folder, 'checkpoints', 'best.optimizer.pth'))
+
+        for i in range(1, 4):
+            assert os.path.exists(os.path.join(
+                trainer.state.output_folder, 'checkpoints', 
+                f'epoch{i}.model.pth')
+            )
 
         assert len(trainer.state.epoch_history['train/loss']) == 3
         assert len(trainer.state.iter_history['loss']) == 10
