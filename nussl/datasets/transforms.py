@@ -753,8 +753,8 @@ class ToSeparationModel(object):
 class Augment:
     """
     The Augment transform will take a dictionary, with the keys ``mix_key``
-    and ``source_key``, which default to `mix` and `source` respectively
-    and with augment a proportion of the the datasets any of the following augmentations:
+    and ``source_key``, which default to `mix` and `source` respectively.
+    The augment transformation may include any of the following:
 
     Time stretching: Linearly scale the time axis in respect to a central portion. 
     Pitch shifting: Increase or decrease the sounds of the AudioSignal by a number of half steps
@@ -785,7 +785,6 @@ class Augment:
         igaussian_filter: Indicates ranges for parameters to the Inverse Gaussian, where ((min_mean, max_mean), 
             (min_standard_deviation, max_standard_derivations))
     """
-
     def __init__(self, mix_key='mix', source_key='source', **kwargs):
         self.mix_key = mix_key
         self.source_key = source_key
@@ -793,8 +792,10 @@ class Augment:
         if not kwargs:
             raise ValueError("No augmentations in kwargs were passed")
 
+        self.augmentations = kwargs
 
-
+    def _random_range(low, high):
+        return np.random.rand() * (high - low) + low
 
 class Compose(object):
     """Composes several transforms together. Inspired by torchvision implementation.
@@ -836,9 +837,6 @@ class TransformException(Exception):
     pass
 
 ## TODO: Finish all the augmented transforms
-
-def _random_range(low, high):
-    return np.random.rand() * (high - low) + low
 
 def _copy_meta_data(new_dict, old_dict):
     for key, value in old_dict.items():
