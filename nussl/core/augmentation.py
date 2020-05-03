@@ -1,165 +1,106 @@
 import numpy as np
+import numpy.random as random
 import ffmpeg
 import librosa
 import os
 from .audio_signal import AudioSignal
+import tempfile
+from .augmentation_utils import *
 
-"""
+filter_kwargs = {'loglevel': 'quiet'}
 
-def augment(dataset: base_dataset, augment_proportion=1, num_augments=1, **kwargs):
-
-    The augment function will take a dataset object that implements base_dataset,
-    and with augment a proportion of the the datasets any of the following augmentations:
-
-    Time stretching: Linearly scale the time axis in respect to a central portion. 
-    Pitch shifting: Increase or decrease the sounds of the AudioSignal by a number of half steps
-    Remixing: Change the loudness of each source independently.
-    Loudness Scaling: Change the loudness of all sources by the same magnitude.
-    Inverse gaussian filtering: Multiply each tf bin by the factor
-    (1 - Gaussian(f)), where f is frequency, and Gaussian's parameters 
-    are mean frequency, and standard deviation.
-    Tremolo: Apply a Tremolo Effect to all sources and mixtures.
-    Vibrato: Apply a Vibrato Effect to all sources and mixtures.
-
-    Scale factors and parameters to the gaussian are all uniformly randomly
-    chosen from a predetermined range.
-
-    Args:
-        dataset: A dataset object where each item is a dictionary containing "mix" and 
-            "sources". This object should implement nussl.datasets.base_dataset
-        augment_proportion: Indicates the proportion of the dataset to be augmented.
-        num_augments: Number of augmented versions to make from each song. 
-
-        The remaining arguments handle the ranges of possible values for augmentations. These are kwargs. 
-        The arugment name is the name of the augmentation, and the value is the parameters for that specific augmentation.
-
-        The following are tuples of length 2.
-        time_stretch: Indicates range of factors for the time stretch, where (min_stretch, max_stretch)
-        pitch_shift: Indicates range of shifts by number of half steps for the pitch shift, where (min_shift, max_shift)
-        remix: Indicates range of factors for independent loudness scaling premixing, where (min_factor, max_factor)
-        loudness_scale: Indicates range of factors for loudness scalings, where (min_factor, max_factor)
-        low_pass: Indicates range of thresholds for low pass filters where (min_threshold, max_thresold)
-        high_pass: Indicates range of thresholds for high pass filters where (min_threshold, max_threshold)
-
-        The following are tuples of length 2, where each element is also a tuple of length 2. 
-        tremolo: Indicates ranges for parameters to tremolo function, where ((min_modulation_frequency, max_modulation_frequency)
-            ,(min_modulation_depth, max_modulation_depth))
-        vibrato: Indicates ranges for parameters to vibrato function, where ((min_modulation_frequency, max_modulation_frequency)
-            ,(min_modulation_depth, max_modulation_depth))
-        igaussian_filter: Indicates ranges for parameters to the Inverse Gaussian, where ((min_mean, max_mean), 
-            (min_standard_deviation, max_standard_derivations))
-
-    Returns: 
-        augmented_dataset: List of augmented mix-sources dictionaries. 
-
-
-    if augment_proportion < 0 or augment_proportion > 1:
-        raise ValueError("augment_proportion must be between 0 and 1 inclusive.")
-    if num_augments < 1 and not isinstance(num_augments, (int, np.int)):
-        raise ValueError("num_augments should be positive integer.")
-    
-    proportion_dataset = np.random.choice(dataset, int(augment_proportion * len(dataset)), replace=False)
-    augmented_dataset = []
-
-    if not kwargs:
-        raise RuntimeWarning("No Augmentations were passed to augment(). ")
-        return augmented_dataset
-
-    # Preform augmentations
-    for _ in range(num_augments):
-        for item in proportion_dataset:
-            augmented_item = None
-            for function, ranges in kwargs.items():
-                ## This use of exec will allow us to easily support more augmentations
-                augmented_item = eval(f"transforms._{function}(item, ranges)")
-            augmented_dataset.append(augmented_item)
-    
-    return augmented_dataset
-"""
-
-def time_stretch(signal, stretch_factor):
+def time_stretch(audio_signal, stretch_factor):
     """
     Linear Stretch on the time axis
     Args: 
-        item: An item from a base_dataset
+        audio_signal: An AudioSignal object
         factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
     Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
+        stretched_signal: A copy of the original audio_signal, with augmented sources. 
     """
-    if not np.isscalar(stretch_factor) or stretch_factor <= 0:
+    if not np.issubdtype(type(stretch_factor), np.number) or stretch_factor <= 0:
         raise ValueError("stretch_factor must be a positve scalar")
-    sample_rate = signal.sample_rate
-    stretched_source = []
-    audio_data = signal.audio_data
 
-    for row in range(audio_data.shape[0]):
-        audio_row = audio_data[row, :]
-        if librosa.__version__ > "0.6.2":
-            audio_row = np.asfortranarray(audio_row)
-        stretched_source.append(librosa.effects.time_stretch(audio_row, stretch_factor))
-    stretched_signal = AudioSignal(audio_data_array=np.array(stretched_source), sample_rate=sample_rate)
+    sample_rate = audio_signal.sample_rate
+    stretched_audio_data = []
+    audio_data = audio_signal.audio_data
+
+    for audio_row in audio_signal.get_channels():
+        stretched_audio_data.append(librosa.effects.time_stretch(audio_row, stretch_factor))
+    stretched_audio_data = np.array(stretched_audio_data)
+    stretched_signal = audio_signal.make_copy_with_audio_data(stretched_audio_data)
+    stretched_signal.stft()
 
     return stretched_signal
 
-def pitch_shift(signal, shift):
+def pitch_shift(audio_signal, shift):
     """
     Pitch shift on the frequency axis
     Args: 
-        signal: An Audio signal object
+        audio_signal: An AudioSignal object
         shift: The number of half-steps to shift the audio. 
             Positive values increases the frequency of the signal
     Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
+        shifted_signal: A copy of the original audio_signal, with augmented sources. 
     """
     if not isinstance(shift, int):
-        raise ValueError("The pitch shift must be an integer.")
+        raise ValueError("shift must be an integer.")
 
-    sample_rate = signal.sample_rate
-    shifted_source = []
-    audio_data = signal.audio_data
+    sample_rate = audio_signal.sample_rate
+    shifted_audio_data = []
+    audio_data = audio_signal.audio_data
 
-    for row in range(audio_data.shape[0]):
-        audio_row = audio_data[row, :]
-        if librosa.__version__ > "0.6.2":
-            audio_row = np.asfortranarray(audio_row)
-        shifted_source.append(librosa.effects.pitch_shift(audio_row, sample_rate, shift))
-    shifted_signal = AudioSignal(audio_data_array=np.array(shifted_source), sample_rate=sample_rate)
+    for audio_row in audio_signal.get_channels():
+        shifted_audio_data.append(librosa.effects.pitch_shift(audio_row, sample_rate, shift))
+    shifted_audio_data = np.array(shifted_audio_data)
+    shifted_signal = audio_signal.make_copy_with_audio_data(shifted_audio_data)
+    shifted_signal.stft()
+
     return shifted_signal
 
-def loudness_scale(item, factor_range):
+def low_pass(audio_signal, highest_freq):
     """
-    Loudness Scaling
+    Applies low pass filter. 
     Args: 
-        item: An item from a base_dataset
-        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+        audio_signal: An AudioSignal object
+        highest_freq: Threshold for low pass. Should be positive scalar
     Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
+        augmented_signal: A copy of the original audio_signal, with augmented sources. 
     """
-    raise NotImplementedError
+    if not np.issubdtype(type(highest_freq), np.number) or highest_freq <= 0:
+        raise ValueError("highest_freq should be positve scalar")
+    
+    l_stft = audio_signal.stft_data.copy()
+    freq_vector = audio_signal.freq_vector
+    idx = (np.abs(freq_vector - highest_freq)).argmin()
+    l_stft[idx:, :, :] = 0
+    augmented_signal = audio_signal.make_copy_with_stft_data(l_stft)
+    augmented_signal.istft()
 
-def low_pass(item, factor_range):
-    """
-    Applies low pass filter
-    Args: 
-        item: An item from a base_dataset
-        factor_range: A tuple of length 2. Denotes start and end of possible ranges for low pass filter. 
-    Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
-    """
-    raise NotImplementedError
+    return augmented_signal
 
-def high_pass(item, factor_range):
+def high_pass(audio_signal, lowest_freq):
     """
     Applies high pass filter
     Args: 
-        item: An item from a base_dataset
-        factor_range: A tuple of length 2. Denotes start and end of possible ranges for high pass filter. 
+        audio_signal: An AudioSignal object
+        highest_freq: Threshold for high pass. Should be positive scalar
     Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
+        augmented_signal: A copy of the original audio_signal, with augmented sources. 
     """
-    raise NotImplementedError
+    if not np.issubdtype(type(lowest_freq), np.number) or lowest_freq <= 0:
+        raise ValueError("lowest_freq should be positve scalar")
 
-def tremolo(item, factor_range):
+    h_stft = audio_signal.stft_data.copy()
+    freq_vector = audio_signal.freq_vector
+    idx = (np.abs(freq_vector - lowest_freq)).argmin()
+    h_stft[:idx, :, :] = 0
+    augmented_signal = audio_signal.make_copy_with_stft_data(h_stft)
+    augmented_signal.istft()
+
+    return augmented_signal
+
+def tremolo(audio_signal, mod_freq, mod_depth):
     """
     Applies tremolo filter
     Args: 
@@ -167,11 +108,28 @@ def tremolo(item, factor_range):
         factor_range: A tuple of length 2, where each item is a tuple of length 2. 
             First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
     Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
+        augmented_item: A copy of the original audio_signal, with augmented sources. 
     """
-    raise NotImplementedError
 
-def vibrato(item, factor_range):
+    audio_tempfile, audio_tempfile_name = \
+        save_audio_signal_to_tempfile(audio_signal)
+    output_tempfile, output_tempfile_name = \
+        make_empty_audio_file()
+
+    output = (ffmpeg
+        .input(audio_tempfile_name, **filter_kwargs)
+        .filter('tremolo', 
+            f = mod_freq,
+            d = mod_depth)
+        .output(output_tempfile_name)
+        .overwrite_output()
+        .run()
+    )
+    augmented_signal = read_audio_tempfile(output_tempfile)
+    return augmented_signal
+
+
+def vibrato(audio_signal, mod_freq, mod_depth):
     """
     Applies vibrato filter
     Args: 
@@ -179,11 +137,26 @@ def vibrato(item, factor_range):
         factor_range: A tuple of length 2, where each item is a tuple of length 2. 
             First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
     Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
+        augmented_item: A copy of the original audio_signal, with augmented sources. 
     """
-    raise NotImplementedError
+    audio_tempfile, audio_tempfile_name = \
+        save_audio_signal_to_tempfile(audio_signal)
+    output_tempfile, output_tempfile_name = \
+        make_empty_audio_file()
 
-def igaussian_filter(item, factor_range):
+    output = (ffmpeg
+        .input(audio_tempfile_name, **filter_kwargs)
+        .filter('vibrato', 
+            f = mod_freq,
+            d = mod_depth)
+        .output(output_tempfile_name)
+        .overwrite_output()
+        .run()
+    )
+    augmented_signal = read_audio_tempfile(output_tempfile)
+    return augmented_signal
+
+def igaussian_filter(audio_signal, factor_range):
     """
     Applies Inverse Gaussian filter
     Args: 
@@ -191,6 +164,6 @@ def igaussian_filter(item, factor_range):
         factor_range: A tuple of length 2, where each item is a tuple of length 2. 
             First tuple denotes range for frequency mean, the second denotes range for frequency standard deviation.
     Returns:
-        augmented_item: A copy of the original item, with augmented sources. 
+        augmented_item: A copy of the original audio_signal, with augmented sources. 
     """
     raise NotImplementedError
