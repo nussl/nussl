@@ -28,7 +28,11 @@ def time_stretch(audio_signal, stretch_factor):
     for audio_row in audio_signal.get_channels():
         stretched_audio_data.append(librosa.effects.time_stretch(audio_row, stretch_factor))
     stretched_audio_data = np.array(stretched_audio_data)
-    stretched_signal = audio_signal.make_copy_with_audio_data(stretched_audio_data)
+    # The following line causes a warning. 
+    # stretched_signal = audio_signal.make_copy_with_audio_data(stretched_audio_data)
+
+    # This one does not
+    stretched_signal = AudioSignal(audio_data_array=stretched_audio_data)
     stretched_signal.stft()
 
     return stretched_signal
