@@ -7,7 +7,7 @@ in machine learning pipelines.
 """
 import os
 
-import musdb
+from .. import musdb
 import jams
 
 from ..core import constants, utils

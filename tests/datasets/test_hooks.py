@@ -8,6 +8,7 @@ from nussl.datasets import transforms
 import tempfile
 import shutil
 
+
 def test_dataset_hook_musdb18(musdb_tracks):
     dataset = nussl.datasets.MUSDB18(
         folder=musdb_tracks.root, download=True)
