@@ -16,3 +16,4 @@ termtables
 gpytorch
 importlib_resources
 pyloudnorm
+ffmpeg-python
