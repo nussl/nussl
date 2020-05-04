@@ -160,10 +160,11 @@ class MixSourceFolder(BaseDataset):
             (see ``nussl.datasets.BaseDataset``).
     """
     def __init__(self, folder, mix_folder='mix', source_folders=None, sample_rate=None,
-                 ext=None, **kwargs):
+                 ext=None, make_mix=False, **kwargs):
         self.mix_folder = mix_folder
         self.source_folders = source_folders
         self.ext = ['.wav', '.flac', '.mp3'] if ext is None else ext
+        self.make_mix = make_mix
         super().__init__(folder, **kwargs)
 
     def get_items(self, folder):
@@ -174,7 +175,10 @@ class MixSourceFolder(BaseDataset):
                 and f != self.mix_folder
             ])
 
-        mix_folder = os.path.join(folder, self.mix_folder)
+        if self.make_mix:
+            mix_folder = os.path.join(folder, self.source_folders[0])
+        else:
+            mix_folder = os.path.join(folder, self.mix_folder)
         items = sorted([
             x for x in os.listdir(mix_folder)
             if os.path.splitext(x)[1] in self.ext
@@ -182,13 +186,17 @@ class MixSourceFolder(BaseDataset):
         return items
 
     def get_mix_and_sources(self, item):
-        mix_path = os.path.join(self.folder, self.mix_folder, item)
-        mix = self._load_audio_file(mix_path)
         sources = {}
         for k in self.source_folders:
             source_path = os.path.join(self.folder, k, item)
             if os.path.exists(source_path):
                 sources[k] = self._load_audio_file(source_path)
+        
+        if self.make_mix:
+            mix = sum(list(sources.values()))
+        else:
+            mix_path = os.path.join(self.folder, self.mix_folder, item)
+            mix = self._load_audio_file(mix_path)
         return mix, sources
 
     def process_item(self, item):
