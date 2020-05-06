@@ -60,35 +60,7 @@ def test_params(mix_and_sources):
     with pytest.raises(ValueError):
         pitch_shift(audio_signal, "this is a string")
 
-def test_tremolo(mix_and_sources, check_against_regression_data):
-    f = 15
-    d = .5
-    mix, _ =  mix_and_sources
-    reg_path = path.join(REGRESSION_PATH, "tremolo.json")
-    signal = mix
-    augmented_signal = tremolo(mix, f, d)
-
-    audio_data = augmented_signal.audio_data
-    scores = {
-        'test_metrics': {
-            "mean": [np.mean(audio_data, dtype=float),],
-            "t_0_mean": [np.mean(audio_data[:, 0], dtype=float)],
-            "variance": [np.var(audio_data, dtype=float)],
-            "f_0_mean": [np.mean(audio_data[0, :], dtype=float)],
-            "sum": [np.sum(audio_data, dtype=float)]
-        }
-    }
-    check_against_regression_data(scores, reg_path)
-
-
-def test_vibrato(mix_and_sources, check_against_regression_data):
-    f = 5
-    d = .5
-    reg_path = path.join(REGRESSION_PATH, "vibrato.json")
-    mix, _ =  mix_and_sources
-    augmented_signal = vibrato(mix, f, d)
-    
-    audio_data = augmented_signal.audio_data
+def ffmpeg_regression(audio_data, reg_path, check_against_regression_data):
     scores = {
         'test_metrics': {
             "mean": [np.mean(audio_data, dtype=float)],
@@ -99,6 +71,47 @@ def test_vibrato(mix_and_sources, check_against_regression_data):
         }
     }
     check_against_regression_data(scores, reg_path)
-    
-    
 
+def test_tremolo(mix_and_sources, check_against_regression_data):
+    f = 15
+    d = .5
+    mix, _ =  mix_and_sources
+    reg_path = path.join(REGRESSION_PATH, "tremolo.json")
+
+    augmented_signal = tremolo(mix, f, d)
+
+    ffmpeg_regression(augmented_signal.audio_data, 
+        reg_path, check_against_regression_data)
+
+def test_vibrato(mix_and_sources, check_against_regression_data):
+    f = 5
+    d = .5
+    reg_path = path.join(REGRESSION_PATH, "vibrato.json")
+    mix, _ =  mix_and_sources
+    augmented_signal = vibrato(mix, f, d)
+    
+    ffmpeg_regression(augmented_signal.audio_data, 
+        reg_path, check_against_regression_data)
+    
+def test_echo(mix_and_sources, check_against_regression_data):
+    # This sounds like an open air concert in the mountains
+    in_gain = .8
+    out_gain = .9
+    delays = [1000]
+    decays = [.3]
+    mix, _ = mix_and_sources
+
+    reg_path = path.join(REGRESSION_PATH, "echo.json")
+    echo_mix = echo(mix, in_gain, out_gain, delays, decays)
+    ffmpeg_regression(echo_mix.audio_data, 
+        reg_path, check_against_regression_data)
+
+    # Same as above but with one more mountain
+    delays = [1000, 1800]
+    decays = [.3 , .25]
+    reg_path = path.join(REGRESSION_PATH, "echo2.json")
+    echo_mix = echo(mix, in_gain, out_gain, delays, decays)
+    ffmpeg_regression(echo_mix.audio_data, 
+        reg_path, check_against_regression_data)
+
+    
