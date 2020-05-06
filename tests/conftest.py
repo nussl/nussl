@@ -237,3 +237,4 @@ def check_against_regression_data():
                             atol=1e-3
                         )
     return check
+

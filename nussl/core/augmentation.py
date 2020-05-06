@@ -9,6 +9,9 @@ from .augmentation_utils import *
 
 filter_kwargs = {'loglevel': 'quiet'}
 
+def _make_arglist_ffmpeg(lst):
+    return "|".join([str(s) for s in lst])
+
 def time_stretch(audio_signal, stretch_factor):
     """
     Linear Stretch on the time axis
@@ -28,7 +31,8 @@ def time_stretch(audio_signal, stretch_factor):
     for audio_row in audio_signal.get_channels():
         stretched_audio_data.append(librosa.effects.time_stretch(audio_row, stretch_factor))
     stretched_audio_data = np.array(stretched_audio_data)
-    # The following line causes a warning. 
+
+    # The following line causes a UserWarning.
     # stretched_signal = audio_signal.make_copy_with_audio_data(stretched_audio_data)
 
     # This one does not
@@ -108,12 +112,17 @@ def tremolo(audio_signal, mod_freq, mod_depth):
     """
     Applies tremolo filter
     Args: 
-        item: An item from a base_dataset
-        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
-            First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
+        audio_signal: An AudioSignal object
+        mod_freq: Modulation frequency. Must be between 0 and 1.
+        mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
         augmented_item: A copy of the original audio_signal, with augmented sources. 
     """
+    if not np.issubdtype(type(mod_freq), np.number) or mod_freq < 0:
+        raise ValueError("mod_freq should be positve scalar")
+    
+    if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
+        raise ValueError("mod_depth should be positve scalar between 0 and 1.")
 
     audio_tempfile, audio_tempfile_name = \
         save_audio_signal_to_tempfile(audio_signal)
@@ -137,12 +146,18 @@ def vibrato(audio_signal, mod_freq, mod_depth):
     """
     Applies vibrato filter
     Args: 
-        item: An item from a base_dataset
-        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
-            First tuple denotes range for modulation frequency, the second denotes range for modulation depth.
+        audio_signal: An AudioSignal object
+        mod_freq: Modulation frequency. Must be between 0 and 1.
+        mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
         augmented_item: A copy of the original audio_signal, with augmented sources. 
     """
+    if not np.issubdtype(type(mod_freq), np.number) or mod_freq < 0:
+        raise ValueError("mod_freq should be positve scalar")
+    
+    if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
+        raise ValueError("mod_depth should be positve scalar between 0 and 1.")
+
     audio_tempfile, audio_tempfile_name = \
         save_audio_signal_to_tempfile(audio_signal)
     output_tempfile, output_tempfile_name = \
@@ -160,14 +175,39 @@ def vibrato(audio_signal, mod_freq, mod_depth):
     augmented_signal = read_audio_tempfile(output_tempfile)
     return augmented_signal
 
+def echo(audio_signal, in_gain, out_gain, delays: list, decays: list):
+    """
+    Applies echo filter
+    Args:
+        audio_signal: An AudioSignal object
+        in_gain: Input gain of the reflected signal. Must be between 0 and 1.
+        out_gain: Output gain of the reflected signal. Must be between 0 and 1.
+        delays: A time or list of times in ms between original signal and reflections.
+            must be list. Must be scalars in (0 and 90000.0]
+        decays: A loudness or list of loudness of reflected signals. 
+            must be list. Must be scalars in (0 and 1.0]
+    """
+    audio_tempfile, audio_tempfile_name = \
+        save_audio_signal_to_tempfile(audio_signal)
+    output_tempfile, output_tempfile_name = \
+        make_empty_audio_file()
+
+    delays_str = _make_arglist_ffmpeg(delays)
+    decays_str = _make_arglist_ffmpeg(decays)
+    output = (ffmpeg
+        .input(audio_tempfile_name, **filter_kwargs)
+        .filter('aecho',
+        in_gain=in_gain,
+        out_gain=out_gain,
+        delays=delays_str,
+        decays=decays_str)
+        .output(output_tempfile_name)
+        .overwrite_output()
+        .run()
+    )
+
+    augmented_signal = read_audio_tempfile(output_tempfile)
+    return augmented_signal
+
 def igaussian_filter(audio_signal, factor_range):
-    """
-    Applies Inverse Gaussian filter
-    Args: 
-        item: An item from a base_dataset
-        factor_range: A tuple of length 2, where each item is a tuple of length 2. 
-            First tuple denotes range for frequency mean, the second denotes range for frequency standard deviation.
-    Returns:
-        augmented_item: A copy of the original audio_signal, with augmented sources. 
-    """
     raise NotImplementedError
