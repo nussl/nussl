@@ -13,21 +13,6 @@ import pytest
 REGRESSION_PATH="tests/core/regression/augmentation"
 os.makedirs(REGRESSION_PATH, exist_ok=True)
 
-# # We test on a single item from MUSDB
-# musdb = hooks.MUSDB18(download=True)
-# item = musdb[40]
-
-# # Put sources in tempfiles
-# item_tempfile = tempfile.NamedTemporaryFile()
-# mix_loc = item_tempfile.name
-# item["mix"].write_audio_to_file(item_tempfile.name)
-# source_tempfiles = {}
-# for name, source in item["sources"].items():
-#     source_tempfile = tempfile.NamedTemporaryFile()
-#     source.write_audio_to_file(source_tempfile.name)
-#     source_tempfiles[name] = source_tempfile
-
-
 def test_stretch(mix_and_sources):
     stretch_factor = .8
     mix, _ = mix_and_sources
@@ -114,4 +99,15 @@ def test_echo(mix_and_sources, check_against_regression_data):
     ffmpeg_regression(echo_mix.audio_data, 
         reg_path, check_against_regression_data)
 
+def test_emphasis(mix_and_sources, check_against_regression_data):
+    mix, _  = mix_and_sources
+    level_in = 1
+    level_out = 2
+    types = ['col', 'riaa', 'cd']
+    mode = 'production'
+
+    for _type in types:
+        reg_path = path.join(REGRESSION_PATH, f"emphasis_{_type}.json")
+        augmented_signal = emphasis(mix, level_in, level_out, _type, mode=mode)
+        ffmpeg_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
     

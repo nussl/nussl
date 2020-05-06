@@ -9,6 +9,12 @@ from .augmentation_utils import *
 
 filter_kwargs = {'loglevel': 'quiet'}
 
+# These values are found in the ffmpeg documentation in filters
+# that use the level_in arugment, however, not all filters that
+# use this 
+LEVEL_MIN = .015625
+LEVEL_MAX = 64
+
 def _make_arglist_ffmpeg(lst):
     return "|".join([str(s) for s in lst])
 
@@ -19,7 +25,7 @@ def time_stretch(audio_signal, stretch_factor):
         audio_signal: An AudioSignal object
         factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
     Returns:
-        stretched_signal: A copy of the original audio_signal, with augmented sources. 
+        stretched_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(stretch_factor), np.number) or stretch_factor <= 0:
         raise ValueError("stretch_factor must be a positve scalar")
@@ -49,7 +55,7 @@ def pitch_shift(audio_signal, shift):
         shift: The number of half-steps to shift the audio. 
             Positive values increases the frequency of the signal
     Returns:
-        shifted_signal: A copy of the original audio_signal, with augmented sources. 
+        shifted_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not isinstance(shift, int):
         raise ValueError("shift must be an integer.")
@@ -73,7 +79,7 @@ def low_pass(audio_signal, highest_freq):
         audio_signal: An AudioSignal object
         highest_freq: Threshold for low pass. Should be positive scalar
     Returns:
-        augmented_signal: A copy of the original audio_signal, with augmented sources. 
+        augmented_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(highest_freq), np.number) or highest_freq <= 0:
         raise ValueError("highest_freq should be positve scalar")
@@ -94,7 +100,7 @@ def high_pass(audio_signal, lowest_freq):
         audio_signal: An AudioSignal object
         highest_freq: Threshold for high pass. Should be positive scalar
     Returns:
-        augmented_signal: A copy of the original audio_signal, with augmented sources. 
+        augmented_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(lowest_freq), np.number) or lowest_freq <= 0:
         raise ValueError("lowest_freq should be positve scalar")
@@ -110,13 +116,15 @@ def high_pass(audio_signal, lowest_freq):
 
 def tremolo(audio_signal, mod_freq, mod_depth):
     """
+    https://ffmpeg.org/ffmpeg-all.html#tremolo
+
     Applies tremolo filter
     Args: 
         audio_signal: An AudioSignal object
         mod_freq: Modulation frequency. Must be between 0 and 1.
         mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
-        augmented_item: A copy of the original audio_signal, with augmented sources. 
+        augmented_item: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < 0:
         raise ValueError("mod_freq should be positve scalar")
@@ -144,13 +152,15 @@ def tremolo(audio_signal, mod_freq, mod_depth):
 
 def vibrato(audio_signal, mod_freq, mod_depth):
     """
+    https://ffmpeg.org/ffmpeg-all.html#vibrato
+
     Applies vibrato filter
     Args: 
         audio_signal: An AudioSignal object
         mod_freq: Modulation frequency. Must be between 0 and 1.
         mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
-        augmented_item: A copy of the original audio_signal, with augmented sources. 
+        augmented_item: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < 0:
         raise ValueError("mod_freq should be positve scalar")
@@ -177,15 +187,19 @@ def vibrato(audio_signal, mod_freq, mod_depth):
 
 def echo(audio_signal, in_gain, out_gain, delays: list, decays: list):
     """
+    https://ffmpeg.org/ffmpeg-all.html#aecho
+
     Applies echo filter
     Args:
         audio_signal: An AudioSignal object
         in_gain: Input gain of the reflected signal. Must be between 0 and 1.
         out_gain: Output gain of the reflected signal. Must be between 0 and 1.
-        delays: A time or list of times in ms between original signal and reflections.
+        delays: A list of times in ms between original signal and reflections.
             must be list. Must be scalars in (0 and 90000.0]
-        decays: A loudness or list of loudness of reflected signals. 
+        decays: A list of loudness of reflected signals. 
             must be list. Must be scalars in (0 and 1.0]
+    Returns:
+        augmented_item: A copy of the original audio signal, with augmentations applied 
     """
     audio_tempfile, audio_tempfile_name = \
         save_audio_signal_to_tempfile(audio_signal)
@@ -208,6 +222,51 @@ def echo(audio_signal, in_gain, out_gain, delays: list, decays: list):
 
     augmented_signal = read_audio_tempfile(output_tempfile)
     return augmented_signal
+
+def emphasis(audio_signal, level_in, level_out, _type, mode='production'):
+    """
+    https://ffmpeg.org/ffmpeg-all.html#aemphasis
+
+    Applies the emphasis filter, which either creates or restores 
+    signals from various physical mediums. 
+    Args:
+        audio_signal: An AudioSignal object
+        level_in: Input gain
+        level_out: Output gain
+        _type: medium type to convert/deconvert from 
+        mode: reproduction to convert from physical medium, 
+            production to convert to physical medium.
+
+    Returns:
+        augmented_item: A copy of the original audio signal, with augmentations applied 
+    """
+    if level_in < LEVEL_MIN or level_in > LEVEL_MAX \
+        or level_out < LEVEL_MIN or level_out > LEVEL_MAX:
+        raise ValueError(f"level_in and level_out must both be between {LEVEL_MIN} AND {LEVEL_MAX}")
+
+    audio_tempfile, audio_tempfile_name = \
+        save_audio_signal_to_tempfile(audio_signal)
+    output_tempfile, output_tempfile_name = \
+        make_empty_audio_file()
+
+    emphasis_kwargs = {
+        'level_in': level_in,
+        'level_out': level_out,
+        'mode': mode,
+        'type': _type
+    }
+    output = (ffmpeg
+        .input(audio_tempfile_name, **filter_kwargs)
+        .filter('aemphasis',
+        **emphasis_kwargs)
+        .output(output_tempfile_name)
+        .overwrite_output()
+        .run()
+    )
+
+    augmented_signal = read_audio_tempfile(output_tempfile)
+    return augmented_signal
+    
 
 def igaussian_filter(audio_signal, factor_range):
     raise NotImplementedError
