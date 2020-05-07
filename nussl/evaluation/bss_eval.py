@@ -208,6 +208,13 @@ class BSSEvalV4(BSSEvaluationBase):
 
 
 class BSSEvalScale(BSSEvaluationBase):
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
+                 compute_permutation=False, best_permutation_key="SI-SDR", **kwargs):
+        super().__init__(true_sources_list, estimated_sources_list, source_labels=source_labels,
+                         compute_permutation=compute_permutation,
+                         best_permutation_key=best_permutation_key,
+                         **kwargs)
+
     def preprocess(self):
         """
         Scale invariant metrics expects zero-mean centered references and sources.
