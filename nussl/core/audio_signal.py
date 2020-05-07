@@ -11,6 +11,7 @@ import scipy.io.wavfile as wav
 import scipy
 from scipy.signal import check_COLA
 import soundfile as sf
+import pyloudnorm
 
 from . import constants
 from . import utils
@@ -1320,6 +1321,44 @@ class AudioSignal(object):
         new_signal.original_signal_length = self.original_signal_length
         new_signal.audio_data = None
         return new_signal
+
+    def loudness(self, filter_class='K-weighting', block_size=0.400):
+        """
+        Uses pyloudnorm to calculate loudness.
+
+        Implementation of ITU-R BS.1770-4.
+        Allows control over gating block size and frequency weighting filters for 
+        additional control.
+
+        Measure the integrated gated loudness of a signal.
+        
+        Uses the weighting filters and block size defined by the meter
+        the integrated loudness is measured based upon the gating algorithm
+        defined in the ITU-R BS.1770-4 specification. 
+        Supports up to 5 channels and follows the channel ordering: 
+        [Left, Right, Center, Left surround, Right surround]
+
+        Args:
+            filter_class (str):
+              Class of weighting filter used.
+              - 'K-weighting' (default)
+              - 'Fenton/Lee 1'
+              - 'Fenton/Lee 2'
+              - 'Dash et al.'
+            block_size (float):
+              Gating block size in seconds. Defaults to 0.400.
+
+        Returns:
+            float: LUFS, Integrated gated loudness of the input 
+              measured in dB LUFS.
+        """
+
+        # create BS.1770 meter
+        meter = pyloudnorm.Meter(
+            self.sample_rate, filter_class=filter_class, block_size=block_size)
+        # measure loudness
+        loudness = meter.integrated_loudness(self.audio_data.T) 
+        return loudness
 
     def rms(self, win_len=None, hop_len=None):
         """ Calculates the root-mean-square of :attr:`audio_data`.

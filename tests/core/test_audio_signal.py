@@ -251,6 +251,11 @@ def test_rms():
     answer = np.array([ans for _ in range(n_seconds*2+1)])
     assert np.allclose(answer, rms, atol=1e-06)
 
+def test_loudness(benchmark_audio):
+    for key, path in benchmark_audio.items():
+        a = nussl.AudioSignal(path)
+        a.loudness()
+
 def test_peak_normalize():
     num_samples = nussl.constants.DEFAULT_SAMPLE_RATE  # 1 second
     np_sin = np.sin(np.linspace(0, 100 * 2 * np.pi, num_samples))  # Freq = 100 Hz
