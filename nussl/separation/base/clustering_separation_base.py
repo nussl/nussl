@@ -98,6 +98,28 @@ class ClusteringSeparationBase(MaskSeparationBase):
         self.cutoff = np.percentile(np.abs(self.stft), self.percentile)
         self.tf_point_over_cutoff = np.abs(self.stft) >= self.cutoff
 
+    def confidence(self, approach='silhouette_confidence', **kwargs):
+        """
+        In clustering-based separation algorithms, we can compute a confidence
+        measure based on the clusterability of the feature space. This can be computed
+        only after the features have been extracted by ``extract_features``. 
+        
+        Args:
+            approach (str, optional): What approach to use for getting the confidence 
+              measure. Options are 'jensen_shannon_confidence', 'posterior_confidence', 
+              'silhouette_confidence', 'loudness_confidence', 'whitened_kmeans_confidence',
+              'dpcl_classic_confidence'. Defaults to 'silhouette_confidence'.
+            kwargs: Keyword arguments to the function being used to compute the confidence.
+        """
+        if self.features is None:
+            raise SeparationException(
+                "self.features is None! Did you run extract features?")
+        confidence_function = getattr(ml.confidence, approach)
+        confidence = confidence_function(
+            self.audio_signal, self.features, self.num_sources, **kwargs)
+        return confidence
+
+
     def extract_features(self):
         """
         This function should be implemented by the subclass. It should extract

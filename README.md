@@ -1,16 +1,28 @@
-# nussl
+<div align="center">
+<img width="201" height="150" src="docs/nussl-logo-v1.png">
 
+**Flexible easy-to-use audio source separation**
+ 
+[![PyPI Status](https://badge.fury.io/py/nussl.svg)](https://badge.fury.io/py/nussl)
+[![Downloads](https://pepy.tech/badge/nussl)](https://pepy.tech/project/nussl)
+
+![Build Status](https://github.com/nussl/nussl/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/nussl/nussl/branch/master/graph/badge.svg)](https://codecov.io/gh/nussl/nussl)
-![codecov](https://github.com/nussl/nussl/workflows/Build/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+</div>
 
-**The Northwestern University Source Separation Library (nussl)**
-(pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
+--------------------------------------------------------------------------------
+
+
+
+nussl (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
 Python audio source separation library created by the 
 [Interactive Audio Lab](http://music.cs.northwestern.edu/) 
-at Northwestern University. Whether you're a researcher creating novel network architectures or new signal processing approaches for source separation or you just need an out-of-the-box source 
-separation model, nussl contains everything you need for modern source separation.
+at Northwestern University. It stands for Northwestern University Source Separation Library (or our less-branded backronym: 
+"Need Unmixing? Source Separation Library!"). Whether you're a researcher creating novel network architectures or new signal 
+processing approaches for source separation or you just need an out-of-the-box source separation model, nussl contains 
+everything you need for modern source separation, from prototyping to evaluation to end-use.
 
 
 # Documentation
@@ -35,7 +47,7 @@ nussl makes it easy to train your own algorithms, with many common architectures
 datasets, and configurations ready-built for many use cases, and an easy way to
 extend our built-in functionality for your own needs. There are many pre-built useful
 modules that are easy to piece together, such as LSTMs, GRUs, convolutional layers,
-fully conneected layers, mask layers, embedding layers. Everything is built on Pytorch, so adding a brand new module is a snap!
+fully conneected layers, mask layers, embedding layers. Everything is built on PyTorch, so adding a brand new module is a snap!
 
 ### Using Your Own Data
 

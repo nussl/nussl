@@ -8,7 +8,7 @@ import subprocess
 from tempfile import NamedTemporaryFile
 
 import random, string
-import importlib.resources as pkg_resources
+import importlib_resources as pkg_resources
 
 from . import templates
 from .utils import _close_temp_files

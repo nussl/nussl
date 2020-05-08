@@ -178,7 +178,11 @@ class Closure(object):
     def combine_by_sum(self, loss_output):
         combined_loss = 0
         for _, weight, _, name in self.losses:
-            combined_loss += weight * loss_output[name]
+            # if the weight is 0, then the loss is just for
+            # monitoring and we won't bother summing with it, 
+            # in case its shape doesnt match.
+            if weight != 0:
+                combined_loss += weight * loss_output[name]
         return combined_loss
 
     def compute_loss(self, output, target):
@@ -209,8 +213,10 @@ class TrainClosure(Closure):
         self.optimizer = optimizer
         self.model = model
 
-    def _fire_event(self, engine, event):
+    def _fire_event(self, engine, output, event):
         if engine is not None:
+            if engine.state is not None:
+                engine.state.model_output = output
             engine.fire_event(event)
 
     def __call__(self, engine, data):
@@ -221,7 +227,7 @@ class TrainClosure(Closure):
 
         loss_ = self.compute_loss(output, data)
         loss_['loss'].backward()
-        self._fire_event(engine, BackwardsEvents.BACKWARDS_COMPLETED)
+        self._fire_event(engine, output, BackwardsEvents.BACKWARDS_COMPLETED)
         self.optimizer.step()
         loss_ = {key: loss_[key].item() for key in loss_}
 

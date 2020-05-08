@@ -8,6 +8,7 @@ from nussl.datasets import transforms
 import tempfile
 import shutil
 
+
 def test_dataset_hook_musdb18(musdb_tracks):
     dataset = nussl.datasets.MUSDB18(
         folder=musdb_tracks.root, download=True)
@@ -33,6 +34,15 @@ def test_dataset_hook_musdb18(musdb_tracks):
 
 def test_dataset_hook_mix_source_folder(mix_source_folder):
     dataset = nussl.datasets.MixSourceFolder(mix_source_folder)
+    data = dataset[0]
+
+    _sources = [data['sources'][k] for k in data['sources']]
+    assert np.allclose(sum(_sources).audio_data, data['mix'].audio_data)
+
+    for k in data['sources']:
+        assert k.split('::')[0] in data['metadata']['labels']
+
+    dataset = nussl.datasets.MixSourceFolder(mix_source_folder, make_mix=True)
     data = dataset[0]
 
     _sources = [data['sources'][k] for k in data['sources']]

@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v1.1.0
+------
+- Added building blocks for dual path recurrent neural networks
+- Added a builder for end-to-end networks and for dual path recurrent networks
+- Added confidence measures that can predict separation performance for clustering-based
+  algorithms
+- Improved tests and documentation
+- Fixed a minor bug in GetExcerpt
+- Made gpytorch a dependency for faster differentiable GMM
+
 v1.0.2
 ------
 - Fixed an issue with backprop in SI-SDR loss.

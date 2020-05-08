@@ -9,6 +9,8 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 def test_gradients(mix_source_folder):
     os.makedirs('tests/local/', exist_ok=True)
 
+    utils.seed(0)
+
     tfms = datasets.transforms.Compose([
         datasets.transforms.GetAudio(),
         datasets.transforms.PhaseSensitiveSpectrumApproximation(),
@@ -27,8 +29,8 @@ def test_gradients(mix_source_folder):
 
     # make some configs
     names = ['dpcl', 'mask_inference_l1', 'mask_inference_mse_loss', 'chimera',
-             'open_unmix', 'end_to_end']
-    config_has_batch_norm = ['open_unmix']
+             'open_unmix', 'end_to_end', 'dual_path']
+    config_has_batch_norm = ['open_unmix', 'dual_path']
     configs = [
         ml.networks.builders.build_recurrent_dpcl(
             n_features, 50, 1, True, 0.0, 20, ['sigmoid'],
@@ -53,7 +55,10 @@ def test_gradients(mix_source_folder):
             256, 256, 64, 'sqrt_hann', 50, 2, 
             True, 0.0, 2, 'sigmoid', num_audio_channels=1, 
             mask_complex=False, rnn_type='lstm', 
-            mix_key='mix_audio', normalization_class='InstanceNorm')
+            mix_key='mix_audio', normalization_class='InstanceNorm'),
+        ml.networks.builders.build_dual_path_recurrent_end_to_end(
+            64, 16, 8, 60, 30, 50, 2, True, 25, 2, 'sigmoid', 
+        )
     ]
 
     loss_dictionaries = [
@@ -99,20 +104,33 @@ def test_gradients(mix_source_folder):
                     }
             }
         },
+        {
+            'SISDRLoss': {
+                'weight': 1.0,
+                'keys': {
+                    'audio': 'estimates', 
+                    'source_audio': 'references'
+                    }
+            }
+        },
     ]
 
-    def append_keys_to_model(model):
-        model.output_keys.extend(
-            ['audio', 'recurrent_stack', 'mask', 'estimates']
-        )
+    def append_keys_to_model(name, model):
+        if name == 'end_to_end':
+            model.output_keys.extend(
+                ['audio', 'recurrent_stack', 'mask', 'estimates']
+            )
+        elif name == 'dual_path':
+            model.output_keys.extend(
+                ['audio', 'mixture_weights', 'dual_path', 'mask', 'estimates']
+            )
 
     for name, config, loss_dictionary in zip(names, configs, loss_dictionaries):
         loss_closure = ml.train.closures.Closure(loss_dictionary)
 
         utils.seed(0, set_cudnn=True)
         model_grad = ml.SeparationModel(config, verbose=True).to(DEVICE)
-        if name == 'end_to_end':
-            append_keys_to_model(model_grad)
+        append_keys_to_model(name, model_grad)
 
         all_data = {}
         for data in dataset:
@@ -137,8 +155,7 @@ def test_gradients(mix_source_folder):
 
         utils.seed(0, set_cudnn=True)
         model_acc = ml.SeparationModel(config).to(DEVICE)
-        if name == 'end_to_end':
-            append_keys_to_model(model_acc)
+        append_keys_to_model(name, model_acc)
 
         for i, data in enumerate(dataset):
             for key in data:
@@ -171,4 +188,5 @@ def test_gradients(mix_source_folder):
             assert torch.allclose(param1, param2)
             if name not in config_has_batch_norm:
                 if param1.requires_grad and param2.requires_grad:
-                    assert torch.allclose(param1.grad, param2.grad, atol=1e-3)
+                    assert torch.allclose(
+                        param1.grad.mean(), param2.grad.mean(), atol=1e-3)

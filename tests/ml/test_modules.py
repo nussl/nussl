@@ -18,7 +18,6 @@ def test_register_module():
     ml.register_module(ExampleModule)
     assert ExampleModule.__name__ in (dir(ml.networks.modules))
 
-
 def test_ml_amplitude_to_db(one_item):
     module = ml.networks.modules.AmplitudeToDB()
     output = module(one_item['mix_magnitude'])
@@ -30,7 +29,24 @@ def test_ml_amplitude_to_db(one_item):
     )
     output = output.cpu().numpy()
     assert np.allclose(output, librosa_output)
+    
+def test_shift_and_scale():
+    data = torch.randn(100)
 
+    shifter = ml.networks.modules.ShiftAndScale()
+    _data = shifter(data)
+
+    assert torch.allclose(data, _data)
+
+    shifter.scale.data[0] = 10
+    _data = shifter(data)
+    
+    assert torch.allclose(10 * data, _data)
+
+    shifter.shift.data[0] = -10
+    _data = shifter(data)
+
+    assert torch.allclose(10 * data - 10, _data)
 
 def test_ml_batch_instance_norm(one_item):
     module = ml.networks.modules.BatchNorm()
@@ -44,6 +60,20 @@ def test_ml_batch_instance_norm(one_item):
     assert np.abs(np.mean(_output) - 0.0) < 1e-7
     assert np.abs(np.std(_output) - 1.0) < 1e-3
 
+def test_ml_layer_norm(one_item):
+    shape = one_item['mix_magnitude'].shape
+
+    for c in range(1, len(shape)):
+        dim_combos = list(itertools.combinations(range(len(shape)), c))
+        for combo in dim_combos:
+            _shape = [shape[x] for x in combo]
+            module = ml.networks.modules.LayerNorm(_shape[-1], feature_dims=combo)
+            output = module(one_item['mix_magnitude'])
+            assert one_item['mix_magnitude'].shape == output.shape
+
+            module = ml.networks.modules.LayerNorm(_shape[0], feature_dims=combo[::-1])
+            output = module(one_item['mix_magnitude'])
+            assert one_item['mix_magnitude'].shape == output.shape
 
 def test_ml_mel_projection(one_item):
     n_mels = [64, 128, 150]
@@ -146,6 +176,20 @@ def test_ml_embedding(one_item):
 
             assert torch.allclose(_norm, torch.ones_like(_norm))
 
+            _a = [a, 'l1_norm']
+
+            module = ml.networks.modules.Embedding(
+                num_frequencies, 50, e, _a,
+                dim_to_embed=-1
+            )
+            output = module(rnn(data))
+            _norm = torch.norm(output, p=1, dim=-1)
+            # relu sends entire vectors to zero, so their norm is 0.
+            # only check nonzero norm values.
+            _norm = _norm[_norm > 0]
+
+            assert torch.allclose(_norm, torch.ones_like(_norm))
+
 
 def test_ml_mask(one_item):
     data = one_item['mix_magnitude']
@@ -206,6 +250,42 @@ def test_ml_expand():
 
     pytest.raises(ValueError, module, tensor_a, bad_tensor)
 
+
+def test_ml_alias():
+    modules = {
+        'split': {
+            'class': 'Split',
+            'args': {
+                'split_sizes': (3, 7),
+                'dim': -1
+            }
+        },
+        'split_zero': {
+            'class': 'Alias',
+        }
+    }
+
+    connections = [
+        ('split', ('data',)),
+        ('split_zero', ('split:0',))
+    ]
+
+    outputs = ['split:0', 'split_zero']
+
+    config = {
+        'modules': modules, 
+        'connections': connections,
+        'output': outputs
+    }
+
+    model = ml.SeparationModel(config)
+    data = {'data': torch.randn(100, 10)}
+    output = model(data)
+
+    assert 'split_zero' in output
+    assert torch.allclose(
+        output['split:0'], output['split_zero']
+    )
 
 def test_ml_recurrent_stack(one_item):
     data = one_item['mix_magnitude']
@@ -271,3 +351,55 @@ def test_ml_conv_stack(one_item):
     output = module(data)
     assert (output.shape == (
         data.shape[0], data.shape[1], data.shape[2], channels[-1]))
+
+def test_dual_path(one_item):
+    recurrent_stack = {
+        'class': 'RecurrentStack',
+        'args': {
+            'num_features': 100,
+            'hidden_size': 50,
+            'num_layers': 1,
+            'bidirectional': True,
+            'dropout': 0.3,
+            'rnn_type': 'lstm',
+            'batch_first': False
+        }
+    }
+    dual_path = ml.networks.modules.DualPath(
+        2, 100, 50, 257, 100, hidden_size=100, 
+        intra_processor=recurrent_stack,
+        inter_processor=recurrent_stack
+    )
+    output = dual_path(one_item['mix_magnitude'])
+    assert output.shape == one_item['mix_magnitude'].shape
+
+    linear_layer = {
+        'class': 'Linear',
+        'args': {
+            'in_features': 100,
+            'out_features': 100,
+        }
+    }
+
+    dual_path = ml.networks.modules.DualPath(
+        2, 100, 50, 257, 100, hidden_size=100, 
+        intra_processor=linear_layer,
+        inter_processor=linear_layer,
+        skip_connection=True
+    )
+    output = dual_path(one_item['mix_magnitude'])
+    assert output.shape == one_item['mix_magnitude'].shape
+
+    nonexisting_layer = {
+        'class': 'NoExist',
+        'args': {
+            'in_features': 100,
+            'out_features': 100,
+        }
+    }
+
+    pytest.raises(ValueError, ml.networks.modules.DualPath,
+        2, 100, 50, 257, 100, hidden_size=100, 
+        intra_processor=nonexisting_layer,
+        inter_processor=nonexisting_layer
+    )

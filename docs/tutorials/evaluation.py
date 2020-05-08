@@ -160,7 +160,7 @@ print(json.dumps(scores, indent=2))
 # is just as easy:
 
 new_bss = nussl.evaluation.BSSEvalScale(
-    sources_list, repet_estimates, scaling=False)
+    sources_list, repet_estimates)
 scores = new_bss.evaluate()
 print(json.dumps(scores, indent=2))
 
@@ -189,8 +189,7 @@ print(json.dumps(scores, indent=2))
 # These numbers can be found by using the benchmark methods in *nussl*. 
 # Let's get two lower baseline and an upper baseline. 
 #
-# **For the sake of brevity of output, let's look at just one metric: 
-# scale-dependent metrics from the new BSSEval metrics.**
+# **For the sake of brevity of output, let's look at the new BSSEval metrics.**
 #
 # We already have one upper baseline - the ideal binary mask. 
 # How did that do?
@@ -214,7 +213,7 @@ def _report_sdr(approach, scores):
     print()
 
 bss = nussl.evaluation.BSSEvalScale(
-    sources_list, ibm_estimates, scaling=False,
+    sources_list, ibm_estimates,
     source_labels=['acc', 'vox'])
 scores = bss.evaluate()
 _report_sdr('Ideal Binary Mask', scores)
@@ -229,7 +228,7 @@ mae = nussl.separation.benchmark.MixAsEstimate(
 mae_estimates = mae()
 
 bss = nussl.evaluation.BSSEvalScale(
-    sources_list, mae_estimates, scaling=False,
+    sources_list, mae_estimates,
     source_labels=['acc', 'vox'])
 scores = bss.evaluate()
 _report_sdr('Mixture as estimate', scores)
@@ -238,7 +237,7 @@ hlp = nussl.separation.benchmark.HighLowPassFilter(mix, 100)
 hlp_estimates = hlp()
 
 bss = nussl.evaluation.BSSEvalScale(
-    sources_list, hlp_estimates, scaling=False,
+    sources_list, hlp_estimates,
     source_labels=['acc', 'vox'])
 scores = bss.evaluate()
 _report_sdr('High/low pass filter', scores)
@@ -268,7 +267,7 @@ def run_and_evaluate(alg):
         alg_estimates = alg_estimates[::-1]
 
     bss = nussl.evaluation.BSSEvalScale(
-        sources_list, alg_estimates, scaling=False,
+        sources_list, alg_estimates,
         source_labels=['acc', 'vox'])
     scores = bss.evaluate()
     _report_sdr(str(alg).split(' on')[0], scores)

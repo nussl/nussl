@@ -44,7 +44,6 @@ item = musdb[i]
 mix = item['mix']
 # -
 
-# +
 separator = nussl.separation.benchmark.HighLowPassFilter(
     mix, 100)
 estimates = separator()
@@ -53,9 +52,7 @@ estimates = {
     'High': estimates[1]
 }
 visualize_and_embed(estimates)
-# -
 
-# +
 separator = nussl.separation.benchmark.HighLowPassFilter(
     mix, 400)
 estimates = separator()
@@ -64,7 +61,6 @@ estimates = {
     'High': estimates[1]
 }
 visualize_and_embed(estimates)
-# -
 
 end_time = time.time()
 time_taken = end_time - start_time

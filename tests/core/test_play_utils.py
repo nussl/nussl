@@ -4,6 +4,7 @@ import nussl
 import os
 import numpy as np
 import pytest
+import importlib
 
 
 def test_jupyter_embed_audio(benchmark_audio):
@@ -52,6 +53,20 @@ def test_jupyter_no_ipython(benchmark_audio, monkeypatch):
 
     monkeypatch.undo()
 
+def test_musdb_fail_to_import(monkeypatch):
+    import_orig = builtins.__import__
+
+    def mocked_import(name, globals_, locals_, fromlist, level):
+        if name == 'musdb':
+            raise RuntimeError()
+        return import_orig(name, globals_, locals_, fromlist, level)
+
+    def reimport_nussl():
+        importlib.reload(nussl)
+
+    monkeypatch.setattr(builtins, '__import__', mocked_import)
+    pytest.warns(UserWarning, reimport_nussl)
+    monkeypatch.undo()
 
 def test_play_audio():
     audio_signal = nussl.AudioSignal(

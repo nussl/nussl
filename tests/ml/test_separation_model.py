@@ -33,6 +33,10 @@ end_to_end_real_config = builders.build_recurrent_end_to_end(
    mask_complex=False, rnn_type='lstm', 
    mix_key='mix_audio')
 
+dual_path_recurrent_config = builders.build_dual_path_recurrent_end_to_end(
+    64, 16, 8, 60, 30, 50, 2, True, 25, 2, 'sigmoid', 
+)
+
 end_to_end_complex_config = builders.build_recurrent_end_to_end(
     512, 512, 128, 'sqrt_hann', 50, 2, 
    True, 0.3, 2, 'softmax', num_audio_channels=1, 
@@ -162,7 +166,6 @@ def test_separation_model_dpcl(one_item):
                     one_item['mix_magnitude'].shape + (20,)))
 
 def test_separation_end_to_end(one_item):
-    # dpcl network
     for c in [end_to_end_real_config, end_to_end_complex_config]:
         with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
             with open(tmp.name, 'w') as f:
@@ -179,6 +182,25 @@ def test_separation_end_to_end(one_item):
 
                 assert (
                     output['audio'].shape == one_item['source_audio'].shape
+                )
+
+def test_separation_dprnn(one_item):
+    # dprnn network
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True) as tmp:
+        with open(tmp.name, 'w') as f:
+            json.dump(dual_path_recurrent_config, f)
+        configs = [
+            dual_path_recurrent_config, 
+            tmp.name, 
+            json.dumps(dual_path_recurrent_config)
+        ]
+
+        for config in configs:    
+            model = SeparationModel(config, verbose=True)
+            output = model(one_item)
+
+            assert (
+                output['audio'].shape == one_item['source_audio'].shape
                 )
 
 def test_separation_model_chimera(one_item):

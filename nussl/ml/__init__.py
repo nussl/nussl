@@ -27,6 +27,12 @@ Helpers for common deep networks
     :members:
     :autosummary:
 
+Confidence measures
+-------------------
+
+.. automodule:: nussl.ml.confidence
+    :members:
+    :autosummary:
 
 Training
 --------
@@ -42,6 +48,7 @@ from .networks import modules
 from . import train
 from . import unfold
 from . import cluster
+from . import confidence
 
 from sklearn.decomposition import NMF
 

@@ -106,11 +106,18 @@ def scale_bss_eval(references, estimate, mixture, idx,
     mix_metrics = _scale_bss_eval(
         references, mixture, idx, compute_sir_sar=False)
 
+
+    mix_si_sdr = mix_metrics[0]
+    mix_sd_sdr = mix_metrics[3]
+    mix_snr = mix_metrics[4]
     si_sdri = si_sdr - mix_metrics[0]
     sd_sdri = sd_sdr - mix_metrics[3]
     snri = snr - mix_metrics[4]
 
-    return si_sdr, si_sir, si_sar, sd_sdr, snr, srr, si_sdri, sd_sdri, snri
+    return (
+      si_sdr, si_sir, si_sar, sd_sdr, snr, srr, si_sdri, sd_sdri, snri, 
+      mix_si_sdr, mix_sd_sdr, mix_snr
+    )
 
 
 class BSSEvaluationBase(EvaluationBase):
@@ -201,6 +208,13 @@ class BSSEvalV4(BSSEvaluationBase):
 
 
 class BSSEvalScale(BSSEvaluationBase):
+    def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
+                 compute_permutation=False, best_permutation_key="SI-SDR", **kwargs):
+        super().__init__(true_sources_list, estimated_sources_list, source_labels=source_labels,
+                         compute_permutation=compute_permutation,
+                         best_permutation_key=best_permutation_key,
+                         **kwargs)
+
     def preprocess(self):
         """
         Scale invariant metrics expects zero-mean centered references and sources.
@@ -251,13 +265,13 @@ class BSSEvalScale(BSSEvaluationBase):
         Processing (ICASSP) (pp. 626-630). IEEE.
         """
 
-        sisdr, sisir, sisar, sdsdr, snr, srr, sisdri, sdsdri, snri = \
-            [], [], [], [], [], [], [], [], []
+        sisdr, sisir, sisar, sdsdr, snr, srr, sisdri, sdsdri, snri, mix_sisdr, mix_sdsdr, mix_snr = \
+            [], [], [], [], [], [], [], [], [], [], [], []
         for j in range(references.shape[-1]):
-            cSISDR, cSISIR, cSISAR, cSDSDR, cSNR, cSRR, cSISDRi, cSDSDRi, cSNRi = \
-                [], [], [], [], [], [], [], [], []
+            cSISDR, cSISIR, cSISAR, cSDSDR, cSNR, cSRR, cSISDRi, cSDSDRi, cSNRi, cMIXSISDR, cMIXSDSDR, cMIXSNR = \
+                [], [], [], [], [], [], [], [], [], [], [], []
             for ch in range(references.shape[-2]):
-                _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, _SISDRi, _SDSDRi, _SNRi = (
+                _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, _SISDRi, _SDSDRi, _SNRi, _MIXSISDR, _MIXSDSDR, _MIXSNR = (
                     scale_bss_eval(
                         references[..., ch, :], estimates[..., ch, j], 
                         self.mixture[..., ch], j, compute_sir_sar=compute_sir_sar
@@ -273,6 +287,9 @@ class BSSEvalScale(BSSEvaluationBase):
                 cSISDRi.append(_SISDRi)
                 cSDSDRi.append(_SDSDRi)
                 cSNRi.append(_SNRi)
+                cMIXSISDR.append(_MIXSISDR) 
+                cMIXSDSDR.append(_MIXSDSDR)
+                cMIXSNR.append(_MIXSNR)
 
             sisdr.append(cSISDR)
             sisir.append(cSISIR)
@@ -286,12 +303,18 @@ class BSSEvalScale(BSSEvaluationBase):
             sdsdri.append(cSDSDRi)
             snri.append(cSNRi)
 
+            mix_sisdr.append(cMIXSISDR)
+            mix_sdsdr.append(cMIXSDSDR)
+            mix_snr.append(cMIXSNR)
+
         scores = []
         for j in range(references.shape[-1]):
             score = {
                 'SI-SDR': sisdr[j], 'SI-SIR': sisir[j], 'SI-SAR': sisar[j],
                 'SD-SDR': sdsdr[j], 'SNR': snr[j], 'SRR': srr[j], 
-                'SI-SDRi': sisdri[j], 'SD-SDRi': sdsdri[j], 'SNRi': snri[j]
+                'SI-SDRi': sisdri[j], 'SD-SDRi': sdsdri[j], 'SNRi': snri[j],
+                'MIX-SI-SDR': mix_sisdr[j], 'MIX-SD-SDR': mix_sdsdr[j],
+                'MIX-SNR': mix_snr[j],
             }
             scores.append(score)
         return scores

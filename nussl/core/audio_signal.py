@@ -11,6 +11,7 @@ import scipy.io.wavfile as wav
 import scipy
 from scipy.signal import check_COLA
 import soundfile as sf
+import pyloudnorm
 
 from . import constants
 from . import utils
@@ -20,8 +21,8 @@ __all__ = ['AudioSignal', 'STFTParams', 'AudioSignalException']
 
 STFTParams = namedtuple('STFTParams',
                         ['window_length', 'hop_length', 'window_type'],
-                        defaults=(None, None, None)
                         )
+STFTParams.__new__.__defaults__ = (None,) * len(STFTParams._fields)
 """
 STFTParams object is a container that holds STFT parameters - window_length, 
 hop_length, and window_type. Not all parameters need to be specified. Ones that
@@ -1321,6 +1322,44 @@ class AudioSignal(object):
         new_signal.audio_data = None
         return new_signal
 
+    def loudness(self, filter_class='K-weighting', block_size=0.400):
+        """
+        Uses pyloudnorm to calculate loudness.
+
+        Implementation of ITU-R BS.1770-4.
+        Allows control over gating block size and frequency weighting filters for 
+        additional control.
+
+        Measure the integrated gated loudness of a signal.
+        
+        Uses the weighting filters and block size defined by the meter
+        the integrated loudness is measured based upon the gating algorithm
+        defined in the ITU-R BS.1770-4 specification. 
+        Supports up to 5 channels and follows the channel ordering: 
+        [Left, Right, Center, Left surround, Right surround]
+
+        Args:
+            filter_class (str):
+              Class of weighting filter used.
+              - 'K-weighting' (default)
+              - 'Fenton/Lee 1'
+              - 'Fenton/Lee 2'
+              - 'Dash et al.'
+            block_size (float):
+              Gating block size in seconds. Defaults to 0.400.
+
+        Returns:
+            float: LUFS, Integrated gated loudness of the input 
+              measured in dB LUFS.
+        """
+
+        # create BS.1770 meter
+        meter = pyloudnorm.Meter(
+            self.sample_rate, filter_class=filter_class, block_size=block_size)
+        # measure loudness
+        loudness = meter.integrated_loudness(self.audio_data.T) 
+        return loudness
+
     def rms(self, win_len=None, hop_len=None):
         """ Calculates the root-mean-square of :attr:`audio_data`.
         
@@ -1364,7 +1403,7 @@ class AudioSignal(object):
         self.audio_data = self.audio_data * value
         return self
 
-    def resample(self, new_sample_rate):
+    def resample(self, new_sample_rate, **kwargs):
         """
         Resample the data in :attr:`audio_data` to the new sample rate provided by
         :param:`new_sample_rate`. If the :param:`new_sample_rate` is the same as :attr:`sample_rate`
@@ -1372,6 +1411,7 @@ class AudioSignal(object):
 
         Args:
             new_sample_rate (int): The new sample rate of :attr:`audio_data`.
+            kwargs: Keyword arguments to librosa.resample.
 
         """
 
@@ -1382,7 +1422,8 @@ class AudioSignal(object):
         resampled_signal = []
 
         for channel in self.get_channels():
-            resampled_channel = librosa.resample(channel, self.sample_rate, new_sample_rate)
+            resampled_channel = librosa.resample(
+                channel, self.sample_rate, new_sample_rate, **kwargs)
             resampled_signal.append(resampled_channel)
 
         self.audio_data = np.array(resampled_signal)

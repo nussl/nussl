@@ -3,8 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-nussl
-=====
+.. image:: ./nussl-logo-v1.png
+    :width: 201px
+    :align: center
+    :height: 150px
+    :alt: nussl logo
+
+
 *nussl* (pronounced `nuzzle <http://www.thefreedictionary.com/nuzzle>`_) [#f1]_ is a flexible,
 object oriented python audio source separation library created by the
 `Interactive Audio Lab <http://music.cs.northwestern.edu>`_ at Northwestern University.

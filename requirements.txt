@@ -15,3 +15,5 @@ tqdm
 termtables
 gpytorch
 ffmpeg-python
+importlib_resources
+pyloudnorm
