@@ -178,6 +178,54 @@ def test_equalizer(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
     augmented_signal = equalizer(signal, bands)
     
-    reg_path = path.join(REGRESSION_PATH, "equalizer")
+    reg_path = path.join(REGRESSION_PATH, "equalizer.json")
     ffmpeg_regression(augmented_signal.audio_data, 
         reg_path, check_against_regression_data)
+
+def test_phaser(mix_and_sources, check_against_regression_data):
+    mix, _ = mix_and_sources
+
+    in_gain = .4
+    out_gain = .7
+    delay = 3
+    decay = .4
+    speed = .8
+
+    augmented_signal = phaser(mix, in_gain, out_gain, delay, speed)
+    reg_path = path.join(REGRESSION_PATH, "phaser.json")
+    ffmpeg_regression(augmented_signal.audio_data, reg_path,
+        check_against_regression_data)
+    
+def test_chorus(mix_and_sources, check_against_regression_data):
+    mix, _ = mix_and_sources
+
+    in_gain = .4
+    out_gain = .7
+    delays = [45, 55]
+    decays = [.6, .2]
+    speeds = [.9, .8]
+    depths = [2, 1.5]
+
+    augmented_signal = chorus(mix, in_gain, out_gain, delays, decays,
+        speeds, depths)
+    reg_path = path.join(REGRESSION_PATH, "chorus.json")
+    ffmpeg_regression(augmented_signal.audio_data, reg_path,
+        check_against_regression_data)
+
+def test_flanger(mix_and_sources, check_against_regression_data):
+    mix, _ = mix_and_sources
+
+    delay = 10
+    depth = 2
+    regen = 10
+    width = 70
+    speed = .5
+    phase = 25
+
+    augmented_signal = flanger(mix, delay, depth, regen, width,
+        speed, phase)
+    reg_path = path.join(REGRESSION_PATH, "flanger.json")
+    ffmpeg_regression(augmented_signal.audio_data, reg_path,
+        check_against_regression_data)
+
+

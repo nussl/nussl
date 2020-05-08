@@ -1,5 +1,6 @@
 import tempfile
 from .audio_signal import AudioSignal
+import ffmpeg
 
 def save_audio_signal_to_tempfile(audio_signal, extension=".wav"):
     """
@@ -40,3 +41,32 @@ def read_audio_tempfile(temp):
     audio_signal = AudioSignal(path_to_input_file=temp.name)
     temp.close()
     return audio_signal
+
+def make_arglist_ffmpeg(lst):
+    return "|".join([str(s) for s in lst])
+
+# Passing this to an 'ffmpeg.input' will supress all ffmpeg
+# output. For troubleshooting, remove this dict from the function args
+silent_kwargs = {'loglevel': 'quiet'}
+
+def apply_ffmpeg_filter(audio_signal, _filter, silent=True, **kwargs):
+    audio_tempfile, audio_tempfile_name = \
+        save_audio_signal_to_tempfile(audio_signal)
+    output_tempfile, output_tempfile_name = \
+        make_empty_audio_file()
+
+    if silent:
+        input_kwargs = silent_kwargs
+    else:
+        input_kwargs = {}
+    
+    output = (ffmpeg
+        .input(audio_tempfile_name, **input_kwargs)
+        .filter(_filter, **kwargs)
+        .output(output_tempfile_name)
+        .overwrite_output()
+        .run()
+    )
+    
+    augmented_signal = read_audio_tempfile(output_tempfile)
+    return augmented_signal
