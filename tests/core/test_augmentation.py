@@ -78,26 +78,26 @@ def test_vibrato(mix_and_sources, check_against_regression_data):
     ffmpeg_regression(augmented_signal.audio_data, 
         reg_path, check_against_regression_data)
     
-def test_echo(mix_and_sources, check_against_regression_data):
-    # This sounds like an open air concert in the mountains
-    in_gain = .8
-    out_gain = .9
-    delays = [1000]
-    decays = [.3]
-    mix, _ = mix_and_sources
+# def test_echo(mix_and_sources, check_against_regression_data):
+#     # This sounds like an open air concert in the mountains
+#     in_gain = .8
+#     out_gain = .9
+#     delays = [1000]
+#     decays = [.3]
+#     mix, _ = mix_and_sources
 
-    reg_path = path.join(REGRESSION_PATH, "echo.json")
-    echo_mix = echo(mix, in_gain, out_gain, delays, decays)
-    ffmpeg_regression(echo_mix.audio_data, 
-        reg_path, check_against_regression_data)
+#     reg_path = path.join(REGRESSION_PATH, "echo.json")
+#     echo_mix = echo(mix, in_gain, out_gain, delays, decays)
+#     ffmpeg_regression(echo_mix.audio_data, 
+#         reg_path, check_against_regression_data)
 
-    # Same as above but with one more mountain
-    delays = [1000, 1800]
-    decays = [.3 , .25]
-    reg_path = path.join(REGRESSION_PATH, "echo2.json")
-    echo_mix = echo(mix, in_gain, out_gain, delays, decays)
-    ffmpeg_regression(echo_mix.audio_data, 
-        reg_path, check_against_regression_data)
+#     # Same as above but with one more mountain
+#     delays = [1000, 1800]
+#     decays = [.3 , .25]
+#     reg_path = path.join(REGRESSION_PATH, "echo2.json")
+#     echo_mix = echo(mix, in_gain, out_gain, delays, decays)
+#     ffmpeg_regression(echo_mix.audio_data, 
+#         reg_path, check_against_regression_data)
 
 def test_emphasis(mix_and_sources, check_against_regression_data):
     mix, _  = mix_and_sources
@@ -110,4 +110,74 @@ def test_emphasis(mix_and_sources, check_against_regression_data):
         reg_path = path.join(REGRESSION_PATH, f"emphasis_{_type}.json")
         augmented_signal = emphasis(mix, level_in, level_out, _type, mode=mode)
         ffmpeg_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
+
+def test_compressor(mix_and_sources, check_against_regression_data):
+    mix, _ = mix_and_sources
+    level_in = 1
+
+    reg_path = path.join(REGRESSION_PATH, f"compression.json")
+    augmented_signal = compressor(mix, level_in)
+    ffmpeg_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
+
+def test_compression_fail(mix_and_sources):
+    signal, _ = mix_and_sources
+
+    # Out of bounds values
+    level_in = -1
+    reduction_ratio = 299
+    attack = 19999
+    release = 89999
+    makeup = 69
+    knee = 6
+    link = "fail"
+    detection = "fail"
+    mix = 8
+    threshold = 0
+
+    with pytest.raises(ValueError):
+        compressor(signal, level_in)
+
+    with pytest.raises(ValueError):
+        compressor(signal, 1, reduction_ratio=reduction_ratio)
     
+    with pytest.raises(ValueError):
+        compressor(signal, 1, attack=attack)
+    
+    with pytest.raises(ValueError):
+        compressor(signal, 1, release=release)
+    
+    with pytest.raises(ValueError):
+        compressor(signal, 1, makeup=makeup)
+    
+    with pytest.raises(ValueError):
+        compressor(signal, 1, link=link)
+    
+    with pytest.raises(ValueError):
+        compressor(signal, 1, detection=detection)
+    
+    with pytest.raises(ValueError):
+        compressor(signal, 1, attack=attack)
+
+    with pytest.raises(ValueError):
+        compressor(signal, 1, mix=mix)
+    
+    with pytest.raises(ValueError):
+        compressor(signal, 1, threshold=threshold)
+
+def test_equalizer(mix_and_sources, check_against_regression_data):
+    bands = [
+        {
+            "chn": [0, 1],
+            "f": i,
+            "w": (5 * np.log2(i)),
+            "g": 5,
+            "t": 0
+        } for i in [110, 440, 10000]
+    ]
+
+    signal, _ = mix_and_sources
+    augmented_signal = equalizer(signal, bands)
+    
+    reg_path = path.join(REGRESSION_PATH, "equalizer")
+    ffmpeg_regression(augmented_signal.audio_data, 
+        reg_path, check_against_regression_data)

@@ -7,11 +7,13 @@ from .audio_signal import AudioSignal
 import tempfile
 from .augmentation_utils import *
 
-filter_kwargs = {'loglevel': 'quiet'}
+# Passing this to an 'ffmpeg.input' will supress all ffmpeg
+# output. For troubleshooting, remove this dict from the function args
+silent_kwargs = {'loglevel': 'quiet'}
 
 # These values are found in the ffmpeg documentation in filters
 # that use the level_in arugment, however, not all filters that
-# use this 
+# use this state these bounds in documentationwith pytest.raises(ValueError):
 LEVEL_MIN = .015625
 LEVEL_MAX = 64
 
@@ -124,7 +126,7 @@ def tremolo(audio_signal, mod_freq, mod_depth):
         mod_freq: Modulation frequency. Must be between 0 and 1.
         mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
-        augmented_item: A copy of the original audio signal, with augmentations applied 
+        augmented_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < 0:
         raise ValueError("mod_freq should be positve scalar")
@@ -138,7 +140,7 @@ def tremolo(audio_signal, mod_freq, mod_depth):
         make_empty_audio_file()
 
     output = (ffmpeg
-        .input(audio_tempfile_name, **filter_kwargs)
+        .input(audio_tempfile_name, **silent_kwargs)
         .filter('tremolo', 
             f = mod_freq,
             d = mod_depth)
@@ -160,7 +162,7 @@ def vibrato(audio_signal, mod_freq, mod_depth):
         mod_freq: Modulation frequency. Must be between 0 and 1.
         mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
-        augmented_item: A copy of the original audio signal, with augmentations applied 
+        augmented_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < 0:
         raise ValueError("mod_freq should be positve scalar")
@@ -174,7 +176,7 @@ def vibrato(audio_signal, mod_freq, mod_depth):
         make_empty_audio_file()
 
     output = (ffmpeg
-        .input(audio_tempfile_name, **filter_kwargs)
+        .input(audio_tempfile_name, **silent_kwargs)
         .filter('vibrato', 
             f = mod_freq,
             d = mod_depth)
@@ -185,43 +187,59 @@ def vibrato(audio_signal, mod_freq, mod_depth):
     augmented_signal = read_audio_tempfile(output_tempfile)
     return augmented_signal
 
-def echo(audio_signal, in_gain, out_gain, delays: list, decays: list):
+def chorus(audio_signal, in_gain, out_gain, delays, decays, speeds, depths):
     """
-    https://ffmpeg.org/ffmpeg-all.html#aecho
+    https://ffmpeg.org/ffmpeg-all.html#chorus
 
-    Applies echo filter
+    Applies Chorus Filter
     Args:
         audio_signal: An AudioSignal object
-        in_gain: Input gain of the reflected signal. Must be between 0 and 1.
-        out_gain: Output gain of the reflected signal. Must be between 0 and 1.
-        delays: A list of times in ms between original signal and reflections.
-            must be list. Must be scalars in (0 and 90000.0]
-        decays: A list of loudness of reflected signals. 
-            must be list. Must be scalars in (0 and 1.0]
     Returns:
-        augmented_item: A copy of the original audio signal, with augmentations applied 
+        augmented_signal: A copy of the original audio signal, with augmentations applied
     """
-    audio_tempfile, audio_tempfile_name = \
-        save_audio_signal_to_tempfile(audio_signal)
-    output_tempfile, output_tempfile_name = \
-        make_empty_audio_file()
+    raise NotImplementedError()
 
-    delays_str = _make_arglist_ffmpeg(delays)
-    decays_str = _make_arglist_ffmpeg(decays)
-    output = (ffmpeg
-        .input(audio_tempfile_name, **filter_kwargs)
-        .filter('aecho',
-        in_gain=in_gain,
-        out_gain=out_gain,
-        delays=delays_str,
-        decays=decays_str)
-        .output(output_tempfile_name)
-        .overwrite_output()
-        .run()
-    )
+# def echo(audio_signal, in_gain, out_gain, delays: list, decays: list):
+#     """
+#     https://ffmpeg.org/ffmpeg-all.html#aecho
 
-    augmented_signal = read_audio_tempfile(output_tempfile)
-    return augmented_signal
+#     Applies echo filter
+#     Args:
+#         audio_signal: An AudioSignal object
+#         in_gain: Input gain of the reflected signal. Must be between 0 and 1.
+#         out_gain: Output gain of the reflected signal. Must be between 0 and 1.
+#         delays: A list of times in ms between original signal and reflections.
+#             must be list. Must be scalars in (0 and 90000.0]
+#         decays: A list of loudness of reflected signals. 
+#             must be list. Must be scalars in (0 and 1.0]
+#     Returns:
+#         augmented_item: A copy of the original audio signal, with augmentations applied 
+#     """
+#     if len(delays) != len(decays) or len(delays) == 0:
+#         raise ValueError("decays and delays must be the same length and cannot be empty")
+
+#     audio_tempfile, audio_tempfile_name = \
+#         save_audio_signal_to_tempfile(audio_signal)
+#     output_tempfile, output_tempfile_name = \
+#         make_empty_audio_file()
+
+#     delays_str = _make_arglist_ffmpeg(delays)
+#     decays_str = _make_arglist_ffmpeg(decays)
+#     output = (ffmpeg
+#         .input(audio_tempfile_name, **filter_kwargs)
+#         .filter('aecho',
+#         in_gain=in_gain,
+#         out_gain=out_gain,
+#         delays=delays_str,
+#         decays=decays_str)
+#         .output(output_tempfile_name)
+#         .overwrite_output()
+#         .run()
+#     )
+
+#     augmented_signal = read_audio_tempfile(output_tempfile)
+#     return augmented_signal
+
 
 def emphasis(audio_signal, level_in, level_out, _type, mode='production'):
     """
@@ -238,7 +256,7 @@ def emphasis(audio_signal, level_in, level_out, _type, mode='production'):
             production to convert to physical medium.
 
     Returns:
-        augmented_item: A copy of the original audio signal, with augmentations applied 
+        augmented_signal: A copy of the original audio signal, with augmentations applied 
     """
     if level_in < LEVEL_MIN or level_in > LEVEL_MAX \
         or level_out < LEVEL_MIN or level_out > LEVEL_MAX:
@@ -256,7 +274,7 @@ def emphasis(audio_signal, level_in, level_out, _type, mode='production'):
         'type': _type
     }
     output = (ffmpeg
-        .input(audio_tempfile_name, **filter_kwargs)
+        .input(audio_tempfile_name, **silent_kwargs)
         .filter('aemphasis',
         **emphasis_kwargs)
         .output(output_tempfile_name)
@@ -266,7 +284,125 @@ def emphasis(audio_signal, level_in, level_out, _type, mode='production'):
 
     augmented_signal = read_audio_tempfile(output_tempfile)
     return augmented_signal
+
+def _compressor_argcheck(level_in, mode, reduction_ratio,
+    attack, release, makeup, knee, link,
+    detection, mix, threshold):
+
+    # The following values are taken from ffmpeg documentation
+    if level_in < LEVEL_MIN or level_in > LEVEL_MAX or \
+            mode not in {"upward", "downward"} or \
+            reduction_ratio < 1 or reduction_ratio > 20 or \
+            attack < .01 or attack > 2000 or \
+            release < .01 or release > 9000 or \
+            makeup < 1 or makeup > 64 or \
+            knee < 1 or knee > 8 or \
+            link not in {"average", "maximum"} or \
+            detection not in {"peak", "rms"} or \
+            mix < 0 or mix > 1 or \
+            threshold < 9.7563e-5 or threshold > 1:
+        raise ValueError("One of the values provided are not within the bounds of the acompressor function"
+        f"mode: {mode}"
+        f"reduction_ratio: {reduction_ratio}"
+        f"attack: {attack}"
+        f"release: {release}"
+        f"makeup: {makeup}"
+        f"knee: {knee}"
+        f"link: {link}"
+        f"detection: {detection}"
+        f"mix: {mix}"
+        "See https://ffmpeg.org/ffmpeg-all.html#acompressor for more infomation."
+        )
+
+def compressor(audio_signal, level_in, mode="downward", reduction_ratio=2,
+    attack=20, release=250, makeup=1, knee=2.8284, link="average",
+    detection="rms", mix=1, threshold=.125):
+    """
+    https://ffmpeg.org/ffmpeg-all.html#acompressor
+
+    Applies the compressor filter to an audio signal
+    Args:
+        
+    Returns:
+        augmented_signal: A copy of the original audio signal, with augmentations applied
+    """
+    _compressor_argcheck(level_in, mode, reduction_ratio,
+    attack, release, makeup, knee, link, detection, mix, threshold)
+
+    audio_tempfile, audio_tempfile_name = \
+        save_audio_signal_to_tempfile(audio_signal)
+    output_tempfile, output_tempfile_name = \
+        make_empty_audio_file()
+
+    compressor_kwargs = {
+        "level_in": level_in,
+    #   "mode": mode, TODO: for some reason the mode arg doesn't work in ffmpeg. figure out why
+        "ratio": reduction_ratio,
+        "attack": attack,
+        "release": release,
+        "makeup": makeup,
+        "knee": knee,
+        "link": link,
+        "detection": detection,
+        "mix": mix,
+        "threshold": threshold
+    }
+
+    output = (ffmpeg
+        .input(audio_tempfile_name, **silent_kwargs)
+        .filter("acompressor", **compressor_kwargs)
+        .output(output_tempfile_name)
+        .overwrite_output()
+        .run()
+    )
+
+    augmented_signal = read_audio_tempfile(output_tempfile)
+    return augmented_signal
     
 
-def igaussian_filter(audio_signal, factor_range):
+def equalizer(audio_signal, bands):
+    """
+    https://ffmpeg.org/ffmpeg-all.html#anequalizer
+
+    Applies equalizer filter(s) to the audio_signal. 
+    Args:
+        audio_signal: An AudioSignal object
+        bands: A list of dictionaries, for each band. The required values for each dictionary:
+            'chn': List of channel numbers to apply filter
+            'f': central freqency of band
+            'w': Width of the band in Hz
+            'g': Band gain in dB
+            't': Set filter type for band, optional, can be:
+                0, for Butterworth
+                1, for Chebyshev type 1
+                2, for Chebyshev type 2
+    """
+    # TODO: Argcheck
+    audio_tempfile, audio_tempfile_name = \
+        save_audio_signal_to_tempfile(audio_signal)
+    output_tempfile, output_tempfile_name = \
+        make_empty_audio_file()
+
+    band_string = _make_arglist_ffmpeg([
+        _make_arglist_ffmpeg([
+            f"c{c} f={band['f']} w={band['w']} g={band['g']} t={band['t']}"
+                for c in band["chn"]
+        ])
+        for band in bands
+    ])
+
+    print(band_string)
+    output = (ffmpeg
+        .input(audio_tempfile_name)
+        .filter("anequalizer", params=band_string)
+        .output(output_tempfile_name)
+        .overwrite_output()
+        .run()
+    )
+
+    augmented_signal = read_audio_tempfile(output_tempfile)
+    return augmented_signal
+
+
+def igaussian_filter(audio_signal, mean_freq):
     raise NotImplementedError
