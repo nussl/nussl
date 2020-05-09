@@ -95,3 +95,10 @@ STEM_TARGET_DICT = OrderedDict([
     ('accompaniment', 'bass+drums+other'), 
     ('linear_mixture', 'vocals+bass+drums+other')
 ])
+
+##### augmentation.py
+# These values are found in the ffmpeg documentation in filters
+# that use the level_in arugment, however, not all filters that
+# use this state these bounds in documentationwith pytest.raises(ValueError):
+LEVEL_MIN = .015625
+LEVEL_MAX = 64
