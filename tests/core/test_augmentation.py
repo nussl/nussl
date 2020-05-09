@@ -160,7 +160,7 @@ def test_compression_fail(mix_and_sources):
 
     with pytest.raises(ValueError):
         compressor(signal, 1, mix=mix)
-    
+
     with pytest.raises(ValueError):
         compressor(signal, 1, threshold=threshold)
 
@@ -186,7 +186,7 @@ def test_phaser(mix_and_sources, check_against_regression_data):
     mix, _ = mix_and_sources
 
     in_gain = .4
-    out_gain = .7
+    out_gain = .74
     delay = 3
     decay = .4
     speed = .8
@@ -206,8 +206,8 @@ def test_chorus(mix_and_sources, check_against_regression_data):
     speeds = [.9, .8]
     depths = [2, 1.5]
 
-    augmented_signal = chorus(mix, in_gain, out_gain, delays, decays,
-        speeds, depths)
+    augmented_signal = chorus(mix, delays, decays,
+        speeds, depths, in_gain=in_gain, out_gain=out_gain)
     reg_path = path.join(REGRESSION_PATH, "chorus.json")
     ffmpeg_regression(augmented_signal.audio_data, reg_path,
         check_against_regression_data)
@@ -228,4 +228,97 @@ def test_flanger(mix_and_sources, check_against_regression_data):
     ffmpeg_regression(augmented_signal.audio_data, reg_path,
         check_against_regression_data)
 
+def test_low_high_pass(mix_and_sources):
+    mix, _  = mix_and_sources
+    f = 512
+    idx = 16
+    low_mix = low_pass(mix, f)
+    mix.stft_data = None
+    high_mix = high_pass(mix, f)
+    l_stft = low_mix.stft_data
+    h_stft = high_mix.stft_data
+    assert np.allclose(l_stft[16:], np.zeros_like(l_stft[16:]))
+    assert np.allclose(h_stft[:15], np.zeros_like(h_stft[:15]))
 
+    with pytest.raises(ValueError):
+        low_pass(mix, -1)
+    with pytest.raises(ValueError):
+        low_pass(mix, "fail")
+    
+    with pytest.raises(ValueError):
+        high_pass(mix, -1)
+    with pytest.raises(ValueError):
+        high_pass(mix, "fail")
+
+def test_misc_param_check(mix_and_sources):
+    signal, _ = mix_and_sources
+    with pytest.raises(ValueError):
+        vibrato(signal, -1, 1)
+    with pytest.raises(ValueError):
+        vibrato(signal, 1, -1)
+    
+    with pytest.raises(ValueError):
+        tremolo(signal, -1, 1)
+    with pytest.raises(ValueError):
+        tremolo(signal, 1, -1)
+
+    with pytest.raises(ValueError):
+        chorus(signal, [1], [2,3],[45,6],[4])  
+    with pytest.warns(UserWarning):
+        chorus(signal, [2000],[.5], [.7], [.4])
+    with pytest.raises(ValueError):
+        chorus(signal, [1],[30], [.7], [.4], in_gain=-1)
+
+    with pytest.raises(ValueError):
+        phaser(signal, in_gain=-1)
+    with pytest.raises(ValueError):
+        phaser(signal, _type="fail")
+
+    with pytest.raises(ValueError):
+        flanger(signal, delay=-1)
+    with pytest.raises(ValueError):
+        flanger(signal, depth=-1)
+    with pytest.raises(ValueError):
+        flanger(signal, regen=-100)
+    with pytest.raises(ValueError):
+        flanger(signal, width=-1)
+    with pytest.raises(ValueError):
+        flanger(signal, speed=-1)
+    with pytest.raises(ValueError):
+        flanger(signal, shape="fail")
+    with pytest.raises(ValueError):
+        flanger(signal, interp="fail")
+    
+    with pytest.raises(ValueError):
+        emphasis(signal, 1, 1, _type="fail")
+    with pytest.raises(ValueError):
+        emphasis(signal, 1, 1, mode="fail")
+    with pytest.raises(ValueError):
+        emphasis(signal, 1, -1)
+
+    band = {
+        'chn':[0],
+        'f': 300,
+        'w': 10,
+        'g': 10,
+        't': 5
+    }
+    with pytest.raises(ValueError):
+        equalizer(signal, [band])
+    band["g"] = -1
+    with pytest.raises(ValueError):
+        equalizer(signal, [band])
+    band["w"] = -1
+    with pytest.raises(ValueError):
+        equalizer(signal, [band])
+    band["f"] = -1
+    with pytest.raises(ValueError):
+        equalizer(signal, [band])
+    band["chn"].append(100)
+    with pytest.raises(ValueError):
+        equalizer(signal, [band])
+    
+
+def test_filter_debug_mode(mix_and_sources):
+    signal, _ = mix_and_sources
+    apply_ffmpeg_filter(signal, "tremolo", silent=False)

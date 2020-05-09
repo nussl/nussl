@@ -5,12 +5,11 @@ import os
 from .audio_signal import AudioSignal
 import tempfile
 from .augmentation_utils import *
+from .constants import LEVEL_MIN, LEVEL_MAX
+import warnings
 
-# These values are found in the ffmpeg documentation in filters
-# that use the level_in arugment, however, not all filters that
-# use this state these bounds in documentationwith pytest.raises(ValueError):
-LEVEL_MIN = .015625
-LEVEL_MAX = 64
+def make_arglist_ffmpeg(lst):
+    return "|".join([str(s) for s in lst])
 
 def time_stretch(audio_signal, stretch_factor):
     """
@@ -33,11 +32,10 @@ def time_stretch(audio_signal, stretch_factor):
     stretched_audio_data = np.array(stretched_audio_data)
 
     # The following line causes a UserWarning.
-    # stretched_signal = audio_signal.make_copy_with_audio_data(stretched_audio_data)
+    stretched_signal = audio_signal.make_copy_with_audio_data(stretched_audio_data)
 
-    # This one does not
-    stretched_signal = AudioSignal(audio_data_array=stretched_audio_data)
-    stretched_signal.stft()
+    # Alternative line to suppress UserWarning
+    # stretched_signal = AudioSignal(audio_data_array=stretched_audio_data)
 
     return stretched_signal
 
@@ -62,7 +60,6 @@ def pitch_shift(audio_signal, shift):
         shifted_audio_data.append(librosa.effects.pitch_shift(audio_row, sample_rate, shift))
     shifted_audio_data = np.array(shifted_audio_data)
     shifted_signal = audio_signal.make_copy_with_audio_data(shifted_audio_data)
-    shifted_signal.stft()
 
     return shifted_signal
 
@@ -78,6 +75,8 @@ def low_pass(audio_signal, highest_freq):
     if not np.issubdtype(type(highest_freq), np.number) or highest_freq <= 0:
         raise ValueError("highest_freq should be positve scalar")
     
+    if audio_signal.stft_data is None:
+        audio_signal.stft()
     l_stft = audio_signal.stft_data.copy()
     freq_vector = audio_signal.freq_vector
     idx = (np.abs(freq_vector - highest_freq)).argmin()
@@ -97,8 +96,10 @@ def high_pass(audio_signal, lowest_freq):
         augmented_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(lowest_freq), np.number) or lowest_freq <= 0:
-        raise ValueError("lowest_freq should be positve scalar")
+        raise ValueError("lowest_freq should be positive scalar")
 
+    if audio_signal.stft_data is None:
+        audio_signal.stft()
     h_stft = audio_signal.stft_data.copy()
     freq_vector = audio_signal.freq_vector
     idx = (np.abs(freq_vector - lowest_freq)).argmin()
@@ -121,17 +122,12 @@ def tremolo(audio_signal, mod_freq, mod_depth):
         augmented_signal: A copy of the original audio signal, with augmentations applied 
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < 0:
-        raise ValueError("mod_freq should be positve scalar")
+        raise ValueError("mod_freq should be positive scalar")
     
     if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
         raise ValueError("mod_depth should be positve scalar between 0 and 1.")
 
-    filter_kwargs = {
-        "f": mod_freq,
-        "d": mod_depth
-    }
-
-    return apply_ffmpeg_filter(audio_signal, "tremolo", **filter_kwargs)
+    return apply_ffmpeg_filter(audio_signal, "tremolo", f=mod_freq, d=mod_depth)
 
 def vibrato(audio_signal, mod_freq, mod_depth):
     """
@@ -151,61 +147,100 @@ def vibrato(audio_signal, mod_freq, mod_depth):
     if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
         raise ValueError("mod_depth should be positve scalar between 0 and 1.")
 
-    filter_kwargs = {
-        "f": mod_freq,
-        "d": mod_depth
-    }
+    return apply_ffmpeg_filter(audio_signal, "vibrato", f=mod_freq, d=mod_depth)
 
-    return apply_ffmpeg_filter(audio_signal, "vibrato", **filter_kwargs)
-
-def chorus(audio_signal, in_gain=.4, out_gain=.4, delays=[50], 
-    decays=[.8], speeds=[.95], depths=[.7]):
+def chorus(audio_signal, delays, decays, speeds, depths, 
+    in_gain=.4, out_gain=.4):
     """
     https://ffmpeg.org/ffmpeg-all.html#chorus
 
-    Applies Chorus Filter
+    Applies Chorus Filter(s). Delays, decays, speeds, and depths
+    must all lists of the same length.
     Args:
         audio_signal: An AudioSignal object
-        TODO: Write this documentation.
+        input_gain: Proportion of input gain
+        output_gain: Proportion of output gain
+        delays: list of delays in ms. Typical Delay is 40ms-6ms
+        decays: list of decays
+        speeds: list of speeds
+        depths: list of depths
     Returns:
         augmented_signal: A copy of the original audio signal, with augmentations applied
     """
+    if (in_gain > 1 or in_gain < 0 or out_gain > 1 or out_gain < 0):
+        raise ValueError("in_gain and out_gain must be between 0 and 1.")
 
-    # TODO: Arg checks
-    filter_kwargs = {
-        "in_gain": in_gain,
-        "out_gain": out_gain,
-        "delays": make_arglist_ffmpeg(delays),
-        "speeds": make_arglist_ffmpeg(speeds), 
-        "decays": make_arglist_ffmpeg(decays),
-        "depths": make_arglist_ffmpeg(depths)
-    }
+    # Bounds could not be found in ffmpeg docs, but recommendations were given
+    if min(delays) < 0 or max(delays) > 1000:
+        warnings.warn("One or more delays is far from the " 
+            "typical 40-60 ms range. This might produce strange results.", UserWarning)
 
-    return apply_ffmpeg_filter(audio_signal, "chorus", **filter_kwargs)
+    if (len(delays) != len(decays) or len(decays)
+        !=  len(speeds) or len(speeds) != len(depths)):
+        raise ValueError("Delays, decays, depths, and speeds must all be the same length.")
+    
+
+    delays = make_arglist_ffmpeg(delays)
+    speeds = make_arglist_ffmpeg(speeds)
+    decays = make_arglist_ffmpeg(decays)
+    depths = make_arglist_ffmpeg(depths)
+    
+    return apply_ffmpeg_filter(audio_signal, "chorus", in_gain=in_gain, 
+        out_gain=out_gain, delays=delays, speeds=speeds, decays=decays, depths=depths)
 
 def phaser(audio_signal, in_gain=.4, out_gain=.74, delay=3, 
         decay=.4, speed=.5, _type="triangular"):
     """
     https://ffmpeg.org/ffmpeg-all.html#aphaser
 
-    Applies Phaser Filter
+    Applies Phaser Filter.
     Args:
         audio_signal: An AudioSignal object
-        TODO: Write this documentation.
+        input_gain: Proportion of input gain
+        output_gain: Proportion of output gain
+        delay: Delay of chorus filter. (Time between original signal and delayed)
+        speed: Speed of the delayed filter.
+        _type: modulation type
     Returns:
         augmented_signal: A copy of the original audio signal, with augmentations applied
     """
-    # TODO: Arg checks
-    filter_kwargs = {
-        "in_gain": in_gain,
-        "out_gain": out_gain,
-        "delay": delay,
-        "speed": speed, 
-        "delay": delay,
+    if (in_gain > 1 or in_gain < 0 or out_gain > 1 or out_gain < 0):
+        raise ValueError("in_gain and out_gain must be between 0 and 1.")
+
+    allowed_mod_types = {"triangular", "sinusoidal", "t", "s"}
+    if _type not in allowed_mod_types:
+        raise ValueError(f"_type must be one of the following:\n{allowed_mod_types}")
+
+    # type is reserved word in python, kwarg dict is necessary
+    type_kwarg = {
         "type": _type
     }
 
-    return apply_ffmpeg_filter(audio_signal, "aphaser", **filter_kwargs)
+    return apply_ffmpeg_filter(audio_signal, "aphaser", in_gain = in_gain,
+        out_gain = out_gain, delay = delay, speed = speed, decay = decay, **type_kwarg)
+
+
+def _flanger_argcheck(delay, depth, regen, width, 
+    speed, phase, shape, interp):
+
+    allowed_shape_types = {"triangular", "sinusoidal"}
+    if shape not in allowed_shape_types:
+        raise ValueError(f"shape must be one of the following:\n{allowed_shape_types}")
+    allowed_interp_types = {"linear", "quadratic"}
+    if interp not in allowed_interp_types:
+        raise ValueError(f"interp must be one of the following:\n{allowed_interp_types}")
+    if (delay < 0 or delay > 30 
+        or depth < 0 or depth > 10
+        or regen < -95 or regen > 95
+        or width < 0 or width > 100
+        or speed < .1 or speed > 10):
+        raise ValueError("One of the follow values are not in the accepted ranges"
+        f"delay: {delay}\n"
+        f"depth: {depth}\n"
+        f"regen: {regen}\n"
+        f"width: {width}\n"
+        f"speed: {speed}\n"
+        )
 
 def flanger(audio_signal, delay=0, depth=2, regen=0, width=71, 
     speed=.5, phase=25, shape="sinusoidal", interp="linear"):
@@ -214,25 +249,27 @@ def flanger(audio_signal, delay=0, depth=2, regen=0, width=71,
 
     Args:
         audio_signal: An AudioSignal object
-        TODO: Write this documentation.
+        delay: Base delay in ms between original signal and copy.
+            Must be between 0 and 30.
+        depth: Sweep delay in ms. Must be between 0 and 10.
+        regen: Percentage regeneration, or delayed signal feedback.
+            Must be between -95 and 95.
+        width: Percentage of delayed signal. Must be between 0 and 100.
+        speed: Sweeps per second. Must be in .1 to 10
+        shape: Swept wave shape, can be triangular or sinusoidal.
+        phase: swept wave percentage-shift for multi channel. Must be between 0 and 100.
+        interp: Delay Line interpolation. Must be linear of quadratic
     Returns:
         augmented_signal: A copy of the original audio signal, with augmentations applied
     """
-    # TODO: Arg checks
-    filter_kwargs = {
-        "delay": delay,
-        "depth": depth,
-        "regen": regen,
-        "width": width,
-        "speed": speed, 
-        "phase": phase, 
-        "shape": shape, 
-        "interp": interp
-    }
 
-    return apply_ffmpeg_filter(audio_signal, "flanger", **filter_kwargs)
+    _flanger_argcheck(delay, depth, regen, width, speed, phase, shape, interp)
 
-def emphasis(audio_signal, level_in, level_out, _type, mode='production'):
+    return apply_ffmpeg_filter(audio_signal, "flanger", delay=delay,
+        depth=depth, regen=regen, width=width, speed=speed, phase=phase, shape=shape, 
+        interp=interp)
+
+def emphasis(audio_signal, level_in, level_out, _type="col", mode='production'):
     """
     https://ffmpeg.org/ffmpeg-all.html#aemphasis
 
@@ -252,42 +289,46 @@ def emphasis(audio_signal, level_in, level_out, _type, mode='production'):
     if level_in < LEVEL_MIN or level_in > LEVEL_MAX \
         or level_out < LEVEL_MIN or level_out > LEVEL_MAX:
         raise ValueError(f"level_in and level_out must both be between {LEVEL_MIN} AND {LEVEL_MAX}")
-
-    filter_kwargs = {
-        'level_in': level_in,
-        'level_out': level_out,
-        'mode': mode,
+    allowed_types={"col", "emi", "bsi", "riaa", "cd", 
+        "50fm", "75fm", "50kf", "75kf"}
+    if _type not in allowed_types:
+        raise ValueError(f"Given emphasis filter type is not supported by ffmpeg")
+    if mode != "production" and mode != "reproduction":
+        raise ValueError(f"mode must be production or reproduction")
+    
+    # type is a reserved word in python, so kwarg dict is necessary
+    type_kwarg = {
         'type': _type
     }
 
-    return apply_ffmpeg_filter(audio_signal, "aemphasis", **filter_kwargs)
+    return apply_ffmpeg_filter(audio_signal, "aemphasis", level_in=level_in, level_out=level_out, mode=mode, **type_kwarg)
 
 def _compressor_argcheck(level_in, mode, reduction_ratio,
     attack, release, makeup, knee, link,
     detection, mix, threshold):
 
     # The following values are taken from ffmpeg documentation
-    if level_in < LEVEL_MIN or level_in > LEVEL_MAX or \
-            mode not in {"upward", "downward"} or \
-            reduction_ratio < 1 or reduction_ratio > 20 or \
-            attack < .01 or attack > 2000 or \
-            release < .01 or release > 9000 or \
-            makeup < 1 or makeup > 64 or \
-            knee < 1 or knee > 8 or \
-            link not in {"average", "maximum"} or \
-            detection not in {"peak", "rms"} or \
-            mix < 0 or mix > 1 or \
-            threshold < 9.7563e-5 or threshold > 1:
+    if (level_in < LEVEL_MIN or level_in > LEVEL_MAX or 
+            mode not in {"upward", "downward"} or 
+            reduction_ratio < 1 or reduction_ratio > 20 or 
+            attack < .01 or attack > 2000 or 
+            release < .01 or release > 9000 or 
+            makeup < 1 or makeup > 64 or 
+            knee < 1 or knee > 8 or 
+            link not in {"average", "maximum"} or 
+            detection not in {"peak", "rms"} or 
+            mix < 0 or mix > 1 or 
+            threshold < 9.7563e-5 or threshold > 1):
         raise ValueError("One of the values provided are not within the bounds of the acompressor function"
-        f"mode: {mode}"
-        f"reduction_ratio: {reduction_ratio}"
-        f"attack: {attack}"
-        f"release: {release}"
-        f"makeup: {makeup}"
-        f"knee: {knee}"
-        f"link: {link}"
-        f"detection: {detection}"
-        f"mix: {mix}"
+        f"mode: {mode}\n"
+        f"reduction_ratio: {reduction_ratio}\n"
+        f"attack: {attack}\n"
+        f"release: {release}\n"
+        f"makeup: {makeup}\n"
+        f"knee: {knee}\n"
+        f"link: {link}\n"
+        f"detection: {detection}\n"
+        f"mix: {mix}\n"
         "See https://ffmpeg.org/ffmpeg-all.html#acompressor for more infomation."
         )
 
@@ -324,21 +365,10 @@ def compressor(audio_signal, level_in, mode="downward", reduction_ratio=2,
     _compressor_argcheck(level_in, mode, reduction_ratio,
     attack, release, makeup, knee, link, detection, mix, threshold)
 
-    compressor_kwargs = {
-        "level_in": level_in,
-        #"mode": mode, # TODO: for some reason the mode arg doesn't work in ffmpeg. figure out why
-        "ratio": reduction_ratio,
-        "attack": attack,
-        "release": release,
-        "makeup": makeup,
-        "knee": knee,
-        "link": link,
-        "detection": detection,
-        "mix": mix,
-        "threshold": threshold
-    }
-
-    return apply_ffmpeg_filter(audio_signal, "acompressor", **compressor_kwargs)
+    # TODO: for some reason the mode arg doesn't work in ffmpeg. figure out why 
+    return apply_ffmpeg_filter(audio_signal, "acompressor", level_in=level_in,
+        ratio=reduction_ratio, attack=attack, release=release, makeup=makeup,
+        knee=knee, link=link, detection=detection, mix=mix, threshold=threshold)
     
 
 def equalizer(audio_signal, bands):
@@ -358,20 +388,26 @@ def equalizer(audio_signal, bands):
                 1, for Chebyshev type 1
                 2, for Chebyshev type 2
     """
-    # TODO: Argcheck
-
-    filter_kwargs = {
-        "params": make_arglist_ffmpeg([
+    for band in bands:
+        if max(band["chn"]) > audio_signal.num_channels:
+            raise ValueError("band[\"chn\"] contains a number greater than number of channels")
+        if band["f"] <= 0:
+            raise ValueError("band[\"f\"] must be a positive scalar")
+        if band["w"] <= 0:
+            raise ValueError("band[\"w\"] must be a positive scalar")
+        if band["g"] <= 0:
+            raise ValueError("band[\"g\"] must be a positive scalar")
+        if band["t"] not in {0, 1, 2}:
+            raise ValueError("band[\"t\"] must be in {0, 1, 2}")
+        
+    params = make_arglist_ffmpeg([
             make_arglist_ffmpeg([
                 f"c{c} f={band['f']} w={band['w']} g={band['g']} t={band['t']}"
                     for c in band["chn"]
             ])
             for band in bands
         ])
-    }
 
-    return apply_ffmpeg_filter(audio_signal, "anequalizer", **filter_kwargs)
+    return apply_ffmpeg_filter(audio_signal, "anequalizer", params)
 
 
-def igaussian_filter(audio_signal, mean_freq):
-    raise NotImplementedError
