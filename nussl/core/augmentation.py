@@ -4,7 +4,7 @@ import librosa
 import os
 from .audio_signal import AudioSignal
 import tempfile
-from .augmentation_utils import *
+from .augmentation_utils import apply_ffmpeg_filter
 from .constants import LEVEL_MIN, LEVEL_MAX
 import warnings
 

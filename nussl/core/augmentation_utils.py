@@ -43,10 +43,6 @@ def read_audio_tempfile(temp):
     temp.close()
     return audio_signal
 
-# Passing this to an 'ffmpeg.input' will supress all ffmpeg
-# output. For troubleshooting, remove this dict from the function args
-silent_kwargs = {'loglevel': 'quiet'}
-
 def apply_ffmpeg_filter(audio_signal, _filter, silent=True, **kwargs):
     tmpfiles = []
     with _close_temp_files(tmpfiles):
@@ -56,7 +52,7 @@ def apply_ffmpeg_filter(audio_signal, _filter, silent=True, **kwargs):
         tmpfiles.append(output_tempfile)
 
         if silent:
-            input_kwargs = silent_kwargs
+            input_kwargs = {'loglevel': 'quiet'}
         else:
             input_kwargs = {}
         
