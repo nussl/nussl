@@ -23,9 +23,7 @@ def time_stretch(audio_signal, stretch_factor):
     if not np.issubdtype(type(stretch_factor), np.number) or stretch_factor <= 0:
         raise ValueError("stretch_factor must be a positve scalar")
 
-    sample_rate = audio_signal.sample_rate
     stretched_audio_data = []
-    audio_data = audio_signal.audio_data
 
     for audio_row in audio_signal.get_channels():
         stretched_audio_data.append(librosa.effects.time_stretch(audio_row, stretch_factor))
@@ -54,7 +52,6 @@ def pitch_shift(audio_signal, shift):
 
     sample_rate = audio_signal.sample_rate
     shifted_audio_data = []
-    audio_data = audio_signal.audio_data
 
     for audio_row in audio_signal.get_channels():
         shifted_audio_data.append(librosa.effects.pitch_shift(audio_row, sample_rate, shift))

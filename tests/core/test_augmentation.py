@@ -128,7 +128,7 @@ def test_compression_fail(mix_and_sources):
     attack = 19999
     release = 89999
     makeup = 69
-    knee = 6
+    knee = 10
     link = "fail"
     detection = "fail"
     mix = 8
@@ -136,6 +136,9 @@ def test_compression_fail(mix_and_sources):
 
     with pytest.raises(ValueError):
         augment.compressor(signal, level_in)
+    
+    with pytest.raises(ValueError):
+        augment.compressor(signal, 1, knee=knee)
 
     with pytest.raises(ValueError):
         augment.compressor(signal, 1, reduction_ratio=reduction_ratio)
@@ -188,7 +191,6 @@ def test_phaser(mix_and_sources, check_against_regression_data):
     in_gain = .4
     out_gain = .74
     delay = 3
-    decay = .4
     speed = .8
 
     augmented_signal = augment.phaser(mix, in_gain, out_gain, delay, speed)
@@ -237,8 +239,8 @@ def test_low_high_pass(mix_and_sources):
     high_mix = augment.high_pass(mix, f)
     l_stft = low_mix.stft_data
     h_stft = high_mix.stft_data
-    assert np.allclose(l_stft[16:], np.zeros_like(l_stft[16:]))
-    assert np.allclose(h_stft[:15], np.zeros_like(h_stft[:15]))
+    assert np.allclose(l_stft[idx:], np.zeros_like(l_stft[idx:]))
+    assert np.allclose(h_stft[:idx-1], np.zeros_like(h_stft[:idx-1]))
 
     with pytest.raises(ValueError):
         augment.low_pass(mix, -1)

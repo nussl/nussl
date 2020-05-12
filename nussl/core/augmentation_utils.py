@@ -18,7 +18,8 @@ def apply_ffmpeg_filter(audio_signal, _filter, silent=True, **kwargs):
         else:
             input_kwargs = {}
         
-        output = (ffmpeg
+        (
+            ffmpeg
             .input(input_tempfile.name, **input_kwargs)
             .filter(_filter, **kwargs)
             .output(output_tempfile.name)
