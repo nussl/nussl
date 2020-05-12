@@ -319,7 +319,7 @@ def _compressor_argcheck(level_in, mode, reduction_ratio,
             detection not in {"peak", "rms"} or 
             mix < 0 or mix > 1 or 
             threshold < 9.7563e-5 or threshold > 1):
-        raise ValueError("One of the values provided are not within the bounds of the acompressor function"
+        raise ValueError("One or more of the values provided are not within the bounds of the acompressor function"
         f"mode: {mode}\n"
         f"reduction_ratio: {reduction_ratio}\n"
         f"attack: {attack}\n"
@@ -329,7 +329,18 @@ def _compressor_argcheck(level_in, mode, reduction_ratio,
         f"link: {link}\n"
         f"detection: {detection}\n"
         f"mix: {mix}\n"
-        "See https://ffmpeg.org/ffmpeg-all.html#acompressor for more infomation."
+        "The following are the bounds for these parameters:"
+        f"{LEVEL_MIN} < level_in < {LEVEL_MAX}\n"
+        "mode must be in {'upward, 'downward'}\n"
+        "1 < reduction_ratio < 20\n"
+        ".01 < attack < 2000\n"
+        ".01 < release < 9000\n"
+        "1 < makeup < 64\n"
+        "1 < knee < 8\n"
+        "link must be in {'average', 'maximum'}\n"
+        "detection must be in {'peak', 'rms'}\n"
+        "0 < mix < 1\n"
+        " .000097563 < threshold < 1\n"
         )
 
 def compressor(audio_signal, level_in, mode="downward", reduction_ratio=2,
