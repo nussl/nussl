@@ -1,7 +1,6 @@
 import numpy as np
 import numpy.random as random
 import nussl.core.augmentation as augment
-from nussl.core.augmentation_utils import apply_ffmpeg_filter
 import nussl.datasets.hooks as hooks
 import tempfile
 import pytest
@@ -36,6 +35,7 @@ def test_params(mix_and_sources):
 
     with pytest.raises(ValueError): 
         augment.time_stretch(audio_signal, -1)
+        
     with pytest.raises(ValueError):
         augment.time_stretch(audio_signal, "not scalar")
 
@@ -323,4 +323,4 @@ def test_misc_param_check(mix_and_sources):
 
 def test_filter_debug_mode(mix_and_sources):
     signal, _ = mix_and_sources
-    apply_ffmpeg_filter(signal, "tremolo", silent=False)
+    augment.apply_ffmpeg_filter(signal, "tremolo", silent=False)

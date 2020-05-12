@@ -4,9 +4,40 @@ import librosa
 import os
 from .audio_signal import AudioSignal
 import tempfile
-from .augmentation_utils import apply_ffmpeg_filter
 from .constants import LEVEL_MIN, LEVEL_MAX
 import warnings
+from .utils import _close_temp_files
+import ffmpeg
+import tempfile
+
+def apply_ffmpeg_filter(audio_signal, _filter, silent=True, **kwargs):
+    tmpfiles = []
+    with _close_temp_files(tmpfiles):
+        input_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
+        output_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
+        tmpfiles.append(input_tempfile)
+        tmpfiles.append(output_tempfile)
+
+        audio_signal.write_audio_to_file(input_tempfile)
+
+        if silent:
+            input_kwargs = {'loglevel': 'quiet'}
+        else:
+            input_kwargs = {}
+        
+        (
+            ffmpeg
+            .input(input_tempfile.name, **input_kwargs)
+            .filter(_filter, **kwargs)
+            .output(output_tempfile.name)
+            .overwrite_output()
+            .run()
+        )
+        
+        augmented_signal = AudioSignal(path_to_input_file=output_tempfile.name)
+        output_tempfile.close()
+        input_tempfile.close()
+    return augmented_signal
 
 def make_arglist_ffmpeg(lst):
     return "|".join([str(s) for s in lst])
@@ -237,6 +268,12 @@ def _flanger_argcheck(delay, depth, regen, width,
         f"regen: {regen}\n"
         f"width: {width}\n"
         f"speed: {speed}\n"
+        "The following are the bounds for the parameters to flanger()"
+        "0 < delay < 30\n"
+        "0 < depth < 10\n"
+        "-95 < regen < 95\n"
+        "0 < width < 100\n"
+        ".1 < speed < 10\n"
         )
 
 def flanger(audio_signal, delay=0, depth=2, regen=0, width=71, 
@@ -326,7 +363,7 @@ def _compressor_argcheck(level_in, mode, reduction_ratio,
         f"link: {link}\n"
         f"detection: {detection}\n"
         f"mix: {mix}\n"
-        "The following are the bounds for these parameters:"
+        "The following are the bounds for these parameters:\n"
         f"{LEVEL_MIN} < level_in < {LEVEL_MAX}\n"
         "mode must be in {'upward, 'downward'}\n"
         "1 < reduction_ratio < 20\n"
