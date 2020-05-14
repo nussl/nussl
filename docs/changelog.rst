@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v1.1.1
+------
+- Allowed MixSourceFolder to mix sources on the fly.
+
 v1.1.0
 ------
 - Added building blocks for dual path recurrent neural networks
