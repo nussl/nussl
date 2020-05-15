@@ -11,11 +11,37 @@ from pysndfx import AudioEffectsChain
 from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
 
-def _create_ffmpeg_filter(_filter, **kwargs):
-    filter_function = lambda ffmpeg_stream: ffmpeg_stream.filter(_filter, **kwargs)
-    return filter_function
+class FilterFunction():
+    def __init__(self, _filter, **filter_kwargs):
+        self.func = None
+        raise NotImplementedError
 
+    def __call__(self, stream):
+        return self.func(stream)
+        
+class FFmpegFilter(FilterFunction):
+    def __init__(self, _filter, **filter_kwargs):
+        self.filter = _filter
+        self.func = lambda stream: stream.filter(_filter, **filter_kwargs)
+    
+class SoXFilter(FilterFunction):
+    def __init__(self, _filter, **filter_kwargs):
+        self.filter = _filter
+        if _filter == "tempo":
+            self.func = lambda stream: stream.tempo(**filter_kwargs)
+        elif _filter == "pitch":
+            self.func = lambda stream: stream.pitch(**filter_kwargs)
+        else:
+            raise ValueError
+        
 def build_effects_ffmpeg(audio_signal, filters, silent=False):
+    """
+    Applies list of ffmpeg_filters to AudioSignal, then creates a copy of the AudioSignal,
+    with said filters applied
+    Args:
+        audio_signal: AudioSignal object
+        filters: List of filters, returned by 
+    """
 
     # lazy load
     from .audio_signal import AudioSignal
@@ -66,19 +92,7 @@ def time_stretch(factor):
     if not np.issubdtype(type(factor), np.number) or factor <= 0:
          raise ValueError("stretch_factor must be a positve scalar")
 
-    # stretched_audio_data = []
-
-    # for channel in audio_signal.get_channels():
-    #     stretched_audio_data.append(librosa.effects.time_stretch(channel, stretch_factor))
-    # stretched_audio_data = np.array(stretched_audio_data)
-
-    # # The following line causes a UserWarning.
-    # stretched_signal = audio_signal.make_copy_with_audio_data(stretched_audio_data)
-
-    # # Alternative line to suppress UserWarning
-    # # stretched_signal = AudioSignal(audio_data_array=stretched_audio_data)
-
-    return lambda sox_stream: sox_stream.tempo(factor)
+    return SoXFilter("tempo", factor=factor)
 
 def pitch_shift(shift):
     """
@@ -93,15 +107,7 @@ def pitch_shift(shift):
     if not isinstance(shift, int):
         raise ValueError("shift must be an integer.")
 
-    # sample_rate = audio_signal.sample_rate
-    # shifted_audio_data = []
-
-    # for channel in audio_signal.get_channels():
-    #     shifted_audio_data.append(librosa.effects.pitch_shift(channel, sample_rate, shift))
-    # shifted_audio_data = np.array(shifted_audio_data)
-    # shifted_signal = audio_signal.make_copy_with_audio_data(shifted_audio_data)
-
-    return lambda sox_stream: sox_stream.pitch(shift)
+    return SoXFilter("pitch", shift=shift)
 
 def low_pass(freq, poles=2, width_type="h", width=.707):
     """
@@ -125,7 +131,7 @@ def low_pass(freq, poles=2, width_type="h", width=.707):
     #     raise ValueError("mix must be between 0 and 1")
 
 
-    return _create_ffmpeg_filter("lowpass", f=freq, p=poles,
+    return FFmpegFilter("lowpass", f=freq, p=poles,
      t=width_type, w=width)
 
 def high_pass(freq, poles=2, width_type="h", width=.707):
@@ -151,7 +157,7 @@ def high_pass(freq, poles=2, width_type="h", width=.707):
     #     raise ValueError("mix must be between 0 and 1")
 
 
-    return _create_ffmpeg_filter("highpass", f=freq, p=poles,
+    return FFmpegFilter("highpass", f=freq, p=poles,
      t=width_type, w=width)
 
 def tremolo(mod_freq, mod_depth):
@@ -172,7 +178,7 @@ def tremolo(mod_freq, mod_depth):
     if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
         raise ValueError("mod_depth should be positve scalar between 0 and 1.")
 
-    return _create_ffmpeg_filter("tremolo", f=mod_freq, d=mod_depth)
+    return FFmpegFilter("tremolo", f=mod_freq, d=mod_depth)
 
 def vibrato(mod_freq, mod_depth):
     """
@@ -192,7 +198,7 @@ def vibrato(mod_freq, mod_depth):
     if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
         raise ValueError("mod_depth should be positve scalar between 0 and 1.")
 
-    return _create_ffmpeg_filter("vibrato", f=mod_freq, d=mod_depth)
+    return FFmpegFilter("vibrato", f=mod_freq, d=mod_depth)
 
 def chorus(delays, decays, speeds, depths, 
     in_gain=.4, out_gain=.4):
@@ -230,7 +236,7 @@ def chorus(delays, decays, speeds, depths,
     decays = make_arglist_ffmpeg(decays)
     depths = make_arglist_ffmpeg(depths)
     
-    return _create_ffmpeg_filter("chorus", in_gain=in_gain, 
+    return FFmpegFilter("chorus", in_gain=in_gain, 
         out_gain=out_gain, delays=delays, speeds=speeds, decays=decays, depths=depths)
 
 def phaser(in_gain=.4, out_gain=.74, delay=3, 
@@ -261,7 +267,7 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
         "type": _type
     }
 
-    return _create_ffmpeg_filter("aphaser", in_gain = in_gain,
+    return FFmpegFilter("aphaser", in_gain = in_gain,
         out_gain = out_gain, delay = delay, speed = speed, decay = decay, **type_kwarg)
 
 
@@ -316,7 +322,7 @@ def flanger(delay=0, depth=2, regen=0, width=71,
 
     _flanger_argcheck(delay, depth, regen, width, speed, phase, shape, interp)
 
-    return _create_ffmpeg_filter("flanger", delay=delay,
+    return FFmpegFilter("flanger", delay=delay,
         depth=depth, regen=regen, width=width, speed=speed, phase=phase, shape=shape, 
         interp=interp)
 
@@ -352,7 +358,7 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
         'type': _type
     }
 
-    return _create_ffmpeg_filter("aemphasis", level_in=level_in, level_out=level_out, mode=mode, **type_kwarg)
+    return FFmpegFilter("aemphasis", level_in=level_in, level_out=level_out, mode=mode, **type_kwarg)
 
 def _compressor_argcheck(level_in, mode, reduction_ratio,
     attack, release, makeup, knee, link,
@@ -428,7 +434,7 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
     attack, release, makeup, knee, link, detection, mix, threshold)
 
     # TODO: for some reason the mode arg doesn't work in ffmpeg. figure out why 
-    return _create_ffmpeg_filter("acompressor", level_in=level_in,
+    return FFmpegFilter("acompressor", level_in=level_in,
         ratio=reduction_ratio, attack=attack, release=release, makeup=makeup,
         knee=knee, link=link, detection=detection, mix=mix, threshold=threshold)
     
@@ -471,4 +477,4 @@ def equalizer(bands):
             for band in bands
         ])
 
-    return _create_ffmpeg_filter("anequalizer", params=params)
+    return FFmpegFilter("anequalizer", params=params)
