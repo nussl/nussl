@@ -16,6 +16,7 @@ import pyloudnorm
 from . import constants
 from . import utils
 from . import masks
+from . import effects
 
 __all__ = ['AudioSignal', 'STFTParams', 'AudioSignalException']
 
@@ -196,6 +197,10 @@ class AudioSignal(object):
 
         self.stft_data = stft  # complex spectrogram data
         self.stft_params = stft_params
+
+        # Effects
+        self._ffmpeg_effects = []
+        self._sox_effects = []
 
     def __str__(self):
         dur = f'{self.signal_duration:0.3f}' if self.signal_duration else '[unknown]'
@@ -1643,6 +1648,86 @@ class AudioSignal(object):
         # lazy load
         from . import play_utils
         return play_utils.embed_audio(self, ext=ext, display=display)
+
+    ##################################
+    #          Effect Hooks          #
+    ##################################
+
+    def build_effect(self, reset=True):
+        if not self._ffmpeg_effects and not self._sox_effects:
+            raise RuntimeError("No effect hooks have been called on this AudioSignal")
+
+        new_signal = self
+        if self._ffmpeg_effects:
+            new_signal = effects.build_effects_ffmpeg(new_signal, self._ffmpeg_effects)
+        if self._sox_effects:
+            new_signal = effects.build_effects_sox(new_signal, self._sox_effects)
+
+        if reset:
+            self._ffmpeg_effects = []
+            self._sox_effects = []
+        return new_signal
+        
+    def time_stretch(self, factor):
+        self._sox_effects.append(effects.time_stretch(factor))
+        return self
+    
+    def pitch_shift(self, shift):
+        self._sox_effects.append(effects.pitch_shift(shift))
+        return self
+    
+    def low_pass(self, freq, poles=2, width_type="h", width=.707):
+        self._ffmpeg_effects.append(effects.low_pass(freq, poles=poles, 
+            width_type=width_type, width=width))
+        return self
+    
+    def high_pass(self, freq, poles=2, width_type="h", width=.707):
+        self._ffmpeg_effects.append(effects.high_pass(freq, poles=poles, 
+            width_type=width_type, width=width))
+        return self
+
+    def tremolo(self, mod_freq, mod_depth):
+        self._ffmpeg_effects.append(effects.tremolo(mod_freq, mod_depth))
+        return self
+    
+    def vibrato(self, mod_freq, mod_depth):
+        self._ffmpeg_effects.append(effects.vibrato(mod_freq, mod_depth))
+        return self
+    
+    def chorus(self, delays, decays, speeds, depths, in_gain=.4, out_gain=.4):
+        self._ffmpeg_effects.append(effects.chorus(delays, decays, 
+            speeds, depths, in_gain=.4, out_gain=.4))
+        return self
+        
+    def phaser(self, in_gain=.4, out_gain=.74, delay=3, decay=.4, 
+        speed=.5, _type="triangular"):
+        self._ffmpeg_effects.append(effects.phaser(in_gain=.4, out_gain=.74, delay=3, 
+            decay=.4, speed=.5, _type="triangular"))
+        return self
+    
+    def flanger(self, delay=0, depth=2, regen=0, width=71, 
+        speed=.5, phase=25, shape="sinusoidal", interp="linear"):
+        self._ffmpeg_effects.append(effects.flanger(delay=0, depth=2, regen=0, width=71, 
+            speed=.5, phase=25, shape="sinusoidal", interp="linear"))
+        return self
+    
+    def emphasis(self, level_in, level_out, _type="col", mode='production'):
+        self._ffmpeg_effects.append(effects.emphasis(level_in, 
+            level_out, _type="col", mode='production'))
+        return self
+    
+    def compressor(self, level_in, mode="downward", reduction_ratio=2,
+        attack=20, release=250, makeup=1, knee=2.8284, link="average",
+        detection="rms", mix=1, threshold=.125):
+        self._ffmpeg_effects.append(effects.compressor(level_in, mode="downward", reduction_ratio=2,
+            attack=20, release=250, makeup=1, knee=2.8284, link="average",
+            detection="rms", mix=1, threshold=.125))
+        return self
+    
+    def equalizer(self, bands):
+        self._ffmpeg_effects.append(effects.equalizer(bands))
+        return self
+
 
     ##################################################
     #              Operator overloading              #

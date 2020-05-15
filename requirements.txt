@@ -18,3 +18,4 @@ ffmpeg-python
 importlib_resources
 pyloudnorm
 ffmpeg-python
+pysndfx
