@@ -1654,20 +1654,23 @@ class AudioSignal(object):
     ##################################
 
     def build_effect(self, reset=True, overwrite=False):
+        """
+        Builds all effects 
+        """
         if not self._ffmpeg_effects_chain and not self._sox_effects_chain:
             raise RuntimeError("No effect hooks have been called on this AudioSignal")
 
-        # TODO: SOX before ffmpeg
         new_signal = self
-        if self._ffmpeg_effects_chain:
-            new_signal = effects.build_effects_ffmpeg(new_signal, self._ffmpeg_effects_chain)
         if self._sox_effects_chain:
             new_signal = effects.build_effects_sox(new_signal, self._sox_effects_chain)
+        if self._ffmpeg_effects_chain:
+            new_signal = effects.build_effects_ffmpeg(new_signal, self._ffmpeg_effects_chain)
 
         if reset:
             self.reset_effects_chain()
         if overwrite:
             self.audio_data = new_signal.audio_data
+            self.stft_data = None
             return self
 
         return new_signal

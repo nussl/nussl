@@ -17,7 +17,6 @@ class FilterFunction():
     audio processing streams, such as ffmpeg-python and pysndfx
     """
     def __init__(self, _filter, **filter_kwargs):
-        self.func = None
         raise NotImplementedError
 
     def __call__(self, stream):

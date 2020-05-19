@@ -315,6 +315,9 @@ def test_misc_param_check():
     band["chn"].append(-1)
     with pytest.raises(ValueError):
         effects.equalizer([band])
+
+    with pytest.raises(ValueError):
+        effects.SoXFilter('fail')
     
 def test_silent_mode(mix_and_sources):
     signal, _ = mix_and_sources
@@ -352,8 +355,13 @@ def test_hooks(mix_and_sources, check_against_regression_data):
 
     assert len(signal._ffmpeg_effects_chain) == 10
     assert len(signal._sox_effects_chain) == 2
+    
+    augmented_signal = signal.build_effect(reset=False, overwrite=True)
 
-    augmented_signal = signal.build_effect()
+    reg_path = path.join(REGRESSION_PATH, "hooks.json")
+    fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
+
+    augmented_signal = augmented_signal.build_effect()
 
     assert len(signal._ffmpeg_effects_chain) == 0
     assert len(signal._sox_effects_chain) == 0
@@ -361,6 +369,3 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     with pytest.raises(RuntimeError):
         signal.build_effect()
 
-    reg_path = path.join(REGRESSION_PATH, "hooks.json")
-
-    fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
