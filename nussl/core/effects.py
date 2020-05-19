@@ -280,16 +280,16 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
     """
     https://ffmpeg.org/ffmpeg-all.html#aphaser
 
-    Applies Phaser Filter.
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a phaser filter to the audio signal
     Args:
-        audio_signal: An AudioSignal object
-        input_gain: Proportion of input gain
-        output_gain: Proportion of output gain
-        delay: Delay of chorus filter. (Time between original signal and delayed)
-        speed: Speed of the delayed filter.
+        input_gain: Proportion of input gain. Must be between 0 and 1
+        output_gain: Proportion of output gain. Must be between 0 and 1.
+        delay: Delay of chorus filter in ms. (Time between original signal and delayed)
+        speed: Modulation speed of the delayed filter. 
         _type: modulation type
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     if (in_gain > 1 or in_gain < 0 or out_gain > 1 or out_gain < 0):
         raise ValueError("in_gain and out_gain must be between 0 and 1.")
@@ -340,8 +340,10 @@ def flanger(delay=0, depth=2, regen=0, width=71,
     """
     https://ffmpeg.org/ffmpeg-all.html#flanger
 
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a flanger filter to the audio signal.
+
     Args:
-        audio_signal: An AudioSignal object
         delay: Base delay in ms between original signal and copy.
             Must be between 0 and 30.
         depth: Sweep delay in ms. Must be between 0 and 10.
@@ -349,11 +351,11 @@ def flanger(delay=0, depth=2, regen=0, width=71,
             Must be between -95 and 95.
         width: Percentage of delayed signal. Must be between 0 and 100.
         speed: Sweeps per second. Must be in .1 to 10
-        shape: Swept wave shape, can be triangular or sinusoidal.
+        shape: Swept wave shape, Must be "triangular" or "sinusoidal".
         phase: swept wave percentage-shift for multi channel. Must be between 0 and 100.
-        interp: Delay Line interpolation. Must be linear of quadratic
+        interp: Delay Line interpolation. Must be "linear" or "quadratic".
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
 
     _flanger_argcheck(delay, depth, regen, width, speed, phase, shape, interp)
@@ -366,10 +368,9 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
     """
     https://ffmpeg.org/ffmpeg-all.html#aemphasis
 
-    Applies the emphasis filter, which either creates or restores 
-    signals from various physical mediums. 
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a emphasis filter to the audio signal.
     Args:
-        audio_signal: An AudioSignal object
         level_in: Input gain
         level_out: Output gain
         _type: medium type to convert/deconvert from 
@@ -377,11 +378,12 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
             production to convert to physical medium.
 
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied 
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     if level_in < LEVEL_MIN or level_in > LEVEL_MAX \
         or level_out < LEVEL_MIN or level_out > LEVEL_MAX:
         raise ValueError(f"level_in and level_out must both be between {LEVEL_MIN} AND {LEVEL_MAX}")
+
     allowed_types={"col", "emi", "bsi", "riaa", "cd", 
         "50fm", "75fm", "50kf", "75kf"}
     if _type not in allowed_types:
@@ -442,10 +444,9 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
     """
     https://ffmpeg.org/ffmpeg-all.html#acompressor
 
-    Applies the compressor filter to an audio signal.
-    See ffmpeg documentation for bounds
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a compressor filter to the audio signal.
     Args:
-        audio_signal: An AudioSignal object
         level_in: Input Gain
         mode: Mode of compressor operation. Can either be "upward" or "downward". 
         threshold: Volume threshold. If a signal's volume is above the threshold,
@@ -464,7 +465,7 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
             Either "peak" for exact or "rms".
         mix: Proportion of compressed signal in output.
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     _compressor_argcheck(level_in, mode, reduction_ratio,
     attack, release, makeup, knee, link, detection, mix, threshold)
@@ -479,11 +480,12 @@ def equalizer(bands):
     """
     https://ffmpeg.org/ffmpeg-all.html#anequalizer
 
-    Applies equalizer filter(s) to the audio_signal. 
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a equalizer filter to the audio signal.
     Args:
         audio_signal: An AudioSignal object
         bands: A list of dictionaries, for each band. The required values for each dictionary:
-            'chn': List of channel numbers to apply filter
+            'chn': List of channel numbers to apply filter. Must be list of ints.
             'f': central freqency of band
             'w': Width of the band in Hz
             'g': Band gain in dB
@@ -491,6 +493,8 @@ def equalizer(bands):
                 0, for Butterworth
                 1, for Chebyshev type 1
                 2, for Chebyshev type 2
+    Returns:
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     for band in bands:
         for chn in band["chn"]:
