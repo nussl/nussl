@@ -345,18 +345,18 @@ def test_hooks(mix_and_sources, check_against_regression_data):
         }])
     )
 
-    assert len(signal._ffmpeg_effects) == 10
-    assert len(signal._sox_effects) == 2
+    assert len(signal._ffmpeg_effects_chain) == 10
+    assert len(signal._sox_effects_chain) == 2
 
     augmented_signal = signal.build_effect(reset=False)
 
-    assert len(signal._ffmpeg_effects) == 10
-    assert len(signal._sox_effects) == 2
+    assert len(signal._ffmpeg_effects_chain) == 10
+    assert len(signal._sox_effects_chain) == 2
 
     augmented_signal = signal.build_effect()
 
-    assert len(signal._ffmpeg_effects) == 0
-    assert len(signal._sox_effects) == 0
+    assert len(signal._ffmpeg_effects_chain) == 0
+    assert len(signal._sox_effects_chain) == 0
 
     with pytest.raises(RuntimeError):
         signal.build_effect()

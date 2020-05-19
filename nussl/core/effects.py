@@ -12,6 +12,10 @@ from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
 
 class FilterFunction():
+    """
+    The FilterFunction class is an abstract class for functions that take 
+    audio processing streams, such as ffmpeg-python and pysndfx
+    """
     def __init__(self, _filter, **filter_kwargs):
         self.func = None
         raise NotImplementedError
@@ -36,11 +40,16 @@ class SoXFilter(FilterFunction):
         
 def build_effects_ffmpeg(audio_signal, filters, silent=False):
     """
-    Applies list of ffmpeg_filters to AudioSignal, then creates a copy of the AudioSignal,
-    with said filters applied
+    build_effects_ffmpeg takes an AudioSignal object and a list of FFmpegFilter objects
+    and sequentially applies each filter to the signal. 
     Args:
         audio_signal: AudioSignal object
-        filters: List of filters, returned by 
+        filters: List of FFmpegFilter objects
+        silent: If True, suppresses all FFmpeg output. If False, FFmpeg will log information
+        with loglevel 'info'
+    Returns:
+        augmented_signal: A new AudioSignal object, with the audio data from 
+        audio_signal after applying filters
     """
 
     # lazy load
@@ -68,6 +77,16 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
     return augmented_signal
 
 def build_effects_sox(audio_signal, filters):
+    """
+    build_effects_sox takes an AudioSignal object and a list of SoXFilter objects
+    and sequentially applies each filter to the signal. 
+    Args:
+        audio_signal: AudioSignal object
+        filters: List of SoXFilter objects
+    Returns:
+        augmented_signal: A new AudioSignal object, with the audio data from 
+        audio_signal after applying filters
+    """
     audio_data = audio_signal.audio_data
 
     chain = AudioEffectsChain()
@@ -82,12 +101,12 @@ def make_arglist_ffmpeg(lst, sep="|"):
 
 def time_stretch(factor):
     """
-    Linear Stretch on the time axis
+    Returns a SoXFilter, when called on an pysndfx stream, will multiply the 
+    tempo of the audio by factor.
     Args: 
-        audio_signal: An AudioSignal object
-        factor_range: A tuple of length 2. Denotes start and end of possible ranges for factor. 
+        factor: Scaling factor for tempo change. Must be positive.
     Returns:
-        stretched_signal: A copy of the original audio signal, with augmentations applied 
+        filter: A SoXFilter object, to be called on an pysndfx stream
     """
     if not np.issubdtype(type(factor), np.number) or factor <= 0:
          raise ValueError("stretch_factor must be a positve scalar")
@@ -96,13 +115,13 @@ def time_stretch(factor):
 
 def pitch_shift(shift):
     """
-    Pitch shift on the frequency axis
+    Returns a SoXFilter, when called on an pysndfx stream, will increase the pitch 
+    of the audio by a number of cents, denoted in shift.
     Args: 
-        audio_signal: An AudioSignal object
         shift: The number of cents (1/100th of a half step) to shift the audio. 
             Positive values increases the frequency of the signal
     Returns:
-        shifted_signal: A copy of the original audio signal, with augmentations applied 
+        filter: A SoXFilter object, to be called on an pysndfx stream
     """
     if not isinstance(shift, int):
         raise ValueError("shift must be an integer.")
@@ -111,12 +130,21 @@ def pitch_shift(shift):
 
 def low_pass(freq, poles=2, width_type="h", width=.707):
     """
-    Creates high pass filter. 
+    https://ffmpeg.org/ffmpeg-all.html#lowpass
+
+    Creates an FFmpegFilter object, which when called on an ffmpeg stream,
+    applies a low pass filter to the audio signal.
     Args: 
-        audio_signal: An AudioSignal object
-        highest_freq: Threshold for high pass. Should be positive scalar
+        freq: Threshold for high pass. Should be positive scalar
+        poles: Number of poles. should be either 1 or 2
+        width_type: Unit of width for filter. Must be either:
+            'h': Hz
+            'q': Q-factor
+            'o': octave
+            's': slope
+            'k': kHz
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied 
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     if not np.issubdtype(type(freq), np.number) or freq <= 0:
         raise ValueError("lowest_freq should be positive scalar")
@@ -136,12 +164,21 @@ def low_pass(freq, poles=2, width_type="h", width=.707):
 
 def high_pass(freq, poles=2, width_type="h", width=.707):
     """
-    Creates high pass filter. 
+    https://ffmpeg.org/ffmpeg-all.html#highpass
+
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a high pass filter to the audio signal.
     Args: 
-        audio_signal: An AudioSignal object
-        highest_freq: Threshold for high pass. Should be positive scalar
+        freq: Threshold for high pass. Should be positive scalar
+        poles: Number of poles. should be either 1 or 2
+        width_type: Unit of width for filter. Must be either:
+            'h': Hz
+            'q': Q-factor
+            'o': octave
+            's': slope
+            'k': kHz
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied 
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     if not np.issubdtype(type(freq), np.number) or freq <= 0:
         raise ValueError("lowest_freq should be positive scalar")
@@ -157,20 +194,19 @@ def high_pass(freq, poles=2, width_type="h", width=.707):
     #     raise ValueError("mix must be between 0 and 1")
 
 
-    return FFmpegFilter("highpass", f=freq, p=poles,
-     t=width_type, w=width)
+    return FFmpegFilter("highpass", f=freq, p=poles, t=width_type, w=width)
 
 def tremolo(mod_freq, mod_depth):
     """
     https://ffmpeg.org/ffmpeg-all.html#tremolo
 
-    Applies tremolo filter
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a tremolo filter to the audio signal
     Args: 
-        audio_signal: An AudioSignal object
         mod_freq: Modulation frequency. Must be between .1 and 20000.
         mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied 
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < .1 or mod_freq > 20000:
         raise ValueError("mod_freq should be positive scalar between .1 and 20000")
@@ -184,13 +220,13 @@ def vibrato(mod_freq, mod_depth):
     """
     https://ffmpeg.org/ffmpeg-all.html#vibrato
 
-    Applies vibrato filter
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a vibrato filter to the audio signal
     Args: 
-        audio_signal: An AudioSignal object
         mod_freq: Modulation frequency. Must be between .1 and 20000.
         mod_depth: Modulation depth. Must be between 0 and 1.
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied 
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < .1 or mod_freq > 20000:
         raise ValueError("mod_freq should be positve scalar between .1 and 20000")
@@ -205,18 +241,17 @@ def chorus(delays, decays, speeds, depths,
     """
     https://ffmpeg.org/ffmpeg-all.html#chorus
 
-    Applies Chorus Filter(s). Delays, decays, speeds, and depths
-    must all lists of the same length.
+    Creates a FFmpegFilter object, when called on an ffmpeg stream,
+    applies a vibrato filter to the audio signal
     Args:
-        audio_signal: An AudioSignal object
         input_gain: Proportion of input gain
         output_gain: Proportion of output gain
         delays: list of delays in ms. Typical Delay is 40ms-6ms
-        decays: list of decays
-        speeds: list of speeds
-        depths: list of depths
+        decays: list of decays. Must be between 0 and 1
+        speeds: list of speeds. Must be between 0 and 1
+        depths: list of depths. Must be between 0 and 1
     Returns:
-        augmented_signal: A copy of the original audio signal, with augmentations applied
+        filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
     if (in_gain > 1 or in_gain < 0 or out_gain > 1 or out_gain < 0):
         raise ValueError("in_gain and out_gain must be between 0 and 1.")
@@ -229,7 +264,8 @@ def chorus(delays, decays, speeds, depths,
     if (len(delays) != len(decays) or len(decays)
         !=  len(speeds) or len(speeds) != len(depths)):
         raise ValueError("Delays, decays, depths, and speeds must all be the same length.")
-    
+
+    # TODO: Add more argchecks
 
     delays = make_arglist_ffmpeg(delays)
     speeds = make_arglist_ffmpeg(speeds)

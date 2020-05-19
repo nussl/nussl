@@ -1657,6 +1657,7 @@ class AudioSignal(object):
         if not self._ffmpeg_effects_chain and not self._sox_effects_chain:
             raise RuntimeError("No effect hooks have been called on this AudioSignal")
 
+        # TODO: SOX before ffmpeg
         new_signal = self
         if self._ffmpeg_effects_chain:
             new_signal = effects.build_effects_ffmpeg(new_signal, self._ffmpeg_effects_chain)
