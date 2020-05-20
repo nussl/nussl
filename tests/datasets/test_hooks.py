@@ -144,3 +144,52 @@ def test_dataset_hook_fuss(scaper_folder):
         shutil.copytree(scaper_folder, train_folder)
 
         fuss = nussl.datasets.FUSS(tmpdir)
+
+def test_dataset_hook_on_the_fly():
+    def make_sine_wave(freq, sample_rate, duration):
+        dt = 1 / sample_rate
+        x = np.arange(0.0, duration, dt)
+        x = np.sin(2 * np.pi * freq * x)
+        return x
+
+    n_sources = 2
+    duration = 3
+    sample_rate = 44100
+    min_freq, max_freq = 110, 1000
+    def make_mix(i):
+        sources = {}
+        freqs = []
+        for i in range(n_sources):
+            freq = np.random.randint(min_freq, max_freq)
+            freqs.append(freq)
+            source_data = make_sine_wave(freq, sample_rate, duration)
+            source_signal = nussl.AudioSignal(
+                audio_data_array=source_data, sample_rate=sample_rate)
+            sources[f'sine{i}'] = source_signal * 1 / n_sources
+        mix = sum(sources.values())
+        output = {
+            'mix': mix,
+            'sources': sources,
+            'metadata': {
+                'frequencies': freqs    
+            }    
+        }
+        return output
+    dataset = nussl.datasets.OnTheFly(make_mix, 10)
+    assert len(dataset) == 10
+
+    for output in dataset:
+        assert output['mix'] == sum(output['sources'].values())
+        assert output['mix'].signal_duration == duration
+
+    def bad_mix_closure(i):
+        return 'not a dictionary'
+    pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_mix_closure, 10)
+
+    def bad_dict_closure(i):
+        return {'key': 'no mix in this dict'}
+    pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_dict_closure, 10)
+
+    def bad_dict_sources_closure(i):
+        return {'mix': 'no sources in this dict'}
+    pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_dict_sources_closure, 10)

@@ -342,6 +342,77 @@ class Scaper(BaseDataset):
         }
         return output
 
+class OnTheFly(BaseDataset):
+    """
+    Hook for a dataset that creates mixtures on the fly from source
+    data. The function that creates the mixture is a closure which
+    is defined by the end-user. The number of mixtures in the 
+    dataset is also defined by the end-user. The mix closure function
+    should take one argument - the index of the item being processed
+    - and the output of the mix closure should be a dictionary containing
+    at least a 'mix', 'sources' and (optionally) a 'metadata' key, or 
+    other keys that can be defined up to you. Here's an example of 
+    a closure, which can be configured via variable scoping:
+    
+    >>>  def make_sine_wave(freq, sample_rate, duration):
+    >>>      dt = 1 / sample_rate
+    >>>      x = np.arange(0.0, duration, dt)
+    >>>      x = np.sin(2 * np.pi * freq * x)
+    >>>      return x
+    >>>  n_sources = 2
+    >>>  duration = 3
+    >>>  sample_rate = 44100
+    >>>  min_freq, max_freq = 110, 1000
+    >>>  def make_mix(i):
+    >>>      sources = {}
+    >>>      freqs = []
+    >>>      for i in range(n_sources):
+    >>>          freq = np.random.randint(min_freq, max_freq)
+    >>>          freqs.append(freq)
+    >>>          source_data = make_sine_wave(freq, sample_rate, duration)
+    >>>          source_signal = nussl.AudioSignal(
+    >>>              audio_data_array=source_data, sample_rate=sample_rate)
+    >>>          sources[f'sine{i}'] = source_signal * 1 / n_sources
+    >>>      mix = sum(sources.values())
+    >>>      output = {
+    >>>          'mix': mix,
+    >>>          'sources': sources,
+    >>>          'metadata': {
+    >>>              'frequencies': freqs    
+    >>>          }    
+    >>>      }
+    >>>      return output
+    >>>  dataset = nussl.datasets.OnTheFly(make_mix, 10)
+
+    Args:
+        mix_closure (function): A closure that determines how to create
+          a single mixture, given the index. It has a strict input 
+          signature (the index is given as an int) and a strict output
+          signature (a dictionary containing a 'mix' and 'sources') key.
+        num_mixtures (int): Number of mixtures that will be created on
+          the fly. This determines one 'run' thrugh the dataset, or an 
+          epoch.
+        kwargs: Keyword arguments to BaseDataset.
+    """
+    def __init__(self, mix_closure, num_mixtures, **kwargs):
+        self.num_mixtures = num_mixtures
+        self.mix_closure = mix_closure
+
+        super().__init__('none', **kwargs)
+
+    def get_items(self, folder):
+        return list(range(self.num_mixtures))
+    
+    def process_item(self, item):
+        output = self.mix_closure(item)
+        if not isinstance(output, dict):
+            raise DataSetException("output of mix_closure must be a dict!")
+        if 'mix' not in output or 'sources' not in output:
+            raise DataSetException(
+                "output of mix_closure must be a dict containing "
+                "'mix', 'sources' as keys!")
+        return output
+
 class FUSS(Scaper):
     """
     The Free Universal Sound Separation (FUSS) Dataset is a database of arbitrary 
@@ -424,7 +495,12 @@ class WHAM(MixSourceFolder):
           metadata/
 
     Args:
-        MixSourceFolder ([type]): [description]
+        root (str): Root of WHAM directory.
+        mix_folder (str): Which folder is the mix? Either 'mix_clean', 'mix_both', or
+          'mix_single'.
+        mode (str): Either 'min' or 'max' mode.
+        split (str): Split to use (tr, cv, or tt).
+        sample_rate (int): Sample rate of audio, either 8000 or 16000.
     """
     MIX_TO_SOURCE_MAP = {
         'mix_clean': ['s1', 's2'],
