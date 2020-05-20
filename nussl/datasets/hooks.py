@@ -348,11 +348,12 @@ class OnTheFly(BaseDataset):
     data. The function that creates the mixture is a closure which
     is defined by the end-user. The number of mixtures in the 
     dataset is also defined by the end-user. The mix closure function
-    should take one argument - the index of the item being processed
-    - and the output of the mix closure should be a dictionary containing
-    at least a 'mix', 'sources' and (optionally) a 'metadata' key, or 
-    other keys that can be defined up to you. Here's an example of 
-    a closure, which can be configured via variable scoping:
+    should take two arguments - the dataset object and the index of the 
+    item being processed - and the output of the mix closure should be a 
+    dictionary containing at least a 'mix', 'sources' and (optionally) 
+    a 'metadata' key, or other keys that can be defined up to you. 
+    Here's an example of a closure, which can be configured via 
+    variable scoping:
     
     >>>  def make_sine_wave(freq, sample_rate, duration):
     >>>      dt = 1 / sample_rate
@@ -363,15 +364,15 @@ class OnTheFly(BaseDataset):
     >>>  duration = 3
     >>>  sample_rate = 44100
     >>>  min_freq, max_freq = 110, 1000
-    >>>  def make_mix(i):
+    >>>  def make_mix(dataset, i):
     >>>      sources = {}
     >>>      freqs = []
     >>>      for i in range(n_sources):
     >>>          freq = np.random.randint(min_freq, max_freq)
     >>>          freqs.append(freq)
     >>>          source_data = make_sine_wave(freq, sample_rate, duration)
-    >>>          source_signal = nussl.AudioSignal(
-    >>>              audio_data_array=source_data, sample_rate=sample_rate)
+    >>>          source_signal = dataset._load_audio_from_array(
+    >>>              audio_data=source_data, sample_rate=sample_rate)
     >>>          sources[f'sine{i}'] = source_signal * 1 / n_sources
     >>>      mix = sum(sources.values())
     >>>      output = {
@@ -404,7 +405,7 @@ class OnTheFly(BaseDataset):
         return list(range(self.num_mixtures))
     
     def process_item(self, item):
-        output = self.mix_closure(item)
+        output = self.mix_closure(self, item)
         if not isinstance(output, dict):
             raise DataSetException("output of mix_closure must be a dict!")
         if 'mix' not in output or 'sources' not in output:
