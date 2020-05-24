@@ -6,6 +6,7 @@ from .blocks import (
     ShiftAndScale, 
     BatchNorm,
     InstanceNorm,
+    GroupNorm,
     LayerNorm,
     MelProjection,
     Embedding,
@@ -16,5 +17,5 @@ from .blocks import (
     RecurrentStack,
     ConvolutionalStack2D,
     DualPathBlock,
-    DualPath
+    DualPath,
 )
