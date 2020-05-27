@@ -17,7 +17,8 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
           so that you can initialize a class and load the model later.  
           Defaults to None.
         extra_data: A dictionary containing any additional data that will 
-          be merged with the output dictionary.
+          be merged with the output dictionary. This can come from a dataset,
+          or contain a query, etc.
         device (str, optional): Device to put the model on. Defaults to 'cpu'.
         **kwargs (dict): Keyword arguments for MaskSeparationBase.
     """
