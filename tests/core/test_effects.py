@@ -8,6 +8,7 @@ import os
 import os.path as path
 import librosa
 import pytest
+import logging
 
 REGRESSION_PATH="tests/core/regression/augmentation"
 os.makedirs(REGRESSION_PATH, exist_ok=True)
@@ -53,6 +54,7 @@ def test_params(mix_and_sources):
         effects.pitch_shift("this is a string")
 
 def test_tremolo(mix_and_sources, check_against_regression_data):
+    logging.basicConfig()
     f = 15
     d = .5
     signal, _ =  mix_and_sources
