@@ -14,19 +14,23 @@ class DeepAudioEstimation(SeparationBase, DeepMixin):
         model_path (str, optional): Path to the model that will be used. Can be None, 
           so that you can initialize a class and load the model later.  
           Defaults to None.
+        extra_data: A dictionary containing any additional data that will 
+          be merged with the output dictionary.
         device (str, optional): Device to put the model on. Defaults to 'cpu'.
         **kwargs (dict): Keyword arguments for MaskSeparationBase.
     """
-    def __init__(self, input_audio_signal, model_path=None, device='cpu', **kwargs):
+    def __init__(self, input_audio_signal, model_path=None, device='cpu', 
+                 extra_data=None, **kwargs):
         if model_path is not None:
             self.load_model(model_path, device=device)
         super().__init__(input_audio_signal, **kwargs)
         self.model_output = None
+        self.extra_data = extra_data
         # audio channel dimension in an audio model
         self.channel_dim = 1
 
     def forward(self):
-        input_data = self._get_input_data_for_model()
+        input_data = self._get_input_data_for_model(self.extra_data)
         with torch.no_grad():
             output = self.model(input_data)
             if 'audio' not in output:
