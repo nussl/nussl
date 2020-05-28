@@ -54,4 +54,5 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
             if self.metadata['num_channels'] == 1:
                 embedding = embedding.transpose(0, -2)
             embedding = embedding.squeeze(0).transpose(0, 1)
+        self._preprocess_audio_signal()
         return embedding.cpu().data.numpy()
