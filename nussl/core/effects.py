@@ -7,8 +7,8 @@ import warnings
 import ffmpeg
 import tempfile
 from pysndfx import AudioEffectsChain
-import av
-from av.filter import Filter, Graph
+# import av
+# from av.filter import Filter, Graph
 
 from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
@@ -25,17 +25,20 @@ class FilterFunction():
         return self.func(stream)
         
 class FFmpegFilter(FilterFunction):
-    @staticmethod
-    def _dict_to_ffmpeg_kwargs(dictionary):
-        str_params = []
-        for key, value in dictionary.items():
-            str_params.append(f"{key}={value}")
-        return ":".join(str_params)
+    # @staticmethod
+    # def _dict_to_ffmpeg_kwargs(dictionary):
+    #     str_params = []
+    #     for key, value in dictionary.items():
+    #         str_params.append(f"{key}={value}")
+    #     return ":".join(str_params)
 
     def __init__(self, _filter, **filter_kwargs):
         self.filter = _filter
-        self.func = lambda graph: graph.add(_filter, 
-            FFmpegFilter._dict_to_ffmpeg_kwargs(filter_kwargs)) 
+        # This code is for using PyAV. 
+        # I was not able to make it work :(
+        # self.func = lambda graph: graph.add(_filter, 
+        #     FFmpegFilter._dict_to_ffmpeg_kwargs(filter_kwargs)) 
+        self.func = lambda stream: stream.filter(_filter, **filter_kwargs)
     
 class SoXFilter(FilterFunction):
     def __init__(self, _filter, **filter_kwargs):
@@ -66,65 +69,66 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
 
     tmpfiles = []
 
-    # input_args = {}
-    # if silent:
-    #     input_args['loglevel'] = 'quiet'
+    input_args = {}
+    if silent:
+        input_args['loglevel'] = 'quiet'
 
     with _close_temp_files(tmpfiles):
         curr_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
-        output_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
+        
         tmpfiles.append(curr_tempfile)
-        tmpfiles.append(output_tempfile)
         audio_signal.write_audio_to_file(curr_tempfile)
 
-        in_cont = av.open(curr_tempfile.name, mode='r')
-        out_cont = av.open(output_tempfile.name, mode='w')
+        # This is for applying effects via PyAV
+        # I was not able to make it work :(
+        # Leaving the code for someone else to try to fix
 
-        in_stream = in_cont.streams.audio[0]
-        out_stream = out_cont.add_stream(
-                codec_name=in_stream.codec_context.codec,
-                rate=audio_signal.sample_rate
-            )
-        # out_stream = out_count.add_stream(template=in_stream)
+        # output_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
+        # tmpfiles.append(output_tempfile)
 
-        buffer_args = "sample_rate=%d:sample_fmt=%s:channel_layout=%s:time_base=%d/%d" % (
-            in_stream.rate, in_stream.format.name,
-            in_stream.layout.name,
-            1, in_stream.rate,
-        )
+        # in_cont = av.open(curr_tempfile.name, mode='r')
+        # out_cont = av.open(output_tempfile.name, mode='w')
 
-        print(buffer_args)
+        # in_stream = in_cont.streams.audio[0]
+        # out_stream = out_cont.add_stream(
+        #         codec_name=in_stream.codec_context.codec,
+        #         rate=audio_signal.sample_rate
+        #     )
 
-        graph = Graph()
-        fchain = [graph.add('abuffer', buffer_args)]
-        for _filter in filters:
-            fchain.append(_filter(graph))
-            fchain[-2].link_to(fchain[-1])
-        
-        fchain.append(graph.add("abuffersink"))
-        fchain[-2].link_to(fchain[-1])
-
-        graph.configure()
-
-        for in_frame in in_cont.decode(in_stream):
-            graph.push(in_frame)
-            out_frame = graph.pull()
-            for out_packet in out_stream.encode(out_frame):
-                out_cont.mux(out_packet)
-
-        out_cont.close()
-
-        # tmpfiles.append(curr_tempfile)
-        # stream = ffmpeg.input(curr_tempfile.name, **input_args)
+        # graph = Graph()
+        # fchain = [graph.add_abuffer(sample_rate=in_stream.rate, 
+        #     format=in_stream.format.name, layout=in_stream.layout.name, 
+        #     channels=audio_signal.num_channels)]
         # for _filter in filters:
-        #     stream = _filter(stream)
-        # (stream
-        #     .output(curr_tempfile.name)
-        #     .overwrite_output()
-        #     .run()
-        # )
+        #     fchain.append(_filter(graph))
+        #     fchain[-2].link_to(fchain[-1])
         
-        augmented_signal = AudioSignal(path_to_input_file=output_tempfile.name)
+        # fchain.append(graph.add("abuffersink"))
+        # fchain[-2].link_to(fchain[-1])
+
+        # graph.configure()
+
+        # for ifr in in_cont.decode(in_stream):
+        #     graph.push(ifr)
+        #     ofr = graph.pull()
+        #     ofr.pts = None
+        #     for p in out_stream.encode(ofr):
+        #         out_cont.mux(p)
+
+        # out_cont.close()
+        # augmented_signal = AudioSignal(path_to_input_file=output_tempfile.name)
+
+        tmpfiles.append(curr_tempfile)
+        stream = ffmpeg.input(curr_tempfile.name, **input_args)
+        for _filter in filters:
+            stream = _filter(stream)
+        (stream
+            .output(curr_tempfile.name)
+            .overwrite_output()
+            .run()
+        )
+        
+        augmented_signal = AudioSignal(path_to_input_file=curr_tempfile.name)
     return augmented_signal
 
 def build_effects_sox(audio_signal, filters):
