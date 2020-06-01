@@ -3,7 +3,6 @@ import warnings
 import ffmpeg
 import tempfile
 from pysndfx import AudioEffectsChain
-from abc import abstractmethod
 # import av
 # from av.filter import Filter, Graph
 
@@ -11,7 +10,7 @@ from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
 
 
-class FilterFunction():
+class FilterFunction:
     """
     The FilterFunction class is an abstract class for functions that take 
     audio processing streams, such as ffmpeg-python and pysndfx
@@ -189,6 +188,7 @@ def pitch_shift(shift):
 
     return SoXFilter("pitch", shift=shift)
 
+
 def _pass_arg_check(freq, poles, width_type, width):
     if not np.issubdtype(type(freq), np.number) or freq <= 0:
         raise ValueError("lowest_freq should be positive scalar")
@@ -218,6 +218,7 @@ def low_pass(freq, poles=2, width_type="h", width=.707):
             'o': octave
             's': slope
             'k': kHz
+        width: Band width in width_type units
     Returns:
         filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
@@ -242,6 +243,7 @@ def high_pass(freq, poles=2, width_type="h", width=.707):
             'o': octave
             's': slope
             'k': kHz
+        width: Band width in width_type units
     Returns:
         filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
@@ -309,7 +311,7 @@ def chorus(delays, decays, speeds, depths,
     Returns:
         filter: A FFmpegFilter object, to be called on an ffmpeg stream
     """
-    if (in_gain > 1 or in_gain < 0 or out_gain > 1 or out_gain < 0):
+    if in_gain > 1 or in_gain < 0 or out_gain > 1 or out_gain < 0:
         raise ValueError("in_gain and out_gain must be between 0 and 1.")
 
     # Bounds could not be found in ffmpeg docs, but recommendations were given
@@ -353,9 +355,9 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
     """
     if in_gain > 1 or in_gain < 0:
         raise ValueError("in_gain must be between 0 and 1.")
-    if out_gain > 1 or out_gain < 1:
+    if out_gain > 1 or out_gain < 0:
         raise ValueError("out_gain must be between 0 and 1.")
-    if delay > 1 or delay < 1:
+    if decay > 1 or decay < 0:
         raise ValueError("delay must be between 0 and 1.")
 
     allowed_mod_types = {"triangular", "sinusoidal", "t", "s"}
@@ -383,19 +385,22 @@ def _flanger_argcheck(delay, depth, regen, width,
             or depth < 0 or depth > 10
             or regen < -95 or regen > 95
             or width < 0 or width > 100
-            or speed < .1 or speed > 10):
+            or speed < .1 or speed > 10
+            or phase < 0 or phase > 100):
         raise ValueError("One of the follow values are not in the accepted ranges"
                          f"delay: {delay}\n"
                          f"depth: {depth}\n"
                          f"regen: {regen}\n"
                          f"width: {width}\n"
                          f"speed: {speed}\n"
+                         f"phase: {phase}\n"
                          "The following are the bounds for the parameters to flanger()"
                          "0 < delay < 30\n"
                          "0 < depth < 10\n"
                          "-95 < regen < 95\n"
                          "0 < width < 100\n"
                          ".1 < speed < 10\n"
+                         "0 < phase < 100"
                          )
 
 
