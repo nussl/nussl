@@ -327,7 +327,6 @@ class BaseDataset(Dataset):
         else:
             self.num_channels = audio_signal.num_channels
 
-
 class DataSetException(Exception):
     """
     Exception class for errors when working with data sets in nussl.

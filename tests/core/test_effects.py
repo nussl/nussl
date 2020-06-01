@@ -272,6 +272,10 @@ def test_misc_param_check():
     with pytest.raises(ValueError):
         effects.phaser(in_gain=-1)
     with pytest.raises(ValueError):
+        effects.phaser(out_gain=-1)
+    with pytest.raises(ValueError):
+        effects.phaser(decay=-1)
+    with pytest.raises(ValueError):
         effects.phaser(_type="fail")
 
     with pytest.raises(ValueError):
