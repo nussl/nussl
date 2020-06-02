@@ -342,7 +342,7 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     signal = (
         signal
             .time_stretch(3)
-            .pitch_shift(2000)
+            .pitch_shift(2)
             .low_pass(512)
             .high_pass(512)
             .tremolo(5, .4)

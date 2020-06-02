@@ -2,7 +2,7 @@ import numpy as np
 import warnings
 import ffmpeg
 import tempfile
-from pysndfx import AudioEffectsChain
+import sox
 # import av
 # from av.filter import Filter, Graph
 
@@ -38,17 +38,6 @@ class FFmpegFilter(FilterFunction):
         # self.func = lambda graph: graph.add(_filter, 
         #     FFmpegFilter._dict_to_ffmpeg_kwargs(filter_kwargs)) 
         self.func = lambda stream: stream.filter(_filter, **filter_kwargs)
-
-
-class SoXFilter(FilterFunction):
-    def __init__(self, _filter, **filter_kwargs):
-        self.filter = _filter
-        if _filter == "tempo":
-            self.func = lambda stream: stream.tempo(**filter_kwargs)
-        elif _filter == "pitch":
-            self.func = lambda stream: stream.pitch(**filter_kwargs)
-        else:
-            raise ValueError
 
 
 def build_effects_ffmpeg(audio_signal, filters, silent=False):
@@ -133,6 +122,17 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
     return augmented_signal
 
 
+class SoXFilter(FilterFunction):
+    def __init__(self, _filter, **filter_kwargs):
+        self.filter = _filter
+        if _filter == "tempo":
+            self.func = lambda tfm: tfm.tempo(**filter_kwargs)
+        elif _filter == "pitch":
+            self.func = lambda tfm: tfm.pitch(**filter_kwargs)
+        else:
+            raise ValueError
+
+
 def build_effects_sox(audio_signal, filters):
     """
     build_effects_sox takes an AudioSignal object and a list of SoXFilter objects
@@ -146,12 +146,14 @@ def build_effects_sox(audio_signal, filters):
     """
     audio_data = audio_signal.audio_data
 
-    chain = AudioEffectsChain()
+    tfm = sox.Transformer()
+    # tfm.set_output_format(channels=audio_signal.num_channels)
     for _filter in filters:
-        chain = _filter(chain)
-    augmented_data = chain(audio_data)
+        tfm = _filter(tfm)
+    augmented_data = tfm.build_array(input_array=np.transpose(audio_data), 
+        sample_rate_in=audio_signal.sample_rate)
 
-    return audio_signal.make_copy_with_audio_data(augmented_data)
+    return audio_signal.make_copy_with_audio_data(np.transpose(augmented_data))
 
 
 def make_arglist_ffmpeg(lst, sep="|"):
@@ -178,7 +180,7 @@ def pitch_shift(shift):
     Returns a SoXFilter, when called on an pysndfx stream, will increase the pitch 
     of the audio by a number of cents, denoted in shift.
     Args: 
-        shift: The number of cents (1/100th of a half step) to shift the audio. 
+        shift: The number of semitones to shift the audio. 
             Positive values increases the frequency of the signal
     Returns:
         filter: A SoXFilter object, to be called on an pysndfx stream
@@ -186,7 +188,7 @@ def pitch_shift(shift):
     if not isinstance(shift, int):
         raise ValueError("shift must be an integer.")
 
-    return SoXFilter("pitch", shift=shift)
+    return SoXFilter("pitch", n_semitones=shift)
 
 
 def _pass_arg_check(freq, poles, width_type, width):
