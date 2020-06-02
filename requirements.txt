@@ -17,4 +17,4 @@ gpytorch
 ffmpeg-python
 importlib_resources
 pyloudnorm
-sox --pre
+sox==1.4.0b0
