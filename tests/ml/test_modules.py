@@ -60,6 +60,16 @@ def test_ml_batch_instance_norm(one_item):
     assert np.abs(np.mean(_output) - 0.0) < 1e-7
     assert np.abs(np.std(_output) - 1.0) < 1e-3
 
+def test_ml_group_norm(one_item):
+    shape = one_item['mix_magnitude'].shape
+    module = ml.networks.modules.GroupNorm(shape[2])
+    output = module(one_item['mix_magnitude'])
+    assert one_item['mix_magnitude'].shape == output.shape
+
+    module = ml.networks.modules.GroupNorm(shape[2])
+    output = module(one_item['mix_magnitude'])
+    assert one_item['mix_magnitude'].shape == output.shape
+
 def test_ml_layer_norm(one_item):
     shape = one_item['mix_magnitude'].shape
 

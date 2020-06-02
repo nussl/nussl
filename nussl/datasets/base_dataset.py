@@ -244,18 +244,19 @@ class BaseDataset(Dataset):
         """
         raise NotImplementedError()
 
-    def _load_audio_file(self, path_to_audio_file):
+    def _load_audio_file(self, path_to_audio_file, **kwargs):
         """
         Loads audio file at given path. Uses AudioSignal to load the audio data
         from disk.
 
         Args:
             path_to_audio_file: relative or absolute path to file to load
+            kwargs: Keyword arguments to AudioSignal.
 
         Returns:
             AudioSignal: loaded AudioSignal object of path_to_audio_file
         """
-        audio_signal = AudioSignal(path_to_audio_file)
+        audio_signal = AudioSignal(path_to_audio_file, **kwargs)
         self._setup_audio_signal(audio_signal)
         return audio_signal
     
