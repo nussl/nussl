@@ -10,7 +10,7 @@ depending on input size, it's good to work this out in a function like those bel
 def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidirectional,
                                    dropout, num_sources, mask_activation, num_audio_channels=1,
                                    rnn_type='lstm', normalization_class='BatchNorm',
-                                   mix_key='mix_magnitude'):
+                                   normalization_args=None, mix_key='mix_magnitude'):
     """
     Builds a config for a mask inference network that can be passed to 
     SeparationModel. This mask inference network uses a recurrent neural network (RNN)
@@ -31,6 +31,7 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
         normalization_class (str, optional): Type of normalization to apply, either
           'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+        normalization_args (dict, optional): Args to normalization class, optional.
         mix_key (str, optional): The key to look for in the input dictionary that contains
           the mixture spectrogram. Defaults to 'mix_magnitude'.
     
@@ -38,15 +39,17 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
         dict: A recurrent mask inference network configuration that can be passed to
           SeparationModel.
     """
+    normalization_args = {} if normalization_args is None else normalization_args
 
     # define the building blocks
     modules = {
         mix_key: {},
         'log_spectrogram': {
-            'class': 'AmplitudeToDB'
+            'class': 'AmplitudeToDB',
         },
         'normalization': {
             'class': normalization_class,
+            'args': normalization_args,
         },
         'recurrent_stack': {
             'class': 'RecurrentStack',
@@ -98,8 +101,8 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
 
 def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
                          dropout, embedding_size, embedding_activation, num_audio_channels=1,
-                         rnn_type='lstm',
-                         normalization_class='BatchNorm', mix_key='mix_magnitude'):
+                         rnn_type='lstm', normalization_class='BatchNorm', 
+                         normalization_args=None, mix_key='mix_magnitude'):
     """
     Builds a config for a deep clustering network that can be passed to 
     SeparationModel. This deep clustering network uses a recurrent neural network (RNN)
@@ -120,6 +123,7 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
         normalization_class (str, optional): Type of normalization to apply, either
           'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+        normalization_args (dict, optional): Args to normalization class, optional.
         mix_key (str, optional): The key to look for in the input dictionary that contains
           the mixture spectrogram. Defaults to 'mix_magnitude'.
     
@@ -127,15 +131,17 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
         dict: A recurrent deep clustering network configuration that can be passed to
           SeparationModel.
     """
+    normalization_args = {} if normalization_args is None else normalization_args
 
     # define the building blocks
     modules = {
         mix_key: {},
         'log_spectrogram': {
-            'class': 'AmplitudeToDB'
+            'class': 'AmplitudeToDB',
         },
         'normalization': {
             'class': normalization_class,
+            'args': normalization_args,
         },
         'recurrent_stack': {
             'class': 'RecurrentStack',
@@ -183,9 +189,9 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
 
 def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional,
                             dropout, embedding_size, embedding_activation, num_sources,
-                            mask_activation,
-                            num_audio_channels=1, rnn_type='lstm', normalization_class='BatchNorm',
-                            mix_key='mix_magnitude'):
+                            mask_activation, num_audio_channels=1, 
+                            rnn_type='lstm', normalization_class='BatchNorm',
+                            normalization_args=None, mix_key='mix_magnitude'):
     """
     Builds a config for a Chimera network that can be passed to SeparationModel. 
     Chimera networks are so-called because they have two "heads" which can be trained
@@ -210,8 +216,9 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
         num_audio_channels (int): Number of audio channels in input (e.g. mono or stereo).
           Defaults to 1.
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
-          normalization_class (str, optional): Type of normalization to apply, either
-        'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+        normalization_class (str, optional): Type of normalization to apply, either
+          'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+        normalization_args (dict, optional): Args to normalization class, optional.
         mix_key (str, optional): The key to look for in the input dictionary that contains
           the mixture spectrogram. Defaults to 'mix_magnitude'.
     
@@ -219,15 +226,17 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
         dict: A recurrent Chimera network configuration that can be passed to
           SeparationModel.
     """
+    normalization_args = {} if normalization_args is None else normalization_args
 
     # define the building blocks
     modules = {
         mix_key: {},
         'log_spectrogram': {
-            'class': 'AmplitudeToDB'
+            'class': 'AmplitudeToDB',
         },
         'normalization': {
             'class': normalization_class,
+            'args': normalization_args,
         },
         'recurrent_stack': {
             'class': 'RecurrentStack',
@@ -468,7 +477,8 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
                                hidden_size, num_layers, bidirectional, dropout, 
                                num_sources, mask_activation, num_audio_channels=1,
                                mask_complex=False, trainable=False, rnn_type='lstm', 
-                               mix_key='mix_audio', normalization_class='BatchNorm'):
+                               mix_key='mix_audio', normalization_class='BatchNorm',
+                               normalization_args=None):
     """
     Builds a config for a BLSTM-based network that operates on the time-series. 
     Uses an STFT within the network and can apply the mixture phase to
@@ -495,6 +505,7 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
         rnn_type (str, optional): RNN type, either 'lstm' or 'gru'. Defaults to 'lstm'.
         normalization_class (str, optional): Type of normalization to apply, either
           'InstanceNorm' or 'BatchNorm'. Defaults to 'BatchNorm'.
+        normalization_args (dict, optional): Args to normalization class, optional.
         mix_key (str, optional): The key to look for in the input dictionary that contains
           the mixture spectrogram. Defaults to 'mix_magnitude'.
     
@@ -502,7 +513,7 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
         dict: A recurrent end-to-end network configuration that can be passed to
           SeparationModel.
     """
-    
+    normalization_args = {} if normalization_args is None else normalization_args
     cutoff = num_filters // 2 + 1
     num_features = 2 * cutoff if mask_complex else cutoff
 
@@ -523,7 +534,8 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
             'class': 'AmplitudeToDB'
         },
         'normalization': {
-            'class': normalization_class
+            'class': normalization_class,
+            'args': normalization_args,
         },
         'split': {
             'class': 'Split',

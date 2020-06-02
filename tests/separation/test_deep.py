@@ -7,6 +7,7 @@ from torch import optim
 import tempfile
 import pytest
 import os
+import numpy as np
 
 fix_dir = 'tests/local/trainer'
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -108,6 +109,10 @@ def test_deep_mixin(overfit_model):
     deep_mixin._get_input_data_for_model()
     assert deep_mixin.audio_signal.sample_rate == deep_mixin.metadata['sample_rate']
 
+    dummy_data = {'one_hot': np.random.rand(100)}
+    input_data = deep_mixin._get_input_data_for_model(dummy_data)
+
+    assert 'one_hot' in input_data
 
 def test_separation_deep_clustering(overfit_model):
     model_path, item = overfit_model

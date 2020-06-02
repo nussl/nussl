@@ -68,14 +68,19 @@ class DeepMixin:
                 transform = None
         return transform
 
-    def _get_input_data_for_model(self):
+    def _get_input_data_for_model(self, extra_data=None):
         """
         Sets up the audio signal with the appropriate STFT parameters and runs it
         through the transform found in the metadata.
+
+        Args:
+            extra_data: A dictionary containing any additional data that will 
+              be merged with the output dictionary.
         
         Returns:
             dict: Data dictionary to pass into the model.
         """
+        extra_data = {} if extra_data is None else extra_data
         if self.metadata['sample_rate'] is not None:
             if self.audio_signal.sample_rate != self.metadata['sample_rate']:
                 self.audio_signal.resample(self.metadata['sample_rate'])
@@ -84,6 +89,7 @@ class DeepMixin:
         self.audio_signal.stft()
 
         data = {'mix': self.audio_signal}
+        data.update(extra_data)
         data = self.transform(data)
 
         for key in data:

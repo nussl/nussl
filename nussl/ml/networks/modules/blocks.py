@@ -128,6 +128,50 @@ class InstanceNorm(nn.Module):
         data = data.transpose(self.feature_dim, 1)
         return data
 
+class GroupNorm(nn.Module):
+    """
+    Applies a group norm layer. Defaults to using 1 group and all feature, commonly
+    used at the very beginning of the network to normalize each feature of
+    the input spectrogram.
+
+    Data comes and goes as (nb, nt, nf, nc). Inside this module, the data undergoes
+    the following procedure:
+
+    1. It is first reshaped to (nb, nf, nt, nc)
+    2. Data is reshaped to (nb, nf, nt * nc).
+    3. ``GroupNorm`` is applied with ``num_features`` to data.
+    4. Data is reshaped back to (nb, nt, nf, nc) and returned.
+    
+    Args:
+        num_features (int): num_features argument to GroupNorm.
+        num_groups (int): Number of groups, defaults to 1.
+        feature_dim (int): which dimension the features that are being normalized are on.
+          Defaults to 2.
+        **kwargs (dict): additional keyword arguments that are passed to InstanceNorm2d.
+    
+    Returns:
+        torch.Tensor: modified input data tensor with instance norm applied.
+    """
+
+    def __init__(self, num_features, num_groups=1, feature_dim=2, **kwargs):
+        super().__init__()
+        self.num_features = num_features
+        self.num_groups = num_groups
+        self.feature_dim = feature_dim
+        self.add_module('group_norm', nn.GroupNorm(
+            self.num_groups, self.num_features, **kwargs))
+
+    def forward(self, data):
+        data = data.transpose(self.feature_dim, 1)
+        shape = data.shape
+        new_shape = (shape[0], self.num_features, -1, 1)
+
+        data = data.reshape(new_shape)
+        data = self.group_norm(data)
+        data = data.reshape(shape)
+        data = data.transpose(self.feature_dim, 1)
+        return data
+
 class Alias(nn.Module):
     """
     Super simple module that just passes the data through without altering it, so

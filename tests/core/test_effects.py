@@ -381,3 +381,10 @@ def test_hooks(mix_and_sources, check_against_regression_data):
 
     with pytest.raises(RuntimeError):
         signal.build_effect()
+
+
+def test_filter_function_pass():
+    # this test is for 100% coverage
+    function = effects.FilterFunction()
+    dummy_item = None
+    function.func(dummy_item)

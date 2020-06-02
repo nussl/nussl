@@ -74,6 +74,9 @@ class ClusteringSeparationBase(MaskSeparationBase):
             self.clusterer = ClusterClass(n_clusters=num_sources, **kwargs)
         self.clustering_type = clustering_type
 
+        if 'init' in kwargs and not fit_clusterer:
+            self.clusterer.cluster_centers_ = kwargs['init']
+
         self.percentile = percentile
         self.features = None
         self.beta = beta

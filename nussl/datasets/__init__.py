@@ -20,6 +20,12 @@ WHAM
     :members:
     :autosummary:
 
+FUSS
+----
+.. autoclass:: nussl.datasets.FUSS
+    :members:
+    :autosummary:
+
 Scaper
 ------
 .. autoclass:: nussl.datasets.Scaper
@@ -32,6 +38,12 @@ MixSourceFolder
     :members:
     :autosummary:
 
+OnTheFly
+--------
+.. autoclass:: nussl.datasets.OnTheFly
+    :members:
+    :autosummary:
+
 Data transforms
 ---------------
 .. automodule:: nussl.datasets.transforms
@@ -41,5 +53,12 @@ Data transforms
 """
 
 from .base_dataset import BaseDataset
-from .hooks import MUSDB18, MixSourceFolder, Scaper, WHAM, FUSS
+from .hooks import (
+    MUSDB18, 
+    MixSourceFolder, 
+    Scaper, 
+    WHAM, 
+    FUSS, 
+    OnTheFly
+)
 from . import transforms
