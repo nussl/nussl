@@ -1653,7 +1653,7 @@ class AudioSignal(object):
     #          Effect Hooks          #
     ##################################
 
-    def build_effect(self, reset=True, overwrite=False):
+    def build_effects(self, reset=True, overwrite=False):
         """
         Builds all effects 
         """
@@ -1675,6 +1675,39 @@ class AudioSignal(object):
 
         return new_signal
         
+    def make_effect(self, effect, **params):
+        if effect == "time_stretch":
+            self.time_stretch(**params)
+        elif effect == "pitch_shift":
+            self.pitch_shift(**params)
+        elif effect == "low_pass":
+            self.low_pass(**params)
+        elif effect == "high_pass":
+            self.high_pass(**params)
+        elif effect == "tremolo":
+            self.tremolo(**params)
+        elif effect == "vibrato":
+            self.vibrato(**params)
+        elif effect == "chorus":
+            self.chorus(**params)
+        elif effect == "phaser":
+            self.phaser(**params)
+        elif effect == "flanger":
+            self.flanger(**params)
+        elif effect == "emphasis":
+            self.emphasis(**params)
+        elif effect == "compressor":
+            self.compressor(**params)
+        elif effect == "equalizer":
+            self.equalizer(**params)
+        else:
+            raise ValueError("Invalid effect passed\n" + 
+            "Expected one of the following: " + 
+            "[time_stretch, pitch_shift, low_pass, high_pass, tremolo," + 
+            "vibrato, chorus, phaser, flanger, emphasis, " + 
+            "compressor, equalizer]")
+        return self
+
     def reset_effects_chain(self):
         self._ffmpeg_effects_chain = []
         self._sox_effects_chain = []

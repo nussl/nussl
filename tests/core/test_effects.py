@@ -364,24 +364,55 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     assert len(signal._ffmpeg_effects_chain) == 10
     assert len(signal._sox_effects_chain) == 2
 
-    signal.build_effect(reset=False)
+    signal.build_effects(reset=False)
 
     assert len(signal._ffmpeg_effects_chain) == 10
     assert len(signal._sox_effects_chain) == 2
 
-    augmented_signal = signal.build_effect(reset=False, overwrite=True)
+    augmented_signal = signal.build_effects(reset=False, overwrite=True)
 
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
-    augmented_signal.build_effect()
+    augmented_signal.build_effects()
 
     assert len(signal._ffmpeg_effects_chain) == 0
     assert len(signal._sox_effects_chain) == 0
 
     with pytest.raises(RuntimeError):
-        signal.build_effect()
+        signal.build_effects()
 
+def test_general_hooks(mix_and_sources, check_against_regression_data):
+    signal, _ = mix_and_sources
+
+    (signal
+    .make_effect("time_stretch", factor=3)
+    .make_effect("pitch_shift", shift=2)
+    .make_effect("low_pass", freq=512)
+    .make_effect("high_pass", freq=512)
+    .make_effect("tremolo", mod_freq=5, mod_depth=.4)
+    .make_effect("vibrato", mod_freq=3, mod_depth=.9)
+    .make_effect("chorus", delays=[20, 70], decays=[.9, .4], speeds=[.9, .6], depths=[1, .9])
+    .make_effect("phaser")
+    .make_effect("flanger", delay=3)
+    .make_effect("emphasis", level_in=1, level_out=.5, _type='riaa')
+    .make_effect("compressor", level_in=.9)
+    .make_effect("equalizer", bands=[{
+                'chn': [0, 1],
+                'f': 512,
+                'w': 10,
+                'g': 4,
+                't': 0
+            }])
+    )
+    signal.build_effects(reset=False)
+    augmented_signal = signal.build_effects(reset=False, overwrite=True)
+    reg_path = path.join(REGRESSION_PATH, "hooks.json")
+    # This should result in the same signal in test_hooks
+    fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
+
+    with pytest.raises(ValueError):
+        signal.make_effect("fail")
 
 def test_filter_function_pass():
     # this test is for 100% coverage
