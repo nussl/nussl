@@ -1655,7 +1655,15 @@ class AudioSignal(object):
 
     def build_effects(self, reset=True, overwrite=False):
         """
-        Builds all effects 
+        Builds all effects in the AudioSignal's effects chains. 
+
+        Args:
+            reset: If True, clears out all effects in effect chains. Default=True
+            overwrite: If True, overwrites existing audio_data in AudioSignal. Defult=False
+                Also clears out stft_data
+        Returns:
+            self: If overwrite=True, then returns initially AudioSignal with edited audio_data. 
+                Otherwise, returns a new AudioSignal
         """
         if not self._ffmpeg_effects_chain and not self._sox_effects_chain:
             raise RuntimeError("No effect hooks have been called on this AudioSignal")
@@ -1676,86 +1684,212 @@ class AudioSignal(object):
         return new_signal
         
     def make_effect(self, effect, **params):
-        if effect == "time_stretch":
-            self.time_stretch(**params)
-        elif effect == "pitch_shift":
-            self.pitch_shift(**params)
-        elif effect == "low_pass":
-            self.low_pass(**params)
-        elif effect == "high_pass":
-            self.high_pass(**params)
-        elif effect == "tremolo":
-            self.tremolo(**params)
-        elif effect == "vibrato":
-            self.vibrato(**params)
-        elif effect == "chorus":
-            self.chorus(**params)
-        elif effect == "phaser":
-            self.phaser(**params)
-        elif effect == "flanger":
-            self.flanger(**params)
-        elif effect == "emphasis":
-            self.emphasis(**params)
-        elif effect == "compressor":
-            self.compressor(**params)
-        elif effect == "equalizer":
-            self.equalizer(**params)
-        else:
+        """
+        Calls another effect hook.
+        Args:
+            effect: Function name of desired effect hook of the AudioSignal
+            params: Additional parameters for given effect. 
+
+        """
+        effect_hook = getattr(self, effect, None)
+        if effect_hook is None or not effect_hook.__doc__.strip().startswith("Effect Hook"):
             raise ValueError("Invalid effect passed\n" + 
             "Expected one of the following: " + 
             "[time_stretch, pitch_shift, low_pass, high_pass, tremolo," + 
             "vibrato, chorus, phaser, flanger, emphasis, " + 
             "compressor, equalizer]")
+        
+        self.effect_hook(**params)
+        
         return self
 
     def reset_effects_chain(self):
+        """
+        Clears effects chain of AudioSignal
+        """
         self._ffmpeg_effects_chain = []
         self._sox_effects_chain = []
+        return self
 
     def time_stretch(self, factor):
+        """
+        Effect Hook
+
+        Adds time stretch effect to AudioSignal's effect chain. 
+        Args: 
+            factor: Scaling factor for tempo change. Must be positive.
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._sox_effects_chain.append(effects.time_stretch(factor))
         return self
     
     def pitch_shift(self, shift):
+        """
+        Effect Hook
+
+        Add pitch shift effect to AudioSignal's effect chain. 
+        Args: 
+            shift: The number of semitones to shift the audio. 
+                Positive values increases the frequency of the signal
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._sox_effects_chain.append(effects.pitch_shift(shift))
         return self
     
     def low_pass(self, freq, poles=2, width_type="h", width=.707):
+        """
+        Effect Hook
+
+        Add low pass effect to AudioSignal's effect chain
+        Args: 
+            freq: Threshold for high pass. Should be positive scalar
+            poles: Number of poles. should be either 1 or 2
+            width_type: Unit of width for filter. Must be either:
+                'h': Hz
+                'q': Q-factor
+                'o': octave
+                's': slope
+                'k': kHz
+            width: Band width in width_type units
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.low_pass(freq, poles=poles, 
             width_type=width_type, width=width))
         return self
     
     def high_pass(self, freq, poles=2, width_type="h", width=.707):
+        """
+        Effect Hook
+
+        Add high pass effect to AudioSignal's effect chain
+        Args: 
+            freq: Threshold for high pass. Should be positive scalar
+            poles: Number of poles. should be either 1 or 2
+            width_type: Unit of width for filter. Must be either:
+                'h': Hz
+                'q': Q-factor
+                'o': octave
+                's': slope
+                'k': kHz
+            width: Band width in width_type units
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.high_pass(freq, poles=poles, 
             width_type=width_type, width=width))
         return self
 
     def tremolo(self, mod_freq, mod_depth):
+        """
+        Effect Hook
+
+        Add tremolo effect to AudioSignal's effect chain
+        Args: 
+            mod_freq: Modulation frequency. Must be between .1 and 20000.
+            mod_depth: Modulation depth. Must be between 0 and 1.
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.tremolo(mod_freq, mod_depth))
         return self
     
     def vibrato(self, mod_freq, mod_depth):
+        """
+        Effect Hook
+
+        Add vibrato effect to AudioSignal's effect chain
+        Args: 
+            mod_freq: Modulation frequency. Must be between .1 and 20000.
+            mod_depth: Modulation depth. Must be between 0 and 1.
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.vibrato(mod_freq, mod_depth))
         return self
     
     def chorus(self, delays, decays, speeds, depths, in_gain=.4, out_gain=.4):
+        """
+        Effect Hook
+
+        Add chorus effect to AudioSignal's effect chain
+        Args:
+            delays: list of delays in ms. Typical Delay is 40ms-6ms
+            decays: list of decays. Must be between 0 and 1
+            speeds: list of speeds. Must be between 0 and 1
+            depths: list of depths. Must be between 0 and 1
+            in_gain: Proportion of input gain
+            out_gain: Proportion of output gain
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.chorus(delays, decays, 
             speeds, depths, in_gain=.4, out_gain=.4))
         return self
         
     def phaser(self, in_gain=.4, out_gain=.74, delay=3, decay=.4, 
         speed=.5, _type="triangular"):
+        """
+        Effect Hook
+
+        Add phaser effect to AudioSignal's effect chain
+        Args:
+            in_gain: Proportion of input gain. Must be between 0 and 1
+            out_gain: Proportion of output gain. Must be between 0 and 1.
+            delay: Delay of chorus filter in ms. (Time between original signal and delayed)
+            decay: Decay of copied signal. Must be between 0 and 1.
+            speed: Modulation speed of the delayed filter. 
+            _type: modulation type. Either Triangular or Sinusoidal
+                "triangular" or "t" for Triangular
+                "sinusoidal" of "s" for sinusoidal
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.phaser(in_gain=.4, out_gain=.74, delay=3, 
             decay=.4, speed=.5, _type="triangular"))
         return self
     
     def flanger(self, delay=0, depth=2, regen=0, width=71, 
         speed=.5, phase=25, shape="sinusoidal", interp="linear"):
+        """
+        Effect Hook
+
+        Add flanger effect to AudioSignal's effect chain
+        Args:
+            delay: Base delay in ms between original signal and copy.
+                Must be between 0 and 30.
+            depth: Sweep delay in ms. Must be between 0 and 10.
+            regen: Percentage regeneration, or delayed signal feedback.
+                Must be between -95 and 95.
+            width: Percentage of delayed signal. Must be between 0 and 100.
+            speed: Sweeps per second. Must be in .1 to 10
+            shape: Swept wave shape, Must be "triangular" or "sinusoidal".
+            phase: swept wave percentage-shift for multi channel. Must be between 0 and 100.
+            interp: Delay Line interpolation. Must be "linear" or "quadratic".
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.flanger(delay=0, depth=2, regen=0, width=71, 
             speed=.5, phase=25, shape="sinusoidal", interp="linear"))
         return self
     
     def emphasis(self, level_in, level_out, _type="col", mode='production'):
+        """
+        Effect Hook
+
+        Add emphasis effect to AudioSignal's effect chain
+        Args:
+            level_in: Input gain
+            level_out: Output gain
+            _type: medium type to convert/deconvert from 
+            mode: reproduction to convert from physical medium, 
+                production to convert to physical medium.
+
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.emphasis(level_in, 
             level_out, _type="col", mode='production'))
         return self
@@ -1763,12 +1897,54 @@ class AudioSignal(object):
     def compressor(self, level_in, mode="downward", reduction_ratio=2,
         attack=20, release=250, makeup=1, knee=2.8284, link="average",
         detection="rms", mix=1, threshold=.125):
+        """
+        Effect Hook
+
+        Add compressor effect to AudioSignal's effect chain
+        Args:
+            level_in: Input Gain
+            mode: Mode of compressor operation. Can either be "upward" or "downward". 
+            threshold: Volume threshold. If a signal's volume is above the threshold,
+                gain reduction would apply.
+            reduction_ratio: Ratio in which the signal is reduced.
+            attack: Time in ms between when the signal rises above threshold and when 
+                reduction is applied
+            release: Time in ms between when the signal fall below threshold and 
+                when reduction is decreased.
+            makeup: Factor of amplification post-processing
+            knee: Softens the transition between reduction and lack of thereof. 
+                Higher values translate to a softer transition. 
+            link: Choose average between all channels or mean. String of either
+                "average" or "mean.
+            detection: Whether to process exact signal of the RMS of nearby signals. 
+                Either "peak" for exact or "rms".
+            mix: Proportion of compressed signal in output.
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.compressor(level_in, mode="downward", reduction_ratio=2,
             attack=20, release=250, makeup=1, knee=2.8284, link="average",
             detection="rms", mix=1, threshold=.125))
         return self
     
     def equalizer(self, bands):
+        """
+        Effect Hook
+
+        Add eqaulizer effect to AudioSignal's effect chain
+        Args:
+            bands: A list of dictionaries, for each band. The required values for each dictionary:
+                'chn': List of channel numbers to apply filter. Must be list of ints.
+                'f': central freqency of band
+                'w': Width of the band in Hz
+                'g': Band gain in dB
+                't': Set filter type for band, optional, can be:
+                    0, for Butterworth
+                    1, for Chebyshev type 1
+                    2, for Chebyshev type 2
+        Returns:
+            self: Inital AudioSignal with updated effect chains
+        """
         self._ffmpeg_effects_chain.append(effects.equalizer(bands))
         return self
 

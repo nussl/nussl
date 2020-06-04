@@ -364,26 +364,22 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     assert len(signal._ffmpeg_effects_chain) == 10
     assert len(signal._sox_effects_chain) == 2
 
-    signal.build_effects(reset=False)
-
-    assert len(signal._ffmpeg_effects_chain) == 10
-    assert len(signal._sox_effects_chain) == 2
-
-    augmented_signal = signal.build_effects(reset=False, overwrite=True)
+    augmented_signal = signal.build_effects(reset=False)
 
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
-    augmented_signal.build_effects()
+    augmented_signal.time_stretch(.7).build_effects(overwrite=True)
 
-    assert len(signal._ffmpeg_effects_chain) == 0
-    assert len(signal._sox_effects_chain) == 0
+    assert len(augmented_signal._ffmpeg_effects_chain) == 0
+    assert len(augmented_signal._sox_effects_chain) == 0
 
     with pytest.raises(RuntimeError):
-        signal.build_effects()
+        augmented_signal.build_effects()
 
-def test_general_hooks(mix_and_sources, check_against_regression_data):
+def test_make_effect(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
+    signal.reset_effects_chain()
 
     (signal
     .make_effect("time_stretch", factor=3)
@@ -413,6 +409,27 @@ def test_general_hooks(mix_and_sources, check_against_regression_data):
 
     with pytest.raises(ValueError):
         signal.make_effect("fail")
+        signal.make_effect("__init__")
+
+    # The docstrings for every effect hook must start with "Effect Hook"
+    effects = ["time_stretch", "pitch_shift", "low_pass", "high_pass", "tremolo", 
+            "vibrato", "chorus", "phaser", "flanger", "emphasis",  
+            "compressor", "equalizer"]
+    
+    for effect in effects:
+        if not getattr(signal, effect).__doc__.strip().startswith("Effect Hook"):
+            assert False
+
+    # All others should not start with "Effect Hook"
+    for attr in dir(signal):
+        try:
+            objattr = getattr(signal, attr)
+        except:
+            continue
+        docstring = str(getattr(objattr, "__doc__"))
+        if attr not in effects and docstring.strip().startswith("Effect Hook"):
+            assert False
+    
 
 def test_filter_function_pass():
     # this test is for 100% coverage
