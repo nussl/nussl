@@ -1,7 +1,7 @@
 import torch
 
 from ..base import MaskSeparationBase, DeepMixin, SeparationException
-
+from ... import ml
 
 class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
     """
@@ -63,3 +63,35 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
             self.result_masks.append(mask)
         
         return self.result_masks
+
+    def confidence(self, approach='silhouette_confidence', num_sources=2, **kwargs):
+        """
+        In embedding-based separation algorithms, we can compute a confidence
+        measure based on the clusterability of the embedding space. This can
+        be used if the model also computes an embedding alongside the estimates
+        (e.g. as in Chimera models.) 
+        
+        Args:
+            approach (str, optional): What approach to use for getting the confidence 
+              measure. Options are 'jensen_shannon_confidence', 'posterior_confidence', 
+              'silhouette_confidence', 'loudness_confidence', 'whitened_kmeans_confidence',
+              'dpcl_classic_confidence'. Defaults to 'silhouette_confidence'.
+            kwargs: Keyword arguments to the function being used to compute the confidence.
+        """
+        if self.model_output is None:
+            raise SeparationException(
+                "self.model_output is None! Did you run forward?")
+        if 'embedding' not in self.model_output:
+            raise SeparationException(
+                "embedding not in self.model_output! Can't compute confidence.")
+        features = self.model_output['embedding']
+
+        if self.metadata['num_channels'] == 1:
+            features = features.transpose(0, -2)
+        features = features.squeeze(0).transpose(0, 1)
+        features = features.cpu().data.numpy()
+
+        confidence_function = getattr(ml.confidence, approach)
+        confidence = confidence_function(
+            self.audio_signal, features,num_sources, **kwargs)
+        return confidence
