@@ -10,6 +10,29 @@ from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
 
 
+"""
+Usage Notes about effects.py
+
+The effect functions do not augment an AudioSignal object, but rather 
+return a FFmpegFilter or a SoXFilter, which may be called on either a sox.transform.Transformer
+or a python-ffmpeg stream, depending on the specific effect. To apply the effect on an AudioSignal, 
+build_effects_sox or build_effects_ffmpeg must be called with the AudioSignal, and a list of
+SoXFilters or FFmpegFilters, respectively. 
+
+>>> import nussl.effects
+>>> tremolo_filter = effects.tremolo(5, .7)
+>>> new_signal = effects.build_effects_ffmpeg(audio_signal, [tremolo_filter])
+
+Because of this schema, and the requirement that caller must know which effect is a SoX effect
+or a FFmpeg effect, we recommend that all users use the AudioSignal hooks for applying effects
+rather than calling any functions in this library. 
+
+This line is equivalent to the above snippet
+
+>>> new_signal = audio_signal.tremolo(5, .7).build_effects()
+
+"""
+
 class FilterFunction:
     """
     The FilterFunction class is an abstract class for functions that take 
@@ -45,13 +68,14 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
     build_effects_ffmpeg takes an AudioSignal object and a list of FFmpegFilter objects
     and sequentially applies each filter to the signal. 
     Args:
-        audio_signal: AudioSignal object
-        filters: List of FFmpegFilter objects
-        silent: If True, suppresses all FFmpeg output. If False, FFmpeg will log information
+        audio_signal (AudioSignal): AudioSignal object
+        filters(list): List of FFmpegFilter objects
+        silent (bool): If True, suppresses all FFmpeg output. If False, FFmpeg will log information
         with loglevel 'info'
     Returns:
-        augmented_signal: A new AudioSignal object, with the audio data from 
+        augmented_signal(AudioSignal): A new AudioSignal object, with the audio data from 
         audio_signal after applying filters
+
     """
 
     # lazy load
@@ -138,10 +162,10 @@ def build_effects_sox(audio_signal, filters):
     build_effects_sox takes an AudioSignal object and a list of SoXFilter objects
     and sequentially applies each filter to the signal. 
     Args:
-        audio_signal: AudioSignal object
-        filters: List of SoXFilter objects
+        audio_signal (AudioSignal): AudioSignal object
+        filters (list): List of SoXFilter objects
     Returns:
-        augmented_signal: A new AudioSignal object, with the audio data from 
+        augmented_signal (AudioSignal): A new AudioSignal object, with the audio data from 
         audio_signal after applying filters
     """
     audio_data = audio_signal.audio_data
@@ -163,11 +187,12 @@ def make_arglist_ffmpeg(lst, sep="|"):
 def time_stretch(factor):
     """
     Returns a SoXFilter, when called on an pysndfx stream, will multiply the 
-    tempo of the audio by factor.
+    tempo of the audio by factor. A factor greater than one will shorten the signal, 
+    a factor less then one will lengthen the signal, and a factor of 1 will not change the signal.
     Args: 
-        factor: Scaling factor for tempo change. Must be positive.
+        factor (float): Scaling factor for tempo change. Must be positive.
     Returns:
-        filter: A SoXFilter object, to be called on an pysndfx stream
+        filter (SoXFilter): A SoXFilter object, to be called on an pysndfx stream
     """
     if not np.issubdtype(type(factor), np.number) or factor <= 0:
         raise ValueError("stretch_factor must be a positve scalar")
@@ -178,12 +203,13 @@ def time_stretch(factor):
 def pitch_shift(shift):
     """
     Returns a SoXFilter, when called on an pysndfx stream, will increase the pitch 
-    of the audio by a number of cents, denoted in shift.
+    of the audio by a number of cents, denoted in shift. A positive shift will raise the pitch
+    of the signal.
     Args: 
-        shift: The number of semitones to shift the audio. 
+        shift (float): The number of semitones to shift the audio. 
             Positive values increases the frequency of the signal
     Returns:
-        filter: A SoXFilter object, to be called on an pysndfx stream
+        filter (SoxFilter): A SoXFilter object, to be called on an pysndfx stream
     """
     if not isinstance(shift, int):
         raise ValueError("shift must be an integer.")
@@ -212,17 +238,17 @@ def low_pass(freq, poles=2, width_type="h", width=.707):
     Creates an FFmpegFilter object, which when called on an ffmpeg stream,
     applies a low pass filter to the audio signal.
     Args: 
-        freq: Threshold for high pass. Should be positive scalar
-        poles: Number of poles. should be either 1 or 2
-        width_type: Unit of width for filter. Must be either:
+        freq (float): Threshold for low pass. Should be positive
+        poles (int): Number of poles. should be either 1 or 2
+        width_type (str): Unit of width for filter. Must be either:
             'h': Hz
             'q': Q-factor
             'o': octave
             's': slope
             'k': kHz
-        width: Band width in width_type units
+        width (float): Band width in width_type units
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     _pass_arg_check(freq, poles, width_type, width)
 
@@ -237,17 +263,17 @@ def high_pass(freq, poles=2, width_type="h", width=.707):
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a high pass filter to the audio signal.
     Args: 
-        freq: Threshold for high pass. Should be positive scalar
-        poles: Number of poles. should be either 1 or 2
-        width_type: Unit of width for filter. Must be either:
+        freq (float): Threshold for high pass. Should be positive scalar
+        poles (int): Number of poles. should be either 1 or 2
+        width_type (str): Unit of width for filter. Must be either:
             'h': Hz
             'q': Q-factor
             'o': octave
             's': slope
             'k': kHz
-        width: Band width in width_type units
+        width (float): Band width in width_type units
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     _pass_arg_check(freq, poles, width_type, width)
 
@@ -261,10 +287,10 @@ def tremolo(mod_freq, mod_depth):
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a tremolo filter to the audio signal
     Args: 
-        mod_freq: Modulation frequency. Must be between .1 and 20000.
-        mod_depth: Modulation depth. Must be between 0 and 1.
+        mod_freq (float): Modulation frequency. Must be between .1 and 20000.
+        mod_depth (float): Modulation depth. Must be between 0 and 1.
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < .1 or mod_freq > 20000:
         raise ValueError("mod_freq should be positive scalar between .1 and 20000")
@@ -282,10 +308,10 @@ def vibrato(mod_freq, mod_depth):
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a vibrato filter to the audio signal
     Args: 
-        mod_freq: Modulation frequency. Must be between .1 and 20000.
-        mod_depth: Modulation depth. Must be between 0 and 1.
+        mod_freq (float): Modulation frequency. Must be between .1 and 20000.
+        mod_depth (float): Modulation depth. Must be between 0 and 1.
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     if not np.issubdtype(type(mod_freq), np.number) or mod_freq < .1 or mod_freq > 20000:
         raise ValueError("mod_freq should be positve scalar between .1 and 20000")
@@ -304,14 +330,14 @@ def chorus(delays, decays, speeds, depths,
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a vibrato filter to the audio signal
     Args:
-        delays: list of delays in ms. Typical Delay is 40ms-6ms
-        decays: list of decays. Must be between 0 and 1
-        speeds: list of speeds. Must be between 0 and 1
-        depths: list of depths. Must be between 0 and 1
-        in_gain: Proportion of input gain
-        out_gain: Proportion of output gain
+        delays (list of float): delays in ms. Typical Delay is 40ms-6ms
+        decays (list of float): decays. Must be between 0 and 1
+        speeds (list of float): speeds. Must be between 0 and 1
+        depths (list of float): depths. Must be between 0 and 1
+        in_gain (float): Proportion of input gain. Must be between 0 and 1
+        out_gain (float): Proportion of output gain. Must be between 0 and 1
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter: Resulting filter, to be called on a ffmpeg stream
     """
     if in_gain > 1 or in_gain < 0 or out_gain > 1 or out_gain < 0:
         raise ValueError("in_gain and out_gain must be between 0 and 1.")
@@ -344,16 +370,16 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a phaser filter to the audio signal
     Args:
-        in_gain: Proportion of input gain. Must be between 0 and 1
-        out_gain: Proportion of output gain. Must be between 0 and 1.
-        delay: Delay of chorus filter in ms. (Time between original signal and delayed)
-        decay: Decay of copied signal. Must be between 0 and 1.
-        speed: Modulation speed of the delayed filter. 
-        _type: modulation type. Either Triangular or Sinusoidal
+        in_gain (float): Proportion of input gain. Must be between 0 and 1
+        out_gain (float): Proportion of output gain. Must be between 0 and 1.
+        delay (float): Delay of chorus filter in ms. (Time between original signal and delayed)
+        decay (float): Decay of copied signal. Must be between 0 and 1.
+        speed (float): Modulation speed of the delayed filter. 
+        _type (str): modulation type. Either Triangular or Sinusoidal
             "triangular" or "t" for Triangular
             "sinusoidal" of "s" for sinusoidal
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     if in_gain > 1 or in_gain < 0:
         raise ValueError("in_gain must be between 0 and 1.")
@@ -415,18 +441,18 @@ def flanger(delay=0, depth=2, regen=0, width=71,
     applies a flanger filter to the audio signal.
 
     Args:
-        delay: Base delay in ms between original signal and copy.
+        delay (float): Base delay in ms between original signal and copy.
             Must be between 0 and 30.
-        depth: Sweep delay in ms. Must be between 0 and 10.
-        regen: Percentage regeneration, or delayed signal feedback.
+        depth (float): Sweep delay in ms. Must be between 0 and 10.
+        regen (float): Percentage regeneration, or delayed signal feedback.
             Must be between -95 and 95.
-        width: Percentage of delayed signal. Must be between 0 and 100.
-        speed: Sweeps per second. Must be in .1 to 10
-        shape: Swept wave shape, Must be "triangular" or "sinusoidal".
-        phase: swept wave percentage-shift for multi channel. Must be between 0 and 100.
-        interp: Delay Line interpolation. Must be "linear" or "quadratic".
+        width (float): Percentage of delayed signal. Must be between 0 and 100.
+        speed (float): Sweeps per second. Must be in .1 to 10
+        shape (str): Swept wave shape, Must be "triangular" or "sinusoidal".
+        phase (float): swept wave percentage-shift for multi channel. Must be between 0 and 100.
+        interp (str): Delay Line interpolation. Must be "linear" or "quadratic".
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
 
     _flanger_argcheck(delay, depth, regen, width, speed, phase, shape, interp)
@@ -443,14 +469,25 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a emphasis filter to the audio signal.
     Args:
-        level_in: Input gain
-        level_out: Output gain
-        _type: medium type to convert/deconvert from 
-        mode: reproduction to convert from physical medium, 
-            production to convert to physical medium.
+        level_in (float): Input gain
+        level_out (float): Output gain
+        _type (str): physical medium type to convert/deconvert from.
+            Must be one of the following: 
+             - "col": Columbia 
+             - "emi": EMI
+             - "bsi": BSI (78RPM)
+             - "riaa": RIAA
+             - "cd": CD (Compact Disk)
+             - "50fm": 50µs FM
+             - "75fm": 75µs FM 
+             - "50kf": 50µs FM-KF 
+             - "75kf": 75µs FM-KF 
+        mode (str): Filter mode. Must be one of the following:
+             - "reproduction": To restoring material from a medium
+             - "production": Apply emphasis filter to write to a medium
 
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpeg Filter): Resulting filter, to be called on a ffmpeg stream
     """
     if level_in < LEVEL_MIN or level_in > LEVEL_MAX \
             or level_out < LEVEL_MIN or level_out > LEVEL_MAX:
@@ -520,25 +557,25 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a compressor filter to the audio signal.
     Args:
-        level_in: Input Gain
-        mode: Mode of compressor operation. Can either be "upward" or "downward". 
-        threshold: Volume threshold. If a signal's volume is above the threshold,
+        level_in (float): Input Gain
+        mode (str): Mode of compressor operation. Can either be "upward" or "downward". 
+        threshold (float): Volume threshold. If a signal's volume is above the threshold,
             gain reduction would apply.
-        reduction_ratio: Ratio in which the signal is reduced.
-        attack: Time in ms between when the signal rises above threshold and when 
+        reduction_ratio (float): Ratio in which the signal is reduced.
+        attack (float): Time in ms between when the signal rises above threshold and when 
             reduction is applied
-        release: Time in ms between when the signal fall below threshold and 
+        release (float): Time in ms between when the signal fall below threshold and 
             when reduction is decreased.
-        makeup: Factor of amplification post-processing
-        knee: Softens the transition between reduction and lack of thereof. 
+        makeup (float): Factor of amplification post-processing
+        knee (float): Softens the transition between reduction and lack of thereof. 
             Higher values translate to a softer transition. 
-        link: Choose average between all channels or mean. String of either
+        link (str): Choose average between all channels or mean. String of either
             "average" or "mean.
-        detection: Whether to process exact signal of the RMS of nearby signals. 
+        detection (str): Whether to process exact signal of the RMS of nearby signals. 
             Either "peak" for exact or "rms".
-        mix: Proportion of compressed signal in output.
+        mix (float): Proportion of compressed signal in output.
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     _compressor_argcheck(level_in, mode, reduction_ratio,
                          attack, release, makeup, knee, link, detection, mix, threshold)
@@ -556,17 +593,17 @@ def equalizer(bands):
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a equalizer filter to the audio signal.
     Args:
-        bands: A list of dictionaries, for each band. The required values for each dictionary:
-            'chn': List of channel numbers to apply filter. Must be list of ints.
-            'f': central freqency of band
-            'w': Width of the band in Hz
-            'g': Band gain in dB
-            't': Set filter type for band, optional, can be:
+        bands (list of dict): A list of dictionaries, for each band. The required values for each dictionary:
+            'chn' (list of int): List of channel numbers to apply filter. Must be list of ints.
+            'f' (float): central freqency of band
+            'w' (float): Width of the band in Hz
+            'g' (float): Band gain in dB
+            't' (int): Set filter type for band, optional, can be:
                 0, for Butterworth
                 1, for Chebyshev type 1
                 2, for Chebyshev type 2
     Returns:
-        filter: A FFmpegFilter object, to be called on an ffmpeg stream
+        filter: Resulting filter, to be called on a ffmpeg stream
     """
     for band in bands:
         for chn in band["chn"]:

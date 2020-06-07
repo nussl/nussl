@@ -409,27 +409,6 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
 
     with pytest.raises(ValueError):
         signal.make_effect("fail")
-        signal.make_effect("__init__")
-
-    # The docstrings for every effect hook must start with "Effect Hook"
-    effects = ["time_stretch", "pitch_shift", "low_pass", "high_pass", "tremolo", 
-            "vibrato", "chorus", "phaser", "flanger", "emphasis",  
-            "compressor", "equalizer"]
-    
-    for effect in effects:
-        if not getattr(signal, effect).__doc__.strip().startswith("Effect Hook"):
-            assert False
-
-    # All others should not start with "Effect Hook"
-    for attr in dir(signal):
-        try:
-            objattr = getattr(signal, attr)
-        except:
-            continue
-        docstring = str(getattr(objattr, "__doc__"))
-        if attr not in effects and docstring.strip().startswith("Effect Hook"):
-            assert False
-    
 
 def test_filter_function_pass():
     # this test is for 100% coverage
