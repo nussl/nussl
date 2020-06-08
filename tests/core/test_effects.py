@@ -1,5 +1,6 @@
 import numpy as np
 import nussl.core.effects as effects
+from nussl.core.audio_signal import AudioSignalException
 import os
 import os.path as path
 import pytest
@@ -407,7 +408,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
     # This should result in the same signal in test_hooks
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(AudioSignalException):
         signal.make_effect("fail")
 
 def test_filter_function_pass():

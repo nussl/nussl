@@ -1712,7 +1712,7 @@ class AudioSignal(object):
         try:
             effect_hook = getattr(self, effect, None)
             effect_hook(**params)
-        except:
+        except Exception:
             raise AudioSignalException(f"Effect {effect} not found with parameters {params}")
         
         return self
