@@ -85,7 +85,6 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
             raise SeparationException(
                 "embedding not in self.model_output! Can't compute confidence.")
         features = self.model_output['embedding']
-
         if self.metadata['num_channels'] == 1:
             features = features.transpose(0, -2)
         features = features.squeeze(0).transpose(0, 1)
@@ -93,5 +92,5 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
 
         confidence_function = getattr(ml.confidence, approach)
         confidence = confidence_function(
-            self.audio_signal, features,num_sources, **kwargs)
+            self.audio_signal, features, num_sources, **kwargs)
         return confidence
