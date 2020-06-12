@@ -1878,7 +1878,9 @@ class AudioSignal(object):
     
     def emphasis(self, level_in, level_out, _type="col", mode='production'):
         """
-        Add emphasis effect to AudioSignal's effect chain
+        Add emphasis effect to AudioSignal's effect chain. An emphasis filter boosts frequency ranges the most 
+        suspectible to noise in a medium. When restoring sounds from such a medium, a de-emphasis filter is used
+        to de-boost boosted frequencies. 
         Args:
             level_in (float): Input gain
             level_out (float): Output gain
@@ -1894,8 +1896,8 @@ class AudioSignal(object):
                 - "50kf": 50µs FM-KF 
                 - "75kf": 75µs FM-KF 
             mode (str): Filter mode. Must be one of the following:
-                - "reproduction": To restoring material from a medium
-                - "production": Apply emphasis filter to write to a medium
+                - "reproduction": Apply de-emphasis filter
+                - "production": Apply emphasis filter
         Returns:
             self: Inital AudioSignal with updated effect chains
         """

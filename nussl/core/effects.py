@@ -467,25 +467,26 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
     https://ffmpeg.org/ffmpeg-all.html#aemphasis
 
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
-    applies a emphasis filter to the audio signal.
+    applies a emphasis filter to the audio signal. An emphasis filter boosts frequency ranges the most 
+    suspectible to noise in a medium. When restoring sounds from such a medium, a de-emphasis filter is used
+    to de-boost boosted frequencies. 
     Args:
         level_in (float): Input gain
         level_out (float): Output gain
         _type (str): physical medium type to convert/deconvert from.
             Must be one of the following: 
-             - "col": Columbia 
-             - "emi": EMI
-             - "bsi": BSI (78RPM)
-             - "riaa": RIAA
-             - "cd": CD (Compact Disk)
-             - "50fm": 50µs FM
-             - "75fm": 75µs FM 
-             - "50kf": 50µs FM-KF 
-             - "75kf": 75µs FM-KF 
+            - "col": Columbia 
+            - "emi": EMI
+            - "bsi": BSI (78RPM)
+            - "riaa": RIAA
+            - "cd": CD (Compact Disk)
+            - "50fm": 50µs FM
+            - "75fm": 75µs FM 
+            - "50kf": 50µs FM-KF 
+            - "75kf": 75µs FM-KF 
         mode (str): Filter mode. Must be one of the following:
-             - "reproduction": To restoring material from a medium
-             - "production": Apply emphasis filter to write to a medium
-
+            - "reproduction": Apply de-emphasis filter
+            - "production": Apply emphasis filter
     Returns:
         filter (FFmpeg Filter): Resulting filter, to be called on a ffmpeg stream
     """
@@ -598,7 +599,8 @@ def equalizer(bands):
             'f' (float): central freqency of band
             'w' (float): Width of the band in Hz
             'g' (float): Band gain in dB
-            't' (int): Set filter type for band, optional, can be:
+        A dictionary may also contain these values
+            't' (int): Set filter type for band. Default 0. Cann be:
                 0, for Butterworth
                 1, for Chebyshev type 1
                 2, for Chebyshev type 2
@@ -615,12 +617,12 @@ def equalizer(bands):
             raise ValueError("band[\"w\"] must be a positive scalar")
         if band["g"] <= 0:
             raise ValueError("band[\"g\"] must be a positive scalar")
-        if band["t"] not in {0, 1, 2}:
+        if band.get("t", 0) not in {0, 1, 2}:
             raise ValueError("band[\"t\"] must be in {0, 1, 2}")
 
     params = make_arglist_ffmpeg([
         make_arglist_ffmpeg([
-            f"c{c} f={band['f']} w={band['w']} g={band['g']} t={band['t']}"
+            f"c{c} f={band['f']} w={band['w']} g={band['g']} t={band.get('t', 0)}"
             for c in band["chn"]
         ])
         for band in bands
