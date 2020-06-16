@@ -88,10 +88,12 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
         input_args['loglevel'] = 'quiet'
 
     with _close_temp_files(tmpfiles):
-        curr_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
-
+        curr_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
+        out_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
+        
         tmpfiles.append(curr_tempfile)
-        audio_signal.write_audio_to_file(curr_tempfile)
+        tmpfiles.append(out_tempfile)
+        audio_signal.write_audio_to_file(out_tempfile)
 
         # This is for applying effects via PyAV
         # I was not able to make it work :(
@@ -137,12 +139,12 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
         for _filter in filters:
             stream = _filter(stream)
         (stream
-         .output(curr_tempfile.name)
+         .output(out_tempfile.name)
          .overwrite_output()
          .run()
          )
 
-        augmented_signal = AudioSignal(path_to_input_file=curr_tempfile.name)
+        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
     return augmented_signal
 
 
@@ -211,7 +213,7 @@ def pitch_shift(shift):
     Returns:
         filter (SoxFilter): A SoXFilter object, to be called on an pysndfx stream
     """
-    if not isinstance(shift, int):
+    if not np.issubdtype(type(shift), np.integer):
         raise ValueError("shift must be an integer.")
 
     return SoXFilter("pitch", n_semitones=shift)
@@ -609,7 +611,7 @@ def equalizer(bands):
     """
     for band in bands:
         for chn in band["chn"]:
-            if chn < 0 or not isinstance(chn, int):
+            if chn < 0 or not np.issubdtype(type(chn), np.integer):
                 raise ValueError("All values in band[\"chn\"] must be positive integers")
         if band["f"] <= 0:
             raise ValueError("band[\"f\"] must be a positive scalar")
