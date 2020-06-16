@@ -93,7 +93,20 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
         
         tmpfiles.append(curr_tempfile)
         tmpfiles.append(out_tempfile)
-        audio_signal.write_audio_to_file(out_tempfile)
+        audio_signal.write_audio_to_file(curr_tempfile)
+
+        tmpfiles.append(curr_tempfile)
+        stream = ffmpeg.input(curr_tempfile.name, **input_args)
+        for _filter in filters:
+            stream = _filter(stream)
+        (stream
+         .output(out_tempfile.name)
+         .overwrite_output()
+         .run()
+         )
+
+        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
+    return augmented_signal
 
         # This is for applying effects via PyAV
         # I was not able to make it work :(
@@ -133,19 +146,6 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
 
         # out_cont.close()
         # augmented_signal = AudioSignal(path_to_input_file=output_tempfile.name)
-
-        tmpfiles.append(curr_tempfile)
-        stream = ffmpeg.input(curr_tempfile.name, **input_args)
-        for _filter in filters:
-            stream = _filter(stream)
-        (stream
-         .output(out_tempfile.name)
-         .overwrite_output()
-         .run()
-         )
-
-        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
-    return augmented_signal
 
 
 class SoXFilter(FilterFunction):
