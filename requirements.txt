@@ -1,4 +1,5 @@
 jams
+numba==0.48
 librosa
 matplotlib
 museval
