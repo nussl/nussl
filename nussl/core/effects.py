@@ -4,7 +4,6 @@ import ffmpeg
 import tempfile
 import sox
 
-import nussl.core as core
 from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
 
@@ -70,6 +69,8 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
         audio_signal after applying filters
 
     """
+    # lazy load to avoid circular import
+    from . import AudioSignal
 
     tmpfiles = []
 
@@ -95,7 +96,7 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
          .run()
          )
 
-        augmented_signal = core.AudioSignal(path_to_input_file=out_tempfile.name)
+        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
     return augmented_signal
 
 
