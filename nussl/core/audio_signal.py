@@ -1720,8 +1720,6 @@ class AudioSignal(object):
     def reset_effects_chain(self):
         """
         Clears effects chain of AudioSignal
-        Returns:
-            self
         """
         self._ffmpeg_effects_chain = []
         self._sox_effects_chain = []

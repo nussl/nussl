@@ -3,9 +3,8 @@ import warnings
 import ffmpeg
 import tempfile
 import sox
-# import av
-# from av.filter import Filter, Graph
 
+import .audio_signal as audio_signal
 from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
 
@@ -47,19 +46,13 @@ class FilterFunction:
 
 
 class FFmpegFilter(FilterFunction):
-    # @staticmethod
-    # def _dict_to_ffmpeg_kwargs(dictionary):
-    #     str_params = []
-    #     for key, value in dictionary.items():
-    #         str_params.append(f"{key}={value}")
-    #     return ":".join(str_params)
-
+    """
+    FFmpegFilter is an object returned by FFmpeg effects in effects.py
+    To use them, build_effects_ffmpeg can take a list of effects, and apply them onto an 
+    AudioSignal object. 
+    """
     def __init__(self, _filter, **filter_kwargs):
         self.filter = _filter
-        # This code is for using PyAV. 
-        # I was not able to make it work :(
-        # self.func = lambda graph: graph.add(_filter, 
-        #     FFmpegFilter._dict_to_ffmpeg_kwargs(filter_kwargs)) 
         self.func = lambda stream: stream.filter(_filter, **filter_kwargs)
 
 
@@ -77,9 +70,6 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
         audio_signal after applying filters
 
     """
-
-    # lazy load
-    from .audio_signal import AudioSignal
 
     tmpfiles = []
 
@@ -105,50 +95,16 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
          .run()
          )
 
-        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
+        augmented_signal = audio_signal.AudioSignal(path_to_input_file=out_tempfile.name)
     return augmented_signal
-
-        # This is for applying effects via PyAV
-        # I was not able to make it work :(
-        # Leaving the code for someone else to try to fix
-
-        # output_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
-        # tmpfiles.append(output_tempfile)
-
-        # in_cont = av.open(curr_tempfile.name, mode='r')
-        # out_cont = av.open(output_tempfile.name, mode='w')
-
-        # in_stream = in_cont.streams.audio[0]
-        # out_stream = out_cont.add_stream(
-        #         codec_name=in_stream.codec_context.codec,
-        #         rate=audio_signal.sample_rate
-        #     )
-
-        # graph = Graph()
-        # fchain = [graph.add_abuffer(sample_rate=in_stream.rate, 
-        #     format=in_stream.format.name, layout=in_stream.layout.name, 
-        #     channels=audio_signal.num_channels)]
-        # for _filter in filters:
-        #     fchain.append(_filter(graph))
-        #     fchain[-2].link_to(fchain[-1])
-
-        # fchain.append(graph.add("abuffersink"))
-        # fchain[-2].link_to(fchain[-1])
-
-        # graph.configure()
-
-        # for ifr in in_cont.decode(in_stream):
-        #     graph.push(ifr)
-        #     ofr = graph.pull()
-        #     ofr.pts = None
-        #     for p in out_stream.encode(ofr):
-        #         out_cont.mux(p)
-
-        # out_cont.close()
-        # augmented_signal = AudioSignal(path_to_input_file=output_tempfile.name)
 
 
 class SoXFilter(FilterFunction):
+    """
+    SoXFilter is an object returned by FFmpeg effects in effects.py
+    To use them, build_effects_sox can take a list of effects, and apply them onto an 
+    AudioSignal object. 
+    """
     def __init__(self, _filter, **filter_kwargs):
         self.filter = _filter
         if _filter == "tempo":
@@ -173,7 +129,6 @@ def build_effects_sox(audio_signal, filters):
     audio_data = audio_signal.audio_data
 
     tfm = sox.Transformer()
-    # tfm.set_output_format(channels=audio_signal.num_channels)
     for _filter in filters:
         tfm = _filter(tfm)
     augmented_data = tfm.build_array(input_array=np.transpose(audio_data), 
@@ -228,9 +183,6 @@ def _pass_arg_check(freq, poles, width_type, width):
         raise ValueError("width_type must be either h, q, o, s, or k.")
     if not np.issubdtype(type(width), np.number) or width <= 0:
         raise ValueError("width should be positive scalar")
-    # TODO: mix does not work for some reason, despite being listed in ffmpeg docs
-    # if mix < 0 or mix > 1:
-    #     raise ValueError("mix must be between 0 and 1")
 
 
 def low_pass(freq, poles=2, width_type="h", width=.707):
@@ -352,8 +304,6 @@ def chorus(delays, decays, speeds, depths,
     if (len(delays) != len(decays) or len(decays)
             != len(speeds) or len(speeds) != len(depths)):
         raise ValueError("Delays, decays, depths, and speeds must all be the same length.")
-
-    # TODO: Add more argchecks
 
     delays = make_arglist_ffmpeg(delays)
     speeds = make_arglist_ffmpeg(speeds)
