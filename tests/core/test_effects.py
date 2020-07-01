@@ -75,10 +75,6 @@ def test_vibrato(mix_and_sources, check_against_regression_data):
     filters = [effects.vibrato(f, d)]
     augmented_signal = effects.build_effects_ffmpeg(signal, filters)
 
-    fx_regression(augmented_signal.audio_data,
-                  reg_path, check_against_regression_data)
-
-
 def test_emphasis(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
     level_in = 1
