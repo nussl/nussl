@@ -146,6 +146,8 @@ def test_separation_deep_mask_estimation(overfit_model):
         dme = separation.deep.DeepMaskEstimation(
             item['mix'], model_path, mask_type=mask_type)
 
+        pytest.raises(SeparationException, dme.confidence)
+
         item['mix'].write_audio_to_file('tests/local/dme_mix.wav')
         sources = item['sources']
         estimates = dme()
@@ -162,6 +164,11 @@ def test_separation_deep_mask_estimation(overfit_model):
                 for val in _score:
                     assert val > SDR_CUTOFF
 
+        confidence = dme.confidence()
+        dme.model.output_keys = ['mask']
+        dme()
+        pytest.raises(SeparationException, dme.confidence)
+        
         dme.model.output_keys = []
         pytest.raises(SeparationException, dme.run)
 
