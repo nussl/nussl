@@ -9,7 +9,7 @@ zarr==2.3.0
 numcodecs==0.6.2
 ffmpy
 torch
-pytorch-ignite==0.3.0
+pytorch-ignite
 tensorboard
 norbert
 tqdm
