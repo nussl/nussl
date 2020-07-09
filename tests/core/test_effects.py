@@ -23,7 +23,7 @@ def test_stretch(mix_and_sources, check_against_regression_data):
     stretch_factor = .8
     signal, _ = mix_and_sources
     filters = [effects.time_stretch(stretch_factor)]
-    augmented = effects.build_effects_sox(signal, filters)
+    augmented = effects.apply_effects_sox(signal, filters)
 
     reg_path = path.join(REGRESSION_PATH, "time_stretch.json")
     fx_regression(augmented.audio_data, reg_path, check_against_regression_data)
@@ -33,7 +33,7 @@ def test_pitch_shift(mix_and_sources, check_against_regression_data):
     shift = 2
     signal, _ = mix_and_sources
     filters = [effects.pitch_shift(shift)]
-    augmented = effects.build_effects_sox(signal, filters)
+    augmented = effects.apply_effects_sox(signal, filters)
 
     reg_path = path.join(REGRESSION_PATH, "pitch_shift.json")
     fx_regression(augmented.audio_data, reg_path, check_against_regression_data)
@@ -60,7 +60,7 @@ def test_tremolo(mix_and_sources, check_against_regression_data):
     reg_path = path.join(REGRESSION_PATH, "tremolo.json")
 
     filters = [effects.tremolo(f, d)]
-    augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+    augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
 
     fx_regression(augmented_signal.audio_data,
                   reg_path, check_against_regression_data)
@@ -73,7 +73,7 @@ def test_vibrato(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
 
     filters = [effects.vibrato(f, d)]
-    augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+    augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
 
     fx_regression(augmented_signal.audio_data,
                   reg_path, check_against_regression_data)
@@ -89,7 +89,7 @@ def test_emphasis(mix_and_sources, check_against_regression_data):
     for _type in types:
         reg_path = path.join(REGRESSION_PATH, f"emphasis_{_type}.json")
         filters = [effects.emphasis(level_in, level_out, _type, mode=mode)]
-        augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+        augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
         fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
 
@@ -99,7 +99,7 @@ def test_compressor(mix_and_sources, check_against_regression_data):
 
     reg_path = path.join(REGRESSION_PATH, f"compression.json")
     filters = [effects.compressor(level_in)]
-    augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+    augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
 
@@ -161,7 +161,7 @@ def test_equalizer(mix_and_sources, check_against_regression_data):
 
     signal, _ = mix_and_sources
     filters = [effects.equalizer(bands)]
-    augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+    augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
 
     reg_path = path.join(REGRESSION_PATH, "equalizer.json")
     fx_regression(augmented_signal.audio_data,
@@ -177,7 +177,7 @@ def test_phaser(mix_and_sources, check_against_regression_data):
     speed = .8
 
     filters = [effects.phaser(in_gain, out_gain, delay, speed)]
-    augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+    augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
     reg_path = path.join(REGRESSION_PATH, "phaser.json")
     fx_regression(augmented_signal.audio_data, reg_path,
                   check_against_regression_data)
@@ -195,7 +195,7 @@ def test_chorus(mix_and_sources, check_against_regression_data):
 
     filters = [effects.chorus(delays, decays,
                               speeds, depths, in_gain=in_gain, out_gain=out_gain)]
-    augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+    augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
     reg_path = path.join(REGRESSION_PATH, "chorus.json")
     fx_regression(augmented_signal.audio_data, reg_path,
                   check_against_regression_data)
@@ -213,7 +213,7 @@ def test_flanger(mix_and_sources, check_against_regression_data):
 
     filters = [effects.flanger(delay=delay, depth=depth, regen=regen,
                                width=width, speed=speed, phase=phase)]
-    augmented_signal = effects.build_effects_ffmpeg(signal, filters)
+    augmented_signal = effects.apply_effects_ffmpeg(signal, filters)
     reg_path = path.join(REGRESSION_PATH, "flanger.json")
     fx_regression(augmented_signal.audio_data, reg_path,
                   check_against_regression_data)
@@ -223,13 +223,13 @@ def test_low_high_pass(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
     f = 512
     filters = [effects.low_pass(f)]
-    low_signal = effects.build_effects_ffmpeg(signal, filters)
+    low_signal = effects.apply_effects_ffmpeg(signal, filters)
     low_path = path.join(REGRESSION_PATH, "low_pass.json")
     fx_regression(low_signal.audio_data, low_path,
                   check_against_regression_data)
 
     filters = [effects.high_pass(f)]
-    high_signal = effects.build_effects_ffmpeg(signal, filters)
+    high_signal = effects.apply_effects_ffmpeg(signal, filters)
     high_path = path.join(REGRESSION_PATH, "high_pass.json")
     fx_regression(high_signal.audio_data, high_path,
                   check_against_regression_data)
@@ -334,7 +334,7 @@ def test_misc_param_check():
 
 def test_silent_mode(mix_and_sources):
     signal, _ = mix_and_sources
-    effects.build_effects_ffmpeg(signal, [], silent=True)
+    effects.apply_effects_ffmpeg(signal, [], silent=True)
 
 
 def test_hooks(mix_and_sources, check_against_regression_data):
@@ -365,18 +365,16 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     assert len(signal._ffmpeg_effects_chain) == 10
     assert len(signal._sox_effects_chain) == 2
 
-    augmented_signal = signal.build_effects(reset=False)
+    augmented_signal = signal.apply_effects(reset=False)
 
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
-    augmented_signal.time_stretch(.7).build_effects(overwrite=True)
+    augmented_signal.time_stretch(.7).apply_effects(overwrite=True)
 
     assert len(augmented_signal._ffmpeg_effects_chain) == 0
     assert len(augmented_signal._sox_effects_chain) == 0
 
-    with pytest.raises(RuntimeError):
-        augmented_signal.build_effects()
 
 def test_make_effect(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
@@ -402,8 +400,8 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
                 't': 0
             }])
     )
-    signal.build_effects(reset=False)
-    augmented_signal = signal.build_effects(reset=False, overwrite=True)
+    signal.apply_effects(reset=False)
+    augmented_signal = signal.apply_effects(reset=False, overwrite=True)
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # This should result in the same signal in test_hooks
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)

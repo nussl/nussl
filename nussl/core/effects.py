@@ -14,12 +14,12 @@ Usage Notes about effects.py
 The effect functions do not augment an AudioSignal object, but rather 
 return a FFmpegFilter or a SoXFilter, which may be called on either a sox.transform.Transformer
 or a python-ffmpeg stream, depending on the specific effect. To apply the effect on an AudioSignal, 
-build_effects_sox or build_effects_ffmpeg must be called with the AudioSignal, and a list of
+apply_effect_sox or apply_effect_ffmpeg must be called with the AudioSignal, and a list of
 SoXFilters or FFmpegFilters, respectively. 
 
 >>> import nussl.effects
 >>> tremolo_filter = effects.tremolo(5, .7)
->>> new_signal = effects.build_effects_ffmpeg(audio_signal, [tremolo_filter])
+>>> new_signal = effects.apply_effect_ffmpeg(audio_signal, [tremolo_filter])
 
 Because of this schema, and the requirement that caller must know which effect is a SoX effect
 or a FFmpeg effect, we recommend that all users use the AudioSignal hooks for applying effects
@@ -27,7 +27,11 @@ rather than calling any functions in this library.
 
 This line is equivalent to the above snippet
 
->>> new_signal = audio_signal.tremolo(5, .7).build_effects()
+>>> new_signal = audio_signal.tremolo(5, .7).apply_effect()
+
+Please see
+https://nbviewer.jupyter.org/github/abugler/nussl_effects_notebook/blob/master/effects_notebook.ipynb
+for more examples.
 
 """
 
@@ -47,7 +51,7 @@ class FilterFunction:
 class FFmpegFilter(FilterFunction):
     """
     FFmpegFilter is an object returned by FFmpeg effects in effects.py
-    To use them, build_effects_ffmpeg can take a list of effects, and apply them onto an 
+    To use them, apply_effects_ffmpeg can take a list of effects, and apply them onto an 
     AudioSignal object. 
     """
     def __init__(self, _filter, **filter_kwargs):
@@ -55,9 +59,9 @@ class FFmpegFilter(FilterFunction):
         self.func = lambda stream: stream.filter(_filter, **filter_kwargs)
 
 
-def build_effects_ffmpeg(audio_signal, filters, silent=False):
+def apply_effects_ffmpeg(audio_signal, filters, silent=False):
     """
-    build_effects_ffmpeg takes an AudioSignal object and a list of FFmpegFilter objects
+    apply_effects_ffmpeg takes an AudioSignal object and a list of FFmpegFilter objects
     and sequentially applies each filter to the signal. 
     Args:
         audio_signal (AudioSignal): AudioSignal object
@@ -97,13 +101,16 @@ def build_effects_ffmpeg(audio_signal, filters, silent=False):
          )
 
         augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
+    augmented_signal.label = audio_signal.label
+    augmented_signal.effects_applied = (augmented_signal.effects_applied 
+        + [f.filter for f in filters])
     return augmented_signal
 
 
 class SoXFilter(FilterFunction):
     """
     SoXFilter is an object returned by FFmpeg effects in effects.py
-    To use them, build_effects_sox can take a list of effects, and apply them onto an 
+    To use them, apply_effects_sox can take a list of effects, and apply them onto an 
     AudioSignal object. 
     """
     def __init__(self, _filter, **filter_kwargs):
@@ -113,12 +120,12 @@ class SoXFilter(FilterFunction):
         elif _filter == "pitch":
             self.func = lambda tfm: tfm.pitch(**filter_kwargs)
         else:
-            raise ValueError
+            raise ValueError("Unknown SoX effect passed")
 
 
-def build_effects_sox(audio_signal, filters):
+def apply_effects_sox(audio_signal, filters):
     """
-    build_effects_sox takes an AudioSignal object and a list of SoXFilter objects
+    apply_effects_sox takes an AudioSignal object and a list of SoXFilter objects
     and sequentially applies each filter to the signal. 
     Args:
         audio_signal (AudioSignal): AudioSignal object
@@ -127,15 +134,22 @@ def build_effects_sox(audio_signal, filters):
         augmented_signal (AudioSignal): A new AudioSignal object, with the audio data from 
         audio_signal after applying filters
     """
+    # lazy load to avoid circular import
+    from . import AudioSignal
+
     audio_data = audio_signal.audio_data
 
     tfm = sox.Transformer()
     for _filter in filters:
         tfm = _filter(tfm)
     augmented_data = tfm.build_array(input_array=np.transpose(audio_data), 
-        sample_rate_in=audio_signal.sample_rate)
-
-    return audio_signal.make_copy_with_audio_data(np.transpose(augmented_data))
+        sample_rate_in=audio_signal.sample_rate) 
+    
+    augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data))
+    augmented_signal.label = audio_signal.label
+    augmented_signal.effects_applied = (augmented_signal.effects_applied 
+        + [f.filter for f in filters])
+    return augmented_signal
 
 
 def make_arglist_ffmpeg(lst, sep="|"):
@@ -144,9 +158,15 @@ def make_arglist_ffmpeg(lst, sep="|"):
 
 def time_stretch(factor):
     """
-    Returns a SoXFilter, when called on an pysndfx stream, will multiply the 
+    Returns a SoXFilter, when called on an pysox stream, will multiply the 
     tempo of the audio by factor. A factor greater than one will shorten the signal, 
     a factor less then one will lengthen the signal, and a factor of 1 will not change the signal.
+
+    It is recommended that users use `AudioSignal.time_stretch` rather than this function.
+
+    This is a SoX effect. Please see 
+    https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.tempo
+    for details.
     Args: 
         factor (float): Scaling factor for tempo change. Must be positive.
     Returns:
@@ -160,9 +180,16 @@ def time_stretch(factor):
 
 def pitch_shift(shift):
     """
-    Returns a SoXFilter, when called on an pysndfx stream, will increase the pitch 
-    of the audio by a number of cents, denoted in shift. A positive shift will raise the pitch
-    of the signal.
+    Returns a SoXFilter, when called on an pysox stream, will increase the pitch 
+    of the audio by a number of semitones, denoted in shift. A positive shift will 
+    raise the pitch of the signal.
+
+    It is recommended that users use `AudioSignal.pitch_shift` rather than this function.
+
+    This is a SoX effect. Please see
+    https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.pitch
+    for details.
+
     Args: 
         shift (float): The number of semitones to shift the audio. 
             Positive values increases the frequency of the signal
@@ -188,10 +215,14 @@ def _pass_arg_check(freq, poles, width_type, width):
 
 def low_pass(freq, poles=2, width_type="h", width=.707):
     """
-    https://ffmpeg.org/ffmpeg-all.html#lowpass
-
     Creates an FFmpegFilter object, which when called on an ffmpeg stream,
     applies a low pass filter to the audio signal.
+
+    It is recommended that users use `AudioSignal.low_pass` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#lowpass
+    for details.
     Args: 
         freq (float): Threshold for low pass. Should be positive
         poles (int): Number of poles. should be either 1 or 2
@@ -213,10 +244,14 @@ def low_pass(freq, poles=2, width_type="h", width=.707):
 
 def high_pass(freq, poles=2, width_type="h", width=.707):
     """
-    https://ffmpeg.org/ffmpeg-all.html#highpass
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a high pass filter to the audio signal.
+
+    It is recommended that users use `AudioSignal.high_pass` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#highpass
+    for details.
     Args: 
         freq (float): Threshold for high pass. Should be positive scalar
         poles (int): Number of poles. should be either 1 or 2
@@ -237,10 +272,14 @@ def high_pass(freq, poles=2, width_type="h", width=.707):
 
 def tremolo(mod_freq, mod_depth):
     """
-    https://ffmpeg.org/ffmpeg-all.html#tremolo
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a tremolo filter to the audio signal
+
+    It is recommended that users use `AudioSignal.tremolo` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#tremolo
+    for details.
     Args: 
         mod_freq (float): Modulation frequency. Must be between .1 and 20000.
         mod_depth (float): Modulation depth. Must be between 0 and 1.
@@ -258,10 +297,14 @@ def tremolo(mod_freq, mod_depth):
 
 def vibrato(mod_freq, mod_depth):
     """
-    https://ffmpeg.org/ffmpeg-all.html#vibrato
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
-    applies a vibrato filter to the audio signal
+    applies a vibrato filter to the audio signal.
+
+    It is recommended that users use `AudioSignal.vibrato` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#vibrato
+    for details.
     Args: 
         mod_freq (float): Modulation frequency. Must be between .1 and 20000.
         mod_depth (float): Modulation depth. Must be between 0 and 1.
@@ -280,10 +323,15 @@ def vibrato(mod_freq, mod_depth):
 def chorus(delays, decays, speeds, depths,
            in_gain=.4, out_gain=.4):
     """
-    https://ffmpeg.org/ffmpeg-all.html#chorus
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
-    applies a vibrato filter to the audio signal
+    applies a vibrato filter to the audio signal.
+
+    It is recommended that users use `AudioSignal.chorus` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#chorus
+    for details.
+
     Args:
         delays (list of float): delays in ms. Typical Delay is 40ms-6ms
         decays (list of float): decays. Must be between 0 and 1
@@ -318,10 +366,14 @@ def chorus(delays, decays, speeds, depths,
 def phaser(in_gain=.4, out_gain=.74, delay=3,
            decay=.4, speed=.5, _type="triangular"):
     """
-    https://ffmpeg.org/ffmpeg-all.html#aphaser
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a phaser filter to the audio signal
+
+    It is recommended that users use `AudioSignal.phaser` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#aphaser
+    for details. 
     Args:
         in_gain (float): Proportion of input gain. Must be between 0 and 1
         out_gain (float): Proportion of output gain. Must be between 0 and 1.
@@ -356,43 +408,48 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
 
 def _flanger_argcheck(delay, depth, regen, width,
                       speed, phase, shape, interp):
+    error_text = ""
     allowed_shape_types = {"triangular", "sinusoidal"}
     if shape not in allowed_shape_types:
-        raise ValueError(f"shape must be one of the following:\n{allowed_shape_types}")
+        error_text += f"shape must be one of the following:\n{allowed_shape_types}.\n"
+        error_text += f"shape provided is {shape}.\n"
     allowed_interp_types = {"linear", "quadratic"}
     if interp not in allowed_interp_types:
-        raise ValueError(f"interp must be one of the following:\n{allowed_interp_types}")
-    if (delay < 0 or delay > 30
-            or depth < 0 or depth > 10
-            or regen < -95 or regen > 95
-            or width < 0 or width > 100
-            or speed < .1 or speed > 10
-            or phase < 0 or phase > 100):
-        raise ValueError("One of the follow values are not in the accepted ranges"
-                         f"delay: {delay}\n"
-                         f"depth: {depth}\n"
-                         f"regen: {regen}\n"
-                         f"width: {width}\n"
-                         f"speed: {speed}\n"
-                         f"phase: {phase}\n"
-                         "The following are the bounds for the parameters to flanger()"
-                         "0 < delay < 30\n"
-                         "0 < depth < 10\n"
-                         "-95 < regen < 95\n"
-                         "0 < width < 100\n"
-                         ".1 < speed < 10\n"
-                         "0 < phase < 100"
-                         )
+        error_text += f"interp must be one of the following:\n{allowed_interp_types}\n"
+        error_text += f"interp provided is {interp}.\n"
+    if not 0 <= delay <= 30:
+        error_text += f"delay must be in the range 0 <= delay <= 30\n"
+        error_text += f"delay provided is {delay}.\n"
+    if not -95 <= regen <= 95:
+        error_text += f"regen must be in the range -95 <= regen <= 95\n"
+        error_text += f"regen provided is {regen}.\n"
+    if not 0 <= depth <= 10:
+        error_text += f"depth must be in the range 0 <= depth <= 10\n"
+        error_text += f"depth provided is {depth}.\n"
+    if not .1 <= speed <= 10:
+        error_text += f"speed must be in the range .1 <= speed <= 10\n"
+        error_text += f"speed provided is {speed}.\n"
+    if not 0 <= width <= 100:
+        error_text += f"width must be in the range 0 <= width <= 100\n"
+        error_text += f"width provided is {width}.\n"
+    if not 0 <= phase <= 100:
+        error_text += f"phase must be in the range 0 <= phase <= 100\n"
+        error_text += f"phase provided is {phase}.\n"
+    if error_text:
+        raise ValueError(error_text)
 
 
 def flanger(delay=0, depth=2, regen=0, width=71,
             speed=.5, phase=25, shape="sinusoidal", interp="linear"):
     """
-    https://ffmpeg.org/ffmpeg-all.html#flanger
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a flanger filter to the audio signal.
 
+    It is recommended that users use `AudioSignal.flanger` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#flanger
+    for details. 
     Args:
         delay (float): Base delay in ms between original signal and copy.
             Must be between 0 and 30.
@@ -417,12 +474,15 @@ def flanger(delay=0, depth=2, regen=0, width=71,
 
 def emphasis(level_in, level_out, _type="col", mode='production'):
     """
-    https://ffmpeg.org/ffmpeg-all.html#aemphasis
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
-    applies a emphasis filter to the audio signal. An emphasis filter boosts frequency ranges the most 
-    suspectible to noise in a medium. When restoring sounds from such a medium, a de-emphasis filter is used
-    to de-boost boosted frequencies. 
+    applies a emphasis filter to the audio signal. An emphasis filter boosts frequency ranges 
+    the most suspectible to noise in a medium. When restoring sounds from such a medium, a 
+    de-emphasis filter is used to de-boost boosted frequencies. 
+
+    It is recommended that users use `AudioSignal.emphasis` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#aemphasis
     Args:
         level_in (float): Input gain
         level_out (float): Output gain
@@ -465,51 +525,60 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
 def _compressor_argcheck(level_in, mode, reduction_ratio,
                          attack, release, makeup, knee, link,
                          detection, mix, threshold):
-    # The following values are taken from ffmpeg documentation
-    if (level_in < LEVEL_MIN or level_in > LEVEL_MAX or
-            mode not in {"upward", "downward"} or
-            reduction_ratio < 1 or reduction_ratio > 20 or
-            attack < .01 or attack > 2000 or
-            release < .01 or release > 9000 or
-            makeup < 1 or makeup > 64 or
-            knee < 1 or knee > 8 or
-            link not in {"average", "maximum"} or
-            detection not in {"peak", "rms"} or
-            mix < 0 or mix > 1 or
-            threshold < 9.7563e-5 or threshold > 1):
-        raise ValueError("One or more of the values provided are not within the bounds of the acompressor function"
-                         f"mode: {mode}\n"
-                         f"reduction_ratio: {reduction_ratio}\n"
-                         f"attack: {attack}\n"
-                         f"release: {release}\n"
-                         f"makeup: {makeup}\n"
-                         f"knee: {knee}\n"
-                         f"link: {link}\n"
-                         f"detection: {detection}\n"
-                         f"mix: {mix}\n"
-                         "The following are the bounds for these parameters:\n"
-                         f"{LEVEL_MIN} < level_in < {LEVEL_MAX}\n"
-                         "mode must be in {'upward, 'downward'}\n"
-                         "1 < reduction_ratio < 20\n"
-                         ".01 < attack < 2000\n"
-                         ".01 < release < 9000\n"
-                         "1 < makeup < 64\n"
-                         "1 < knee < 8\n"
-                         "link must be in {'average', 'maximum'}\n"
-                         "detection must be in {'peak', 'rms'}\n"
-                         "0 < mix < 1\n"
-                         " .000097563 < threshold < 1\n"
-                         )
+    error_text = ""
+    allowed_mode_types = {"upward", "downward"}
+    if mode not in allowed_mode_types:
+        error_text += f"shape must be one of the following:\n{allowed_mode_types}.\n"
+        error_text += f"shape provided is {mode}.\n"
+    allowed_link_types = {"average", "maximum"}
+    if link not in allowed_link_types:
+        error_text += f"link must be one of the following:\n{allowed_link_types}.\n"
+        error_text += f"link provided is {link}.\n"
+    allowed_detection_types = {"peak", "rms"}
+    if detection not in allowed_detection_types:
+        error_text += f"detection must be one of the following:\n{allowed_detection_types}.\n"
+        error_text += f"detection provided is {detection}.\n"
+    allowed_detection_types = {"peak", "rms"}
+    if not LEVEL_MIN <= level_in <= LEVEL_MAX:
+        error_text += f"level_in must be in the range {LEVEL_MIN} <= phase <= {LEVEL_MAX}\n"
+        error_text += f"level_in provided is {level_in}.\n"
+    if not 1 <= reduction_ratio <= 20:
+        error_text += f"reduction_ratio must be in the range 1 <= reduction_ratio <= 20\n"
+        error_text += f"reduction_ratio provided is {reduction_ratio}.\n"
+    if not .01 <= attack <= 2000:
+        error_text += f"attack must be in the range 1 <= reduction_ratio <= 2000\n"
+        error_text += f"attack provided is {reduction_ratio}.\n"
+    if not .01 <= release <= 9000:
+        error_text += f"release must be in the range 1 <= release <= 9000\n"
+        error_text += f"release provided is {release}.\n"
+    if not .1 <= makeup <= 64:
+        error_text += f"makeup must be in the range 1 <= makeup <= 64\n"
+        error_text += f"makeup provided is {makeup}.\n"
+    if not 1 <= knee <= 8:
+        error_text += f"knee must be in the range 1 <= knee <= 8\n"
+        error_text += f"knee provided is {knee}.\n"
+    if not 0 <= mix <= 1:
+        error_text += f"mix must be in the range 0 <= mix <= 1\n"
+        error_text += f"mix provided is {mix}.\n"
+    if not 9.7563e-5 <= threshold <= 1:
+        error_text += f"threshold must be in the range 0.000097563 <= threshold <= 1\n"
+        error_text += f"threshold provided is {threshold}.\n"
+    if error_text:
+        raise ValueError(error_text)
+    
 
 
 def compressor(level_in, mode="downward", reduction_ratio=2,
                attack=20, release=250, makeup=1, knee=2.8284, link="average",
                detection="rms", mix=1, threshold=.125):
     """
-    https://ffmpeg.org/ffmpeg-all.html#acompressor
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a compressor filter to the audio signal.
+
+    It is recommended that users use `AudioSignal.compressor` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#acompressor
     Args:
         level_in (float): Input Gain
         mode (str): Mode of compressor operation. Can either be "upward" or "downward". 
@@ -542,10 +611,13 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
 
 def equalizer(bands):
     """
-    https://ffmpeg.org/ffmpeg-all.html#anequalizer
-
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a equalizer filter to the audio signal.
+
+    It is recommended that users use `AudioSignal.equalizer` rather than this function.
+
+    This is a FFmpeg effect. Please see
+    https://ffmpeg.org/ffmpeg-all.html#anequalizer
     Args:
         bands (list of dict): A list of dictionaries, for each band. The required values for each dictionary:
             'chn' (list of int): List of channel numbers to apply filter. Must be list of ints.
