@@ -299,7 +299,7 @@ def test_misc_param_check():
     with pytest.raises(ValueError):
         effects.flanger(interp="fail")
     with pytest.raises(ValueError):
-        effects.flanger(phase=phase)
+        effects.flanger(phase=-1)
 
     with pytest.raises(ValueError):
         effects.emphasis(1, 1, _type="fail")
