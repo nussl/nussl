@@ -110,8 +110,10 @@ def test_compression_fail(mix_and_sources):
     knee = 10
     link = "fail"
     detection = "fail"
+    mode = "fail"
     mix = 8
     threshold = 0
+    phase = -1
 
     with pytest.raises(ValueError):
         effects.compressor(level_in)
@@ -143,6 +145,8 @@ def test_compression_fail(mix_and_sources):
     with pytest.raises(ValueError):
         effects.compressor(1, threshold=threshold)
 
+    with pytest.raises(ValueError):
+        effects.compressor(1, mode=mode)
 
 def test_equalizer(mix_and_sources, check_against_regression_data):
     bands = [
@@ -294,6 +298,8 @@ def test_misc_param_check():
         effects.flanger(shape="fail")
     with pytest.raises(ValueError):
         effects.flanger(interp="fail")
+    with pytest.raises(ValueError):
+        effects.flanger(phase=phase)
 
     with pytest.raises(ValueError):
         effects.emphasis(1, 1, _type="fail")
