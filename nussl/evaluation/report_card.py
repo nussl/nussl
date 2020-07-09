@@ -48,7 +48,7 @@ def aggregate_score_files(json_files, aggregator=np.nanmedian):
             data = json.load(f)
         json_key = os.path.basename(json_file)
         for name in data:
-            if name not in ['combination', 'permutation']:
+            if name not in ['combination', 'permutation', 'metadata']:
                 if name not in metrics:
                     metrics[name] = {}
                 if json_key not in metrics[name]:

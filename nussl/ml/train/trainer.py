@@ -1,10 +1,9 @@
 import os
 import logging
-from enum import Enum
 import copy
 import time
 
-from ignite.engine import Events, Engine
+from ignite.engine import Events, Engine, EventEnum
 from ignite.handlers import Timer
 from ignite.contrib.handlers import ProgressBar
 from ignite.metrics import RunningAverage
@@ -16,7 +15,7 @@ import numpy as np
 from nussl import datasets
 
 
-class ValidationEvents(Enum):
+class ValidationEvents(EventEnum):
     """
     Events based on validation running
     """
@@ -24,7 +23,7 @@ class ValidationEvents(Enum):
     VALIDATION_COMPLETED = 'validation_completed'
 
 
-class BackwardsEvents(Enum):
+class BackwardsEvents(EventEnum):
     """
     Events based on validation running
     """
