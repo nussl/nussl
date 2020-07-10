@@ -1662,27 +1662,27 @@ class AudioSignal(object):
         applied to an AudioSignal object when `apply_effects` is called. We can add an effect to
         the effects chain by using an effects hook, such as `time_stretch`.
 
-        >>> signal.duration
+        >>> signal.signal_duration
         10.0
         >>> signal.time_stretch(0.5)
-        >>> signal.duration
+        >>> signal.signal_duration
         10.0
 
         However, the signal's duration hasn't changed! You will need to call apply_effects to make
         the changes in the signal's effects chains. 
 
         >>> new_signal = signal.apply_effects()
-        >>> new_signal.duration
+        >>> new_signal.signal_duration
         5.0
         >>> # This doesn't change the original signal
-        >>> signal.duration
+        >>> signal.signal_duration
         10.0
 
         Using `apply_effects` will clear out the current effects chain. This behavior can be 
         avoided by setting `reset` to False. Applied effects can be found in `effects_applied`:
 
         >>> another_signal = signal.apply_effects()
-        >>> another_signal.duration
+        >>> another_signal.signal_duration
         10.0
         >>> new_signal.effects_applied
         ["time_stretch"]

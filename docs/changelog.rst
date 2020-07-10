@@ -4,6 +4,7 @@ Changelog
 v1.1.1
 ------
 - Allowed MixSourceFolder to mix sources on the fly.
+- Added effects utilities.
 
 v1.1.0
 ------

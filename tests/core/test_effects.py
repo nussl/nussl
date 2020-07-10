@@ -377,6 +377,9 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     assert len(augmented_signal._ffmpeg_effects_chain) == 0
     assert len(augmented_signal._sox_effects_chain) == 0
 
+    equal_signal = augmented_signal.apply_effects()
+    assert equal_signal == augmented_signal
+
 
 def test_make_effect(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources

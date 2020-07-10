@@ -147,7 +147,7 @@ references, and trained models (if applicable). Please see the issues page befor
 - Ethan Manilow <http://github.com/ethman>
 - Fatemeh Pishdadian <http://github.com/fpishdadian>
 - Nathan Shelly <https://github.com/nathanshelly>
-- Andreas Bugler
+- Andreas Bugler <https://github.com/abugler>
 - Bryan Pardo <https://users.cs.northwestern.edu/~pardo/>
 
 Former:

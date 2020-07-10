@@ -97,8 +97,7 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
         (stream
          .output(out_tempfile.name)
          .overwrite_output()
-         .run()
-         )
+         .run())
 
         augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
     augmented_signal.label = audio_signal.label
