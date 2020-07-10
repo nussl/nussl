@@ -160,6 +160,8 @@ class AudioSignal(object):
         path_to_input_file (``str``): Path to the input file. ``None`` if this AudioSignal never
             loaded a file, i.e., initialized with a ``np.ndarray``.
         label (``str``): A user-definable label for this :class:`AudioSignal` object.
+        applied_effects (``list`` of ``str``): Effects applied to this :class:`AudioSignal`
+        object. For more information, see apply_effects. 
   
     """
 
@@ -1656,18 +1658,9 @@ class AudioSignal(object):
 
     def apply_effects(self, reset=True, overwrite=False):
         """
-        Applies all effects in the AudioSignal's effects chains using the audio data of the calling 
-        AudioSignal. If reset=True, the current effects chains will be deleted following applying 
-        them to the audio signal. If overwrite=True, the calling AudioSignal's audio_data will 
-        be overwritten and the stft_data will be deleted. 
-
-        FFmpeg effects will be applied AFTER SoX effects. The effects time_stretch and pitch_shift 
-        are SoX effects. All others are FFmpeg effects.
-
-        If no effects have been added to the AudioSignal's effects chains, then apply_effects 
-        will return itself.
-
-        This will add a time stretch effect to the audio signal's effects chains. 
+        Effects are stored in an "effects chain", which refers to a queue of effects that will be 
+        applied to an AudioSignal object when `apply_effects` is called. We can add an effect to
+        the effects chain by using an effects hook, such as `time_stretch`.
 
         >>> signal.duration
         10.0
@@ -1681,18 +1674,46 @@ class AudioSignal(object):
         >>> new_signal = signal.apply_effects()
         >>> new_signal.duration
         5.0
+        >>> # This doesn't change the original signal
+        >>> signal.duration
+        10.0
+
+        Using `apply_effects` will clear out the current effects chain. This behavior can be 
+        avoided by setting `reset` to False. Applied effects can be found in `effects_applied`:
+
+        >>> another_signal = signal.apply_effects()
+        >>> another_signal.duration
+        10.0
+        >>> new_signal.effects_applied
+        ["time_stretch"]
+
+        To clear out the current effects chain without applying effect, use `reset_effects_chain`.
+        It will not reverse effects already applied!
+
+        If `apply_effects` is called with empty effects chain, then it returns itself.
+
+        >>> another_signal == signal
+        True
 
         You can also chain effects together. This will add a tremolo effect followed by a high pass
-        effect to the AudioSignal's effects chains:
+        effect to the AudioSignal's effects chains: (Order Matters!)
 
         >>> audio_signal.tremolo(5, .6).high_pass(12000)
 
-        Using overwrite here change the audio data of audio_signal, rather than create a new signal. 
+        Using overwrite here, we change the audio data of audio_signal, rather than create a new signal. 
 
         >>> audio_signal.apply_effects(overwrite=True)
+        >>> audio_signal.effects_applied
+        ["tremolo", "highpass"]
 
-        All effects applied will stored in `self.effects_applied`, a list of FilterFunctions
-        in the order that they were applied.
+        FFmpeg effects will be applied AFTER SoX effects, irregardless of the order the hooks 
+        are applied. The effects `time_stretch` and `pitch_shift` are SoX effects. All others 
+        are FFmpeg effects. For example, the two statements will result in the same altered signal:
+
+        >>> signal_1 = audio_signal.pitch_shift(4).tremolo(5, .6).apply_effects()
+        >>> signal_2 = audio_signal.tremolo(5, .6).pitch_shift(4).apply_effects()
+        >>> signal_1.effects_applied == signal_2.effects_applied
+        True
 
         Args:
             reset (bool): If True, clears out all effects in effect chains following applying the effects. 
@@ -1729,6 +1750,8 @@ class AudioSignal(object):
         Is the same as 
         >>> signal.make_effect("time_stretch", factor=1.5)
 
+        This effect won't be applied until you call `apply_effect`!
+
         Args:
             effect (str): Function name of desired effect hook of the AudioSignal
             **kwargs: Additional parameters for given effect. 
@@ -1746,7 +1769,9 @@ class AudioSignal(object):
 
     def reset_effects_chain(self):
         """
-        Clears effects chains of AudioSignal
+        Clears effects chain of AudioSignal.
+
+        This will not remove effects that have already been applied!
         """
         self._ffmpeg_effects_chain = []
         self._sox_effects_chain = []
@@ -1760,7 +1785,10 @@ class AudioSignal(object):
 
         This is a SoX effect. Please see 
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.tempo
-        for more information. 
+        for details. 
+
+        This effect won't be applied until you call `apply_effect`!
+
         Args: 
             factor (float): Scaling factor for tempo change. Must be positive.
         Returns:
@@ -1776,7 +1804,9 @@ class AudioSignal(object):
 
         This is a SoX effect. Please see:
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.pitch
-        For more information.
+        For details.
+
+        This effect won't be applied until you call `apply_effect`!
 
         Args: 
             shift (float): The number of semitones to shift the audio. 
@@ -1793,7 +1823,10 @@ class AudioSignal(object):
 
         This is a FFmpeg effect. Please see:
         https://ffmpeg.org/ffmpeg-all.html#lowpass
-        for details
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+        
         Args: 
             freq (float): Threshold for low pass. Should be positive
             poles (int): Number of poles. should be either 1 or 2
@@ -1817,7 +1850,10 @@ class AudioSignal(object):
 
         This is a FFmpeg effect. Please see:
         https://ffmpeg.org/ffmpeg-all.html#highpass
-        for details
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+        
         Args: 
             freq (float): Threshold for high pass. Should be positive scalar
             poles (int): Number of poles. should be either 1 or 2
@@ -1841,7 +1877,10 @@ class AudioSignal(object):
         
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#tremolo
-        for details
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+        
         Args: 
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
@@ -1857,7 +1896,10 @@ class AudioSignal(object):
 
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#vibrato
-        for details
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+        
         Args: 
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
@@ -1873,6 +1915,10 @@ class AudioSignal(object):
 
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#chorus
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+        
         Args:
             delays (list of float): delays in ms. Typical Delay is 40ms-6ms
             decays (list of float): decays. Must be between 0 and 1
@@ -1895,6 +1941,9 @@ class AudioSignal(object):
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#aphaser
         for details. 
+
+        This effect won't be applied until you call `apply_effect`!
+
         Args:
             in_gain (float): Proportion of input gain. Must be between 0 and 1
             out_gain (float): Proportion of output gain. Must be between 0 and 1.
@@ -1918,6 +1967,9 @@ class AudioSignal(object):
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#flanger
         for details. 
+
+        This effect won't be applied until you call `apply_effect`!
+
         Args:
             delay (float): Base delay in ms between original signal and copy.
                 Must be between 0 and 30.
@@ -1947,6 +1999,10 @@ class AudioSignal(object):
 
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#aemphasis
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+
         Args:
             level_in (float): Input gain
             level_out (float): Output gain
@@ -1979,6 +2035,10 @@ class AudioSignal(object):
     
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#acompressor
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+
         Args:
             level_in (float): Input Gain
             mode (str): Mode of compressor operation. Can either be "upward" or "downward". 
@@ -2011,6 +2071,10 @@ class AudioSignal(object):
 
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#anequalizer  
+        for details.
+
+        This effect won't be applied until you call `apply_effect`!
+
         Args:
             bands: A list of dictionaries, for each band. The required values for each dictionary:
                 'chn': List of channel numbers to apply filter. Must be list of ints.

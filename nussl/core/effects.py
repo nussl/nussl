@@ -115,9 +115,9 @@ class SoXFilter(FilterFunction):
     """
     def __init__(self, _filter, **filter_kwargs):
         self.filter = _filter
-        if _filter == "tempo":
+        if _filter == "time_stretch":
             self.func = lambda tfm: tfm.tempo(**filter_kwargs)
-        elif _filter == "pitch":
+        elif _filter == "pitch_shift":
             self.func = lambda tfm: tfm.pitch(**filter_kwargs)
         else:
             raise ValueError("Unknown SoX effect passed")
@@ -175,7 +175,7 @@ def time_stretch(factor):
     if not np.issubdtype(type(factor), np.number) or factor <= 0:
         raise ValueError("stretch_factor must be a positve scalar")
 
-    return SoXFilter("tempo", factor=factor)
+    return SoXFilter("time_stretch", factor=factor)
 
 
 def pitch_shift(shift):
@@ -199,7 +199,7 @@ def pitch_shift(shift):
     if not np.issubdtype(type(shift), np.integer):
         raise ValueError("shift must be an integer.")
 
-    return SoXFilter("pitch", n_semitones=shift)
+    return SoXFilter("pitch_shift", n_semitones=shift)
 
 
 def _pass_arg_check(freq, poles, width_type, width):
