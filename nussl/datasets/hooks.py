@@ -542,12 +542,9 @@ class WHAM(MixSourceFolder):
 
 class Slakh(BaseDataset):
     """
-    TODO: Clean up this docs
-    TODO: Midi
-
-    The Slakh hook expects four arguments:
-
-    folder (str): Filepath to the dataset. We expect the following directory structure:
+    TODO: Implement MIDI
+    Hood for the Slakh dataset. Creates submixes of slakh according to a preprovided recipe.
+    Slakh is expected to have the following directory structure:
 
     folder:
         Track00001:
@@ -564,21 +561,21 @@ class Slakh(BaseDataset):
             metadata.yaml
         Track00002:
             ...
-    
-    recipe (dict): recipe should be a dictionary, where each key is a source type,
-    and the value is a list of midi numbers that correspond with the source. For example,
-    if you want a submix of two sources that only consists of bass and piano:
+    Args:
+        folder (str): Path to the root of the Slakh directory
+        recipe (dict): Recipe for submixing Slakh. Each key is a source type,
+        and the value is a list of midi numbers that correspond with the source. For example,
+        if you want a submix of two sources that only consists of bass and piano:
 
-    recipe = {
-        "bass": [32, 33, 34, 35, 36, 37, 38, 39],
-        "piano": [0, 1, 2, 3, 4, 5, 6, 7]
-    }
+        recipe = {
+            "bass": [32, 33, 34, 35, 36, 37, 38, 39],
+            "piano": [0, 1, 2, 3, 4, 5, 6, 7]
+        }
+        For mappings between midi numbers and instrument types, please see:
+        https://github.com/ethman/slakh-utils/blob/master/midi_inst_values/general_midi_inst_0based.txt
 
-    program_key (str): Key indictating midi number of an instrument. By defauly "program_num"
-    midi (bool): If True, return midi sources. Default False
-
-    For mappings between midi numbers and instrument types, please see:
-    https://github.com/ethman/slakh-utils/blob/master/midi_inst_values/general_midi_inst_0based.txt
+        program_key (str): Key indictating midi number of an instrument. By default "program_num"
+        midi (bool): If True, return midi sources. Default False
     """
     def __init__(self, folder, recipe, program_key="program_num", midi=False, transform=None, sample_rate=None, stft_params=None,
                  num_channels=None, strict_sample_rate=True, cache_populated=False):
