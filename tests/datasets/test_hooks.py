@@ -9,6 +9,7 @@ import tempfile
 import shutil
 
 
+
 def test_dataset_hook_musdb18(musdb_tracks):
     dataset = nussl.datasets.MUSDB18(
         folder=musdb_tracks.root, download=True)
@@ -134,6 +135,76 @@ def test_dataset_hook_wham(benchmark_audio):
 
         pytest.raises(DataSetException, nussl.datasets.WHAM,
                       tmpdir, sample_rate=44100)
+
+def test_dataset_hook_slakh(benchmark_audio):
+    # make a fake slakh directory. 
+    band = {"guitar": [30, 31], "drums": [128]}
+    only_guitar = {"guitar": [30, 31]}
+    empty = {}
+    bad = {"guitar": [30], "guitar_2": [30]}
+    with tempfile.TemporaryDirectory() as tmpdir:
+        track_dir = os.path.join(tmpdir, "Track")
+        os.mkdir(track_dir)
+        # Create Metadata file
+        metadata = "audio_dir: stems"
+        metadata += "\nstems:"
+        metadata += "\n  S00:"
+        metadata += "\n    program_num: 30"
+        metadata += "\n  S01:"
+        metadata += "\n    program_num: 128"
+        metadata_path = os.path.join(track_dir, "metadata.yaml")
+        metadata_file = open(metadata_path, "w")
+        metadata_file.write(metadata)
+        metadata_file.close()
+
+        stems_dir = os.path.join(track_dir, "stems")
+        os.mkdir(stems_dir)
+
+        # Note: These aren't actually guitar and drums
+        guitar_path = os.path.join(stems_dir, "S00.wav")
+        drums_path = os.path.join(stems_dir, "S01.wav")
+        mix_path = os.path.join(track_dir, "mix.wav")
+        # Move them within directory
+        shutil.copy(benchmark_audio['K0140.wav'], guitar_path)
+        shutil.copy(benchmark_audio['K0149.wav'], drums_path)
+        # Make a mix from them.
+        guitar_signal = nussl.AudioSignal(path_to_input_file=guitar_path)
+        drums_signal = nussl.AudioSignal(path_to_input_file=drums_path)
+        guitar_signal.truncate_seconds(2)
+        drums_signal.truncate_seconds(2)
+        mix_signal = guitar_signal + drums_signal
+
+        mix_signal.write_audio_to_file(mix_path)
+        drums_signal.write_audio_to_file(drums_path)
+        guitar_signal.write_audio_to_file(guitar_path)
+
+        # now that our fake slakh has been created, lets try some mixing
+        band_slakh = nussl.datasets.Slakh(tmpdir, band)
+        assert len(band_slakh) == 1
+        data = band_slakh[0]
+        _mix_signal, _sources = data["mix"], data["sources"]
+        assert np.allclose(mix_signal.audio_data, _mix_signal.audio_data)
+        assert len(_sources) == 2
+        assert np.allclose(_sources["drums"].audio_data, drums_signal.audio_data)
+        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data)
+
+        guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar)
+        data = guitar_slakh[0]
+        _guitar_signal, _sources = data["mix"], data["sources"]
+        assert len(_sources) == 1
+        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data)
+        assert np.allclose(_guitar_signal.audio_data, guitar_signal.audio_data)
+
+        empty_slakh = nussl.datasets.Slakh(tmpdir, empty)
+        data = empty_slakh[0]
+        _empty_signal, _sources = data["mix"], data["sources"]
+        assert np.allclose(_empty_signal.audio_data, 
+            np.zeros_like(_guitar_signal.audio_data))
+        assert len(_sources) == 0
+
+        with pytest.raises(ValueError):
+            bad_slakh = nussl.datasets.Slakh(tmpdir, bad)
+
 
 def test_dataset_hook_fuss(scaper_folder):
     pytest.raises(DataSetException, nussl.datasets.FUSS, 'folder', 

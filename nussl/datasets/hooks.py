@@ -5,6 +5,7 @@ These data set "hooks" subclass BaseDataset and by default return AudioSignal ob
 labeled dictionaries for ease of use. Transforms can be applied to these datasets for use
 in machine learning pipelines.
 """
+import collections
 import os
 import yaml
 import numpy as np
@@ -542,8 +543,9 @@ class WHAM(MixSourceFolder):
 class Slakh(BaseDataset):
     """
     TODO: Clean up this docs
+    TODO: Midi
 
-    The Slakh hook expects two arguments:
+    The Slakh hook expects four arguments:
 
     folder (str): Filepath to the dataset. We expect the following directory structure:
 
@@ -573,15 +575,13 @@ class Slakh(BaseDataset):
     }
 
     program_key (str): Key indictating midi number of an instrument. By defauly "program_num"
+    midi (bool): If True, return midi sources. Default False
 
     For mappings between midi numbers and instrument types, please see:
     https://github.com/ethman/slakh-utils/blob/master/midi_inst_values/general_midi_inst_0based.txt
     """
-    def __init__(self, folder, recipe, program_key="program_num", transform=None, sample_rate=None, stft_params=None,
+    def __init__(self, folder, recipe, program_key="program_num", midi=False, transform=None, sample_rate=None, stft_params=None,
                  num_channels=None, strict_sample_rate=True, cache_populated=False):
-        super().__init__(folder, transform, sample_rate, stft_params, num_channels,
-            strict_sample_rate, cache_populated)
-        self.tracks = [os.path.join(folder, f) for f in os.listdir(folder)]
         self.sources = recipe.keys()
         self.recipe = {}
         for key, l in recipe.items():
@@ -590,56 +590,49 @@ class Slakh(BaseDataset):
                     raise ValueError(f"MIDI program number {val} found in multiple source types!")
                 self.recipe[val] = key
         self.program_key = program_key
-        
-    def __len__(self):
-        return self.tracks
+        super().__init__(folder, transform, sample_rate, stft_params, num_channels,
+            strict_sample_rate, cache_populated)
 
-    def __getitem__(self, i):
-        srcs_dir = self.tracks[i]
+    def get_items(self, folder):
+        return [os.path.join(folder, f) for f in os.listdir(folder)]
 
-        ## Get track, with submix
-        src_metadata = yaml.load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'))
-        # submix_dir = os.path.join(srcs_dir, Slakh._file_ready_string(self.submix_name))
-        # os.makedirs(submix_dir, exist_ok=True)
-
-        mix_wav = self._load_audio_file(os.path.join(srcs_dir, 'mix.wav'))
-
-        # submixes_dict = {_file_ready_string(k): [] for k in self.submix_recipes.keys()}
-        # submixes_dict[self.RESIDUALS_KEY] = []
-
+    def process_item(self, srcs_dir):
         # Use the file's metadata and the submix recipe to gather all the
         # sources together.
-
+        src_metadata = yaml.load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'))
+        audio_dir = src_metadata["audio_dir"]
         source_list = {}
-        for s in os.listdir(os.path.join(srcs_dir, 'stems')):
-            src_path = os.path.join(srcs_dir, 'stems', s)
+        for source in self.sources:
+            source_list[source] = []
+        for s in os.listdir(os.path.join(srcs_dir, audio_dir)):
+            src_path = os.path.join(srcs_dir, audio_dir, s)
 
             # Figure out which submix this source belongs to
             src_id = os.path.splitext(s)[0]
-            midi_num = src_metadata[src_id][self.program_key]
+            midi_num = src_metadata['stems'][src_id][self.program_key]
             key = self.recipe.get(midi_num, None)
 
-            if key is None:
-                continue
+            if key:
+                src_wav = self._load_audio_file(src_path)
+                source_list[key].append(src_wav)
 
-            src_wav = self._load_audio_file(src_path)
-            
-            source_list[key] = source_list.get(key, []).append(src_wav)
-
-        sources = {}
-        # Sum all of the sources in each submix and ready the info for the feature reader.
-        for src_name, src_data in source_list.items():
-
-            # if there's no data for this submix, write a file of 0's
+        mix_wav = self._load_audio_file(os.path.join(srcs_dir, 'mix.wav'))
+        sources = collections.OrderedDict()
+        # Sum all of the sources in each submix
+        for src_name in sorted(source_list.keys()):
+            src_data = source_list[src_name]
+            # if there's no data for this submix, make an array of 0's
             if len(src_data) == 0:
-                submix = self._load_audio_from_array(np.zeros((1, mix_wav.signal_length)))
+                submix = self._load_audio_from_array(np.zeros_like(mix_wav.audio_data))
             else:
                 # The files should already be normalized in the mix,
                 # so no need to remix/renormalize them here.
                 submix = sum(src_data)
             sources[src_name] = submix
-        
-        mix = sum(sources.values())
+        if sources:
+            mix = sum(sources.values())
+        else:
+            mix = self._load_audio_from_array(np.zeros_like(mix_wav.audio_data))
         return {
             "mix": mix,
             "sources": sources
