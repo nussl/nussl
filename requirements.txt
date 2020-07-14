@@ -19,3 +19,4 @@ ffmpeg-python
 importlib_resources
 pyloudnorm
 sox==1.4.0b0
+pretty_midi

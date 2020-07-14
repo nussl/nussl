@@ -9,6 +9,7 @@ import collections
 import os
 import yaml
 import numpy as np
+import pretty_midi
 
 from .. import musdb
 import jams
@@ -577,7 +578,8 @@ class Slakh(BaseDataset):
         program_key (str): Key indictating midi number of an instrument. By default "program_num"
         midi (bool): If True, return midi sources. Default False
     """
-    def __init__(self, folder, recipe, program_key="program_num", midi=False, transform=None, sample_rate=None, stft_params=None,
+    def __init__(self, folder, recipe, program_key="program_num", max_tracks_per_src=2,
+                midi=False, transform=None, sample_rate=None, stft_params=None,
                  num_channels=None, strict_sample_rate=True, cache_populated=False):
         self.sources = recipe.keys()
         self.recipe = {}
@@ -587,6 +589,8 @@ class Slakh(BaseDataset):
                     raise ValueError(f"MIDI program number {val} found in multiple source types!")
                 self.recipe[val] = key
         self.program_key = program_key
+        self.midi = midi
+        self.max_tracks_per_src = max_tracks_per_src
         super().__init__(folder, transform, sample_rate, stft_params, num_channels,
             strict_sample_rate, cache_populated)
 
@@ -598,19 +602,33 @@ class Slakh(BaseDataset):
         # sources together.
         src_metadata = yaml.load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'))
         audio_dir = src_metadata["audio_dir"]
+        midi_dir = src_metadata["midi_dir"]
         source_list = {}
+        midi_sources = {}
         for source in self.sources:
             source_list[source] = []
-        for s in os.listdir(os.path.join(srcs_dir, audio_dir)):
-            src_path = os.path.join(srcs_dir, audio_dir, s)
+            midi_sources[source] = []
+        if self.midi:
+            midi_mix = pretty_midi.PrettyMIDI(os.path.join(srcs_dir, "all_src.mid"))
+        else:
+            midi_mix = None
 
+        # Choose tracks for source at random. 
+        for s in sorted(os.listdir(os.path.join(srcs_dir, audio_dir)),
+                 key=lambda x: np.random.rand()):
+            
             # Figure out which submix this source belongs to
             src_id = os.path.splitext(s)[0]
             midi_num = src_metadata['stems'][src_id][self.program_key]
             key = self.recipe.get(midi_num, None)
 
-            if key:
-                src_wav = self._load_audio_file(src_path)
+            if key and len(source_list[key]) < self.max_tracks_per_src:
+                wav_path = os.path.join(srcs_dir, audio_dir, s)
+                src_wav = self._load_audio_file(wav_path)
+                if self.midi:
+                    midi_path = os.path.join(srcs_dir, midi_dir, src_id + ".mid")
+                    src_midi = pretty_midi.PrettyMIDI(midi_path)
+                    midi_sources[key].append(src_midi)
                 source_list[key].append(src_wav)
 
         mix_wav = self._load_audio_file(os.path.join(srcs_dir, 'mix.wav'))
@@ -619,18 +637,19 @@ class Slakh(BaseDataset):
         for src_name in sorted(source_list.keys()):
             src_data = source_list[src_name]
             # if there's no data for this submix, make an array of 0's
-            if len(src_data) == 0:
-                submix = self._load_audio_from_array(np.zeros_like(mix_wav.audio_data))
-            else:
-                # The files should already be normalized in the mix,
-                # so no need to remix/renormalize them here.
+            if src_data:
                 submix = sum(src_data)
+            else:
+                submix = self._load_audio_from_array(np.zeros_like(mix_wav.audio_data))
             sources[src_name] = submix
         if sources:
             mix = sum(sources.values())
         else:
             mix = self._load_audio_from_array(np.zeros_like(mix_wav.audio_data))
-        return {
+        return_dict = {
             "mix": mix,
-            "sources": sources
+            "sources": sources,
+            "midi_mix": midi_mix,
+            "midi_sources": midi_sources
         }
+        return return_dict

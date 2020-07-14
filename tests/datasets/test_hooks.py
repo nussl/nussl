@@ -1,5 +1,6 @@
 import pytest
 import nussl
+from pretty_midi import PrettyMIDI, Instrument, Note
 from nussl.core import constants
 import os
 import numpy as np
@@ -138,7 +139,7 @@ def test_dataset_hook_wham(benchmark_audio):
 
 def test_dataset_hook_slakh(benchmark_audio):
     # make a fake slakh directory. 
-    band = {"guitar": [30, 31], "drums": [128]}
+    band = {"guitar": [30, 31], "drums": [127]}
     only_guitar = {"guitar": [30, 31]}
     empty = {}
     bad = {"guitar": [30], "guitar_2": [30]}
@@ -147,23 +148,43 @@ def test_dataset_hook_slakh(benchmark_audio):
         os.mkdir(track_dir)
         # Create Metadata file
         metadata = "audio_dir: stems"
+        metadata += "\nmidi_dir: MIDI"
         metadata += "\nstems:"
         metadata += "\n  S00:"
         metadata += "\n    program_num: 30"
         metadata += "\n  S01:"
-        metadata += "\n    program_num: 128"
+        metadata += "\n    program_num: 127"
         metadata_path = os.path.join(track_dir, "metadata.yaml")
         metadata_file = open(metadata_path, "w")
         metadata_file.write(metadata)
         metadata_file.close()
 
         stems_dir = os.path.join(track_dir, "stems")
+        midi_dir = os.path.join(track_dir, "MIDI")
         os.mkdir(stems_dir)
-
+        os.mkdir(midi_dir)
+    
         # Note: These aren't actually guitar and drums
         guitar_path = os.path.join(stems_dir, "S00.wav")
         drums_path = os.path.join(stems_dir, "S01.wav")
         mix_path = os.path.join(track_dir, "mix.wav")
+
+        # making midi objects
+        midi_0 = PrettyMIDI()
+        midi_1 = PrettyMIDI()
+        guitar = Instrument(30, name="guitar")
+        guitar.notes = [Note(70, 59, 0, 1)]
+        drum = Instrument(127, is_drum=True, name="drum")
+        drum.notes = [Note(40, 30, 0, 1)]
+        midi_0.instruments.append(guitar)
+        midi_1.instruments.append(drum)
+        midi_0.write(os.path.join(midi_dir, "S00.mid"))
+        midi_1.write(os.path.join(midi_dir, "S01.mid"))
+
+        midi_mix = PrettyMIDI()
+        midi_mix.instruments += [guitar, drum]
+        midi_mix.write(os.path.join(track_dir, "all_src.mid"))
+
         # Move them within directory
         shutil.copy(benchmark_audio['K0140.wav'], guitar_path)
         shutil.copy(benchmark_audio['K0149.wav'], drums_path)
@@ -179,7 +200,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         guitar_signal.write_audio_to_file(guitar_path)
 
         # now that our fake slakh has been created, lets try some mixing
-        band_slakh = nussl.datasets.Slakh(tmpdir, band)
+        band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=True)
         assert len(band_slakh) == 1
         data = band_slakh[0]
         _mix_signal, _sources = data["mix"], data["sources"]
@@ -187,6 +208,11 @@ def test_dataset_hook_slakh(benchmark_audio):
         assert len(_sources) == 2
         assert np.allclose(_sources["drums"].audio_data, drums_signal.audio_data)
         assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data)
+        _midi_mix, _midi_sources = data["midi_mix"], data["midi_sources"]
+        assert len(_midi_mix.instruments) == 2
+        assert len(_midi_sources) == 2
+        assert _midi_sources["guitar"][0].instruments[0].program == 30
+        assert _midi_sources["drums"][0].instruments[0].program == 127
 
         guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar)
         data = guitar_slakh[0]
