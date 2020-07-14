@@ -1,16 +1,4 @@
-import numpy as np
-import warnings
-import ffmpeg
-import tempfile
-import sox
-
-from .constants import LEVEL_MIN, LEVEL_MAX
-from .utils import _close_temp_files
-
-
 """
-Usage Notes about effects.py
-
 The effect functions do not augment an AudioSignal object, but rather 
 return a FFmpegFilter or a SoXFilter, which may be called on either a sox.transform.Transformer
 or a python-ffmpeg stream, depending on the specific effect. To apply the effect on an AudioSignal, 
@@ -29,11 +17,17 @@ This line is equivalent to the above snippet
 
 >>> new_signal = audio_signal.tremolo(5, .7).apply_effect()
 
-Please see
-https://nbviewer.jupyter.org/github/abugler/nussl_effects_notebook/blob/master/effects_notebook.ipynb
-for more examples.
-
+See also: the associated data augmentation tutorial.
 """
+
+import numpy as np
+import warnings
+import ffmpeg
+import tempfile
+import sox
+
+from .constants import LEVEL_MIN, LEVEL_MAX
+from .utils import _close_temp_files
 
 class FilterFunction:
     """
@@ -141,8 +135,10 @@ def apply_effects_sox(audio_signal, filters):
     tfm = sox.Transformer()
     for _filter in filters:
         tfm = _filter(tfm)
-    augmented_data = tfm.build_array(input_array=np.transpose(audio_data), 
-        sample_rate_in=audio_signal.sample_rate) 
+    augmented_data = tfm.build_array(
+        input_array=np.transpose(audio_data), 
+        sample_rate_in=audio_signal.sample_rate
+    ) 
     
     augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data))
     augmented_signal.label = audio_signal.label
@@ -155,7 +151,7 @@ def make_arglist_ffmpeg(lst, sep="|"):
     return sep.join([str(s) for s in lst])
 
 
-def time_stretch(factor):
+def time_stretch(factor, **kwargs):
     """
     Returns a SoXFilter, when called on an pysox stream, will multiply the 
     tempo of the audio by factor. A factor greater than one will shorten the signal, 
@@ -174,10 +170,10 @@ def time_stretch(factor):
     if not np.issubdtype(type(factor), np.number) or factor <= 0:
         raise ValueError("stretch_factor must be a positve scalar")
 
-    return SoXFilter("time_stretch", factor=factor)
+    return SoXFilter("time_stretch", factor=factor, **kwargs)
 
 
-def pitch_shift(shift):
+def pitch_shift(shift, **kwargs):
     """
     Returns a SoXFilter, when called on an pysox stream, will increase the pitch 
     of the audio by a number of semitones, denoted in shift. A positive shift will 
@@ -198,7 +194,7 @@ def pitch_shift(shift):
     if not np.issubdtype(type(shift), np.integer):
         raise ValueError("shift must be an integer.")
 
-    return SoXFilter("pitch_shift", n_semitones=shift)
+    return SoXFilter("pitch_shift", n_semitones=shift, **kwargs)
 
 
 def _pass_arg_check(freq, poles, width_type, width):

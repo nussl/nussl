@@ -6,19 +6,21 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.5.0
+#       jupytext_version: 1.5.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
 
-# ###  Data augmentation features with `nussl.core.effects`.
+# Data augmentation
+# =================
 #
-# To create separation models that are more robust, you may want to augment your data with effects, such as vibrato or compression. These effects are added directly onto AudioSignal objects easily. 
+# To create separation models that are more robust, you may want to augment your audio with effects, 
+# such as vibrato or compression. These effects are added directly onto AudioSignal objects easily. 
+# This tutorial shows example code and results of applying effects to AudioSignal objects.
 
 import nussl
-# import nussl.core.effects as effects
 from nussl.datasets.hooks import MUSDB18
 import matplotlib.pyplot as plt
 
@@ -82,15 +84,14 @@ signal_1 = mix.pitch_shift(4).tremolo(5, .6).apply_effects()
 signal_2 = mix.tremolo(5, .6).pitch_shift(4).apply_effects()
 signal_1.effects_applied == signal_2.effects_applied
 
-# # Available effects
-#
 # Now we will list the effects provided in nussl.
 
 # Get the original signal back
 mix_and_sources = musdb.process_item(0)
 mix = mix_and_sources["mix"]
 
-# ### Time stretching
+# Time stretching
+# ---------------
 # `AudioSignal.time_stretch(factor)`
 #
 #
@@ -106,7 +107,8 @@ fast_mix = mix.time_stretch(1.5).apply_effects()
 fast_mix.embed_audio()
 nussl.utils.visualize_spectrogram(fast_mix, y_axis="log")
 
-# ### Pitch Shifting 
+# Pitch shifting
+# ---------------
 #
 # `AudioSignal.pitch_shift(shift)`
 #
@@ -122,7 +124,8 @@ low_mix = mix.pitch_shift(-12).apply_effects()
 low_mix.embed_audio()
 nussl.utils.visualize_spectrogram(low_mix, y_axis="log")
 
-# ### Low pass and high pass
+# Low-pass and high-pass
+# ----------------------
 #
 # `AudioSignal.low_pass(freq, poles=2, width_type="h", width=.707)`
 #
@@ -147,7 +150,8 @@ high_pmix = mix.high_pass(2048, width=100).apply_effects()
 high_pmix.embed_audio()
 nussl.utils.visualize_spectrogram(high_pmix, y_axis="log")
 
-# ### Tremolo and Vibrato
+# Tremolo and Vibrato
+# ---------------
 #
 # `AudioSignal.tremolo(mod_freq, mod_depth)`
 #
@@ -155,17 +159,18 @@ nussl.utils.visualize_spectrogram(high_pmix, y_axis="log")
 #
 # Applys tremolo/vibrato filter on the audio signal, with a modulation frequency of `mod_freq` Hz, and modulation amplitude of `mod_depth`.
 
-# tremolo
+# Tremolo
 trem_mix = mix.tremolo(5, .4).apply_effects()
 trem_mix.embed_audio()
 nussl.utils.visualize_spectrogram(trem_mix, y_axis="log")
 
-# vibrato
+# Vibrato
 vib_mix = mix.vibrato(8, .7).apply_effects()
 vib_mix.embed_audio()
 nussl.utils.visualize_spectrogram(vib_mix, y_axis="log")
 
-# ### Emphasis
+# Emphasis
+# --------
 # ```
 # AudioSignal.emphasis(level_in, level_out, _type='col', mode='production')
 # ```
@@ -189,22 +194,30 @@ col_mix = mix.emphasis(level_in, level_out, _type=_type)
 col_mix.embed_audio()
 nussl.utils.visualize_spectrogram(col_mix, y_axis="log")
 
-# ### Chorus
+# Chorus
+# ------
+#
 # ```
 # AudioSignal.chorus(delays, decays, speeds, depths, in_gain=.4, out_gain=.4)
 # ```
-# Applies a chorus filter to the audio signal. `decays`, `delays`, `speeds`, and `depths` are lists, where `decays[i]`, `delays[i]`, `speeds[i]`, and `depths[i]` denote the decay, delay, speed, and depth for chorus filter `i`. Delays are in milliseconds, while decay, speed, and depths must be between 0 and 1, as they are factors of the original signal. [Citation needed] `in_gain` and `out_gain` denote input and output gain respectively. 
+# Applies a chorus filter to the audio signal. `decays`, `delays`, `speeds`, and `depths` are lists, 
+# where `decays[i]`, `delays[i]`, `speeds[i]`, and `depths[i]` denote the decay, delay, speed, and 
+# depth for chorus filter `i`. Delays are in milliseconds, while decay, speed, and depths must be
+# between 0 and 1, as they are factors of the original signal. `in_gain` and `out_gain` 
+# denote input and output gain respectively. 
 
 ## Apply two chorus filters
-delays = [40, 50]
-decays = [.9, .8]
-speeds = [.9, .4]
-depths = [.4, .2]
+delays = [40]
+decays = [.9]
+speeds = [.9]
+depths = [.4]
 chor_mix = mix.chorus(delays, decays, speeds, depths).apply_effects()
 chor_mix.embed_audio()
 nussl.utils.visualize_spectrogram(chor_mix, y_axis="log")
 
-# ### Phaser
+# Phaser
+# ------
+#
 # ```
 # AudioSignal.phaser(in_gain=.4, out_gain=.74, delay=3, decay=.4, speed=.5, _type="triangular")
 # ```
@@ -222,7 +235,9 @@ phas_mix = mix.phaser(in_gain=in_gain, out_gain=out_gain, delay=delay,
 phas_mix.embed_audio()
 nussl.utils.visualize_spectrogram(phas_mix, y_axis="log")
 
-# ### Flanger
+# Flanger
+# -------
+#
 # ```
 # AudioSignal.flanger(delay=0, depth=2, regen=0, width=71, speed=.5, phase=25, shape="sinusoidal", interp="linear")
 # ```
@@ -250,7 +265,9 @@ flang_mix = mix.flanger(delay=delay,depth=depth, regen=regen, width=width,
 flang_mix.embed_audio()
 nussl.utils.visualize_spectrogram(flang_mix, y_axis="log")
 
-# ### Compressor
+# Compressor
+# ----------
+#
 # ```
 # AudioSignal.compressor(level_in, mode="downward", reduction_ratio=2,
 #                attack=20, release=250, makeup=1, knee=2.8284, link="average",
@@ -278,7 +295,9 @@ compress_mix.embed_audio()
 nussl.utils.visualize_spectrogram(compress_mix, y_axis="log")
 # -
 
-# ### Equalizer
+# Equalizer
+# --------
+#
 # ```
 # AudioSignal.equalizer(bands)
 # ```

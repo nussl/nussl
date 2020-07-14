@@ -1,9 +1,6 @@
 """
 Small collection of utilities for altering and remixing
 AudioSignal objects. 
-
-TODO: add pitch_shift, time_stretch, dynamic_range_compression, and 
-apply_impulse_response
 """
 import copy
 
