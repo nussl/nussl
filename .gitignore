@@ -1,7 +1,7 @@
 *.pyc
-**/.DS_Store
+**/*DS_Store
 .idea/
-*.DS_STORE
+*DS_STORE
 .mypy_cache
 *.swp
 *.wav

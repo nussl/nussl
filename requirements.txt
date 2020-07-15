@@ -1,5 +1,4 @@
 jams
-numba==0.48
 librosa
 matplotlib
 museval
@@ -19,3 +18,4 @@ ffmpeg-python
 importlib_resources
 pyloudnorm
 sox==1.4.0b0
+numba==0.48
