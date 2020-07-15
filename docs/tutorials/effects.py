@@ -1,7 +1,7 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,py
+#     formats: py,ipynb
 #     text_representation:
 #       extension: .py
 #       format_name: light
@@ -35,14 +35,16 @@ nussl.utils.visualize_spectrogram(mix, y_axis="log")
 # applied to an AudioSignal object when `apply_effects` is called. We can add an effect to
 # the effects chain by using an effects hook, such as `time_stretch`.
 
+# + tags=[]
 print(mix.signal_duration)
 mix.time_stretch(0.5)
 print(mix.signal_duration)
+# -
 
 # However, the signal's duration hasn't changed! You will need to call apply_effects to make
 # the changes in the signal's effects chains. 
 
-# +
+# + tags=[]
 new_signal = mix.apply_effects()
 print(new_signal.signal_duration)
 
@@ -53,9 +55,11 @@ print(mix.signal_duration)
 # Using `apply_effects` will clear out the current effects chain. This behavior can be avoided by setting `reset` to False. Applied effects can be found in `effects_applied`:
 #
 
+# + tags=[]
 another_signal = mix.apply_effects()
 print(another_signal.signal_duration)
 print(new_signal.effects_applied)
+# -
 
 # To clear out the current effects chain without applying effect, use `reset_effects_chain`.
 # It will not reverse effects already applied!
@@ -193,14 +197,16 @@ nussl.utils.visualize_spectrogram(col_mix, y_axis="log")
 # ```
 # AudioSignal.chorus(delays, decays, speeds, depths, in_gain=.4, out_gain=.4)
 # ```
-# Applies a chorus filter to the audio signal. `decays`, `delays`, `speeds`, and `depths` are lists, where `decays[i]`, `delays[i]`, `speeds[i]`, and `depths[i]` denote the decay, delay, speed, and depth for chorus filter `i`. Delays are in milliseconds, while decay, speed, and depths must be between 0 and 1, as they are factors of the original signal. [Citation needed] `in_gain` and `out_gain` denote input and output gain respectively. 
+# Applies a chorus filter to the audio signal. `decays`, `delays`, `speeds`, and `depths` are lists, where `decays[i]`, `delays[i]`, `speeds[i]`, and `depths[i]` denote the decay, delay, speed, and depth for chorus filter `i`. Delays are in milliseconds, while decay, speed, and depths must be between 0 and 1, as they are factors of the original signal. `in_gain` and `out_gain` denote input and output gain respectively. 
 
 ## Apply two chorus filters
-delays = [40, 50]
-decays = [.9, .8]
-speeds = [.9, .4]
-depths = [.4, .2]
-chor_mix = mix.chorus(delays, decays, speeds, depths).apply_effects()
+delays = [40, 60]
+decays = [.7, .2]
+speeds = [.9, .8]
+depths = [.8, .6]
+in_gain = 1
+out_gain = 1
+chor_mix = mix.chorus(delays, decays, speeds, depths, in_gain, out_gain).apply_effects()
 chor_mix.embed_audio()
 nussl.utils.visualize_spectrogram(chor_mix, y_axis="log")
 
