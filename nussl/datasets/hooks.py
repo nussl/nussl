@@ -591,22 +591,37 @@ class Slakh(BaseDataset):
                 self.recipe[val] = key
         self.program_key = program_key
         self.midi = midi
-        self.max_tracks_per_src = max_tracks_per_src
-        self.min_acceptable_instruments = 2
         self.make_submix = make_submix
+
+        # min_acceptable_instruments and max_tracks_per_src should be positive
+        if max_tracks_per_src is not None and max_tracks_per_src <= 0:
+            raise ValueError("`max_tracks_per_src` should be positive!")
+        if min_acceptable_instruments <= 0:
+            raise ValueError("`min_acceptable_instruments` should be positive!")
+
+        self.max_tracks_per_src = max_tracks_per_src
+        self.min_acceptable_instruments = min_acceptable_instruments
         
         super().__init__(folder, transform, sample_rate, stft_params, num_channels,
             strict_sample_rate, cache_populated)
+
+        # TODO: If no mixes are found with the current setup, raise an error
+        # I can't think of a scenario where someone would just want an empty slakh 
+        # dataset. Run this by Prem and Ethan
+        if not self.items:
+            raise DataSetException(f"No Slakh tracks were found with the recipe: {recipe} "
+         + f"and minimum acceptable instruments of {min_acceptable_instruments}.")
 
     def get_items(self, folder):
         # Remove tracks with less than `self.min_acceptable_instruments`
         def num_instruments_acceptable(path):
             path = os.path.join(folder, path)
-            metadata = yaml.load(open(os.path.join(path, 'metadata.yaml'), 'r'))
+            metadata = yaml.safe_load(open(os.path.join(path, 'metadata.yaml'), 'r'))
             sources = set()
             for stem, data in metadata["stems"].items():
-                sources.add(self.recipe[data[self.program_key]])
-            return sources >= self.min_acceptable_instruments
+                if data[self.program_key] in self.recipe.keys():
+                    sources.add(self.recipe[data[self.program_key]])
+            return len(sources) >= self.min_acceptable_instruments
 
         trackpaths = [os.path.join(folder, f) for f in os.listdir(folder)
             if num_instruments_acceptable(f)]
@@ -623,7 +638,7 @@ class Slakh(BaseDataset):
     def process_item(self, srcs_dir):
         # Use the file's metadata and the submix recipe to gather all the
         # sources together.
-        src_metadata = yaml.load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'))
+        src_metadata = yaml.safe_load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'))
         audio_dir = src_metadata["audio_dir"]
         midi_dir = src_metadata["midi_dir"]
         sources = {}
@@ -652,8 +667,8 @@ class Slakh(BaseDataset):
 
             # If the program number is associated with a source and the source
             # is not at the maximum number of tracks...
-            if key and (len(sources[key]) < self.max_tracks_per_src or 
-                       self.max_tracks_per_src is None):
+            if key and (self.max_tracks_per_src is None or
+                    len(sources[key]) < self.max_tracks_per_src):
                 # Load the wav file 
                 wav_path = os.path.join(srcs_dir, audio_dir, s)
                 src_wav = self._load_audio_file(wav_path)
@@ -664,13 +679,14 @@ class Slakh(BaseDataset):
                     midi_path = os.path.join(srcs_dir, midi_dir, src_id + ".mid")
                     src_midi = pretty_midi.PrettyMIDI(midi_path)
                     midi_sources[key].append(src_midi)
-                    midi_mix += src_midi.instruments
+                    midi_mix.instruments += src_midi.instruments
                 sources[key].append(src_wav)
         
         if self.make_submix:
             self.submix(sources, num_frames)
-
-        mix = sum([sum(signals) for signals in sources.values if signals])
+            mix = sum([signal for signal in sources.values()])
+        else:
+            mix = sum([sum(signals) for signals in sources.values() if signals])
 
         return_dict = {
             "mix": mix,
