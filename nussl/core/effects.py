@@ -26,7 +26,7 @@ import ffmpeg
 import tempfile
 try:
     import soxbindings as sox
-except ImportError:
+except Exception:
     import sox
 
 from .constants import LEVEL_MIN, LEVEL_MAX
