@@ -24,7 +24,10 @@ import numpy as np
 import warnings
 import ffmpeg
 import tempfile
-import soxbindings as sox
+try:
+    import soxbindings as sox
+except ImportError:
+    import sox
 
 from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
