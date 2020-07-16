@@ -32,6 +32,7 @@ except Exception:
 from .constants import LEVEL_MIN, LEVEL_MAX
 from .utils import _close_temp_files
 
+
 class FilterFunction:
     """
     The FilterFunction class is an abstract class for functions that take 
@@ -106,9 +107,10 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
          .run())
 
         augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
+
     augmented_signal.label = audio_signal.label
-    augmented_signal.effects_applied = (audio_signal.effects_applied 
-        + [str(f) for f in filters])
+    augmented_signal.effects_applied = (audio_signal.effects_applied
+                                        + [str(f) for f in filters])
     return augmented_signal
 
 
@@ -154,8 +156,8 @@ def apply_effects_sox(audio_signal, filters):
     
     augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data))
     augmented_signal.label = audio_signal.label
-    augmented_signal.effects_applied = (audio_signal.effects_applied 
-        + [str(f) for f in filters])
+    augmented_signal.effects_applied = (audio_signal.effects_applied
+                                        + [str(f) for f in filters])
     return augmented_signal
 
 
@@ -367,11 +369,12 @@ def chorus(delays, decays, speeds, depths,
     depths = make_arglist_ffmpeg(depths)
 
     return FFmpegFilter("chorus", in_gain=in_gain,
-                        out_gain=out_gain, delays=delays, speeds=speeds, decays=decays, depths=depths)
+                        out_gain=out_gain, delays=delays,
+                        speeds=speeds, decays=decays, depths=depths)
 
 
 def phaser(in_gain=.4, out_gain=.74, delay=3,
-           decay=.4, speed=.5, _type="triangular"):
+           decay=.4, speed=.5, type_="triangular"):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a phaser filter to the audio signal
@@ -387,7 +390,7 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
         delay (float): Delay of chorus filter in ms. (Time between original signal and delayed)
         decay (float): Decay of copied signal. Must be between 0 and 1.
         speed (float): Modulation speed of the delayed filter. 
-        _type (str): modulation type. Either Triangular or Sinusoidal
+        type_ (str): modulation type. Either Triangular or Sinusoidal
             "triangular" or "t" for Triangular
             "sinusoidal" of "s" for sinusoidal
     Returns:
@@ -401,16 +404,16 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
         raise ValueError("delay must be between 0 and 1.")
 
     allowed_mod_types = {"triangular", "sinusoidal", "t", "s"}
-    if _type not in allowed_mod_types:
+    if type_ not in allowed_mod_types:
         raise ValueError(f"_type must be one of the following:\n{allowed_mod_types}")
 
     # type is reserved word in python, kwarg dict is necessary
     type_kwarg = {
-        "type": _type
+        "type": type_
     }
 
-    return FFmpegFilter("aphaser", in_gain=in_gain,
-                        out_gain=out_gain, delay=delay, speed=speed, decay=decay, **type_kwarg)
+    return FFmpegFilter("aphaser", in_gain=in_gain, out_gain=out_gain,
+                        delay=delay, speed=speed, decay=decay, **type_kwarg)
 
 
 def _flanger_argcheck(delay, depth, regen, width,
@@ -474,12 +477,11 @@ def flanger(delay=0, depth=2, regen=0, width=71,
 
     _flanger_argcheck(delay, depth, regen, width, speed, phase, shape, interp)
 
-    return FFmpegFilter("flanger", delay=delay,
-                        depth=depth, regen=regen, width=width, speed=speed, phase=phase, shape=shape,
-                        interp=interp)
+    return FFmpegFilter("flanger", delay=delay, depth=depth, regen=regen, width=width,
+                        speed=speed, phase=phase, shape=shape, interp=interp)
 
 
-def emphasis(level_in, level_out, _type="col", mode='production'):
+def emphasis(level_in, level_out, type_="col", mode='production'):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a emphasis filter to the audio signal. An emphasis filter boosts frequency ranges 
@@ -493,7 +495,7 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
     Args:
         level_in (float): Input gain
         level_out (float): Output gain
-        _type (str): physical medium type to convert/deconvert from.
+        type_ (str): physical medium type to convert/deconvert from.
             Must be one of the following: 
             - "col": Columbia 
             - "emi": EMI
@@ -516,17 +518,18 @@ def emphasis(level_in, level_out, _type="col", mode='production'):
 
     allowed_types = {"col", "emi", "bsi", "riaa", "cd",
                      "50fm", "75fm", "50kf", "75kf"}
-    if _type not in allowed_types:
+    if type_ not in allowed_types:
         raise ValueError(f"Given emphasis filter type is not supported by ffmpeg")
     if mode != "production" and mode != "reproduction":
         raise ValueError(f"mode must be production or reproduction")
 
     # type is a reserved word in python, so kwarg dict is necessary
     type_kwarg = {
-        'type': _type
+        'type': type_
     }
 
-    return FFmpegFilter("aemphasis", level_in=level_in, level_out=level_out, mode=mode, **type_kwarg)
+    return FFmpegFilter("aemphasis", level_in=level_in, level_out=level_out,
+                        mode=mode, **type_kwarg)
 
 
 def _compressor_argcheck(level_in, mode, reduction_ratio,
@@ -545,7 +548,6 @@ def _compressor_argcheck(level_in, mode, reduction_ratio,
     if detection not in allowed_detection_types:
         error_text += f"detection must be one of the following:\n{allowed_detection_types}.\n"
         error_text += f"detection provided is {detection}.\n"
-    allowed_detection_types = {"peak", "rms"}
     if not LEVEL_MIN <= level_in <= LEVEL_MAX:
         error_text += f"level_in must be in the range {LEVEL_MIN} <= phase <= {LEVEL_MAX}\n"
         error_text += f"level_in provided is {level_in}.\n"
@@ -573,7 +575,6 @@ def _compressor_argcheck(level_in, mode, reduction_ratio,
     if error_text:
         raise ValueError(error_text)
     
-
 
 def compressor(level_in, mode="downward", reduction_ratio=2,
                attack=20, release=250, makeup=1, knee=2.8284, link="average",
@@ -626,7 +627,8 @@ def equalizer(bands):
     This is a FFmpeg effect. Please see
     https://ffmpeg.org/ffmpeg-all.html#anequalizer
     Args:
-        bands (list of dict): A list of dictionaries, for each band. The required values for each dictionary:
+        bands (list of dict): A list of dictionaries, for each band. The required values
+            for each dictionary:
             'chn' (list of int): List of channel numbers to apply filter. Must be list of ints.
             'f' (float): central freqency of band
             'w' (float): Width of the band in Hz
