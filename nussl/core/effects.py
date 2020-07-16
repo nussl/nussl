@@ -45,7 +45,7 @@ class FilterFunction:
 
     def __str__(self):
         params = ",".join(f"{p}={v}" for p, v in self.params.items())
-        return f"{self.filter} with params {params}"
+        return f"{self.filter} (params: {params})"
 
     def __call__(self, stream):
         return self.func(stream)

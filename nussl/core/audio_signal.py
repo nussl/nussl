@@ -201,8 +201,7 @@ class AudioSignal(object):
         self.stft_params = stft_params
 
         # Effects
-        self._ffmpeg_effects_chain = []
-        self._sox_effects_chain = []
+        self._effects_chain = []
         self.effects_applied = []
 
     def __str__(self):
@@ -1656,7 +1655,7 @@ class AudioSignal(object):
     #          Effect Hooks          #
     ##################################
 
-    def apply_effects(self, reset=True, overwrite=False):
+    def apply_effects(self, reset=True, overwrite=False, user_order=True):
         """
         Effects are stored in an "effects chain", which refers to a queue of effects that will be 
         applied to an AudioSignal object when `apply_effects` is called. We can add an effect to
@@ -1706,12 +1705,15 @@ class AudioSignal(object):
         >>> audio_signal.effects_applied
         ["tremolo", "highpass"]
 
-        FFmpeg effects will be applied AFTER SoX effects, irregardless of the order the hooks 
-        are applied. The effects `time_stretch` and `pitch_shift` are SoX effects. All others 
-        are FFmpeg effects. For example, the two statements will result in the same altered signal:
+        If user_order is false, FFmpeg effects will be applied AFTER SoX effects, irregardless of 
+        the order the hooks are applied. The effects `time_stretch` and `pitch_shift` are SoX effects. 
+        All others are FFmpeg effects. This may be done for speed, as applying all FFmpeg effects without
+        interuption will be faster than being interrupted with a SoX effect. 
+        
+        For example, the two statements will result in the same altered signal:
 
-        >>> signal_1 = audio_signal.pitch_shift(4).tremolo(5, .6).apply_effects()
-        >>> signal_2 = audio_signal.tremolo(5, .6).pitch_shift(4).apply_effects()
+        >>> signal_1 = audio_signal.pitch_shift(4).tremolo(5, .6).apply_effects(user_order=False)
+        >>> signal_2 = audio_signal.tremolo(5, .6).pitch_shift(4).apply_effects(user_order=False)
         >>> signal_1.effects_applied == signal_2.effects_applied
         True
 
@@ -1720,16 +1722,18 @@ class AudioSignal(object):
                 Default=True
             overwrite (bool): If True, overwrites existing audio_data in AudioSignal. Default=False
                 Also clears out stft_data.
+            user_order (bool): If True, applied effects in the user provided order. If False, applies SoX
+                effects first, then FFmpeg effects. 
         Returns:
             self or new_signal (AudioSignal): If overwrite=True, then returns initially AudioSignal 
             with edited audio_data. Otherwise, returns a new AudioSignal new_signal.
         """
 
-        new_signal = self
-        if self._sox_effects_chain:
-            new_signal = effects.apply_effects_sox(new_signal, self._sox_effects_chain)
-        if self._ffmpeg_effects_chain:
-            new_signal = effects.apply_effects_ffmpeg(new_signal, self._ffmpeg_effects_chain)
+        
+        if user_order:
+            new_signal = self._apply_user_ordered_effects()
+        else:
+            new_signal = self._apply_sox_ffmpeg_ordered_effects()
 
         if reset:
             self.reset_effects_chain()
@@ -1739,6 +1743,40 @@ class AudioSignal(object):
             self.stft_data = None
             return self
 
+        return new_signal
+    
+    def _apply_user_ordered_effects(self):
+        new_signal = self
+        next_chain = []
+        idx = 0
+        while idx < len(self._effects_chain) or next_chain:
+            if idx < len(self._effects_chain) and (not next_chain 
+                or type(next_chain[-1]) == type(self._effects_chain[idx])):
+                next_chain.append(self._effects_chain[idx])
+                idx += 1
+            else:
+                if isinstance(next_chain[0], effects.SoXFilter):
+                    new_signal = effects.apply_effects_sox(new_signal, next_chain)
+                elif isinstance(next_chain[0], effects.FFmpegFilter):
+                    new_signal = effects.apply_effects_ffmpeg(new_signal, next_chain)
+                next_chain = []
+        return new_signal
+    
+    def _apply_sox_ffmpeg_ordered_effects(self):
+        new_signal = self
+        sox_effects_chain = []
+        ffmpeg_effects_chain = []
+        for f in self._effects_chain:
+            if isinstance(f, effects.FFmpegFilter):
+                ffmpeg_effects_chain.append(f)
+            elif isinstance(f, effects.SoXFilter):
+                sox_effects_chain.append(f)
+
+        if sox_effects_chain:
+            new_signal = effects.apply_effects_sox(new_signal, sox_effects_chain)
+        if ffmpeg_effects_chain:
+            new_signal = effects.apply_effects_ffmpeg(new_signal, ffmpeg_effects_chain)
+        
         return new_signal
         
     def make_effect(self, effect, **kwargs):
@@ -1773,8 +1811,7 @@ class AudioSignal(object):
 
         This will not remove effects that have already been applied!
         """
-        self._ffmpeg_effects_chain = []
-        self._sox_effects_chain = []
+        self._effects_chain = []
         return self
 
     def time_stretch(self, factor):
@@ -1794,7 +1831,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._sox_effects_chain.append(effects.time_stretch(factor))
+        self._effects_chain.append(effects.time_stretch(factor))
         return self
     
     def pitch_shift(self, shift):
@@ -1814,7 +1851,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._sox_effects_chain.append(effects.pitch_shift(shift))
+        self._effects_chain.append(effects.pitch_shift(shift))
         return self
     
     def low_pass(self, freq, poles=2, width_type="h", width=.707):
@@ -1840,7 +1877,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.low_pass(freq, poles=poles, 
+        self._effects_chain.append(effects.low_pass(freq, poles=poles, 
             width_type=width_type, width=width))
         return self
     
@@ -1867,7 +1904,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.high_pass(freq, poles=poles, 
+        self._effects_chain.append(effects.high_pass(freq, poles=poles, 
             width_type=width_type, width=width))
         return self
 
@@ -1887,7 +1924,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.tremolo(mod_freq, mod_depth))
+        self._effects_chain.append(effects.tremolo(mod_freq, mod_depth))
         return self
     
     def vibrato(self, mod_freq, mod_depth):
@@ -1906,7 +1943,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.vibrato(mod_freq, mod_depth))
+        self._effects_chain.append(effects.vibrato(mod_freq, mod_depth))
         return self
     
     def chorus(self, delays, decays, speeds, depths, in_gain=.4, out_gain=.4):
@@ -1929,7 +1966,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.chorus(delays, decays, 
+        self._effects_chain.append(effects.chorus(delays, decays, 
             speeds, depths, in_gain=.4, out_gain=.4))
         return self
         
@@ -1956,7 +1993,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.phaser(in_gain=.4, out_gain=.74, delay=3, 
+        self._effects_chain.append(effects.phaser(in_gain=.4, out_gain=.74, delay=3, 
             decay=.4, speed=.5, _type="triangular"))
         return self
     
@@ -1984,7 +2021,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.flanger(delay=0, depth=2, regen=0, width=71, 
+        self._effects_chain.append(effects.flanger(delay=0, depth=2, regen=0, width=71, 
             speed=.5, phase=25, shape="sinusoidal", interp="linear"))
         return self
     
@@ -2023,7 +2060,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.emphasis(level_in, 
+        self._effects_chain.append(effects.emphasis(level_in, 
             level_out, _type="col", mode='production'))
         return self
     
@@ -2060,7 +2097,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.compressor(level_in, mode="downward", reduction_ratio=2,
+        self._effects_chain.append(effects.compressor(level_in, mode="downward", reduction_ratio=2,
             attack=20, release=250, makeup=1, knee=2.8284, link="average",
             detection="rms", mix=1, threshold=.125))
         return self
@@ -2088,7 +2125,7 @@ class AudioSignal(object):
         Returns:
             self: Inital AudioSignal with updated effect chains
         """
-        self._ffmpeg_effects_chain.append(effects.equalizer(bands))
+        self._effects_chain.append(effects.equalizer(bands))
         return self
 
 

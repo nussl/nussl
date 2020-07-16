@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.5.1
+#       jupytext_version: 1.5.0
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -60,10 +60,11 @@ print(mix.signal_duration)
 # + tags=[]
 another_signal = mix.apply_effects()
 print(another_signal.signal_duration)
+
 print(new_signal.effects_applied)
 # -
 
-# To clear out the current effects chain without applying effect, use `reset_effects_chain`.
+# To clear out the current effects chain without applying effects, use `reset_effects_chain`.
 # It will not reverse effects already applied!
 #
 # If `apply_effects` is called with empty effects chain, then it returns itself.
@@ -80,12 +81,11 @@ mix.tremolo(5, .6).high_pass(12000)
 mix.apply_effects(overwrite=True)
 mix.effects_applied
 
-# FFmpeg effects will be applied AFTER SoX effects, irregardless of the order the hooks 
-# are applied. The effects `time_stretch` and `pitch_shift` are SoX effects. All others 
-# are FFmpeg effects. For example, the two statements will result in the same altered signal:
+# If `user_order=False`, FFmpeg effects will be applied AFTER SoX effects, irregardless of the order the hooks 
+# are applied. One may want to disable user order for a significant speed up when applying multiple effects. The effects `time_stretch` and `pitch_shift` are SoX effects. All others are FFmpeg effects. For example, the two statements will result in the same altered signal:
 
-signal_1 = mix.pitch_shift(4).tremolo(5, .6).apply_effects()
-signal_2 = mix.tremolo(5, .6).pitch_shift(4).apply_effects()
+signal_1 = mix.pitch_shift(4).tremolo(5, .6).apply_effects(user_order=False)
+signal_2 = mix.tremolo(5, .6).pitch_shift(4).apply_effects(user_order=False)
 signal_1.effects_applied == signal_2.effects_applied
 
 # Now we will list the effects provided in nussl.
@@ -164,12 +164,12 @@ nussl.utils.visualize_spectrogram(high_pmix, y_axis="log")
 # Applys tremolo/vibrato filter on the audio signal, with a modulation frequency of `mod_freq` Hz, and modulation amplitude of `mod_depth`.
 
 # Tremolo
-trem_mix = mix.tremolo(5, .4).apply_effects()
+trem_mix = mix.tremolo(4, .4).apply_effects()
 trem_mix.embed_audio()
 nussl.utils.visualize_spectrogram(trem_mix, y_axis="log")
 
 # Vibrato
-vib_mix = mix.vibrato(8, .7).apply_effects()
+vib_mix = mix.vibrato(4, .4).apply_effects()
 vib_mix.embed_audio()
 nussl.utils.visualize_spectrogram(vib_mix, y_axis="log")
 
@@ -208,7 +208,7 @@ nussl.utils.visualize_spectrogram(col_mix, y_axis="log")
 
 ## Apply two chorus filters
 delays = [40, 60]
-decays = [.7, .2]
+decays = [.4, .2]
 speeds = [.9, .8]
 depths = [.8, .6]
 in_gain = 1

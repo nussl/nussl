@@ -364,18 +364,22 @@ def test_hooks(mix_and_sources, check_against_regression_data):
             }])
     )
 
-    assert len(signal._ffmpeg_effects_chain) == 10
-    assert len(signal._sox_effects_chain) == 2
+    assert len(signal._effects_chain) == 12
 
-    augmented_signal = signal.apply_effects(reset=False)
+    augmented_signal = signal.apply_effects(reset=False, user_order=False)
+    assert len(signal._effects_chain) == 12
+    assert len(augmented_signal.effects_applied) == 12
+    assert len(augmented_signal._effects_chain) == 0
 
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
-    augmented_signal.time_stretch(.7).apply_effects(overwrite=True)
+    augmented_signal.time_stretch(.7).apply_effects(overwrite=True, user_order=False)
 
-    assert len(augmented_signal._ffmpeg_effects_chain) == 0
-    assert len(augmented_signal._sox_effects_chain) == 0
+    assert len(augmented_signal._effects_chain) == 0
+    assert len(augmented_signal.effects_applied) == 25
+
+    assert str(augmented_signal.effects_applied[-1]) == "time_stretch (params: factor=0.7)"
 
     equal_signal = augmented_signal.apply_effects()
     assert equal_signal == augmented_signal
@@ -406,7 +410,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
             }])
     )
     signal.apply_effects(reset=False)
-    augmented_signal = signal.apply_effects(reset=False, overwrite=True)
+    augmented_signal = signal.apply_effects(reset=False, overwrite=True, user_order=False)
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # This should result in the same signal in test_hooks
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
@@ -414,3 +418,15 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
     with pytest.raises(AudioSignalException):
         signal.make_effect("fail")
 
+
+def test_order(mix_and_sources):
+    mix, _ = mix_and_sources
+    mix.reset_effects_chain().time_stretch(1.5).tremolo(.3,.4).pitch_shift(5).vibrato(.3, .4)
+    ## User order
+    signal0 = mix.apply_effects(reset=False)
+
+    ## SoX-FFmpeg Order
+    signal1 = mix.apply_effects(reset=False, user_order=False)
+
+    assert signal0.effects_applied != signal1.effects_applied
+    assert len(signal0.effects_applied) == len(signal1.effects_applied)
