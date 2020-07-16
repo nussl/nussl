@@ -35,8 +35,17 @@ from .utils import _close_temp_files
 class FilterFunction:
     """
     The FilterFunction class is an abstract class for functions that take 
-    audio processing streams, such as ffmpeg-python and pysndfx
+    audio processing streams, such as ffmpeg-python and pysox.
+
+    Don't call this class. It will not do anything.
     """
+    def __init__(self, _filter, **kwargs):
+        self.filter = _filter
+        self.params = kwargs
+
+    def __str__(self):
+        params = ",".join(f"{p}={v}" for p, v in self.params.items())
+        return f"{self.filter} with params {params}"
 
     def __call__(self, stream):
         return self.func(stream)
@@ -52,7 +61,7 @@ class FFmpegFilter(FilterFunction):
     AudioSignal object. 
     """
     def __init__(self, _filter, **filter_kwargs):
-        self.filter = _filter
+        super().__init__(_filter, **filter_kwargs)
         self.func = lambda stream: stream.filter(_filter, **filter_kwargs)
 
 
@@ -98,8 +107,8 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
 
         augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
     augmented_signal.label = audio_signal.label
-    augmented_signal.effects_applied = (augmented_signal.effects_applied 
-        + [f.filter for f in filters])
+    augmented_signal.effects_applied = (audio_signal.effects_applied 
+        + [str(f) for f in filters])
     return augmented_signal
 
 
@@ -110,7 +119,7 @@ class SoXFilter(FilterFunction):
     AudioSignal object. 
     """
     def __init__(self, _filter, **filter_kwargs):
-        self.filter = _filter
+        super().__init__(_filter, **filter_kwargs)
         if _filter == "time_stretch":
             self.func = lambda tfm: tfm.tempo(**filter_kwargs)
         elif _filter == "pitch_shift":
@@ -145,8 +154,8 @@ def apply_effects_sox(audio_signal, filters):
     
     augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data))
     augmented_signal.label = audio_signal.label
-    augmented_signal.effects_applied = (augmented_signal.effects_applied 
-        + [f.filter for f in filters])
+    augmented_signal.effects_applied = (audio_signal.effects_applied 
+        + [str(f) for f in filters])
     return augmented_signal
 
 

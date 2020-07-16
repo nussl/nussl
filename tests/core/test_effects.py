@@ -414,8 +414,3 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
     with pytest.raises(AudioSignalException):
         signal.make_effect("fail")
 
-def test_filter_function_pass():
-    # this test is for 100% coverage
-    function = effects.FilterFunction()
-    dummy_item = None
-    function.func(dummy_item)

@@ -8,3 +8,4 @@ exclude_lines =
     except Exception:
     vamp_imported = False
     import sox
+    pass
