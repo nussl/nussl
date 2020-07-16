@@ -282,7 +282,7 @@ def test_misc_param_check():
     with pytest.raises(ValueError):
         effects.phaser(decay=-1)
     with pytest.raises(ValueError):
-        effects.phaser(_type="fail")
+        effects.phaser(type_="fail")
 
     with pytest.raises(ValueError):
         effects.flanger(delay=-1)
