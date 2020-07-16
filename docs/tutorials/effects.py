@@ -176,25 +176,25 @@ nussl.utils.visualize_spectrogram(vib_mix, y_axis="log")
 # Emphasis
 # --------
 # ```
-# AudioSignal.emphasis(level_in, level_out, _type='col', mode='production')
+# AudioSignal.emphasis(level_in, level_out, type_='col', mode='production')
 # ```
 # An emphasis filter boosts frequency ranges the most suspectible to noise in a medium. When restoring sounds from such a medium, a de-emphasis filter is used to de-boost boosted frequencies. 
 # `level_in` and `level_out` are input and output gain respectively. `_type` denotes the medium. If `mode` is `production`, then a emphasis filter is applied. If it is `reproduction`, then a de-emphasis filter is applied. 
 
 level_in = 1
 level_out = .8
-_type = "riaa"
-riaa_mix = mix.emphasis(level_in, level_out, _type=_type)
+type_ = "riaa"
+riaa_mix = mix.emphasis(level_in, level_out, type_=type_)
 riaa_mix.embed_audio()
 nussl.utils.visualize_spectrogram(riaa_mix, y_axis="log")
 
-_type = "cd"
-cd_mix = mix.emphasis(level_in, level_out, _type=_type)
+type_ = "cd"
+cd_mix = mix.emphasis(level_in, level_out, type_=type_)
 cd_mix.embed_audio()
 nussl.utils.visualize_spectrogram(cd_mix, y_axis="log")
 
-_type = "col"
-col_mix = mix.emphasis(level_in, level_out, _type=_type)
+type_ = "col"
+col_mix = mix.emphasis(level_in, level_out, type_=type_)
 col_mix.embed_audio()
 nussl.utils.visualize_spectrogram(col_mix, y_axis="log")
 
@@ -221,7 +221,7 @@ nussl.utils.visualize_spectrogram(chor_mix, y_axis="log")
 # ------
 #
 # ```
-# AudioSignal.phaser(in_gain=.4, out_gain=.74, delay=3, decay=.4, speed=.5, _type="triangular")
+# AudioSignal.phaser(in_gain=.4, out_gain=.74, delay=3, decay=.4, speed=.5, type_="triangular")
 # ```
 #
 # Applies a phaser effect to the audio signal. `in_gain` and `out_gain` denote input and output gain respectively. `delay` denotes the delay of the copied signal in milliseconds. `decay` and `speed` are factors of the original signal, and must be between 0 and 1. `_type` denotes the type of modulation, which may be either `"triangular"` or `"sinusoidal"`.
@@ -231,9 +231,9 @@ out_gain = .8
 delay = 70
 decay = .7
 speed = .8
-_type = "triangular"
+type_ = "triangular"
 phas_mix = mix.phaser(in_gain=in_gain, out_gain=out_gain, delay=delay, 
-                      decay=decay, speed=speed, _type=_type).apply_effects()
+                      decay=decay, speed=speed, type_=type_).apply_effects()
 phas_mix.embed_audio()
 nussl.utils.visualize_spectrogram(phas_mix, y_axis="log")
 

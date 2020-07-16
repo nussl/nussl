@@ -302,7 +302,7 @@ def test_misc_param_check():
         effects.flanger(phase=-1)
 
     with pytest.raises(ValueError):
-        effects.emphasis(1, 1, _type="fail")
+        effects.emphasis(1, 1, type_="fail")
     with pytest.raises(ValueError):
         effects.emphasis(1, 1, mode="fail")
     with pytest.raises(ValueError):
@@ -353,7 +353,7 @@ def test_hooks(mix_and_sources, check_against_regression_data):
             .chorus([20, 70], [.9, .4], [.9, .6], [1, .9])
             .phaser()
             .flanger(delay=3)
-            .emphasis(1, .5, _type='riaa')
+            .emphasis(1, .5, type_='riaa')
             .compressor(.9)
             .equalizer([{
                 'chn': [0, 1],
@@ -399,7 +399,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
     .make_effect("chorus", delays=[20, 70], decays=[.9, .4], speeds=[.9, .6], depths=[1, .9])
     .make_effect("phaser")
     .make_effect("flanger", delay=3)
-    .make_effect("emphasis", level_in=1, level_out=.5, _type='riaa')
+    .make_effect("emphasis", level_in=1, level_out=.5, type_='riaa')
     .make_effect("compressor", level_in=.9)
     .make_effect("equalizer", bands=[{
                 'chn': [0, 1],
