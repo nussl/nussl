@@ -235,10 +235,10 @@ def test_dataset_hook_slakh(benchmark_audio):
 
 
         with pytest.raises(DataSetException):
-            not_enough_instruments = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=True, min_acceptable_instruments=3)
+            not_enough_instruments = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=True, min_acceptable_sources=3)
         
 
-        guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar, make_submix=True, min_acceptable_instruments=1, max_tracks_per_src=1)
+        guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar, make_submix=True, min_acceptable_sources=1, max_tracks_per_src=1)
         data = guitar_slakh[0]
         _guitar_signal, _sources = data["mix"], data["sources"]
         assert len(_sources) == 1
@@ -246,10 +246,10 @@ def test_dataset_hook_slakh(benchmark_audio):
         assert np.allclose(_guitar_signal.audio_data, guitar_signal.audio_data)
 
         with pytest.raises(DataSetException):
-            empty_slakh = nussl.datasets.Slakh(tmpdir, empty, min_acceptable_instruments=1)
+            empty_slakh = nussl.datasets.Slakh(tmpdir, empty, min_acceptable_sources=1)
 
         with pytest.raises(ValueError):
-            nussl.datasets.Slakh(tmpdir, band, min_acceptable_instruments=0)
+            nussl.datasets.Slakh(tmpdir, band, min_acceptable_sources=0)
         with pytest.raises(ValueError):
             nussl.datasets.Slakh(tmpdir, band, max_tracks_per_src=0)
         with pytest.raises(ValueError):
