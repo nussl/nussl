@@ -1751,7 +1751,7 @@ class AudioSignal(object):
             >>> signal_1.effects_applied == signal_2.effects_applied
             True
 
-            Refer to the spefic documentation for each effec to determine whether it is a SoX effect
+            Refer to the spefic documentation for each effect to determine whether it is a SoX effect
             or an FFmpeg effect.
 
         See Also:
@@ -2139,8 +2139,6 @@ class AudioSignal(object):
         frequency ranges the most susceptible to noise in a medium. When restoring
         sounds from such a medium, a de-emphasis filter is used to de-boost boosted 
         frequencies. 
-
-        It is recommended that users use `AudioSignal.emphasis` rather than this function.
 
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#aemphasis
