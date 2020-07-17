@@ -2140,8 +2140,6 @@ class AudioSignal(object):
         sounds from such a medium, a de-emphasis filter is used to de-boost boosted 
         frequencies. 
 
-        It is recommended that users use `AudioSignal.emphasis` rather than this function.
-
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#aemphasis
         for details.
