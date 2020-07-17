@@ -1751,8 +1751,8 @@ class AudioSignal(object):
             >>> signal_1.effects_applied == signal_2.effects_applied
             True
 
-            Refer to the spefic documentation for each effec to determine whether it is a SoX effect
-            or an FFmpeg effect.
+            Refer to the specific documentation for each effect to determine whether it is a SoX
+            effect or an FFmpeg effect.
 
         See Also:
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
