@@ -8,6 +8,8 @@ import pytest
 REGRESSION_PATH = "tests/core/regression/augmentation"
 os.makedirs(REGRESSION_PATH, exist_ok=True)
 
+# Note: When changing these tests, please do not call `mix_and_sources["mix"].apply_effects`
+# with overwrite=True
 
 def fx_regression(audio_data, reg_path, check_against_regression_data):
     scores = {
@@ -364,19 +366,19 @@ def test_hooks(mix_and_sources, check_against_regression_data):
             }])
     )
 
-    assert len(signal._effects_chain) == 12
+    assert len(signal.effects_chain) == 12
 
     augmented_signal = signal.apply_effects(reset=False, user_order=False)
-    assert len(signal._effects_chain) == 12
+    assert len(signal.effects_chain) == 12
     assert len(augmented_signal.effects_applied) == 12
-    assert len(augmented_signal._effects_chain) == 0
+    assert len(augmented_signal.effects_chain) == 0
 
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
     augmented_signal.time_stretch(.7).apply_effects(overwrite=True, user_order=False)
 
-    assert len(augmented_signal._effects_chain) == 0
+    assert len(augmented_signal.effects_chain) == 0
     assert len(augmented_signal.effects_applied) == 25
 
     assert str(augmented_signal.effects_applied[-1]) == "time_stretch (params: factor=0.7)"
@@ -391,7 +393,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
 
     (signal
     .make_effect("time_stretch", factor=3)
-    .make_effect("pitch_shift", shift=2)
+    .make_effect("pitch_shift", n_semitones=2)
     .make_effect("low_pass", freq=512)
     .make_effect("high_pass", freq=512)
     .make_effect("tremolo", mod_freq=5, mod_depth=.4)
@@ -409,24 +411,39 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
                 't': 0
             }])
     )
-    signal.apply_effects(reset=False)
-    augmented_signal = signal.apply_effects(reset=False, overwrite=True, user_order=False)
+    
+    augmented_signal = signal.apply_effects(user_order=False)
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # This should result in the same signal in test_hooks
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
+    for effect in augmented_signal.effects_applied:
+        _filter = effect.filter
+        params = effect.params
+        signal.make_effect(_filter, **params)
+
+    augmented_signal2 = signal.apply_effects(user_order=False)
+
     with pytest.raises(AudioSignalException):
         signal.make_effect("fail")
 
+    assert np.allclose(augmented_signal.audio_data, augmented_signal2.audio_data)
 
 def test_order(mix_and_sources):
     mix, _ = mix_and_sources
     mix.reset_effects_chain().time_stretch(1.5).tremolo(.3,.4).pitch_shift(5).vibrato(.3, .4)
     ## User order
-    signal0 = mix.apply_effects(reset=False)
+    signal_user = mix.apply_effects(reset=False)
 
     ## SoX-FFmpeg Order
-    signal1 = mix.apply_effects(reset=False, user_order=False)
+    signal_sf = mix.apply_effects(reset=False, user_order=False)
 
-    assert signal0.effects_applied != signal1.effects_applied
-    assert len(signal0.effects_applied) == len(signal1.effects_applied)
+    assert len(signal_user.effects_applied) == len(signal_sf.effects_applied)
+
+    user_order = ["time_stretch", "tremolo", "pitch_shift", "vibrato"]
+    for effect, _filter in zip(signal_user.effects_applied, user_order):
+        assert effect.filter == _filter
+
+    sox_ffmpeg_order = ["time_stretch", "pitch_shift", "tremolo", "vibrato"]
+    for effect, _filter in zip(signal_sf.effects_applied, sox_ffmpeg_order):
+        assert effect.filter == _filter

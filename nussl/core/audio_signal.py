@@ -21,7 +21,7 @@ from . import effects
 __all__ = ['AudioSignal', 'STFTParams', 'AudioSignalException']
 
 STFTParams = namedtuple('STFTParams',
-                        ['window_length', 'hop_length', 'window_type'],
+                        ['window_length', 'hop_length', 'window_type']
                         )
 STFTParams.__new__.__defaults__ = (None,) * len(STFTParams._fields)
 """
@@ -160,8 +160,10 @@ class AudioSignal(object):
         path_to_input_file (``str``): Path to the input file. ``None`` if this AudioSignal never
             loaded a file, i.e., initialized with a ``np.ndarray``.
         label (``str``): A user-definable label for this :class:`AudioSignal` object.
-        applied_effects (``list`` of ``str``): Effects applied to this :class:`AudioSignal`
-        object. For more information, see apply_effects. 
+        applied_effects (``list`` of ``effects.FilterFunction``): Effects applied to this 
+        :class:`AudioSignal` object. For more information, see apply_effects. 
+        effects_chain (``list`` of ``effects.FilterFunction``): Effects queues to be applied to 
+        this :class:`AudioSignal` object. For more information, see apply_effects. 
   
     """
 
@@ -202,7 +204,7 @@ class AudioSignal(object):
 
         # Effects
         self._effects_chain = []
-        self.effects_applied = []
+        self._effects_applied = []
 
     def __str__(self):
         dur = f'{self.signal_duration:0.3f}' if self.signal_duration else '[unknown]'
@@ -713,6 +715,28 @@ class AudioSignal(object):
             raise AudioSignalException('Cannot calculate log_magnitude_spectrogram_data '
                                        'because self.stft_data is None')
         return 20 * np.log10(np.abs(self.stft_data) + 1e-8)
+    
+    @property
+    def effects_chain(self):
+        """
+        (``list`` of ``nussl.core.FilterFunction``): Returns a copy of the AudioSignal's
+        effect chain. 
+
+        See Also:
+            * :func:`apply_effects`
+        """
+        return self._effects_chain.copy()
+
+    @property
+    def effects_applied(self):
+        """
+        (``list`` of ``nussl.core.FilterFunction``): Returns a list of effects applied to
+        the AudioSignal. 
+         
+        See Also:
+            * :func:`apply_effects`
+        """
+        return self._effects_applied.copy()
 
     ##################################################
     #                     I/O
@@ -1134,6 +1158,7 @@ class AudioSignal(object):
         ipd = ipd % np.pi
 
         return ipd, ild
+    
 
     ##################################################
     #                  Utilities
@@ -1672,7 +1697,7 @@ class AudioSignal(object):
 
         Notes:
             The effects will be added in the order that they are added to the effects chain, unless
-            `user_order=False`, in case the order is not gauranteed to be preserved. Setting
+            `user_order=False`, in case the order is not guaranteed to be preserved. Setting
             `user_order=False` will apply all SoX effects first, then FFMpeg effects, which can
             sped up processing time by ~30% in our experiments.
 
@@ -1698,24 +1723,40 @@ class AudioSignal(object):
             >>> signal.signal_duration
             10.0
 
+            You can find this effect in the AudioSignal's effects chain. 
+
+            >>> effect = signal.effects_chain[0]
+            >>> str(effect)
+            "time_stretch (params: {factor=0.5})"
+
             However, the signal's duration hasn't changed! You will need to call `apply_effects()`
-            to apply the changes in the signal's effects chains.
+            to apply the changes in the signal's effects chains. Applied effects can be found in 
+            `effects_applied`.
 
             >>> new_signal = signal.apply_effects()
             >>> new_signal.signal_duration
             5.0
+            >>> str(new_signal.effects_applied[0])
+            "time_stretch (params: {factor=0.5})"
+
             >>> # This doesn't change the original signal
             >>> signal.signal_duration
             10.0
 
+            You can iterate through effects_chain to use the properties of FilterFunction
+            objects as arguments to `make_effect`:
+
+            >>> for effect in signal1.effects_applied:
+            >>>     filter_ = effect.filter
+            >>>     params = effect.params
+            >>>     signal2.make_effect(filter_, **params)
+
             Using `apply_effects()` will clear out the current effects chain. This behavior can be
-            avoided by setting `reset` to False. Applied effects can be found in `effects_applied`:
+            avoided by setting `reset` to False. 
 
             >>> another_signal = signal.apply_effects()
             >>> another_signal.signal_duration
             10.0
-            >>> new_signal.effects_applied
-            ["time_stretch"]
 
             To clear out the current effects chain without applying effect, use
             `reset_effects_chain()`. It will not revert effects already applied (i.e., your audio
@@ -1779,7 +1820,7 @@ class AudioSignal(object):
             self.reset_effects_chain()
         if overwrite:
             self.audio_data = new_signal.audio_data
-            self.effects_applied += new_signal.effects_applied
+            self._effects_applied += new_signal.effects_applied
             self.stft_data = None
             return self
 
@@ -1827,6 +1868,14 @@ class AudioSignal(object):
 
             Is the same as
             >>> signal.make_effect("time_stretch", factor=1.5)
+
+            The attributes of a FilterFunction in the lists effects_applied or effects_chain may 
+            used with `make_effect`. 
+
+            >>> for effect in signal1.effects_applied:
+            >>>     filter_ = effect.filter
+            >>>     params = effect.params
+            >>>     signal2.make_effect(filter_, **params)
 
         Notes:
             This effect won't be applied until you call `apply_effect()`!
@@ -1888,10 +1937,11 @@ class AudioSignal(object):
         self._effects_chain.append(effects.time_stretch(factor))
         return self
     
-    def pitch_shift(self, shift):
+    def pitch_shift(self, n_semitones):
         """
         Add pitch shift effect to AudioSignal's effect chain. 
-        A positive shift will raise the pitch of the signal by `shift` semitones.
+        A positive shift will raise the pitch of the signal by `n_semitones` 
+        semitones.
 
         This is a SoX effect. Please see:
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.pitch
@@ -1901,7 +1951,7 @@ class AudioSignal(object):
             This effect won't be applied until you call `apply_effect()`!
 
         Args: 
-            shift (float): The number of semitones to shift the audio. 
+            n_semitones (integer): The number of semitones to shift the audio. 
                 Positive values increases the frequency of the signal
         Returns:
             self: Initial AudioSignal with updated effect chains
@@ -1911,7 +1961,7 @@ class AudioSignal(object):
             * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._effects_chain.append(effects.pitch_shift(shift))
+        self._effects_chain.append(effects.pitch_shift(n_semitones))
         return self
     
     def low_pass(self, freq, poles=2, width_type="h", width=0.707):
