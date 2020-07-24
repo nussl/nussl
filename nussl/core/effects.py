@@ -119,6 +119,7 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
     augmented_signal._effects_applied = audio_signal.effects_applied + filters
     return augmented_signal
 
+
 class SoXFilter(FilterFunction):
     """
     SoXFilter is an object returned by SoX effects in effects.py
@@ -127,9 +128,9 @@ class SoXFilter(FilterFunction):
     """
     def __init__(self, filter_, **filter_kwargs):
         super().__init__(filter_, **filter_kwargs)
-        if filter_== "time_stretch":
+        if filter_ == "time_stretch":
             self.func = lambda tfm: tfm.tempo(**filter_kwargs)
-        elif filter_== "pitch_shift":
+        elif filter_ == "pitch_shift":
             self.func = lambda tfm: tfm.pitch(**filter_kwargs)
         else:
             raise ValueError("Unknown SoX effect passed")
@@ -252,9 +253,9 @@ def low_pass(freq, poles=2, width_type="h", width=.707):
     _pass_arg_check(freq, poles, width_type, width)
 
     filter_ = FFmpegFilter("low_pass", ffmpeg_name="lowpass", f=freq, p=poles,
-                        t=width_type, w=width)
-    filter_.params = {"freq": freq, "poles": poles, 
-        "width_type": width_type, "width":width}
+                           t=width_type, w=width)
+    filter_.params = {"freq": freq, "poles": poles,
+                      "width_type": width_type, "width": width}
     return filter_
 
 
@@ -284,9 +285,9 @@ def high_pass(freq, poles=2, width_type="h", width=.707):
     _pass_arg_check(freq, poles, width_type, width)
 
     filter_ = FFmpegFilter("high_pass", ffmpeg_name="highpass", f=freq, p=poles,
-                        t=width_type, w=width)
-    filter_.params = {"freq": freq, "poles": poles, 
-        "width_type": width_type, "width":width}
+                           t=width_type, w=width)
+    filter_.params = {"freq": freq, "poles": poles,
+                      "width_type": width_type, "width": width}
     return filter_
 
 
@@ -384,9 +385,10 @@ def chorus(delays, decays, speeds, depths,
     ffmpeg_depths = make_arglist_ffmpeg(depths)
 
     filter_ = FFmpegFilter("chorus", in_gain=in_gain,
-                        out_gain=out_gain, delays=ffmpeg_delays,
-                        speeds=ffmpeg_speeds, decays=ffmpeg_decays, 
-                            depths=ffmpeg_depths)
+                           out_gain=out_gain, delays=ffmpeg_delays,
+                           speeds=ffmpeg_speeds, decays=ffmpeg_decays,
+                           depths=ffmpeg_depths)
+
     filter_.params["delays"] = delays
     filter_.params["speeds"] = speeds
     filter_.params["decays"] = decays
@@ -434,7 +436,7 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
     }
 
     filter_ = FFmpegFilter("phaser", ffmpeg_name="aphaser", in_gain=in_gain, out_gain=out_gain,
-                        delay=delay, speed=speed, decay=decay, **type_kwarg)
+                           delay=delay, speed=speed, decay=decay, **type_kwarg)
     
     filter_.params = copy.deepcopy(filter_.params)
     del filter_.params["type"]
@@ -554,8 +556,8 @@ def emphasis(level_in, level_out, type_="col", mode='production'):
         'type': type_
     }
 
-    filter_ = FFmpegFilter("emphasis", ffmpeg_name="aemphasis", level_in=level_in, 
-        level_out=level_out, mode=mode, **type_kwarg)
+    filter_ = FFmpegFilter("emphasis", ffmpeg_name="aemphasis", level_in=level_in,
+                           level_out=level_out, mode=mode, **type_kwarg)
 
     filter_.params = copy.deepcopy(filter_.params)
     del filter_.params["type"]
@@ -643,13 +645,12 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
                          attack, release, makeup, knee, link, detection, mix, threshold)
 
     filter_ = FFmpegFilter("compressor", ffmpeg_name="acompressor", level_in=level_in,
-                        ratio=reduction_ratio, attack=attack, release=release, makeup=makeup,
-                        knee=knee, link=link, detection=detection, mix=mix, threshold=threshold)
+                           ratio=reduction_ratio, attack=attack, release=release, makeup=makeup,
+                           knee=knee, link=link, detection=detection, mix=mix, threshold=threshold)
     filter_.params = copy.deepcopy(filter_.params)
     del filter_.params["ratio"]
     filter_.params["reduction_ratio"] = reduction_ratio
     return filter_
-
 
 
 def equalizer(bands):
@@ -700,4 +701,3 @@ def equalizer(bands):
     filter_ = FFmpegFilter("equalizer", ffmpeg_name="anequalizer", params=params)
     filter_.params = {"bands": bands}
     return filter_
-
