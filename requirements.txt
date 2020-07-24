@@ -17,6 +17,6 @@ gpytorch
 ffmpeg-python
 importlib_resources
 pyloudnorm
-sox==1.4.0b0
+sox==1.4.0
 numba==0.48
-soxbindings
+

@@ -697,7 +697,7 @@ class AudioSignal(object):
         """
         (:obj:`np.ndarray`): Returns a real valued ``np.array`` with log magnitude spectrogram data.
         
-        The log magnitude spectrogram is defined as 20*log10(Abs(STFT)).
+        The log magnitude spectrogram is defined as 20 * log10(abs(stft)).
         Same shape as :attr:`stft_data`.
         
         Raises:
@@ -720,7 +720,11 @@ class AudioSignal(object):
     def effects_chain(self):
         """
         (``list`` of ``nussl.core.FilterFunction``): Returns a copy of the AudioSignal's
-        effect chain. 
+        effect chain. Editing this property will not result in a change to the effects chain
+        of the AudioSignal. 
+
+        Please use the effects hooks (e.g. :func:`tremolo`, :func:`make_effect`) to make changes
+        to the Audiosignal's effects chain.
 
         See Also:
             * :func:`apply_effects`
@@ -730,8 +734,11 @@ class AudioSignal(object):
     @property
     def effects_applied(self):
         """
-        (``list`` of ``nussl.core.FilterFunction``): Returns a list of effects applied to
-        the AudioSignal. 
+        (``list`` of ``nussl.core.FilterFunction``): Returns a copy of the list of effects 
+        applied to the AudioSignal. Editing this property will not result in a change to the 
+        effects aplied to the AudioSignal. 
+
+        Please use :func:`apply_effects` to apply effects to the AudioSignal.
          
         See Also:
             * :func:`apply_effects`
