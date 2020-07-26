@@ -1835,19 +1835,22 @@ class AudioSignal(object):
 
     def _apply_user_ordered_effects(self):
         new_signal = self
-        tail = lead = 0
-        while tail < len(self._effects_chain):
-            lead += 1
-            new_fx_type = type(self._effects_chain[tail]) != type(self._effects_chain[lead])
+        i = j = 0
 
-            if lead == len(self._effects_chain) or new_fx_type:
-                next_chain = self._effects_chain[tail:lead]
+        while i < len(self._effects_chain):
+            j += 1
+
+            if j == len(self._effects_chain) or \
+                type(self._effects_chain[i]) != type(self._effects_chain[j]):  # new fx type
+
+                next_chain = self._effects_chain[i:j]
                 if isinstance(next_chain[0], effects.SoXFilter):
                     new_signal = effects.apply_effects_sox(new_signal, next_chain)
                 elif isinstance(next_chain[0], effects.FFmpegFilter):
                     new_signal = effects.apply_effects_ffmpeg(new_signal, next_chain)
 
-                tail = lead
+                i = j
+
         return new_signal
 
     def _apply_sox_ffmpeg_ordered_effects(self):

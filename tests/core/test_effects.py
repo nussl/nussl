@@ -429,6 +429,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
 
     assert np.allclose(augmented_signal.audio_data, augmented_signal2.audio_data)
 
+
 def test_order(mix_and_sources):
     mix, _ = mix_and_sources
     mix.reset_effects_chain().time_stretch(1.5).tremolo(.3,.4).pitch_shift(5).vibrato(.3, .4)
