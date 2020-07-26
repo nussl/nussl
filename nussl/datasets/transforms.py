@@ -748,7 +748,6 @@ class ToSeparationModel(object):
     def __repr__(self):
         return f"{self.__class__.__name__}()"
 
-
 class Compose(object):
     """Composes several transforms together. Inspired by torchvision implementation.
 
@@ -787,3 +786,6 @@ class TransformException(Exception):
     Exception class for errors when working with transforms in nussl.
     """
     pass
+
+
+

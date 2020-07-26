@@ -7,3 +7,5 @@ exclude_lines =
     vamp_imported = False
     except Exception:
     vamp_imported = False
+    import sox
+    pass

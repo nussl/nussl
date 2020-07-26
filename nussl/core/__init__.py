@@ -33,6 +33,12 @@ General utilities
     :members:
     :autosummary:
 
+Audio effects
+-------------
+.. automodule:: nussl.core.effects
+    :members:
+    :autosummary:
+
 Mixing
 ------
 .. automodule:: nussl.core.mixing
