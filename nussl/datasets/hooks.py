@@ -718,3 +718,4 @@ class Slakh(BaseDataset):
             return_dict["midi_mix"] = midi_mix
             return_dict["midi_sources"] = midi_sources
         return return_dict
+        
