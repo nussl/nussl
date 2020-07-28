@@ -110,15 +110,24 @@ $ brew install ffmpeg # on mac
 $ apt-get install ffmpeg # on linux
 ```
 
-To use the Melodia separation algorithm, you'll need one additional package:
+To use the Melodia separation algorithm, you'll need to specify this:
 
 ```
-$ pip install vamp
+$ pip install "nussl[melodia]"
 ```
 
 `vamp` doesn't install on some MacOS versions, so we can't include it by default.
 To actually use Melodia, you'll also need the Melodia plugin. For installation
 instructions, look [here](https://github.com/justinsalamon/melodia_python_tutorial/blob/master/melodia_python_tutorial.ipynb).
+
+To call SoX functions directly when applying effects, you will also need to specify this:
+
+```
+$ pip install "nussl[soxbindings]"
+```
+
+`soxbindings` can't be installed from PyPI on Windows, but it may be installable from source.
+For source installation instructions, look [here](https://github.com/pseeth/soxbindings)
 
 # Citing
 

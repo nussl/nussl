@@ -4,7 +4,8 @@ Changelog
 v1.1.1
 ------
 - Allowed MixSourceFolder to mix sources on the fly.
-- Added effects utilities.
+- Added effects utilities for data augmentation.
+- Fixed bug with ignite 0.4.0
 
 v1.1.0
 ------

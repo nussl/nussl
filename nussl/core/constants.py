@@ -13,7 +13,8 @@ __all__ = ['DEFAULT_SAMPLE_RATE', 'DEFAULT_WIN_LEN_PARAM', 'DEFAULT_BIT_DEPTH',
            'WINDOW_HAMMING', 'WINDOW_RECTANGULAR', 'WINDOW_HANN',
            'WINDOW_BLACKMAN', 'WINDOW_TRIANGULAR', 'WINDOW_DEFAULT',
            'ALL_WINDOWS', 'NUMPY_JSON_KEY', 'LEN_INDEX', 'CHAN_INDEX',
-           'STFT_VERT_INDEX', 'STFT_LEN_INDEX', 'STFT_CHAN_INDEX']
+           'STFT_VERT_INDEX', 'STFT_LEN_INDEX', 'STFT_CHAN_INDEX',
+           'LEVEL_MAX', 'LEVEL_MIN']
 
 DEFAULT_SAMPLE_RATE = 44100  #: (int): Default sample rate. 44.1 kHz, CD-quality
 DEFAULT_WIN_LEN_PARAM = 0.032  #: (float): Default window length. 32ms
@@ -96,9 +97,8 @@ STEM_TARGET_DICT = OrderedDict([
     ('linear_mixture', 'vocals+bass+drums+other')
 ])
 
-##### augmentation.py
-# These values are found in the ffmpeg documentation in filters
-# that use the level_in arugment, however, not all filters that
-# use this state these bounds in documentationwith pytest.raises(ValueError):
+# ################## Effects ################## #
+# These values are found in the ffmpeg documentation for filters
+# that use the level_in argument:
 LEVEL_MIN = .015625
 LEVEL_MAX = 64

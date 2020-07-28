@@ -543,7 +543,7 @@ class WHAM(MixSourceFolder):
 
 class Slakh(BaseDataset):
     """
-    Hook for the Slakh dataset. Creates submixes of slakh according to a preprovided recipe.
+    Hook for the Slakh dataset. Returns a subset of sources from slakh according to a preprovided recipe.
     Slakh is expected to have the following directory structure:
 
     folder:
@@ -572,7 +572,7 @@ class Slakh(BaseDataset):
     If `midi=True`, then the returned dictionary will contain two more keys, "midi_mix" and 
     "midi_sources". The key "midi_mix" will contain a PrettyMIDI object containing the instruments 
     of all PrettyMIDI objects in "midi_sources".
-    The key "midi_sources" will be a dictionary structured similarly to "sources" assuming `make_submix=False`,
+    The key "midi_sources" will be a dictionary structured similarly to "sources" when `make_submix=False`,
     where the PrettyMIDI object found at self.items[i]["midi_sources"][key][j] will correspond with the 
     AudioSignal object found at self.items[i]["sources"][key][j].
 
@@ -624,7 +624,7 @@ class Slakh(BaseDataset):
         super().__init__(folder, transform, sample_rate, stft_params, num_channels,
             strict_sample_rate, cache_populated)
 
-        # TODO: If no mixes are found with the current setup, raise an error
+        # If no mixes are found with the current setup, raise an error
         # I can't think of a scenario where someone would just want an empty slakh 
         # dataset. Run this by Prem and Ethan
         if not self.items:
@@ -682,7 +682,7 @@ class Slakh(BaseDataset):
 
         # Choose tracks for source at random order
         for s in stempaths:
-            # Figure out which submix this source belongs to
+            # Figure out which user-defined group this source belongs to
             src_id = os.path.splitext(s)[0]
             midi_num = src_metadata['stems'][src_id][self.program_key]
             key = self.recipe.get(midi_num, None)
