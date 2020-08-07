@@ -43,7 +43,7 @@ class SISDRLoss(nn.Module):
         super().__init__()
 
     def forward(self, estimates, references):
-        eps = 1e-10
+        eps = 1e-8
         # num_batch, num_samples, num_sources
         _shape = references.shape
         references = references.view(-1, _shape[-2], _shape[-1])
@@ -71,8 +71,7 @@ class SISDRLoss(nn.Module):
 
         signal = (e_true ** 2).sum(dim=1)
         noise = (e_res ** 2).sum(dim=1)
-
-        sdr = 10 * torch.log10(signal / noise)
+        sdr = 10 * torch.log10(signal / noise + eps)        
 
         if self.reduction == 'mean':
             sdr = sdr.mean()
@@ -227,7 +226,7 @@ class PermutationInvariantLoss(nn.Module):
         for p in permutations(range(num_sources)):
             _targets = targets[..., list(p)]
             loss = self.loss_function(estimates, _targets)
-            loss = loss.mean(dim=[-1, -2])
+            loss = loss.mean(dim=-1)
             losses.append(loss)
         
         losses = torch.stack(losses, dim=-1)
@@ -270,7 +269,7 @@ class CombinationInvariantLoss(nn.Module):
             for p in permutations(range(num_target_sources)):
                 _targets = targets[..., list(p)]
                 loss = self.loss_function(_estimates, _targets)
-                loss = loss.mean(dim=[-1, -2])
+                loss = loss.mean(dim=-1)
                 losses.append(loss)
         
         losses = torch.stack(losses, dim=-1)
