@@ -1,9 +1,14 @@
 Changelog
 =========
 
+v1.1.2
+------
+- Fixed a bug in Dual Path models where they couldn't be used with DataParallel.
+
 v1.1.1
 ------
 - Allowed MixSourceFolder to mix sources on the fly.
+- Adding OnTheFly dataset for mixing sources on the fly using a function.
 - Added effects utilities for data augmentation.
 - Fixed bug with ignite 0.4.0
 
