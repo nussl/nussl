@@ -4,6 +4,7 @@ Changelog
 v1.1.2
 ------
 - Fixed a bug in Dual Path models where they couldn't be used with DataParallel.
+- Fixed a regularization bug in SI-SDR (eps=1e-8 instead of 1e-10).
 
 v1.1.1
 ------
@@ -34,7 +35,6 @@ v1.0.1
 
 v1.0.0
 ------
-
 - Python 3 support!
 - Much improved documentation and API
 - Refactoring of AudioSignal and other parts to be more intuitive
