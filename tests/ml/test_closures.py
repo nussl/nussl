@@ -55,6 +55,16 @@ def test_base_closure():
     assert 'loss' in loss_a
     assert np.allclose(loss_a['loss'].item(), weighted_product, atol=1e-4)
 
+    loss_dictionary = {
+        'DeepClusteringLoss': {
+            'weight': .2,
+        },
+        'PermutationInvariantLoss': {
+            'weight': .8,
+            'args': ['L1Loss']
+        }
+    }
+
     closure = ml.train.closures.Closure(loss_dictionary)
     loss_a = closure.compute_loss(output, target)
     weighted_sum = 0
@@ -65,16 +75,6 @@ def test_base_closure():
 
     assert 'loss' in loss_a
     assert np.allclose(loss_a['loss'].item(), weighted_sum, atol=1e-4)
-
-    loss_dictionary = {
-        'DeepClusteringLoss': {
-            'weight': .2,
-        },
-        'PermutationInvariantLoss': {
-            'weight': .8,
-            'args': ['L1Loss']
-        }
-    }
 
     # checking validation
     pytest.raises(ClosureException, ml.train.closures.Closure, ['not a dict'])
