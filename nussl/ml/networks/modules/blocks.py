@@ -224,7 +224,7 @@ class LayerNorm(nn.Module):
             mean_dims.append(len(data.shape) - 1)
         mean = data.mean(dim=mean_dims, keepdims=True)
         var = data.var(dim=mean_dims, keepdims=True)
-        data = (data - mean) / ((var + 1e-5) ** 0.5)
+        data = (data - mean) / ((var + 1e-8) ** 0.5)
         data = data * self.gamma + self.beta
         # move everything back and squeeze off extra 
         # dimensions
@@ -324,7 +324,7 @@ class Embedding(nn.Module):
         embedding_size (int): Dimensionality of embedding.
         
         activation (list of str): Activation functions to be applied. Options 
-          are 'sigmoid', 'tanh', 'softmax', 'relu'. Unit normalization can be applied by 
+          are 'sigmoid', 'tanh', 'softmax', 'relu', 'gate'. Unit normalization can be applied by 
           adding 'unit_norm' to the list (e.g. ['sigmoid', unit_norm']). Alternatively,
           L1 normalization can be applied by adding 'l1_norm' to the list.
 
@@ -354,6 +354,16 @@ class Embedding(nn.Module):
         self.activation = activation
         self.embedding_size = embedding_size
         self.reshape = reshape
+
+        if 'gate' in self.activation:
+            self.embed_linear = nn.Sequential(
+                nn.Linear(hidden_size, hidden_size), 
+                nn.Tanh()
+            )
+            self.embed_gate = nn.Sequential(
+                nn.Linear(hidden_size, hidden_size),
+                nn.Sigmoid()
+            )
 
         if isinstance(dim_to_embed, int):
             dim_to_embed = [dim_to_embed]
@@ -393,6 +403,10 @@ class Embedding(nn.Module):
         
         shape = tuple(shape)
         data = data.reshape(shape + (-1,))
+
+        if 'gate' in self.activation:
+            data = self.embed_linear(data) * self.embed_gate(data)
+
         data = self.linear(data)
 
         if self.reshape:
@@ -846,10 +860,7 @@ class DualPath(nn.Module):
         # data is still (batch_size, n_chunks, chunk_size, bottleneck_size)
         data = self.inv_bottleneck(data)
         # data is now (batch_size, n_chunks, chunk_size, in_features)
-        data = data.transpose(1, -1)
-        data = self.output_norm(data)
-        data = data.transpose(1, -1)
-        
+        #         
         # resynthesize with overlap/add
         data = data.transpose(1, 3)
         data = data.reshape(-1, n_features * self.chunk_size, n_chunks)
