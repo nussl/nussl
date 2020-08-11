@@ -8,6 +8,10 @@ in machine learning pipelines.
 import collections
 import os
 import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 import numpy as np
 import pretty_midi
 
@@ -635,7 +639,7 @@ class Slakh(BaseDataset):
         # Remove tracks with less than `self.min_acceptable_sources`
         def num_instruments_acceptable(path):
             path = os.path.join(folder, path)
-            metadata = yaml.safe_load(open(os.path.join(path, 'metadata.yaml'), 'r'))
+            metadata = yaml.load(open(os.path.join(path, 'metadata.yaml'), 'r'), Loader=Loader)
             sources = set()
             for stem, data in metadata["stems"].items():
                 if data[self.program_key] in self.recipe.keys():
@@ -657,7 +661,7 @@ class Slakh(BaseDataset):
     def process_item(self, srcs_dir):
         # Use the file's metadata and the submix recipe to gather all the
         # sources together.
-        src_metadata = yaml.safe_load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'))
+        src_metadata = yaml.load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'), Loader=Loader)
         audio_dir = src_metadata["audio_dir"]
         midi_dir = src_metadata["midi_dir"]
         sources = {}
