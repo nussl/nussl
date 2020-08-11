@@ -147,7 +147,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         track_dir = os.path.join(tmpdir, "Track")
         os.mkdir(track_dir)
         # Create Metadata file
-        metadata = "audio_dir: stems"
+        metadata =    "audio_dir: stems"
         metadata += "\nmidi_dir: MIDI"
         metadata += "\nstems:"
         metadata += "\n  S00:"
