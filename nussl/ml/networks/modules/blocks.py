@@ -529,7 +529,7 @@ class RecurrentStack(nn.Module):
         rnn_type: (str) LSTM ('lstm') or GRU ('gru').
     """
     def __init__(self, num_features, hidden_size, num_layers, bidirectional, dropout,
-                 rnn_type='lstm', batch_first=True):
+                 rnn_type='lstm', batch_first=True, init_forget=True):
         super(RecurrentStack, self).__init__()
         if rnn_type not in ['lstm', 'gru']:
             raise ValueError("rnn_type must be one of ['lstm', 'gru']!")
@@ -540,18 +540,19 @@ class RecurrentStack(nn.Module):
                 num_features, hidden_size, num_layers, batch_first=batch_first,
                 bidirectional=bidirectional, dropout=dropout))
 
-        for name, param in self.rnn.named_parameters():
-            if 'bias' in name:
-                nn.init.constant_(param, 0.0)
-            elif 'weight' in name:
-                nn.init.xavier_normal_(param)
+        if init_forget:
+            for name, param in self.rnn.named_parameters():
+                if 'bias' in name:
+                    nn.init.constant_(param, 0.0)
+                elif 'weight' in name:
+                    nn.init.xavier_normal_(param)
 
-        for names in self.rnn._all_weights:
-            for name in filter(lambda nm: "bias" in nm, names):
-                bias = getattr(self.rnn, name)
-                n = bias.size(0)
-                start, end = n // 4, n // 2
-                bias.data[start:end].fill_(1.)
+            for names in self.rnn._all_weights:
+                for name in filter(lambda nm: "bias" in nm, names):
+                    bias = getattr(self.rnn, name)
+                    n = bias.size(0)
+                    start, end = n // 4, n // 2
+                    bias.data[start:end].fill_(1.)
 
     def forward(self, data):
         """
@@ -814,7 +815,6 @@ class DualPath(nn.Module):
         self.bottleneck_norm = nn.GroupNorm(1, in_features)
         self.inv_bottleneck = nn.Linear(
             bottleneck_size, in_features)
-        self.output_norm = nn.GroupNorm(1, in_features)
     
     def forward(self, data):
         fold = nn.Fold(
@@ -869,7 +869,5 @@ class DualPath(nn.Module):
 
         data = data.reshape(
             batch_size, sequence_length, n_features, n_channels)        
-        # renormalize after overlap/add
-        data = data / (self.chunk_size / self.hop_size)
         
         return data
