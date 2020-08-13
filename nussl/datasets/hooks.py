@@ -5,23 +5,13 @@ These data set "hooks" subclass BaseDataset and by default return AudioSignal ob
 labeled dictionaries for ease of use. Transforms can be applied to these datasets for use
 in machine learning pipelines.
 """
-import collections
 import os
-import yaml
-try:
-    from yaml import CLoader as Loader, CDumper as Dumper
-except ImportError:
-    from yaml import Loader, Dumper
-import numpy as np
-import pretty_midi
 
 from .. import musdb
 import jams
 
 from ..core import constants, utils
 from .base_dataset import BaseDataset, DataSetException
-
-
 
 
 class MUSDB18(BaseDataset):
@@ -33,7 +23,9 @@ class MUSDB18(BaseDataset):
     
     Getting an item from this dataset with no transforms returns the 
     following dictionary:
+
     .. code-block:: none
+
         {
             'mix': [AudioSignal object containing mix audio],
             'source': {
@@ -102,7 +94,9 @@ class MUSDB18(BaseDataset):
 class MixSourceFolder(BaseDataset):
     """
     This dataset expects your data to be formatted in the following way:
+
     .. code-block:: none
+
         data/
             mix/
                 [file0].wav
@@ -125,15 +119,19 @@ class MixSourceFolder(BaseDataset):
                 [file2].wav
                 ...
             ...
+
     Note that the the filenames match between the mix folder and each source folder.
     The source folder names can be whatever you want. Given a file in the 
     ``self.mix_folder`` folder, this dataset will look up the corresponding files 
     with the same name in the source folders. These are the source audio files. 
     The sum of the sources should equal the mixture. Each source will be labeled 
     according to the folder name it comes from.
+
     Getting an item from this dataset with no transforms returns the 
     following dictionary:
+
     .. code-block:: none
+
         {
             'mix': [AudioSignal object containing mix audio],
             'source': {
@@ -147,6 +145,8 @@ class MixSourceFolder(BaseDataset):
                 'labels': ['label0', 'label1', 'label2', 'label3']
             }
         }
+
+
     Args:
         folder (str, optional): Location that should be processed to produce the 
             list of files. Defaults to None.
@@ -218,28 +218,38 @@ class Scaper(BaseDataset):
     files which specify the parameters of the soundscape. If the soundscape is
     generated with `save_isolated_events=True`, then the audio corresponding
     to each event in the soundscape will be saved as well.
+
     Below is an example of using Scaper to generate a small dataset of 10 
     mixtures with 2 sources each. The generated dataset can then be immediately
     loaded into an instance of ``nussl.datasets.Scaper`` for integration into
     a training or evaluation pipeline.
+
     The sources are output in a dictionary that looks like this:
+
     .. code-block:: none
+
         data['sources] = {
             '{label}::{count}': AudioSignal,
             '{label}::{count}': AudioSignal,
             ...
         }
+
     For example:
+
     .. code-block:: none
+
         data['sources] = {
             'siren::0': AudioSignal,
             'siren::1': AudioSignal,
             'car_horn::0': AudioSignal,
             ...
         }
+
     Getting an item from this dataset with no transforms returns the 
     following dictionary:
+
     .. code-block:: none
+
         {
             'mix': [AudioSignal object containing mix audio],
             'source': {
@@ -254,7 +264,10 @@ class Scaper(BaseDataset):
                 'labels': ['label0', 'label1', 'label2', 'label3']
             }
         }
+
+
     Example of generating a Scaper dataset and then loading it with nussl:
+
     >>> n_sources = 2
     >>> n_mixtures = 10
     >>> duration = 3
@@ -371,6 +384,7 @@ class OnTheFly(BaseDataset):
     >>>      }
     >>>      return output
     >>>  dataset = nussl.datasets.OnTheFly(make_mix, 10)
+
     Args:
         mix_closure (function): A closure that determines how to create
           a single mixture, given the index. It has a strict input 
@@ -405,15 +419,20 @@ class FUSS(Scaper):
     The Free Universal Sound Separation (FUSS) Dataset is a database of arbitrary 
     sound mixtures and source-level references, for use in experiments on 
     arbitrary sound separation. 
+
     This is the official sound separation data for the DCASE2020 Challenge Task 4: 
     Sound Event Detection and Separation in Domestic Environments.
+
     This is a hook for reading in this dataset, and making sure that the mix and 
     source paths are massaged to be relative paths.
+
     References:
+
     [1]  Scott Wisdom, Hakan Erdogan, Daniel P. W. Ellis, Romain Serizel, 
     Nicolas Turpault, Eduardo Fonseca, Justin Salamon, Prem Seetharaman, 
     John R. Hershey, "What's All the FUSS About Free Universal Sound Separation 
     Data?", 2020, in preparation.
+
     [2] Eduardo Fonseca, Jordi Pons, Xavier Favory, Frederic Font Corbera, 
     Dmitry Bogdanov, Andrés Ferraro, Sergio Oramas, Alastair Porter, and 
     Xavier Serra. "Freesound Datasets: A Platform for the Creation of Open Audio 
@@ -458,7 +477,9 @@ class WHAM(MixSourceFolder):
     """
     Hook for the WHAM dataset. Essentially subclasses MixSourceFolder but with presets
     that are helpful for WHAM, which as the following directory structure:
+
     .. code-block:: none
+
         [wav8k, wav16k]/
           [min, max]/
             [tr, cv, tt]/
@@ -473,6 +494,7 @@ class WHAM(MixSourceFolder):
           cv/
           tt/
           metadata/
+
     Args:
         root (str): Root of WHAM directory.
         mix_folder (str): Which folder is the mix? Either 'mix_clean', 'mix_both', or
