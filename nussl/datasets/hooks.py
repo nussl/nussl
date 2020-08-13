@@ -6,6 +6,11 @@ labeled dictionaries for ease of use. Transforms can be applied to these dataset
 in machine learning pipelines.
 """
 import os
+import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 from .. import musdb
 import jams
@@ -561,16 +566,31 @@ class Slakh(BaseDataset):
     Items returned from this hook will be a dictionary with the keys "mix" and "sources".
     "mix" will contain an AudioSignal which is a mix of all audio signals fonud in "sources".
     "sources" will contain a dictionary, where each key is the name of a source found in `recipe`.
-    If `make_submix=False` then the value is a list of AudioSignals categorized as the source. This
-    list will be no longer than `max_tracks_per_src`.If `make_submix=True`, then each value will
-    be a submix of stems categorized as a source.
+    If `make_submix=False` then the value is a list of AudioSignals categorized as the source.
+    For example, where `dataset` is a `Slakh` Object:
+
+    >>> item = dataset[0]
+    >>> type(item["sources"]["piano"])
+    <class 'list'>
+    >>> type(item["sources"]["piano"][0])
+    <class 'nussl.core.audio_signal.AudioSignal'>
+
+    This list will be no longer than `max_tracks_per_src`, if provided. If `make_submix=True`,
+    then each value will be a submix of stems categorized as a source.
+
+    >>> type(item["sources"]["piano"])
+    <class 'nussl.core.audio_signal.AudioSignal'>
 
     If `midi=True`, then the returned dictionary will contain two more keys, "midi_mix" and
     "midi_sources". The key "midi_mix" will contain a PrettyMIDI object containing the instruments
     of all PrettyMIDI objects in "midi_sources".
     The key "midi_sources" will be a dictionary structured similarly to "sources" when `make_submix=False`,
     where the PrettyMIDI object found at self.items[i]["midi_sources"][key][j] will correspond with the
-    AudioSignal object found at self.items[i]["sources"][key][j].
+    AudioSignal object found at self.items[i]["sources"][key][j]. The MIDI files will NOT be submixed when
+    `make_submix=True`, only the audio signals are.
+
+    It is recommended that the user uses the LibYAML bindings for better performance when using the Slakh
+    dataset. If it is installed on the user machine, it will be automatically used.
 
     Args:
         folder (str): Path to the root of the Slakh directory
