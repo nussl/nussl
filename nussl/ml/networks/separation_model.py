@@ -72,6 +72,10 @@ class SeparationModel(nn.Module):
         self.output_keys = config['output']
         self.config = config
         self.verbose = verbose
+        self.metadata = {
+            'config': config,
+            'nussl_version': __version__
+        }
 
     @staticmethod
     def _validate_config(config):
@@ -161,6 +165,8 @@ class SeparationModel(nn.Module):
         weights and model configuration.
         Args:
             location: (str) Where you want the model saved, as a path.
+            metadata: (dict) Additional metadata to save along with the model. By default,
+                model config and nussl version is saved as metadata.
 
         Returns:
             (str): where the model was saved.
@@ -172,7 +178,7 @@ class SeparationModel(nn.Module):
         }
 
         metadata = metadata if metadata else {}
-        metadata['nussl_version'] = __version__
+        metadata.update(self.metadata)
         save_dict = {**save_dict, **metadata}
         torch.save(save_dict, location)
         return location

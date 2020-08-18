@@ -91,6 +91,7 @@ def build_recurrent_mask_inference(num_features, hidden_size, num_layers, bidire
 
     # put it together
     config = {
+        'name': 'MaskInference',
         'modules': modules,
         'connections': connections,
         'output': output
@@ -179,6 +180,7 @@ def build_recurrent_dpcl(num_features, hidden_size, num_layers, bidirectional,
 
     # put it together
     config = {
+        'name': 'DeepClustering',
         'modules': modules,
         'connections': connections,
         'output': output
@@ -289,6 +291,7 @@ def build_recurrent_chimera(num_features, hidden_size, num_layers, bidirectional
 
     # put it together
     config = {
+        'name': 'Chimera',
         'modules': modules,
         'connections': connections,
         'output': output
@@ -466,12 +469,14 @@ def build_open_unmix_like(num_features, hidden_size, num_layers,
 
     # put it together
     config = {
+        'name': 'OpenUnmix',
         'modules': modules,
         'connections': connections,
         'output': output
     }
 
     return config
+
 
 def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_type, 
                                hidden_size, num_layers, bidirectional, dropout, 
@@ -608,12 +613,14 @@ def build_recurrent_end_to_end(num_filters, filter_length, hop_length, window_ty
 
     # put it together
     config = {
+        'name': 'EndToEndRNN',
         'modules': modules,
         'connections': connections,
         'output': output
     }
 
     return config
+
 
 def build_dual_path_recurrent_end_to_end(
         num_filters, filter_length, hop_length, 
@@ -727,6 +734,7 @@ def build_dual_path_recurrent_end_to_end(
 
     # put it together
     config = {
+        'name': 'DualPathRNN',
         'modules': modules,
         'connections': connections,
         'output': output

@@ -142,6 +142,7 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
 
     return trainer, validator
 
+
 def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, trainer,
                                 val_data=None, validator=None, save_by_epoch=None):
     """
@@ -222,11 +223,7 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                     _transform.transforms.remove(t)
 
         metadata = {
-            'stft_params': train_data.stft_params,
-            'sample_rate': train_data.sample_rate,
-            'num_channels': train_data.num_channels,
-            'folder': train_data.folder,
-            'transforms': _transform,
+            'train_dataset': train_data.metadata,
             'trainer.state_dict': {
                 'epoch': trainer.state.epoch,
                 'epoch_length': trainer.state.epoch_length,
@@ -237,23 +234,31 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
             },
             'trainer.state.epoch_history': trainer.state.epoch_history,
         }
+        try:
+            # Store metadata for validation set if it exists
+            metadata['val_dataset'] = val_data.metadata
+        except:
+            pass
 
         if isinstance(model, nn.DataParallel):
             _model = model.module
         else:
             _model = model
 
+        if 'train_dataset' not in _model.metadata:
+            _model.metadata.update(metadata)
+
         for _path in output_paths:
             os.makedirs(os.path.join(
                 output_folder, 'checkpoints'), exist_ok=True)
-            _model.save(_path, {'metadata': metadata})
+            _model.save(_path)
             torch.save(optimizer.state_dict(),
                        _path.replace('model.pth', 'optimizer.pth'))
         
         if save_by_epoch is not None:
             if trainer.state.epoch % save_by_epoch == 0:
                 _path = output_paths[0].replace('latest', f'epoch{trainer.state.epoch}')
-                _model.save(_path, {'metadata': metadata})
+                _model.save(_path)
 
         trainer.state.saved_model_path = output_paths[-1]
         trainer.state.output_folder = output_folder

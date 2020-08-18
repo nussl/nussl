@@ -1,4 +1,5 @@
 import warnings
+import copy
 
 from torch.utils.data import Dataset
 
@@ -76,6 +77,14 @@ class BaseDataset(Dataset):
         self.sample_rate = sample_rate
         self.num_channels = num_channels
         self.strict_sample_rate = strict_sample_rate
+        self.metadata = {
+            'name': self.__class__.__name__,
+            'stft_params': stft_params,
+            'sample_rate': sample_rate,
+            'num_channels': num_channels,
+            'folder': folder,
+            'transform': copy.deepcopy(transform)
+        }
 
         if not isinstance(self.items, list):
             raise DataSetException("Output of self.get_items must be a list!")
