@@ -27,20 +27,18 @@ class DeepMixin:
             metadata (dict): metadata associated with model, used for making
             the input data into the model.
         """
-        model_dict = torch.load(model_path, map_location='cpu')
-        model = SeparationModel(model_dict['config'])
-        model.load_state_dict(model_dict['state_dict'])
+        metadata = torch.load(model_path, map_location='cpu')
+        model = SeparationModel(metadata['config'])
+        model.load_state_dict(metadata.pop('state_dict'))
         device = device if torch.cuda.is_available() else 'cpu'
 
         self.device = device
 
         model = model.to(device).eval()
-        metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
         self.model = model
-        self.config = model_dict['config']
+        self.config = metadata['config']
         self.metadata = metadata
-        self.transform = self._get_transforms(
-            self.metadata['transforms'])
+        self.transform = self._get_transforms(self.metadata['transforms'])
 
     @staticmethod
     def _get_transforms(loaded_tfm):

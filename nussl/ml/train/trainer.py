@@ -223,7 +223,11 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                     _transform.transforms.remove(t)
 
         metadata = {
-            'train_dataset': train_data.metadata,
+            'stft_params': train_data.stft_params,
+            'sample_rate': train_data.sample_rate,
+            'num_channels': train_data.num_channels,
+            'folder': train_data.folder,
+            'transforms': _transform,
             'trainer.state_dict': {
                 'epoch': trainer.state.epoch,
                 'epoch_length': trainer.state.epoch_length,

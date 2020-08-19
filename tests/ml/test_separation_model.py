@@ -102,6 +102,7 @@ def test_separation_model_init():
     pytest.raises(ValueError, SeparationModel, bad_config)
 
     bad_config = {
+        'name': 'BadModel',
         'modules': ['should be a dict'], 
         'connections': [],
         'output': []
@@ -109,6 +110,7 @@ def test_separation_model_init():
     pytest.raises(ValueError, SeparationModel, bad_config)
 
     bad_config = {
+        'name': 'BadModel',
         'modules': mi_config['modules'],
         'connections': {'should be a list'},
         'output': []
@@ -116,6 +118,7 @@ def test_separation_model_init():
     pytest.raises(ValueError, SeparationModel, bad_config)
 
     bad_config = {
+        'name': 'BadModel',
         'modules': mi_config['modules'],
         'connections': mi_config['connections'],
         'output': {'should be a list'}

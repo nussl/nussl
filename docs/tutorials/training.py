@@ -218,6 +218,7 @@ output = ['my_estimates', 'my_mask']
 # +
 # put it all together
 config = {
+    'name': 'MyGreatModel',
     'modules': modules,
     'connections': connections,
     'output': output

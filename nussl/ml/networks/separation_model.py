@@ -79,7 +79,7 @@ class SeparationModel(nn.Module):
 
     @staticmethod
     def _validate_config(config):
-        expected_keys = ['connections', 'modules', 'output']
+        expected_keys = sorted(['connections', 'modules', 'output', 'name'])
         got_keys = sorted(list(config.keys()))
 
         if got_keys != expected_keys:

@@ -215,11 +215,11 @@ class TrainClosure(Closure):
         self.model = model
 
         # Save about training metadata to model.info
-        self.model.info['optimizer'] = {
-            'name': optimizer.__class__.__name___,
+        self.model.metadata['optimizer'] = {
+            'name': type(optimizer).__name__,
             'params': optimizer.defaults  # All of the settings are stored here.
         }
-        self.model.info['loss_dictionary'] = loss_dictionary
+        self.model.metadata['loss_dictionary'] = loss_dictionary
 
     def _fire_event(self, engine, output, event):
         if engine is not None:

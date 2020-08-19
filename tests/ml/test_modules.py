@@ -283,6 +283,7 @@ def test_ml_alias():
     outputs = ['split:0', 'split_zero']
 
     config = {
+        'name': 'AliasModel',
         'modules': modules, 
         'connections': connections,
         'output': outputs
