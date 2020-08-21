@@ -93,10 +93,9 @@ def test_create_engine(mix_source_folder):
         optimizer.load_state_dict(opt_state_dict)
         model.load_state_dict(state_dict['state_dict'])
 
-        # make sure the cache got removed in saved transforms as it is not a portable
+        # make sure the cache got removed in saved transforms bc it's not a portable
         # transform
-
-        for t in state_dict['transforms'].transforms:
+        for t in state_dict['metadata']['train_dataset']['transforms'].transforms:
             assert not isinstance(t, datasets.transforms.Cache)
 
         new_trainer, new_validator = (
@@ -111,7 +110,8 @@ def test_create_engine(mix_source_folder):
         ml.train.add_tensorboard_handler(
             trainer.state.output_folder, new_trainer)
 
-        new_trainer.load_state_dict(state_dict['trainer.state_dict'])
+        print(state_dict['metadata']['trainer.state_dict'])
+        new_trainer.load_state_dict(state_dict['metadata']['trainer.state_dict'])
         assert new_trainer.state.epoch == trainer.state.epoch
         new_trainer.run(dataset, max_epochs=3)
 

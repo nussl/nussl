@@ -8,6 +8,7 @@ import numpy as np
 from . import modules
 from ... import __version__
 
+
 class SeparationModel(nn.Module):
     """
     SeparationModel takes a configuration file or dictionary that describes the model
@@ -30,10 +31,17 @@ class SeparationModel(nn.Module):
           connections, or the path to a json file containing the dictionary. If the
           latter, the path will be loaded and used.
 
+    Attributes:
+        config: (dict) The loaded config dictionary passed in upon init.
+        connections: (list) A list of strings that define the connections as given
+            in `config`.
+        output: (list)
+
     See also:
         ml.register_module to register your custom modules with SeparationModel.
 
     Examples:
+        >>> import nussl
         >>> config = nussl.ml.networks.builders.build_recurrent_dpcl(
         >>>     num_features=512, hidden_size=300, num_layers=3, bidirectional=True,
         >>>     dropout=0.3, embedding_size=20, 
@@ -79,7 +87,7 @@ class SeparationModel(nn.Module):
 
     @staticmethod
     def _validate_config(config):
-        expected_keys = sorted(['connections', 'modules', 'output', 'name'])
+        expected_keys = ['connections', 'modules', 'name', 'output']
         got_keys = sorted(list(config.keys()))
 
         if got_keys != expected_keys:
@@ -94,6 +102,9 @@ class SeparationModel(nn.Module):
 
         if not isinstance(config['output'], list):
             raise ValueError("config['output'] must be a list!")
+
+        if not isinstance(config['name'], str):
+            raise ValueError("config['name'] must be a string!")
 
     def forward(self, data):
         """
@@ -179,7 +190,7 @@ class SeparationModel(nn.Module):
 
         metadata = metadata if metadata else {}
         metadata.update(self.metadata)
-        save_dict = {**save_dict, **metadata}
+        save_dict = {**save_dict, 'metadata': metadata}
         torch.save(save_dict, location)
         return location
     

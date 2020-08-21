@@ -1,7 +1,9 @@
 import torch
 
 from ...ml import SeparationModel
+from ..base.separation_base import SeparationException
 from ...datasets import transforms as tfm
+from ... import __version__
 
 OMITTED_TRANSFORMS = (
     tfm.GetExcerpt,
@@ -18,7 +20,7 @@ class DeepMixin:
         available.
 
         Args:
-            model_path (str): path to model saved as SeparatonModel.
+            model_path (str): path to model saved as SeparationModel.
             device (str or torch.Device): loads model on CPU or GPU. Defaults to
               'cuda'.
 
@@ -27,18 +29,19 @@ class DeepMixin:
             metadata (dict): metadata associated with model, used for making
             the input data into the model.
         """
-        metadata = torch.load(model_path, map_location='cpu')
-        model = SeparationModel(metadata['config'])
-        model.load_state_dict(metadata.pop('state_dict'))
+        safe_loader = SafeModelLoader()
+        model_dict = safe_loader.load(model_path, 'cpu')
+        model = SeparationModel(model_dict['config'])
+        model.load_state_dict(model_dict['state_dict'])
         device = device if torch.cuda.is_available() else 'cpu'
 
         self.device = device
 
         model = model.to(device).eval()
         self.model = model
-        self.config = metadata['config']
-        self.metadata = metadata
-        self.transform = self._get_transforms(self.metadata['transforms'])
+        self.config = model_dict['config']
+        self.metadata = model_dict['metadata']
+        self.transform = self._get_transforms(self.metadata['train_dataset']['transforms'])
 
     @staticmethod
     def _get_transforms(loaded_tfm):
@@ -98,3 +101,29 @@ class DeepMixin:
                     data[key] = data[key].transpose(0, self.channel_dim)
         self.input_data = data
         return self.input_data
+
+
+class SafeModelLoader(object):
+    def __init__(self):
+        self.current_version = __version__
+
+    def load(self, model_path, device='cpu'):
+        model_dict = torch.load(model_path, map_location=device)
+        saved_version = model_dict.get('nussl_version', None)
+
+        if saved_version is None:
+            raise SeparationException(f"Failed loading model. Expected to find "
+                                      f"'nussl_version' in {model_path}.")
+
+        if saved_version == self.current_version:
+            return model_dict
+
+        if saved_version <= '1.1.2':
+            model_dict = self._load_pre_1_1_2(model_dict)
+
+        # Add more migrations here
+
+        return model_dict
+
+    def _load_pre_1_1_2(self, model_dict):
+        pass

@@ -143,6 +143,23 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
     return trainer, validator
 
 
+def _remove_cache_from_tfms(transforms):
+    transforms = copy.deepcopy(transforms)
+
+    if isinstance(transforms, datasets.transforms.Compose):
+        for t in transforms.transforms:
+            if isinstance(t, datasets.transforms.Cache):
+                transforms.transforms.remove(t)
+
+    return transforms
+
+
+def _prep_metadata(metadata):
+    metadata = copy.deepcopy(metadata)
+    metadata['transforms'] = _remove_cache_from_tfms(metadata['transforms'])
+    return metadata
+
+
 def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, trainer,
                                 val_data=None, validator=None, save_by_epoch=None):
     """
@@ -215,19 +232,11 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                 output_folder, 'checkpoints', 'best.model.pth'
             ))
 
-        _transform = copy.deepcopy(train_data.transform)
-
-        if isinstance(_transform, datasets.transforms.Compose):
-            for t in _transform.transforms:
-                if isinstance(t, datasets.transforms.Cache):
-                    _transform.transforms.remove(t)
-
         metadata = {
             'stft_params': train_data.stft_params,
             'sample_rate': train_data.sample_rate,
             'num_channels': train_data.num_channels,
-            'folder': train_data.folder,
-            'transforms': _transform,
+            'train_dataset': _prep_metadata(train_data.metadata),
             'trainer.state_dict': {
                 'epoch': trainer.state.epoch,
                 'epoch_length': trainer.state.epoch_length,
@@ -240,9 +249,11 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
         }
         try:
             # Store metadata for validation set if it exists
-            metadata['val_dataset'] = val_data.metadata
+            metadata['val_dataset'] = _prep_metadata(val_data.metadata)
         except:
             pass
+
+        print(metadata)
 
         if isinstance(model, nn.DataParallel):
             _model = model.module

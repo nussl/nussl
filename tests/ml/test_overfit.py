@@ -84,7 +84,7 @@ def test_overfit_a(mix_source_folder):
             model_path, map_location=lambda storage, loc: storage)
         model.load_state_dict(state_dict['state_dict'])
 
-        history = state_dict['trainer.state.epoch_history']
+        history = state_dict['metadata']['trainer.state.epoch_history']
 
         for key in history:
             plt.figure(figsize=(10, 4))

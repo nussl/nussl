@@ -83,7 +83,7 @@ class BaseDataset(Dataset):
             'sample_rate': sample_rate,
             'num_channels': num_channels,
             'folder': folder,
-            'transform': copy.deepcopy(transform)
+            'transforms': copy.deepcopy(transform)
         }
 
         if not isinstance(self.items, list):
@@ -139,7 +139,6 @@ class BaseDataset(Dataset):
                 n_removed += 1
             pbar.set_description(f"Filtered {n_removed} items out of dataset")
         self.items = filtered_items
-
 
     @property
     def cache_populated(self):

@@ -402,4 +402,3 @@ def test_separation_model_repr_and_verbose(one_item):
     model = SeparationModel(end_to_end_real_config, verbose=True)
     print(model)
     model(one_item)
-            
