@@ -335,7 +335,7 @@ def save_scores(directory, scores, name):
 def check_aggregate(directory):
     json_files = glob.glob(f"{directory}/*.json")
     df = nussl.evaluation.aggregate_score_files(json_files)
-    report_card = nussl.evaluation.report_card(df, 'Testing notes', decs=5)
+    report_card = nussl.evaluation.report_card(df, 'Testing notes', decimals=5)
     print(report_card)
 
     assert 'Testing notes' in report_card

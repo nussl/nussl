@@ -1,9 +1,8 @@
 import torch
 
 from ...ml import SeparationModel
-from ..base.separation_base import SeparationException
 from ...datasets import transforms as tfm
-from ... import __version__
+from ...core.migration import SafeModelLoader
 
 OMITTED_TRANSFORMS = (
     tfm.GetExcerpt,
@@ -40,8 +39,9 @@ class DeepMixin:
         model = model.to(device).eval()
         self.model = model
         self.config = model_dict['config']
-        self.metadata = model_dict['metadata']
-        self.transform = self._get_transforms(self.metadata['train_dataset']['transforms'])
+        metadata = model_dict['metadata']
+        self.metadata.update(metadata)
+        self.transform = self._get_transforms(metadata['train_dataset']['transforms'])
 
     @staticmethod
     def _get_transforms(loaded_tfm):
@@ -102,28 +102,3 @@ class DeepMixin:
         self.input_data = data
         return self.input_data
 
-
-class SafeModelLoader(object):
-    def __init__(self):
-        self.current_version = __version__
-
-    def load(self, model_path, device='cpu'):
-        model_dict = torch.load(model_path, map_location=device)
-        saved_version = model_dict.get('nussl_version', None)
-
-        if saved_version is None:
-            raise SeparationException(f"Failed loading model. Expected to find "
-                                      f"'nussl_version' in {model_path}.")
-
-        if saved_version == self.current_version:
-            return model_dict
-
-        if saved_version <= '1.1.2':
-            model_dict = self._load_pre_1_1_2(model_dict)
-
-        # Add more migrations here
-
-        return model_dict
-
-    def _load_pre_1_1_2(self, model_dict):
-        pass

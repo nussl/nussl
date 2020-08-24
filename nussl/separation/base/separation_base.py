@@ -13,10 +13,12 @@ class SeparationBase(object):
 
     Parameters:
         input_audio_signal (AudioSignal). AudioSignal` object.
-                            This will always be a copy of the provided AudioSignal object.
+            This will always be a copy of the provided AudioSignal object.
     """
 
     def __init__(self, input_audio_signal):
+        self.metadata = {}
+        self._audio_signal = None
         self.audio_signal = input_audio_signal
 
     @property
@@ -76,7 +78,7 @@ class SeparationBase(object):
             else:
                 self._preprocess_audio_signal()
 
-    def run(self):
+    def run(self, *args, audio_signal=None, **kwargs):
         """
         Runs separation algorithm.
 

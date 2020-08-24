@@ -5,8 +5,10 @@ import numpy as np
 import os
 import textwrap
 
+
 def truncate(values, decs=2):
     return np.trunc(values*10**decs)/(10**decs)
+
 
 def aggregate_score_files(json_files, aggregator=np.nanmedian):
     """
@@ -64,6 +66,7 @@ def aggregate_score_files(json_files, aggregator=np.nanmedian):
     
     return df
 
+
 def _get_mean_and_std(df, decs=2):
     """
     Gets the mean and standard deviation of each metric in the pandas
@@ -87,6 +90,7 @@ def _get_mean_and_std(df, decs=2):
 
     return metrics, data
 
+
 def _get_medians(df, decs=2):
     """
     Gets the median of each metric in the pandas
@@ -104,6 +108,7 @@ def _get_medians(df, decs=2):
     data.insert(0, df.shape[0])
     return metrics, data
 
+
 def _format_title(title, length, marker=" "):
     pad = (length - len(title)) // 2
     pad = ''.join([marker for _ in range(pad)])
@@ -111,6 +116,7 @@ def _format_title(title, length, marker=" "):
     if len(title) % 2:
         border = border + marker
     return border
+
 
 def _get_report_card(df, func, report_each_source=True, decs=2):
     """
@@ -146,7 +152,8 @@ def _get_report_card(df, func, report_each_source=True, decs=2):
 
     return report_card
 
-def report_card(df, notes=None, report_each_source=True, decs=2):
+
+def report_card(df, notes=None, report_each_source=True, decimals=2):
     """
     Given a Pandas dataframe, usually the output of ``aggregate_score_files``,
     returns a string that looks like this::
@@ -219,14 +226,15 @@ def report_card(df, notes=None, report_each_source=True, decs=2):
           bottom of the report card. Defaults to None.
         report_each_source (bool, optional): Whether or not to report the metrics
           for each individual source type. Defaults to True.
+        decimals (int): Number of decimal places to display.
     
     Returns:
         str: A report card for your experiment.
     """
     mean_report_card = _get_report_card(
-        df, _get_mean_and_std, report_each_source=report_each_source, decs=decs)
+        df, _get_mean_and_std, report_each_source=report_each_source, decs=decimals)
     median_report_card = _get_report_card(
-        df, _get_medians, report_each_source=report_each_source, decs=decs)
+        df, _get_medians, report_each_source=report_each_source, decs=decimals)
 
     line_break = mean_report_card.index('\n')
 
@@ -250,3 +258,31 @@ def report_card(df, notes=None, report_each_source=True, decs=2):
             f"{notes}"
         )
     return report_card
+
+
+def associate_metrics(df, separator):
+    """
+    For a given pandas dataframe (the output of ``aggregate_score_files``), this
+    function will associate the high level summary statistics with a model.
+
+    Args:
+        df (pandas.DataFrame): DataFrame containing the metrics computed during
+            evaluation.
+        separator (SeparationBase): A separation object that will have the metrics
+            associated with it.
+
+    Returns:
+        (SeparationBase)
+    """
+    excluded_columns = ['source', 'file']
+    metrics = [x for x in list(df.columns) if x not in excluded_columns]
+    results = {
+        m: {
+            'mean': np.mean(df[m]),
+            'median': np.median(df[m]),
+            'std': np.std(df[m])
+        }
+        for m in metrics
+    }
+    separator.metadata['evaluation'] = results
+    return separator

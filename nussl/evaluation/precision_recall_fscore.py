@@ -36,6 +36,7 @@ class PrecisionRecallFScore(EvaluationBase):
                          source_labels=source_labels,
                          compute_permutation=compute_permutation,
                          best_permutation_key=best_permutation_key, **kwargs)
+        self.keys = ['Precision', 'Recall', 'Accuracy', 'F1-Score']
 
     @staticmethod
     def _verify_input_list(mask_list):
