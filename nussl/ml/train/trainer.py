@@ -253,15 +253,12 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
         except:
             pass
 
-        print(metadata)
-
         if isinstance(model, nn.DataParallel):
             _model = model.module
         else:
             _model = model
 
-        if 'train_dataset' not in _model.metadata:
-            _model.metadata.update(metadata)
+        _model.metadata.update(metadata)
 
         for _path in output_paths:
             os.makedirs(os.path.join(
