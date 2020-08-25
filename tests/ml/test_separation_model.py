@@ -378,7 +378,7 @@ def test_separation_model_save():
         loc = model.save(tmp.name)
         checkpoint = torch.load(loc)
 
-        assert checkpoint['nussl_version'] == nussl.__version__
+        assert checkpoint['metadata']['nussl_version'] == nussl.__version__
 
         new_model = SeparationModel(checkpoint['config'])
         new_model.load_state_dict(checkpoint['state_dict'])

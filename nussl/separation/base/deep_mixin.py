@@ -30,7 +30,9 @@ class DeepMixin:
         """
         safe_loader = SafeModelLoader()
         model_dict = safe_loader.load(model_path, 'cpu')
-        model = SeparationModel(model_dict['config'])
+        metadata = model_dict['metadata']
+
+        model = SeparationModel(metadata['config'])
         model.load_state_dict(model_dict['state_dict'])
         device = device if torch.cuda.is_available() else 'cpu'
 
@@ -38,8 +40,7 @@ class DeepMixin:
 
         model = model.to(device).eval()
         self.model = model
-        self.config = model_dict['config']
-        metadata = model_dict['metadata']
+        self.config = metadata['config']
         self.metadata.update(metadata)
         self.transform = self._get_transforms(metadata['train_dataset']['transforms'])
 

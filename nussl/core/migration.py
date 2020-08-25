@@ -1,4 +1,5 @@
 import torch
+import json
 
 from .. import __version__, STFTParams
 from ..separation.base import SeparationException
@@ -7,23 +8,11 @@ from ..evaluation import BSSEvalV4, BSSEvalScale
 
 
 class SafeModelLoader(object):
-    def __init__(self):
-        self.current_version = __version__
-        self.eval = None
+    """
+    Loads a nussl model and populates the metadata with defaults if
+    """
 
-    def load(self, model_path, device='cpu', expected_eval='BssEvalScale'):
-        model_dict = torch.load(model_path, map_location=device)
-        metadata = model_dict['metadata']
-        saved_version = metadata.get('nussl_version', None)
-
-        if saved_version is None:
-            raise SeparationException(f"Failed loading model. Expected to find "
-                                      f"'nussl_version' in {model_path}.")
-
-        self.eval = expected_eval
-        model_dict['metadata'] = self._validate_and_load(metadata)
-        return model_dict
-
+    # Expected topology of the model's metadata as of nussl version 1.1.3
     _v1_1_3_metadata = {
         'config': {
             'connections': list,
@@ -70,6 +59,56 @@ class SafeModelLoader(object):
 
     expected_metadata = _v1_1_3_metadata
 
+    def __init__(self):
+        """
+        Drop in replacement for torch.load(). Will load a model and return
+        a model_dict that is populated
+        Args:
+            model_path (str): Path to a nussl-saved model.
+            device (str):
+            expected_eval (str): Either 'BSSEvalScale' or 'BSSEvalV4'. Will
+                look for & populate missing eval keys with the format of either
+                of those eval methods.
+
+        Returns:
+            model_dict (dict):
+
+        """
+        self.current_version = __version__
+        self.eval = None
+
+    def load(self, model_path, device='cpu', expected_eval='BssEvalScale'):
+        model_dict = torch.load(model_path, map_location=device)
+        metadata = model_dict['metadata']
+        metadata = self._get_moved(metadata, model_dict, model_path)
+        self.eval = expected_eval
+        metadata = self._validate_and_populate(metadata)
+        metadata['config'] = json.dumps(metadata['config'])
+        model_dict['metadata'] = metadata
+        return model_dict
+
+    @staticmethod
+    def _get_moved(metadata, model_dict, model_path):
+        model_dict_version = model_dict.get('nussl_version', None)
+        metadata_version = metadata.get('nussl_version', None)
+
+        if metadata_version is not None:
+            saved_version = metadata_version
+        else:
+            saved_version = model_dict_version
+
+        if saved_version is None:
+            raise SeparationException(f"Failed loading model. Expected to find "
+                                      f"'nussl_version' in {model_path}.")
+
+        if 'config' in model_dict:
+            metadata['config'] = json.loads(model_dict['config'])
+
+        if 'nussl_version' in model_dict:
+            metadata['nussl_version'] = model_dict['nussl_version']
+
+        return metadata
+
     def _load_eval(self, eval_dict):
         """Helper function to load eval dictionary safely."""
         if self.eval.lower == 'bssevalv4':
@@ -95,6 +134,7 @@ class SafeModelLoader(object):
 
     @staticmethod
     def _load_types(expected_type, key, val):
+        """Safe load for values where the value is a type in self.expected_metadata"""
         if val is not None:
             if type(val) != expected_type:
                 raise SeparationException(f'Expected type {expected_type} '
@@ -103,7 +143,7 @@ class SafeModelLoader(object):
         else:
             return 'UNAVAILABLE'
 
-    def _validate_and_load(self, received):
+    def _validate_and_populate(self, received):
         """Safe load for metadata according to the expected metadata."""
         result = {}
         for key, expected_val in self.expected_metadata.items():
