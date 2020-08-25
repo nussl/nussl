@@ -15,3 +15,8 @@
 .audio-container ul.tracks>li {
    margin-left: -1px
 }
+
+.rst-content .section ul li>* {
+   margin-top: 0px;
+   margin-bottom: 0px;
+}

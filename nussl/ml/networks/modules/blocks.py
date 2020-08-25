@@ -790,12 +790,10 @@ class DualPath(nn.Module):
         self.chunk_size = chunk_size
         self.hop_size = hop_size
         
-        blocks = []
+        self.layers = nn.ModuleList()
         for i in range(num_layers):
             _block = DualPathBlock(n_features=bottleneck_size, **kwargs)
-            blocks.append(_block)
-            self.add_module(f'layer{i}', _block)
-        self.layers = blocks
+            self.layers.append(_block)
         self.skip_connection = skip_connection
         self.prelu = nn.PReLU()
         self.bottleneck = nn.Linear(in_features, bottleneck_size)

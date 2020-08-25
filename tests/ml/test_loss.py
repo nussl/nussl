@@ -76,22 +76,16 @@ def test_permutation_invariant_loss_tf():
     LossPIT = ml.train.loss.PermutationInvariantLoss(
         loss_function=ml.train.loss.L1Loss())
     LossL1 = ml.train.loss.L1Loss()
-    noise_amount = [0.001, .01, .05, 1.0]
 
-    for n in noise_amount:
-        permuted = []
-        noisy = sources + n * torch.randn_like(sources)
-        _loss_a = LossL1(noisy, sources).item()
+    _loss_a = LossL1(sources, sources).item()
 
-        for i in range(n_batch):
-            p = random.choice(list(permutations(range(n_sources))))
-            permuted_batch = noisy[i, ..., list(p)].unsqueeze(0)
-            permuted.append(permuted_batch)
-
-        permuted = torch.cat(permuted, dim=0)
-        _loss_b = LossPIT(permuted, sources).item()
-        assert np.allclose(_loss_a, _loss_b, atol=1e-6)
-
+    for shift in range(n_sources):
+        sources_a = sources[:, :, :, shift:]
+        sources_b = sources[:, :, :, :shift]
+        shifted_sources = torch.cat(
+            [sources_a, sources_b], dim=-1)
+        _loss_b = LossPIT(shifted_sources, sources).item()
+        assert np.allclose(_loss_a, _loss_b, atol=1e-3)
 
 def test_combination_invariant_loss_tf():
     n_batch = 40
@@ -114,7 +108,7 @@ def test_combination_invariant_loss_tf():
         shifted_sources = torch.cat(
             [sources_a, sources_b, sources_c], dim=-1)
         _loss_b = LossCPIT(shifted_sources, sources).item()
-        assert _loss_a == _loss_b
+        assert np.allclose(_loss_a, _loss_b, atol=1e-3)
 
 
 def test_sdr_loss():
@@ -146,17 +140,18 @@ def test_sdr_loss():
         assert _loss.sum().item() > prev_loss
         prev_loss = _loss.sum().item()
 
-        idx = np.random.randint(n_batch)
-        _numpy_si_sdr = nussl.evaluation.scale_bss_eval(
-            references.data.numpy()[idx], 
-            estimates.data.numpy()[idx, ..., 0],
-            references.data.numpy()[idx].sum(axis=-1),
-            0
-        )[0]
+        for idx in range(n_batch):
+            idx = np.random.randint(n_batch)
+            _numpy_si_sdr = nussl.evaluation.scale_bss_eval(
+                references.data.numpy()[idx], 
+                estimates.data.numpy()[idx, ..., 0],
+                references.data.numpy()[idx].sum(axis=-1),
+                0
+            )[0]
 
-        _torch_loss_on_one = -1 * _loss[idx][0]
+            _torch_loss_on_one = -1 * _loss[idx][0]
 
-        assert np.allclose(_torch_loss_on_one.item(), _numpy_si_sdr, atol=1e-3)
+            assert np.allclose(_torch_loss_on_one.item(), _numpy_si_sdr, atol=1e-3)
 
     LossSDR = ml.train.loss.SISDRLoss(
         zero_mean=False, reduction='none', return_scaling=True)

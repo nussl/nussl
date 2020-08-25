@@ -11,7 +11,7 @@ with open('extra_requirements.txt') as f:
 
 setup(
     name='nussl',
-    version='1.1.0',
+    version='1.1.2',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
@@ -30,9 +30,9 @@ setup(
     description='A flexible sound source separation library.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author='E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, B. Pardo',
+    author='E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, A. Bugler, B. Pardo',
     author_email='ethanmanilow@u.northwestern.edu',
-    maintainer='E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, B. Pardo',
+    maintainer='E. Manilow, P. Seetharaman, F. Pishdadian, N. Shelly, A. Bugler, B. Pardo',
     maintainer_email='ethanmanilow@u.northwestern.edu',
     url='https://github.com/interactiveaudiolab/nussl',
     license='MIT',
@@ -44,6 +44,9 @@ setup(
         'melodia': [
             'vamp'
         ],
-        'extras': extra_requirements
+        'extras': extra_requirements,
+        'soxbindings': [
+            'soxbindings>=1.0.1'
+        ],
     }
 )

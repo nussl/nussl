@@ -21,7 +21,7 @@ from . import effects
 __all__ = ['AudioSignal', 'STFTParams', 'AudioSignalException']
 
 STFTParams = namedtuple('STFTParams',
-                        ['window_length', 'hop_length', 'window_type'],
+                        ['window_length', 'hop_length', 'window_type']
                         )
 STFTParams.__new__.__defaults__ = (None,) * len(STFTParams._fields)
 """
@@ -160,8 +160,10 @@ class AudioSignal(object):
         path_to_input_file (``str``): Path to the input file. ``None`` if this AudioSignal never
             loaded a file, i.e., initialized with a ``np.ndarray``.
         label (``str``): A user-definable label for this :class:`AudioSignal` object.
-        applied_effects (``list`` of ``str``): Effects applied to this :class:`AudioSignal`
-        object. For more information, see apply_effects. 
+        applied_effects (``list`` of ``effects.FilterFunction``): Effects applied to this 
+        :class:`AudioSignal` object. For more information, see apply_effects. 
+        effects_chain (``list`` of ``effects.FilterFunction``): Effects queues to be applied to 
+        this :class:`AudioSignal` object. For more information, see apply_effects. 
   
     """
 
@@ -201,9 +203,8 @@ class AudioSignal(object):
         self.stft_params = stft_params
 
         # Effects
-        self._ffmpeg_effects_chain = []
-        self._sox_effects_chain = []
-        self.effects_applied = []
+        self._effects_chain = []
+        self._effects_applied = []
 
     def __str__(self):
         dur = f'{self.signal_duration:0.3f}' if self.signal_duration else '[unknown]'
@@ -696,7 +697,8 @@ class AudioSignal(object):
         """
         (:obj:`np.ndarray`): Returns a real valued ``np.array`` with log magnitude spectrogram data.
         
-        The log magnitude spectrogram is defined as 20*log10(Abs(STFT)). Same shape as :attr:`stft_data`.
+        The log magnitude spectrogram is defined as 20 * log10(abs(stft)).
+        Same shape as :attr:`stft_data`.
         
         Raises:
             AudioSignalException: if :attr:`stft_data` is ``None``. Run :func:`stft` before
@@ -713,6 +715,35 @@ class AudioSignal(object):
             raise AudioSignalException('Cannot calculate log_magnitude_spectrogram_data '
                                        'because self.stft_data is None')
         return 20 * np.log10(np.abs(self.stft_data) + 1e-8)
+    
+    @property
+    def effects_chain(self):
+        """
+        (``list`` of ``nussl.core.FilterFunction``): Returns a copy of the AudioSignal's
+        effect chain. Editing this property will not result in a change to the effects chain
+        of the AudioSignal. 
+
+        Please use the effects hooks (e.g. :func:`tremolo`, :func:`make_effect`) to make changes
+        to the Audiosignal's effects chain.
+
+        See Also:
+            * :func:`apply_effects`
+        """
+        return self._effects_chain.copy()
+
+    @property
+    def effects_applied(self):
+        """
+        (``list`` of ``nussl.core.FilterFunction``): Returns a copy of the list of effects 
+        applied to the AudioSignal. Editing this property will not result in a change to the 
+        effects aplied to the AudioSignal. 
+
+        Please use :func:`apply_effects` to apply effects to the AudioSignal.
+         
+        See Also:
+            * :func:`apply_effects`
+        """
+        return self._effects_applied.copy()
 
     ##################################################
     #                     I/O
@@ -1134,6 +1165,7 @@ class AudioSignal(object):
         ipd = ipd % np.pi
 
         return ipd, ild
+    
 
     ##################################################
     #                  Utilities
@@ -1280,11 +1312,12 @@ class AudioSignal(object):
 
     def make_copy_with_audio_data(self, audio_data, verbose=True):
         """ Makes a copy of this :class:`AudioSignal` object with :attr:`audio_data` initialized to
-        the input :param:`audio_data` numpy array. The :attr:`stft_data` of the new :class:`AudioSignal`
-        object is ``None``.
+        the input :param:`audio_data` numpy array. The :attr:`stft_data` of the new
+        :class:`AudioSignal`object is ``None``.
 
         Args:
-            audio_data (:obj:`np.ndarray`): Audio data to be put into the new :class:`AudioSignal` object.
+            audio_data (:obj:`np.ndarray`): Audio data to be put into the new :class:`AudioSignal`
+                object.
             verbose (bool): If ``True`` prints warnings. If ``False``, outputs nothing.
 
         Returns:
@@ -1305,12 +1338,13 @@ class AudioSignal(object):
         return new_signal
 
     def make_copy_with_stft_data(self, stft_data, verbose=True):
-        """ Makes a copy of this :class:`AudioSignal` object with :attr:`stft_data` initialized to the
-        input :param:`stft_data` numpy array. The :attr:`audio_data` of the new :class:`AudioSignal`
-        object is ``None``.
+        """ Makes a copy of this :class:`AudioSignal` object with :attr:`stft_data` initialized to
+        the input :param:`stft_data` numpy array. The :attr:`audio_data` of the new
+        :class:`AudioSignal` object is ``None``.
 
         Args:
-            stft_data (:obj:`np.ndarray`): STFT data to be put into the new :class:`AudioSignal` object.
+            stft_data (:obj:`np.ndarray`): STFT data to be put into the new :class:`AudioSignal`
+                object.
 
         Returns:
             (:class:`AudioSignal`): A copy of this :class:`AudioSignal` object with :attr:`stft_data`
@@ -1635,9 +1669,10 @@ class AudioSignal(object):
         into the notebook.
 
         Args:
-
             ext (str): What extension to use when embedding. '.mp3' is more lightweight 
             leading to smaller notebook sizes.
+            display (bool): Whether or not to display the object immediately, or to return
+            the html object for display later by the end user. Defaults to True.
 
         Example:
             >>> import nussl
@@ -1656,109 +1691,216 @@ class AudioSignal(object):
     #          Effect Hooks          #
     ##################################
 
-    def apply_effects(self, reset=True, overwrite=False):
+    def apply_effects(self, reset=True, overwrite=False, user_order=True):
         """
-        Effects are stored in an "effects chain", which refers to a queue of effects that will be 
-        applied to an AudioSignal object when `apply_effects` is called. We can add an effect to
-        the effects chain by using an effects hook, such as `time_stretch`.
+        This method applies a prespecified set of audio effects (e.g., chorus, filtering,
+        reverb, etc...) to this audio signal. Before any effect can be applied, the effects
+        are first added to the "effects chain", which refers to a queue of effects that will be
+        all applied to an AudioSignal object when this function is called. Effects are added
+        to the effects chain through AudioSignal effect hooks which are `AudioSignal` methods for
+        setting up an effect with the desired parameters. If the effect chain is empty this method
+        does nothing. By default, when this method is called the effects chain empty. See the
+        documentation below for a list of supported effects and their respective details.
 
-        >>> signal.signal_duration
-        10.0
-        >>> signal.time_stretch(0.5)
-        >>> signal.signal_duration
-        10.0
-
-        However, the signal's duration hasn't changed! You will need to call apply_effects to make
-        the changes in the signal's effects chains. 
-
-        >>> new_signal = signal.apply_effects()
-        >>> new_signal.signal_duration
-        5.0
-        >>> # This doesn't change the original signal
-        >>> signal.signal_duration
-        10.0
-
-        Using `apply_effects` will clear out the current effects chain. This behavior can be 
-        avoided by setting `reset` to False. Applied effects can be found in `effects_applied`:
-
-        >>> another_signal = signal.apply_effects()
-        >>> another_signal.signal_duration
-        10.0
-        >>> new_signal.effects_applied
-        ["time_stretch"]
-
-        To clear out the current effects chain without applying effect, use `reset_effects_chain`.
-        It will not reverse effects already applied!
-
-        If `apply_effects` is called with empty effects chain, then it returns itself.
-
-        >>> another_signal == signal
-        True
-
-        You can also chain effects together. This will add a tremolo effect followed by a high pass
-        effect to the AudioSignal's effects chains: (Order Matters!)
-
-        >>> audio_signal.tremolo(5, .6).high_pass(12000)
-
-        Using overwrite here, we change the audio data of audio_signal, rather than create a new signal. 
-
-        >>> audio_signal.apply_effects(overwrite=True)
-        >>> audio_signal.effects_applied
-        ["tremolo", "highpass"]
-
-        FFmpeg effects will be applied AFTER SoX effects, irregardless of the order the hooks 
-        are applied. The effects `time_stretch` and `pitch_shift` are SoX effects. All others 
-        are FFmpeg effects. For example, the two statements will result in the same altered signal:
-
-        >>> signal_1 = audio_signal.pitch_shift(4).tremolo(5, .6).apply_effects()
-        >>> signal_2 = audio_signal.tremolo(5, .6).pitch_shift(4).apply_effects()
-        >>> signal_1.effects_applied == signal_2.effects_applied
-        True
+        Notes:
+            The effects will be added in the order that they are added to the effects chain, unless
+            `user_order=False`, in case the order is not guaranteed to be preserved. Setting
+            `user_order=False` will apply all SoX effects first, then FFMpeg effects, which can
+            sped up processing time by ~30% in our experiments.
 
         Args:
-            reset (bool): If True, clears out all effects in effect chains following applying the effects. 
-                Default=True
+            reset (bool): If True, clears out all effects in effect chains following applying the
+                effects. Default=True
             overwrite (bool): If True, overwrites existing audio_data in AudioSignal. Default=False
-                Also clears out stft_data.
+                Also clears out `stft_data`.
+            user_order (bool): If True, applied effects in the user provided order. If False,
+                applies all SoX effects before all FFmpeg effects, which can be faster.
         Returns:
-            self or new_signal (AudioSignal): If overwrite=True, then returns initially AudioSignal 
+            self or new_signal (AudioSignal): If overwrite=True, then returns initially AudioSignal
             with edited audio_data. Otherwise, returns a new AudioSignal new_signal.
-        """
 
-        new_signal = self
-        if self._sox_effects_chain:
-            new_signal = effects.apply_effects_sox(new_signal, self._sox_effects_chain)
-        if self._ffmpeg_effects_chain:
-            new_signal = effects.apply_effects_ffmpeg(new_signal, self._ffmpeg_effects_chain)
+        Example:
+            Here are some examples of demonstrating to apply effects to your audio signal. Let's
+            start with an obvious effect, such as time stretching. We can add
+            this effect to the effects chain by using the built-in effects hook, `time_stretch()`:
+
+            >>> signal.signal_duration
+            10.0
+            >>> signal.time_stretch(0.5)
+            >>> signal.signal_duration
+            10.0
+
+            You can find this effect in the AudioSignal's effects chain. 
+
+            >>> effect = signal.effects_chain[0]
+            >>> str(effect)
+            "time_stretch (params: {factor=0.5})"
+
+            However, the signal's duration hasn't changed! You will need to call `apply_effects()`
+            to apply the changes in the signal's effects chains. Applied effects can be found in 
+            `effects_applied`.
+
+            >>> new_signal = signal.apply_effects()
+            >>> new_signal.signal_duration
+            5.0
+            >>> str(new_signal.effects_applied[0])
+            "time_stretch (params: {factor=0.5})"
+
+            >>> # This doesn't change the original signal
+            >>> signal.signal_duration
+            10.0
+
+            You can iterate through effects_chain to use the properties of FilterFunction
+            objects as arguments to `make_effect`:
+
+            >>> for effect in signal1.effects_applied:
+            >>>     filter_ = effect.filter
+            >>>     params = effect.params
+            >>>     signal2.make_effect(filter_, **params)
+
+            Using `apply_effects()` will clear out the current effects chain. This behavior can be
+            avoided by setting `reset` to False. 
+
+            >>> another_signal = signal.apply_effects()
+            >>> another_signal.signal_duration
+            10.0
+
+            To clear out the current effects chain without applying effect, use
+            `reset_effects_chain()`. It will not revert effects already applied (i.e., your audio
+            will still have the effects you applied).
+
+            If `apply_effects()` is called with empty effects chain, then it returns itself.
+
+            >>> another_signal == signal
+            True
+
+            You can also chain effects together. This will add a tremolo effect followed by a high
+            pass filter effect to the AudioSignal's effects chain (Note: order matters!):
+
+            >>> audio_signal.tremolo(5, .6).high_pass(12000)
+
+            Using overwrite here, we change the audio data of the variable `audio_signal`, rather
+            than create a new signal:
+
+            >>> audio_signal.apply_effects(overwrite=True)
+            >>> audio_signal.effects_applied
+            ["tremolo", "highpass"]
+
+            If `user_order` is false, FFmpeg effects will be applied AFTER SoX effects, regardless
+            of the order the hooks are applied. The effects `time_stretch` and `pitch_shift` are SoX
+            effects. All others are FFmpeg effects. This may be done for speed, as applying all
+            FFmpeg effects without interuption will be faster than being interrupted with a SoX
+            effect.
+
+            For example, the two statements will result in the same effected signal:
+
+            >>> signal_1 = audio_signal.pitch_shift(4).tremolo(5, .6).apply_effects(user_order=False)
+            >>> signal_2 = audio_signal.tremolo(5, .6).pitch_shift(4).apply_effects(user_order=False)
+            >>> signal_1.effects_applied == signal_2.effects_applied
+            True
+
+            Refer to the specific documentation for each effect to determine whether it is a SoX
+            effect or an FFmpeg effect.
+
+        See Also:
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
+            * :func:`time_stretch`: Changes the length without effecting the pitch.
+            * :func:`pitch_shift`: Changes the pitch without effecting the length of the signal.
+            * :func:`low_pass`: Applies a low pass filter to the signal.
+            * :func:`high_pass`: Applies a high pass filter to the signal.
+            * :func:`tremelo`: Applies a tremolo (volume wobbling) effect to the signal.
+            * :func:`vibrato`: Applies a vibrato (pitch wobbling) effect to the signal.
+            * :func:`chorus`: Applies a chorus effect to the signal.
+            * :func:`phaser`: Applies a phaser effect to the signal.
+            * :func:`flanger`: Applies a flanger effect to the signal.
+            * :func:`emphasis`: Boosts certain frequency ranges of the signal.
+            * :func:`compressor`: Compresses the dynamic range of the signal.
+            * :func:`equalizer`: Applies an equalizer to the signal.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+        """
+        if user_order:
+            new_signal = self._apply_user_ordered_effects()
+        else:
+            new_signal = self._apply_sox_ffmpeg_ordered_effects()
 
         if reset:
             self.reset_effects_chain()
         if overwrite:
             self.audio_data = new_signal.audio_data
-            self.effects_applied += new_signal.effects_applied
+            self._effects_applied += new_signal.effects_applied
             self.stft_data = None
             return self
 
         return new_signal
-        
+
+    def _apply_user_ordered_effects(self):
+        new_signal = self
+        i = j = 0
+
+        while i < len(self._effects_chain):
+            j += 1
+
+            if j == len(self._effects_chain) or \
+                type(self._effects_chain[i]) != type(self._effects_chain[j]):  # new fx type
+
+                next_chain = self._effects_chain[i:j]
+                if isinstance(next_chain[0], effects.SoXFilter):
+                    new_signal = effects.apply_effects_sox(new_signal, next_chain)
+                elif isinstance(next_chain[0], effects.FFmpegFilter):
+                    new_signal = effects.apply_effects_ffmpeg(new_signal, next_chain)
+
+                i = j
+
+        return new_signal
+
+    def _apply_sox_ffmpeg_ordered_effects(self):
+        new_signal = self
+        sox_effects_chain = []
+        ffmpeg_effects_chain = []
+        for f in self._effects_chain:
+            if isinstance(f, effects.FFmpegFilter):
+                ffmpeg_effects_chain.append(f)
+            elif isinstance(f, effects.SoXFilter):
+                sox_effects_chain.append(f)
+
+        if sox_effects_chain:
+            new_signal = effects.apply_effects_sox(new_signal, sox_effects_chain)
+        if ffmpeg_effects_chain:
+            new_signal = effects.apply_effects_ffmpeg(new_signal, ffmpeg_effects_chain)
+
+        return new_signal
+
     def make_effect(self, effect, **kwargs):
         """
-        Calls another effect hook. An example:
+        Syntactic sugar for adding an arbitrary effect hook to the effects chain by name.
 
-        >>> signal.time_stretch(1.5)
+        Example:
+            >>> signal.time_stretch(1.5)
 
-        Is the same as 
-        >>> signal.make_effect("time_stretch", factor=1.5)
+            Is the same as
+            >>> signal.make_effect("time_stretch", factor=1.5)
 
-        This effect won't be applied until you call `apply_effect`!
+            The attributes of a FilterFunction in the lists effects_applied or effects_chain may 
+            used with `make_effect`. 
+
+            >>> for effect in signal1.effects_applied:
+            >>>     filter_ = effect.filter
+            >>>     params = effect.params
+            >>>     signal2.make_effect(filter_, **params)
+
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args:
             effect (str): Function name of desired effect hook of the AudioSignal
             **kwargs: Additional parameters for given effect. 
         Return:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        
         try:
             effect_hook = getattr(self, effect, None)
             effect_hook(**kwargs)
@@ -1771,10 +1913,13 @@ class AudioSignal(object):
         """
         Clears effects chain of AudioSignal.
 
-        This will not remove effects that have already been applied!
+        This will not revert effects that have already been applied to the audio!
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
         """
-        self._ffmpeg_effects_chain = []
-        self._sox_effects_chain = []
+        self._effects_chain = []
         return self
 
     def time_stretch(self, factor):
@@ -1787,37 +1932,50 @@ class AudioSignal(object):
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.tempo
         for details. 
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args: 
             factor (float): Scaling factor for tempo change. Must be positive.
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._sox_effects_chain.append(effects.time_stretch(factor))
+        self._effects_chain.append(effects.time_stretch(factor))
         return self
     
-    def pitch_shift(self, shift):
+    def pitch_shift(self, n_semitones):
         """
         Add pitch shift effect to AudioSignal's effect chain. 
-        A positive shift will raise the pitch of the signal by `shift` semitones.
+        A positive shift will raise the pitch of the signal by `n_semitones` 
+        semitones.
 
         This is a SoX effect. Please see:
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.pitch
         For details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args: 
-            shift (float): The number of semitones to shift the audio. 
+            n_semitones (integer): The number of semitones to shift the audio. 
                 Positive values increases the frequency of the signal
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._sox_effects_chain.append(effects.pitch_shift(shift))
+        self._effects_chain.append(effects.pitch_shift(n_semitones))
         return self
     
-    def low_pass(self, freq, poles=2, width_type="h", width=.707):
+    def low_pass(self, freq, poles=2, width_type="h", width=0.707):
         """
         Add low pass effect to AudioSignal's effect chain
 
@@ -1825,7 +1983,8 @@ class AudioSignal(object):
         https://ffmpeg.org/ffmpeg-all.html#lowpass
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
         
         Args: 
             freq (float): Threshold for low pass. Should be positive
@@ -1838,13 +1997,19 @@ class AudioSignal(object):
                 'k': kHz
             width (float): Band width in width_type units
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.low_pass(freq, poles=poles, 
-            width_type=width_type, width=width))
+        self._effects_chain.append(effects.low_pass(freq, poles=poles,
+                                                    width_type=width_type,
+                                                    width=width))
         return self
     
-    def high_pass(self, freq, poles=2, width_type="h", width=.707):
+    def high_pass(self, freq, poles=2, width_type="h", width=0.707):
         """
         Add high pass effect to AudioSignal's effect chain
 
@@ -1852,7 +2017,8 @@ class AudioSignal(object):
         https://ffmpeg.org/ffmpeg-all.html#highpass
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
         
         Args: 
             freq (float): Threshold for high pass. Should be positive scalar
@@ -1865,10 +2031,16 @@ class AudioSignal(object):
                 'k': kHz
             width (float): Band width in width_type units
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.high_pass(freq, poles=poles, 
-            width_type=width_type, width=width))
+        self._effects_chain.append(effects.high_pass(freq, poles=poles,
+                                                     width_type=width_type,
+                                                     width=width))
         return self
 
     def tremolo(self, mod_freq, mod_depth):
@@ -1879,15 +2051,21 @@ class AudioSignal(object):
         https://ffmpeg.org/ffmpeg-all.html#tremolo
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
         
         Args: 
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.tremolo(mod_freq, mod_depth))
+        self._effects_chain.append(effects.tremolo(mod_freq, mod_depth))
         return self
     
     def vibrato(self, mod_freq, mod_depth):
@@ -1898,26 +2076,33 @@ class AudioSignal(object):
         https://ffmpeg.org/ffmpeg-all.html#vibrato
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
         
         Args: 
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.vibrato(mod_freq, mod_depth))
+        self._effects_chain.append(effects.vibrato(mod_freq, mod_depth))
         return self
     
-    def chorus(self, delays, decays, speeds, depths, in_gain=.4, out_gain=.4):
+    def chorus(self, delays, decays, speeds, depths, in_gain=0.4, out_gain=0.4):
         """
-        Add chorus effect to AudioSignal's effect chain
+        Add chorus effect to AudioSignal's effect chain.
 
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#chorus
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
         
         Args:
             delays (list of float): delays in ms. Typical Delay is 40ms-6ms
@@ -1927,14 +2112,21 @@ class AudioSignal(object):
             in_gain (float): Proportion of input gain. Must be between 0 and 1
             out_gain (float): Proportion of output gain. Must be between 0 and 1
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.chorus(delays, decays, 
-            speeds, depths, in_gain=.4, out_gain=.4))
+        self._effects_chain.append(effects.chorus(delays, decays,
+                                                  speeds, depths,
+                                                  in_gain=in_gain,
+                                                  out_gain=out_gain))
         return self
         
-    def phaser(self, in_gain=.4, out_gain=.74, delay=3, decay=.4, 
-        speed=.5, _type="triangular"):
+    def phaser(self, in_gain=0.4, out_gain=0.74, delay=3, decay=0.4,
+               speed=0.5, type_="triangular"):
         """
         Add phaser effect to AudioSignal's effect chain
 
@@ -1942,7 +2134,8 @@ class AudioSignal(object):
         https://ffmpeg.org/ffmpeg-all.html#aphaser
         for details. 
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args:
             in_gain (float): Proportion of input gain. Must be between 0 and 1
@@ -1950,25 +2143,32 @@ class AudioSignal(object):
             delay (float): Delay of chorus filter in ms. (Time between original signal and delayed)
             decay (float): Decay of copied signal. Must be between 0 and 1.
             speed (float): Modulation speed of the delayed filter. 
-            _type (str): modulation type. Either Triangular or Sinusoidal
+            type_ (str): modulation type. Either Triangular or Sinusoidal
                 "triangular" or "t" for Triangular
                 "sinusoidal" of "s" for sinusoidal
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.phaser(in_gain=.4, out_gain=.74, delay=3, 
-            decay=.4, speed=.5, _type="triangular"))
+        fx = effects.phaser(in_gain=in_gain, out_gain=out_gain, delay=delay,
+                            decay=decay, speed=speed, type_=type_)
+        self._effects_chain.append(fx)
         return self
     
-    def flanger(self, delay=0, depth=2, regen=0, width=71, 
-        speed=.5, phase=25, shape="sinusoidal", interp="linear"):
+    def flanger(self, delay=0, depth=2, regen=0, width=71,
+                speed=0.5, phase=25, shape="sinusoidal", interp="linear"):
         """
         Add flanger effect to AudioSignal's effect chain
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#flanger
         for details. 
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args:
             delay (float): Base delay in ms between original signal and copy.
@@ -1982,31 +2182,36 @@ class AudioSignal(object):
             phase (float): swept wave percentage-shift for multi channel. Must be between 0 and 100.
             interp (str): Delay Line interpolation. Must be "linear" or "quadratic".
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.flanger(delay=0, depth=2, regen=0, width=71, 
-            speed=.5, phase=25, shape="sinusoidal", interp="linear"))
+        fx = effects.flanger(delay=delay, depth=depth, regen=regen, width=width,
+                             speed=speed, phase=phase, shape=shape, interp=interp)
+        self._effects_chain.append(fx)
         return self
     
-    def emphasis(self, level_in, level_out, _type="col", mode='production'):
+    def emphasis(self, level_in, level_out, type_="col", mode='production'):
         """
         Add emphasis effect to AudioSignal's effect chain. An emphasis filter boosts 
-        frequency ranges the most suspectible to noise in a medium. When restoring
+        frequency ranges the most susceptible to noise in a medium. When restoring
         sounds from such a medium, a de-emphasis filter is used to de-boost boosted 
         frequencies. 
-
-        It is recommended that users use `AudioSignal.emphasis` rather than this function.
 
         This is a FFmpeg effect. Please see
         https://ffmpeg.org/ffmpeg-all.html#aemphasis
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args:
             level_in (float): Input gain
             level_out (float): Output gain
-            _type (str): physical medium type to convert/deconvert from.
+            type_ (str): physical medium type to convert/deconvert from.
                 Must be one of the following: 
                 - "col": Columbia 
                 - "emi": EMI
@@ -2021,15 +2226,20 @@ class AudioSignal(object):
                 - "reproduction": Apply de-emphasis filter
                 - "production": Apply emphasis filter
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.emphasis(level_in, 
-            level_out, _type="col", mode='production'))
+        self._effects_chain.append(effects.emphasis(level_in, level_out,
+                                                    type_=type_, mode=mode))
         return self
     
     def compressor(self, level_in, mode="downward", reduction_ratio=2,
-        attack=20, release=250, makeup=1, knee=2.8284, link="average",
-        detection="rms", mix=1, threshold=.125):
+                   attack=20, release=250, makeup=1, knee=2.8284, link="average",
+                   detection="rms", mix=1, threshold=0.125):
         """
         Add compressor effect to AudioSignal's effect chain
     
@@ -2037,7 +2247,8 @@ class AudioSignal(object):
         https://ffmpeg.org/ffmpeg-all.html#acompressor
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args:
             level_in (float): Input Gain
@@ -2058,11 +2269,17 @@ class AudioSignal(object):
                 Either "peak" for exact or "rms".
             mix (float): Proportion of compressed signal in output.
         Returns:
-            self: Inital AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effect chains
+
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._ffmpeg_effects_chain.append(effects.compressor(level_in, mode="downward", reduction_ratio=2,
-            attack=20, release=250, makeup=1, knee=2.8284, link="average",
-            detection="rms", mix=1, threshold=.125))
+        fx = effects.compressor(level_in, mode=mode, reduction_ratio=reduction_ratio,
+                                attack=attack, release=release, makeup=makeup, knee=knee, link=link,
+                                detection=detection, mix=mix, threshold=threshold)
+        self._effects_chain.append(fx)
         return self
     
     def equalizer(self, bands):
@@ -2073,7 +2290,8 @@ class AudioSignal(object):
         https://ffmpeg.org/ffmpeg-all.html#anequalizer  
         for details.
 
-        This effect won't be applied until you call `apply_effect`!
+        Notes:
+            This effect won't be applied until you call `apply_effect()`!
 
         Args:
             bands: A list of dictionaries, for each band. The required values for each dictionary:
@@ -2086,11 +2304,15 @@ class AudioSignal(object):
                     1, for Chebyshev type 1
                     2, for Chebyshev type 2
         Returns:
-            self: Inital AudioSignal with updated effect chains
-        """
-        self._ffmpeg_effects_chain.append(effects.equalizer(bands))
-        return self
+            self: Initial AudioSignal with updated effect chains
 
+        See Also:
+            * :func:`apply_effects`: Applies effects once they are in the effects chain.
+            * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
+            * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
+        """
+        self._effects_chain.append(effects.equalizer(bands))
+        return self
 
     ##################################################
     #              Operator overloading              #

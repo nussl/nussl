@@ -67,8 +67,9 @@ following:
 
       $ python create_and_execute_notebook path/to/script.py # make just one notebook
 
-2. To actually
- Option 1: create a new notebook in either ``tutorials`` or ``examples``. Work in the notebook
+2. To actually create notebooks, there are two options.
+
+   Option 1: create a new notebook in either ``tutorials`` or ``examples``. Work in the notebook
    until you are satisfied with your explanation/demo. Note: your notebook is NOT yet
    in version control!
 

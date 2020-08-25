@@ -1,3 +1,4 @@
+from copy import deepcopy
 import numpy as np
 import nussl.core.effects as effects
 from nussl.core.audio_signal import AudioSignalException
@@ -8,6 +9,8 @@ import pytest
 REGRESSION_PATH = "tests/core/regression/augmentation"
 os.makedirs(REGRESSION_PATH, exist_ok=True)
 
+# Note: When changing these tests, please do not call `mix_and_sources["mix"].apply_effects`
+# with overwrite=True
 
 def fx_regression(audio_data, reg_path, check_against_regression_data):
     scores = {
@@ -38,6 +41,19 @@ def test_pitch_shift(mix_and_sources, check_against_regression_data):
     reg_path = path.join(REGRESSION_PATH, "pitch_shift.json")
     fx_regression(augmented.audio_data, reg_path, check_against_regression_data)
 
+def test_metadata(mix_and_sources):
+    shift = 1
+    factor = 1.05
+    signal, _ = mix_and_sources
+    # Resample to a weird sampling rate nobody uses
+    signal = deepcopy(signal)
+    signal.resample(13370)
+    signal.pitch_shift(shift).time_stretch(factor)
+
+    augmented = signal.apply_effects(overwrite=False)
+
+    assert augmented.sample_rate == signal.sample_rate
+    assert augmented.num_channels == augmented.num_channels
 
 def test_params(mix_and_sources):
     with pytest.raises(ValueError):
@@ -282,7 +298,7 @@ def test_misc_param_check():
     with pytest.raises(ValueError):
         effects.phaser(decay=-1)
     with pytest.raises(ValueError):
-        effects.phaser(_type="fail")
+        effects.phaser(type_="fail")
 
     with pytest.raises(ValueError):
         effects.flanger(delay=-1)
@@ -302,7 +318,7 @@ def test_misc_param_check():
         effects.flanger(phase=-1)
 
     with pytest.raises(ValueError):
-        effects.emphasis(1, 1, _type="fail")
+        effects.emphasis(1, 1, type_="fail")
     with pytest.raises(ValueError):
         effects.emphasis(1, 1, mode="fail")
     with pytest.raises(ValueError):
@@ -341,7 +357,7 @@ def test_silent_mode(mix_and_sources):
 
 def test_hooks(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
-
+    sr = signal.sample_rate
     signal = (
         signal
             .time_stretch(3)
@@ -353,7 +369,7 @@ def test_hooks(mix_and_sources, check_against_regression_data):
             .chorus([20, 70], [.9, .4], [.9, .6], [1, .9])
             .phaser()
             .flanger(delay=3)
-            .emphasis(1, .5, _type='riaa')
+            .emphasis(1, .5, type_='riaa')
             .compressor(.9)
             .equalizer([{
                 'chn': [0, 1],
@@ -364,18 +380,24 @@ def test_hooks(mix_and_sources, check_against_regression_data):
             }])
     )
 
-    assert len(signal._ffmpeg_effects_chain) == 10
-    assert len(signal._sox_effects_chain) == 2
+    assert len(signal.effects_chain) == 12
 
-    augmented_signal = signal.apply_effects(reset=False)
+    augmented_signal = signal.apply_effects(reset=False, user_order=False)
+    assert len(signal.effects_chain) == 12
+    assert len(augmented_signal.effects_applied) == 12
+    assert len(augmented_signal.effects_chain) == 0
+
+    assert signal.sample_rate == sr
 
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
-    augmented_signal.time_stretch(.7).apply_effects(overwrite=True)
+    augmented_signal.time_stretch(.7).apply_effects(overwrite=True, user_order=False)
 
-    assert len(augmented_signal._ffmpeg_effects_chain) == 0
-    assert len(augmented_signal._sox_effects_chain) == 0
+    assert len(augmented_signal.effects_chain) == 0
+    assert len(augmented_signal.effects_applied) == 25
+
+    assert str(augmented_signal.effects_applied[-1]) == "time_stretch (params: factor=0.7)"
 
     equal_signal = augmented_signal.apply_effects()
     assert equal_signal == augmented_signal
@@ -387,7 +409,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
 
     (signal
     .make_effect("time_stretch", factor=3)
-    .make_effect("pitch_shift", shift=2)
+    .make_effect("pitch_shift", n_semitones=2)
     .make_effect("low_pass", freq=512)
     .make_effect("high_pass", freq=512)
     .make_effect("tremolo", mod_freq=5, mod_depth=.4)
@@ -395,7 +417,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
     .make_effect("chorus", delays=[20, 70], decays=[.9, .4], speeds=[.9, .6], depths=[1, .9])
     .make_effect("phaser")
     .make_effect("flanger", delay=3)
-    .make_effect("emphasis", level_in=1, level_out=.5, _type='riaa')
+    .make_effect("emphasis", level_in=1, level_out=.5, type_='riaa')
     .make_effect("compressor", level_in=.9)
     .make_effect("equalizer", bands=[{
                 'chn': [0, 1],
@@ -405,17 +427,40 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
                 't': 0
             }])
     )
-    signal.apply_effects(reset=False)
-    augmented_signal = signal.apply_effects(reset=False, overwrite=True)
+
+    augmented_signal = signal.apply_effects(user_order=False)
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # This should result in the same signal in test_hooks
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
 
+    for effect in augmented_signal.effects_applied:
+        _filter = effect.filter
+        params = effect.params
+        signal.make_effect(_filter, **params)
+
+    augmented_signal2 = signal.apply_effects(user_order=False)
+
     with pytest.raises(AudioSignalException):
         signal.make_effect("fail")
 
-def test_filter_function_pass():
-    # this test is for 100% coverage
-    function = effects.FilterFunction()
-    dummy_item = None
-    function.func(dummy_item)
+    assert np.allclose(augmented_signal.audio_data, augmented_signal2.audio_data)
+
+
+def test_order(mix_and_sources):
+    mix, _ = mix_and_sources
+    mix.reset_effects_chain().time_stretch(1.5).tremolo(.3,.4).pitch_shift(5).vibrato(.3, .4)
+    ## User order
+    signal_user = mix.apply_effects(reset=False)
+
+    ## SoX-FFmpeg Order
+    signal_sf = mix.apply_effects(reset=False, user_order=False)
+
+    assert len(signal_user.effects_applied) == len(signal_sf.effects_applied)
+
+    user_order = ["time_stretch", "tremolo", "pitch_shift", "vibrato"]
+    for effect, _filter in zip(signal_user.effects_applied, user_order):
+        assert effect.filter == _filter
+
+    sox_ffmpeg_order = ["time_stretch", "pitch_shift", "tremolo", "vibrato"]
+    for effect, _filter in zip(signal_sf.effects_applied, sox_ffmpeg_order):
+        assert effect.filter == _filter

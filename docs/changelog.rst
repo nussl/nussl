@@ -1,10 +1,17 @@
 Changelog
 =========
 
+v1.1.2
+------
+- Fixed a bug in Dual Path models where they couldn't be used with DataParallel.
+- Fixed a regularization bug in SI-SDR (eps=1e-8 instead of 1e-10).
+
 v1.1.1
 ------
 - Allowed MixSourceFolder to mix sources on the fly.
-- Added effects utilities.
+- Adding OnTheFly dataset for mixing sources on the fly using a function.
+- Added effects utilities for data augmentation.
+- Fixed bug with ignite 0.4.0
 
 v1.1.0
 ------
@@ -28,7 +35,6 @@ v1.0.1
 
 v1.0.0
 ------
-
 - Python 3 support!
 - Much improved documentation and API
 - Refactoring of AudioSignal and other parts to be more intuitive

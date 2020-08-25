@@ -3,7 +3,6 @@ import shutil
 import logging
 import random
 from collections import OrderedDict
-import librosa
 
 import torch
 import zarr
@@ -12,7 +11,6 @@ import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 
 from .. import utils
-from ..core import AudioSignal
 
 # This is for when you're running multiple
 # training threads
