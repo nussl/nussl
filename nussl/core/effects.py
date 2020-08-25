@@ -99,7 +99,7 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
     with _close_temp_files(tmpfiles):
         curr_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
         out_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
-        
+
         tmpfiles.append(curr_tempfile)
         tmpfiles.append(out_tempfile)
         audio_signal.write_audio_to_file(curr_tempfile)
@@ -129,7 +129,11 @@ class SoXFilter(FilterFunction):
     def __init__(self, filter_, **filter_kwargs):
         super().__init__(filter_, **filter_kwargs)
         if filter_ == "time_stretch":
-            self.func = lambda tfm: tfm.tempo(**filter_kwargs)
+            factor = filter_kwargs['factor']
+            if abs(factor - 1) <=  .1:
+                self.func = lambda tfm: tfm.stretch(**filter_kwargs)
+            else:
+                self.func = lambda tfm: tfm.tempo(**filter_kwargs)
         elif filter_ == "pitch_shift":
             self.func = lambda tfm: tfm.pitch(**filter_kwargs)
         else:
@@ -158,9 +162,11 @@ def apply_effects_sox(audio_signal, filters):
     augmented_data = tfm.build_array(
         input_array=np.transpose(audio_data), 
         sample_rate_in=audio_signal.sample_rate
-    ) 
-    
-    augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data))
+    )
+
+    augmented_signal = AudioSignal(
+        audio_data_array=np.transpose(augmented_data),
+        sample_rate=audio_signal.sample_rate)
     augmented_signal.label = audio_signal.label
     augmented_signal._effects_applied = audio_signal.effects_applied + filters
     return augmented_signal

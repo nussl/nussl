@@ -1,3 +1,4 @@
+from copy import deepcopy
 import numpy as np
 import nussl.core.effects as effects
 from nussl.core.audio_signal import AudioSignalException
@@ -40,6 +41,19 @@ def test_pitch_shift(mix_and_sources, check_against_regression_data):
     reg_path = path.join(REGRESSION_PATH, "pitch_shift.json")
     fx_regression(augmented.audio_data, reg_path, check_against_regression_data)
 
+def test_metadata(mix_and_sources):
+    shift = 1
+    factor = 1.05
+    signal, _ = mix_and_sources
+    # Resample to a weird sampling rate nobody uses
+    signal = deepcopy(signal)
+    signal.resample(13370)
+    signal.pitch_shift(shift).time_stretch(factor)
+
+    augmented = signal.apply_effects(overwrite=False)
+
+    assert augmented.sample_rate == signal.sample_rate
+    assert augmented.num_channels == augmented.num_channels
 
 def test_params(mix_and_sources):
     with pytest.raises(ValueError):
@@ -343,7 +357,7 @@ def test_silent_mode(mix_and_sources):
 
 def test_hooks(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
-
+    sr = signal.sample_rate
     signal = (
         signal
             .time_stretch(3)
@@ -372,6 +386,8 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     assert len(signal.effects_chain) == 12
     assert len(augmented_signal.effects_applied) == 12
     assert len(augmented_signal.effects_chain) == 0
+
+    assert signal.sample_rate == sr
 
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
@@ -411,7 +427,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
                 't': 0
             }])
     )
-    
+
     augmented_signal = signal.apply_effects(user_order=False)
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # This should result in the same signal in test_hooks
