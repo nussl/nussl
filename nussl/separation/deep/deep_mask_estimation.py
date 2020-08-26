@@ -3,7 +3,8 @@ import torch
 from ..base import MaskSeparationBase, DeepMixin, SeparationException
 from ... import ml
 
-class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
+
+class DeepMaskEstimation(DeepMixin, MaskSeparationBase):
     """
     Separates an audio signal using the masks produced by a deep model for every 
     time-frequency point. It expects that the model outputs a dictionary where one

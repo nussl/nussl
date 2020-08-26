@@ -3,7 +3,7 @@ import torch
 from ..base import ClusteringSeparationBase, DeepMixin, SeparationException
 
 
-class DeepClustering(ClusteringSeparationBase, DeepMixin):
+class DeepClustering(DeepMixin, ClusteringSeparationBase):
     """
     Clusters the embedding produced by a deep model for every time-frequency point.
     This is the deep clustering source separation approach. It is flexible with

@@ -96,6 +96,21 @@ class SeparationBase(object):
         """
         raise NotImplementedError('Cannot call base class.')
 
+    def get_metadata(self, to_str=False, **kwargs):
+        """
+        Returns metadata associated with this separation algorithm.
+
+        Args:
+            to_str (bool): Whether to return the metadata as a string.
+
+        Returns:
+            Formatted metadata if `to_str` is True, else metadata dict.
+
+        Raises:
+            NotImplementedError: Cannot call base class
+        """
+        raise NotImplementedError('Cannot call base class.')
+
     def __call__(self, *args, audio_signal=None, **kwargs):
         if audio_signal is not None:
             self.audio_signal = audio_signal

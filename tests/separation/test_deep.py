@@ -70,6 +70,74 @@ def overfit_model(scaper_folder):
         yield model_path, dataset.process_item(dataset.items[0])
 
 
+def test_deep_mixin(overfit_model):
+    model_path, item = overfit_model
+    deep_mixin = separation.deep.DeepClustering(
+        item['mix'], 2, model_path, mask_type='binary')
+    deep_mixin.load_model(model_path)
+
+    deep_mixin.audio_signal = item['mix']
+    deep_mixin.channel_dim = -1
+
+    assert not isinstance(deep_mixin.transform, OMITTED_TRANSFORMS)
+    if isinstance(deep_mixin.transform, datasets.transforms.Compose):
+        for t in deep_mixin.transform.transforms:
+            assert not isinstance(t, OMITTED_TRANSFORMS)
+
+    mix_item = {'mix': item['mix']}
+
+    deep_mixin._get_input_data_for_model()
+
+    assert deep_mixin.metadata['stft_params'] == deep_mixin.audio_signal.stft_params
+
+    for key, val in deep_mixin.input_data.items():
+        if torch.is_tensor(val):
+            assert val.shape[0] == deep_mixin.metadata['num_channels']
+
+    output = deep_mixin.model(deep_mixin.input_data)
+
+    output_tfm = deep_mixin._get_transforms(
+        datasets.transforms.MagnitudeWeights())
+
+    output_tfm = deep_mixin._get_transforms(
+        datasets.transforms.MagnitudeSpectrumApproximation())
+
+    assert isinstance(
+        output_tfm, datasets.transforms.MagnitudeSpectrumApproximation)
+
+    item['mix'].resample(8000)
+    deep_mixin.audio_signal = item['mix']
+    deep_mixin._get_input_data_for_model()
+    assert deep_mixin.audio_signal.sample_rate == deep_mixin.metadata['sample_rate']
+
+    dummy_data = {'one_hot': np.random.rand(100)}
+    input_data = deep_mixin._get_input_data_for_model(dummy_data)
+
+    assert 'one_hot' in input_data
+
+
+def test_deep_mixin_metadata(overfit_model):
+    model_path, item = overfit_model
+    deep_mixin = separation.deep.DeepClustering(
+        item['mix'], 2, model_path, mask_type='binary')
+    deep_mixin.load_model(model_path)
+
+    metadata = deep_mixin.metadata
+
+    deep_mixin.metadata = None
+    with pytest.raises(ValueError):
+        deep_mixin.get_metadata()
+
+    deep_mixin.metadata = metadata
+    assert type(deep_mixin.get_metadata()) == dict
+    assert type(deep_mixin.get_metadata(to_str=True)) == str
+
+    result = deep_mixin.get_metadata(for_upload=True)
+    keys = ['train_dataset', 'val_dataset']
+    for k in keys:
+        assert 'folder' not in result[k]
+
+
 def test_separation_deep_clustering(overfit_model):
     model_path, item = overfit_model
     dpcl = separation.deep.DeepClustering(

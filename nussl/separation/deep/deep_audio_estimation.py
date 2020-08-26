@@ -1,7 +1,8 @@
 import torch
 from ..base import SeparationBase, DeepMixin, SeparationException
 
-class DeepAudioEstimation(SeparationBase, DeepMixin):
+
+class DeepAudioEstimation(DeepMixin, SeparationBase):
     """
     Separates an audio signal using a model that produces separated sources directly
     in the waveform domain. It expects that the model outputs a dictionary where one

@@ -1,4 +1,6 @@
 import torch
+import yaml
+import json
 
 from ...ml import SeparationModel
 from ...datasets import transforms as tfm
@@ -103,3 +105,37 @@ class DeepMixin:
         self.input_data = data
         return self.input_data
 
+    def get_metadata(self, to_str=False, **kwargs):
+        """
+        Gets the metadata associated with this model.
+        Args:
+            to_str (bool): If True, will return a string, else will return dict.
+            for_upload (bool): If True, will scrub metadata for uploading to EFZ.
+
+        Returns:
+            (str) or (dict) containing metadata.
+        """
+        for_upload = kwargs.get('for_upload', False)
+        metadata = getattr(self, 'metadata', None)
+
+        if metadata is None:
+            raise ValueError('Could not find associated metadata.')
+
+        if for_upload:
+            # remove paths
+            keys = ['train_dataset', 'val_dataset']
+            for k in keys:
+                try:
+                    metadata[k].pop('folder')
+                except:
+                    pass
+
+        if isinstance(metadata['config'], str):
+            metadata['config'] = json.loads(metadata['config'])
+        metadata['separation_class'] = type(self).__name__
+        metadata['model_name'] = metadata['config']['name']
+
+        if to_str:
+            return yaml.dump(metadata, indent=4)
+        else:
+            return metadata
