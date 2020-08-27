@@ -355,7 +355,7 @@ class Embedding(nn.Module):
         self.embedding_size = embedding_size
         self.reshape = reshape
 
-        if 'gate' in self.activation:
+        if 'gated_tanh' in self.activation:
             self.embed_linear = nn.Sequential(
                 nn.Linear(hidden_size, hidden_size), 
                 nn.Tanh()
@@ -404,7 +404,7 @@ class Embedding(nn.Module):
         shape = tuple(shape)
         data = data.reshape(shape + (-1,))
 
-        if 'gate' in self.activation:
+        if 'gated_tanh' in self.activation:
             data = self.embed_linear(data) * self.embed_gate(data)
 
         data = self.linear(data)
