@@ -65,6 +65,7 @@ class SeparationModel(nn.Module):
         self.input = {}
         for module_key in config['modules']:
             module = config['modules'][module_key]
+
             if 'class' in module:
                 if module['class'] in dir(modules): 
                     class_func = getattr(modules, module['class'])
@@ -72,7 +73,8 @@ class SeparationModel(nn.Module):
                 else:
                     class_func = getattr(nn, module['class'])
                     module_snapshot = f'pytorch v{torch.__version__} builtin'
-                config['modules']['module_snapshot'] = module_snapshot
+                config['modules'][module_key]['module_snapshot'] = module_snapshot
+
                 if 'args' not in module:
                     module['args'] = {}
                 module_dict[module_key] = class_func(**module['args'])
