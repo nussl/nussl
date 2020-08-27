@@ -497,6 +497,7 @@ class Expand(nn.Module):
             tensor_b = tensor_b.unsqueeze(-1)
         return tensor_b.expand_as(tensor_a)
 
+
 class Concatenate(nn.Module):
     """
     Concatenates two or more pieces of data together along a 
@@ -729,8 +730,8 @@ class DualPathBlock(nn.Module):
         self.inter_processor = inter_processor
 
         # Normalization + activation layers
-        self.intra_norm = nn.GroupNorm(1, n_features)
-        self.inter_norm = nn.GroupNorm(1, n_features)
+        self.intra_norm = nn.GroupNorm(1, n_features, eps=1e-8)
+        self.inter_norm = nn.GroupNorm(1, n_features, eps=1e-8)
 
     def apply_norm(self, data, norm_layer, shape):
         in_shape = data.shape

@@ -264,9 +264,12 @@ class STFT(FilterBank):
             data = super().apply_filter(data)
             data *= scale
             
+            eps = 1e-5
             cutoff = 1 + self.filter_length // 2
             real_part = data[..., :cutoff, :]
             imag_part = data[..., cutoff:, :]
+            real_part[real_part <= eps] = eps
+            imag_part[imag_part <= eps] = eps
             
             magnitude = torch.sqrt(
                 real_part ** 2 + imag_part ** 2)
