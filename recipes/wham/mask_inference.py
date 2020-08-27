@@ -109,7 +109,6 @@ val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=NUM_WORKER
 
 n_features = dataset[0]['mix_magnitude'].shape[1]
 # builds a baseline model with 4 recurrent layers, 600 hidden units, bidirectional
-# and 20 dimensional embedding
 config = ml.networks.builders.build_recurrent_mask_inference(
     n_features, 600, 4, True, 0.3, 2, ['sigmoid'],
     normalization_class='BatchNorm'
@@ -201,6 +200,7 @@ pool.shutdown(wait=True)
 
 json_files = glob.glob(f"{RESULTS_DIR}/*.json")
 df = evaluation.aggregate_score_files(json_files)
+dme = evaluation.associate_metrics(df, dme)
 
 overall = df.mean()
 headers = ["", f"OVERALL (N = {df.shape[0]})", ""]

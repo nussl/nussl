@@ -116,6 +116,7 @@ class DeepMixin:
             (str) or (dict) containing metadata.
         """
         for_upload = kwargs.get('for_upload', False)
+        truncate_loss = kwargs.get('truncate_loss', False)
         metadata = getattr(self, 'metadata', None)
 
         if metadata is None:
@@ -125,10 +126,13 @@ class DeepMixin:
             # remove paths
             keys = ['train_dataset', 'val_dataset']
             for k in keys:
-                try:
+                if k in metadata:
                     metadata[k].pop('folder')
-                except:
-                    pass
+
+        if for_upload or truncate_loss:
+            if 'trainer.state.epoch_history' in metadata:
+                loss_history = metadata.pop('trainer.state.epoch_history')
+                metadata['final_loss'] = {k: float(v[-1]) for k, v in loss_history.items()}
 
         if isinstance(metadata['config'], str):
             metadata['config'] = json.loads(metadata['config'])

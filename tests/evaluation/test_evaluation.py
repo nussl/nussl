@@ -335,6 +335,10 @@ def save_scores(directory, scores, name):
 def check_aggregate(directory):
     json_files = glob.glob(f"{directory}/*.json")
     df = nussl.evaluation.aggregate_score_files(json_files)
+
+    dme = nussl.separation.deep.DeepMaskEstimation(nussl.AudioSignal())
+    dme = nussl.evaluation.associate_metrics(df, dme)
+
     report_card = nussl.evaluation.report_card(df, 'Testing notes', decimals=5)
     print(report_card)
 

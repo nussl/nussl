@@ -101,11 +101,10 @@ class SafeModelLoader(object):
             raise SeparationException(f"Failed loading model. Expected to find "
                                       f"'nussl_version' in {model_path}.")
 
+        metadata['nussl_version'] = saved_version
+
         if 'config' in model_dict:
             metadata['config'] = json.loads(model_dict['config'])
-
-        if 'nussl_version' in model_dict:
-            metadata['nussl_version'] = model_dict['nussl_version']
 
         return metadata
 

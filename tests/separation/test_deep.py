@@ -136,6 +136,8 @@ def test_deep_mixin_metadata(overfit_model):
     keys = ['train_dataset', 'val_dataset']
     for k in keys:
         assert 'folder' not in result[k]
+    assert 'trainer.state.epoch_history' not in result
+    print(deep_mixin.get_metadata(to_str=True))
 
 
 def test_separation_deep_clustering(overfit_model):
