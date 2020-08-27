@@ -16,7 +16,7 @@ def test_safe_model_loader():
 
     assert 'nussl_version' in safe_loader._get_moved({'nussl_version': 1}, {}, '')
     assert 'nussl_version' in safe_loader._get_moved({}, {'nussl_version': 1}, '')
-    assert 'config' in safe_loader._get_moved({'nussl_version': 1}, {'config': {}}, '')
+    assert 'config' in safe_loader._get_moved({'nussl_version': 1}, {'config': '{}'}, '')
 
     with pytest.raises(SeparationException):
         safe_loader._load_types(str, '', 123)
@@ -29,3 +29,6 @@ def test_safe_model_loader():
     safe_loader._load_eval({})
     safe_loader.eval = 'BSSEvalV4'
     safe_loader._load_eval({})
+
+    safe_loader.eval = 'BSSEvalV4'
+    safe_loader._load_eval({'SDR': {'mean': 123}})  # missing expected values

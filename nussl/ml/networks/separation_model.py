@@ -1,5 +1,6 @@
 import os
 import json
+import inspect
 
 import torch
 from torch import nn
@@ -67,8 +68,11 @@ class SeparationModel(nn.Module):
             if 'class' in module:
                 if module['class'] in dir(modules): 
                     class_func = getattr(modules, module['class'])
+                    module_snapshot = inspect.getsource(class_func)
                 else:
                     class_func = getattr(nn, module['class'])
+                    module_snapshot = f'pytorch v{torch.__version__} builtin'
+                config['modules']['module_snapshot'] = module_snapshot
                 if 'args' not in module:
                     module['args'] = {}
                 module_dict[module_key] = class_func(**module['args'])

@@ -110,7 +110,7 @@ class SafeModelLoader(object):
 
     def _load_eval(self, eval_dict):
         """Helper function to load eval dictionary safely."""
-        if self.eval.lower == 'bssevalv4':
+        if self.eval.lower() == 'bssevalv4':
             keys = BSSEvalV4.keys
         else:
             keys = BSSEvalScale.keys

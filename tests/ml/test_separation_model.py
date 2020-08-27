@@ -124,6 +124,14 @@ def test_separation_model_init():
     }
     pytest.raises(ValueError, SeparationModel, no_name)
 
+    bad_name = {
+        'name': 12345,
+        'modules': mi_config['modules'],
+        'connections': mi_config['connections'],
+        'output': []
+    }
+    pytest.raises(ValueError, SeparationModel, bad_name)
+
     bad_config = {
         'name': 'BadModel',
         'modules': mi_config['modules'],
