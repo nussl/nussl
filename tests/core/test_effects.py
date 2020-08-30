@@ -22,14 +22,20 @@ def fx_regression(audio_data, reg_path, check_against_regression_data):
 
 
 def test_stretch(mix_and_sources, check_against_regression_data):
-    stretch_factor = .8
+    # use tempo
     signal, _ = mix_and_sources
-    filters = [effects.time_stretch(stretch_factor)]
+    filters = [effects.time_stretch(.8)]
     augmented = effects.apply_effects_sox(signal, filters)
 
     reg_path = path.join(REGRESSION_PATH, "time_stretch.json")
     fx_regression(augmented.audio_data, reg_path, check_against_regression_data)
 
+    # use stretch
+    filters = [effects.time_stretch(1.04)]
+    augmented = effects.apply_effects_sox(signal, filters)
+
+    reg_path = path.join(REGRESSION_PATH, "time_stretch2.json")
+    fx_regression(augmented.audio_data, reg_path, check_against_regression_data)
 
 def test_pitch_shift(mix_and_sources, check_against_regression_data):
     shift = 2
