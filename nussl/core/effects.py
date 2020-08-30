@@ -159,8 +159,9 @@ def apply_effects_sox(audio_signal, filters):
         input_array=np.transpose(audio_data), 
         sample_rate_in=audio_signal.sample_rate
     ) 
-    
-    augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data))
+
+    augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data),
+                                   sample_rate=audio_signal.sample_rate)
     augmented_signal.label = audio_signal.label
     augmented_signal._effects_applied = audio_signal.effects_applied + filters
     return augmented_signal

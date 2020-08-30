@@ -1,3 +1,4 @@
+from copy import deepcopy
 import numpy as np
 import nussl.core.effects as effects
 from nussl.core.audio_signal import AudioSignalException
@@ -53,6 +54,20 @@ def test_params(mix_and_sources):
 
     with pytest.raises(ValueError):
         effects.pitch_shift("this is a string")
+
+def test_metadata(mix_and_sources):
+    shift = 1
+    factor = 1.05
+    signal, _ = mix_and_sources
+    # Resample to a weird sampling rate nobody uses
+    signal = deepcopy(signal)
+    signal.resample(13370)
+    signal.pitch_shift(shift).time_stretch(factor)
+
+    augmented = signal.apply_effects(overwrite=False)
+
+    assert augmented.sample_rate == signal.sample_rate
+    assert augmented.num_channels == augmented.num_channels
 
 
 def test_tremolo(mix_and_sources, check_against_regression_data):
