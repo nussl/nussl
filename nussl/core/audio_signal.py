@@ -1825,6 +1825,7 @@ class AudioSignal(object):
 
         if reset:
             self.reset_effects_chain()
+            new_signal.reset_effects_chain()
         if overwrite:
             self.audio_data = new_signal.audio_data
             self._effects_applied += new_signal.effects_applied
