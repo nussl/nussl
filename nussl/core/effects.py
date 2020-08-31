@@ -113,10 +113,10 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
          .overwrite_output()
          .run())
 
-        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
+        augmented_data = AudioSignal(path_to_input_file=out_tempfile.name).audio_data
 
-    augmented_signal.label = audio_signal.label
-    augmented_signal._effects_applied = audio_signal.effects_applied + filters
+    augmented_signal = audio_signal.make_copy_with_audio_data(augmented_data)
+    augmented_signal._effects_applied += filters
     return augmented_signal
 
 
@@ -160,10 +160,8 @@ def apply_effects_sox(audio_signal, filters):
         sample_rate_in=audio_signal.sample_rate
     ) 
 
-    augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data),
-                                   sample_rate=audio_signal.sample_rate)
-    augmented_signal.label = audio_signal.label
-    augmented_signal._effects_applied = audio_signal.effects_applied + filters
+    augmented_signal = audio_signal.make_copy_with_audio_data(augmented_data)
+    augmented_signal._effects_applied += filters
     return augmented_signal
 
 
