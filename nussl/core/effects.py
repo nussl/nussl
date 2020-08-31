@@ -156,7 +156,7 @@ def apply_effects_sox(audio_signal, filters):
     for filter_ in filters:
         tfm = filter_(tfm)
     augmented_data = tfm.build_array(
-        input_array=np.transpose(audio_data), 
+        input_array=audio_data.T,
         sample_rate_in=audio_signal.sample_rate
     ) 
 
