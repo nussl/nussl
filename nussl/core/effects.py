@@ -209,9 +209,6 @@ def pitch_shift(n_semitones, **kwargs):
     Returns:
         filter (SoxFilter): A SoXFilter object, to be called on an pysndfx stream
     """
-    if not np.issubdtype(type(n_semitones), np.integer):
-        raise ValueError("shift must be an integer.")
-
     return SoXFilter("pitch_shift", n_semitones=n_semitones, **kwargs)
 
 

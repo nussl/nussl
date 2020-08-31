@@ -69,7 +69,6 @@ def test_metadata(mix_and_sources):
     assert augmented.sample_rate == signal.sample_rate
     assert augmented.num_channels == augmented.num_channels
 
-
 def test_tremolo(mix_and_sources, check_against_regression_data):
     f = 15
     d = .5
