@@ -48,12 +48,6 @@ def test_params(mix_and_sources):
     with pytest.raises(ValueError):
         effects.time_stretch("not numeric")
 
-    with pytest.raises(ValueError):
-        effects.pitch_shift(1.4)
-
-    with pytest.raises(ValueError):
-        effects.pitch_shift("this is a string")
-
 
 def test_tremolo(mix_and_sources, check_against_regression_data):
     f = 15
