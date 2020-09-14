@@ -651,7 +651,7 @@ class Slakh(BaseDataset):
     def submix(self, sources, num_frames):
         for source, values in sources.items():
             sources[source] = (sum(values) if values else
-                 self._load_audio_from_array(np.zeros((1, num_frames))))
+                 self._load_audio_from_array(np.zeros((1, num_frames), dtype=np.float32)))
 
 
     def process_item(self, srcs_dir):
