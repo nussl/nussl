@@ -95,11 +95,14 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
     input_args = {}
     if silent:
         input_args['loglevel'] = 'quiet'
+    input_args['bitexact'] = True
 
+    output_args = {}
+    output_args['bitexact'] = True
     with _close_temp_files(tmpfiles):
         curr_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
         out_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
-        
+
         tmpfiles.append(curr_tempfile)
         tmpfiles.append(out_tempfile)
         audio_signal.write_audio_to_file(curr_tempfile)
@@ -109,7 +112,7 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
         for filter_ in filters:
             stream = filter_(stream)
         (stream
-         .output(out_tempfile.name)
+         .output(out_tempfile.name, **output_args)
          .overwrite_output()
          .run())
 
