@@ -109,7 +109,7 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
         for filter_ in filters:
             stream = filter_(stream)
         (stream
-         .output(out_tempfile.name, **output_args)
+         .output(out_tempfile.name)
          .overwrite_output()
          .run())
 
