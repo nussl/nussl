@@ -375,7 +375,7 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     )
 
     assert len(signal.effects_chain) == 12
-
+    print(signal.effects_chain)
     augmented_signal = signal.apply_effects(reset=False, user_order=False)
     assert len(signal.effects_chain) == 12
     assert len(augmented_signal.effects_applied) == 12
@@ -419,7 +419,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
                 't': 0
             }])
     )
-    
+    print(signal.effects_chain)
     augmented_signal = signal.apply_effects(user_order=False)
     reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # This should result in the same signal in test_hooks
