@@ -375,8 +375,8 @@ def test_one_at_a_time(mix_and_sources, check_against_regression_data):
     signal = deepcopy(signal)
     effects = [("time_stretch", {'factor': 3}),
     ("pitch_shift", {'n_semitones': 2}),
-    ("low_pass", {'freq': 512}),
-    ("high_pass", {'freq': 512}),
+    ("low_pass", {'freq': 2048}),
+    ("high_pass", {'freq': 256}),
     ("tremolo", {'mod_freq': 5, 'mod_depth': .4}),
     ("vibrato", {'mod_freq': 3, 'mod_depth': .9}),
     ("chorus", {'delays': [20, 70], 'decays': [.9, .4], 'speeds': [.9, .6], 'depths': [1, .9]}),
