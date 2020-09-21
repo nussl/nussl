@@ -205,7 +205,7 @@ def pitch_shift(n_semitones, **kwargs):
     for details.
 
     Args: 
-        n_semitones (integer): The number of semitones to shift the audio. 
+        n_semitones (float): The number of semitones to shift the audio.
             Positive values increases the frequency of the signal
     Returns:
         filter (SoxFilter): A SoXFilter object, to be called on an pysndfx stream
