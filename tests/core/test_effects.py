@@ -370,6 +370,34 @@ def order_check(filters):
         assert exp_name == name
 
 
+def test_one_at_a_time(mix_and_sources, check_against_regression_data):
+    signal, _ = mix_and_sources
+    signal = deepcopy(signal)
+    effects = [("time_stretch", {'factor': 3}),
+    ("pitch_shift", {'n_semitones': 2}),
+    ("low_pass", {'freq': 512}),
+    ("high_pass", {'freq': 512}),
+    ("tremolo", {'mod_freq': 5, 'mod_depth': .4}),
+    ("vibrato", {'mod_freq': 3, 'mod_depth': .9}),
+    ("chorus", {'delays': [20, 70], 'decays': [.9, .4], 'speeds': [.9, .6], 'depths': [1, .9]}),
+    ("phaser", {}),
+    ("flanger", {'delay': 3}),
+    ("emphasis", {'level_in': 1, 'level_out': .5, 'type_': 'riaa'}),
+    ("compressor", {'level_in': .9}),
+    ("equalizer", {'bands': [{
+        'chn': [0, 1],
+        'f': 512,
+        'w': 10,
+        'g': 4,
+        't': 0
+    }]})]
+
+    for idx, (effect_name, params) in enumerate(effects):
+        reg_path = path.join(REGRESSION_PATH, f"hooks{idx}.json")
+        signal.make_effect(effect_name, **params)
+        augmented_signal = signal.apply_effects(reset=False)
+        fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
+
 def test_hooks(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
 
