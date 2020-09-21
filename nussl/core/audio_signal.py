@@ -1426,7 +1426,7 @@ class AudioSignal(object):
         """
         Peak normalizes the audio signal.
         """
-        self.apply_gain(1 / self.audio_data.max())
+        self.apply_gain(1 / np.abs(self.audio_data).max())
 
     def apply_gain(self, value):
         """
