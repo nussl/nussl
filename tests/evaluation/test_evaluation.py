@@ -336,17 +336,47 @@ def check_aggregate(directory):
     json_files = glob.glob(f"{directory}/*.json")
     df = nussl.evaluation.aggregate_score_files(json_files)
 
-    dme = nussl.separation.deep.DeepMaskEstimation(nussl.AudioSignal())
-    dme = nussl.evaluation.associate_metrics(df, dme)
+    nussl.separation.deep.DeepMaskEstimation(nussl.AudioSignal())
 
     report_card = nussl.evaluation.report_card(df, 'Testing notes', decimals=5)
-    print(report_card)
 
     assert 'Testing notes' in report_card
     report_card_overall = nussl.evaluation.report_card(
         df, 'Testing notes', report_each_source=False)
     print(report_card_overall)
     assert len(report_card_overall) < len(report_card)
+
+
+def check_associate_metrics(directory):
+    json_files = glob.glob(f"{directory}/*.json")
+    df = nussl.evaluation.aggregate_score_files(json_files)
+    dataset = nussl.datasets.OnTheFly(lambda x: x, 10)
+
+    n_features = 257
+    mi_config = nussl.ml.networks.builders.build_recurrent_mask_inference(
+        n_features, 50, 1, False, 0.0, 2, 'sigmoid',
+    )
+    model = nussl.ml.SeparationModel(mi_config)
+
+    model = nussl.evaluation.associate_metrics(model, df, dataset)
+
+    assert 'evaluation' in model.metadata.keys()
+
+    assert 'source' not in model.metadata['evaluation'].keys()
+    assert 'file' not in model.metadata['evaluation'].keys()
+
+    stats_keys = ['mean', 'median', 'std']
+    for metric in model.metadata['evaluation'].values():
+        assert all(s in metric.keys() for s in stats_keys)
+
+    assert 'test_dataset' in model.metadata.keys()
+
+    sm_keys = ['name', 'stft_params', 'sample_rate',
+               'num_channels', 'folder', 'transforms']
+
+    assert all(k in model.metadata['test_dataset'].keys() for k in sm_keys)
+
+
 
 def test_eval_permutation(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true'][:2]

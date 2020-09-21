@@ -200,7 +200,10 @@ pool.shutdown(wait=True)
 
 json_files = glob.glob(f"{RESULTS_DIR}/*.json")
 df = evaluation.aggregate_score_files(json_files)
-dme = evaluation.associate_metrics(df, dme)
+
+# Add the metrics summary to the model and save it for future use.
+model = evaluation.associate_metrics(model, df, test_dataset)
+model.save()
 
 overall = df.mean()
 headers = ["", f"OVERALL (N = {df.shape[0]})", ""]

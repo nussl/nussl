@@ -4,6 +4,7 @@ import termtables
 import numpy as np
 import os
 import textwrap
+import copy
 
 
 def truncate(values, decs=2):
@@ -260,16 +261,18 @@ def report_card(df, notes=None, report_each_source=True, decimals=2):
     return report_card
 
 
-def associate_metrics(df, separator):
+def associate_metrics(separation_model, df, test_dataset):
     """
     For a given pandas dataframe (the output of ``aggregate_score_files``), this
     function will associate the high level summary statistics with a model.
 
     Args:
+        separation_model (SeparationModel): A separation object that will have the metrics
+            associated with it.
         df (pandas.DataFrame): DataFrame containing the metrics computed during
             evaluation.
-        separator (SeparationBase): A separation object that will have the metrics
-            associated with it.
+        test_dataset (BaseDataset): A dataset object used for the evaluation of the
+            metrics.
 
     Returns:
         (SeparationBase)
@@ -284,5 +287,6 @@ def associate_metrics(df, separator):
         }
         for m in metrics
     }
-    separator.metadata['evaluation'] = results
-    return separator
+    separation_model.metadata['evaluation'] = results
+    separation_model.metadata['test_dataset'] = copy.deepcopy(test_dataset.metadata)
+    return separation_model
