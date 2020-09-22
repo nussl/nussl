@@ -1,4 +1,5 @@
 import warnings
+from typing import Iterable
 
 from torch.utils.data import Dataset
 
@@ -7,7 +8,7 @@ from . import transforms as tfm
 import tqdm
 
 
-class BaseDataset(Dataset):
+class BaseDataset(Dataset, Iterable):
     """
     The BaseDataset class is the starting point for all dataset hooks
     in nussl. To subclass BaseDataset, you only have to implement two 
@@ -226,6 +227,19 @@ class BaseDataset(Dataset):
                         "The output of transform must be a dictionary!")
 
         return data
+
+    def __iter__(self):
+        """
+        Calls ``self.__getitem__`` from ``0`` to ``self.__len__()``.
+        Required when inheiriting Iterable.
+
+        Yields:
+            dict: Dictionary with keys and values corresponding to the processed
+                item after being put through the set of transforms (if any are
+                defined).
+        """
+        for i in range(len(self)):
+            yield self[i]
 
     def process_item(self, item):
         """Each file returned by get_items is processed by this function. For example,

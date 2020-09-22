@@ -77,9 +77,9 @@ def test_filter_bank_alignment(one_item):
     assert torch.allclose(decoded, data, atol=1e-6)
 
 sr = nussl.constants.DEFAULT_SAMPLE_RATE
-# Define my window lengths to be powers of 2, ranging from 128 to 8192 samples
+# Define my window lengths to be powers of 2, ranging from 128 to 2048 samples
 win_min = 7  # 2 ** 7  =  128
-win_max = 11  # 2 ** 13 = 4096
+win_max = 11  # 2 ** 11 = 2048
 win_lengths = [2 ** i for i in range(win_min, win_max + 1)]
 
 win_length_32ms = int(2 ** (np.ceil(np.log2(nussl.constants.DEFAULT_WIN_LEN_PARAM * sr))))
