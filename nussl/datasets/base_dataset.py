@@ -231,7 +231,7 @@ class BaseDataset(Dataset, Iterable):
     def __iter__(self):
         """
         Calls ``self.__getitem__`` from ``0`` to ``self.__len__()``.
-        Required when inheiriting Iterable.
+        Required when inheriting Iterable.
 
         Yields:
             dict: Dictionary with keys and values corresponding to the processed
