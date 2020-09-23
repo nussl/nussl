@@ -46,8 +46,8 @@ class SISDRLoss(nn.Module):
         eps = 1e-8
         # num_batch, num_samples, num_sources
         _shape = references.shape
-        references = references.view(-1, _shape[-2], _shape[-1])
-        estimates = estimates.view(-1, _shape[-2], _shape[-1])
+        references = references.reshape(-1, _shape[-2], _shape[-1])
+        estimates = estimates.reshape(-1, _shape[-2], _shape[-1])
         # samples now on axis 1
         if self.zero_mean:
             mean_reference = references.mean(dim=1, keepdim=True)

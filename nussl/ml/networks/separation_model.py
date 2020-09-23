@@ -164,14 +164,34 @@ class SeparationModel(nn.Module):
                 input_shapes = []
                 for d in input_data:
                     if torch.is_tensor(d):
-                        input_shapes.append(d.shape)
+                        input_shapes.append(tuple(d.shape))
                 input_desc = ", ".join(map(str, input_shapes))
                 output_desc = ", ".join(
-                    [f'{k}: {output[k].shape}' for k in added_keys])
+                    [f"'{k}': {tuple(output[k].shape)}" for k in added_keys])
+                stats = {}
+                for k in added_keys:
+                    stats[k] = {
+                        'min': output[k].detach().min().item(),
+                        'max': output[k].detach().max().item(),
+                        'mean': output[k].detach().mean().item(),
+                        'std': output[k].detach().std().item(),
+                    }
+                
+                stats_desc = "\tStatistics:"
+                for o in stats:
+                    stats_desc += f"\n\t\t{o}"
+                    for k in stats[o]: 
+                        stats_desc += f"\n\t\t\t{k}: {stats[o][k]:.4f}"
+
+                min_max = ", ".join(
+                    [f'{k}: {(output[k].detach().min().item(), output[k].detach().max().item())}' 
+                    for k in added_keys]
+                )
                 print(
                     f"{connection[1]} -> {connection[0]} \n"
                     f"\tTook inputs: {input_desc} \n"
-                    f"\tProduced {output_desc} "
+                    f"\tProduced {output_desc} \n"
+                    f"{stats_desc}"
                 )
                 
         return {o: output[o] for o in self.output_keys}

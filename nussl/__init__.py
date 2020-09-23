@@ -12,6 +12,8 @@ class ImportErrorClass(object):
         raise ImportError(
             f'Cannot import {type(self).__name__} because {lib} is not installed')
 
+import warnings
+
 try:
     import musdb
 except RuntimeError:
@@ -21,7 +23,6 @@ except RuntimeError:
 
 from .core import AudioSignal, STFTParams
 from .core import utils, efz_utils, play_utils, constants, mixing
-import warnings
 
 
 from . import core

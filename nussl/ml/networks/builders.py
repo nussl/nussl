@@ -628,7 +628,8 @@ def build_dual_path_recurrent_end_to_end(
         bidirectional, bottleneck_size,
         num_sources, mask_activation, num_audio_channels=1,
         window_type='rectangular', skip_connection=False,
-        rnn_type='lstm', mix_key='mix_audio'):
+        embedding_bias=True, rnn_type='lstm', mix_key='mix_audio',
+        init_forget=False):
     """
     Builds a config for a dual path recurrent network that operates on the 
     time-series. Uses a learned filterbank within the network.
@@ -669,7 +670,8 @@ def build_dual_path_recurrent_end_to_end(
             'bidirectional': bidirectional,
             'dropout': 0.0,
             'rnn_type': rnn_type,
-            'batch_first': True
+            'batch_first': True,
+            'init_forget': init_forget,
         }
     }
 
@@ -711,6 +713,7 @@ def build_dual_path_recurrent_end_to_end(
                 'embedding_size': num_sources,
                 'activation': mask_activation,
                 'num_audio_channels': num_audio_channels,
+                'bias': embedding_bias,
                 'dim_to_embed': [2, 3],
             }
         },
