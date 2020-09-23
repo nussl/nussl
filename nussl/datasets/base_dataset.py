@@ -208,6 +208,7 @@ class BaseDataset(Dataset, Iterable):
                 item after being put through the set of transforms (if any are
                 defined).
         """
+        
         if self.cache_populated:
             data = {'index': i}
             data = self.post_cache_transforms(data)
@@ -217,7 +218,7 @@ class BaseDataset(Dataset, Iterable):
             if not isinstance(data, dict):
                 raise DataSetException(
                     "The output of process_item must be a dictionary!")
-            
+
             if self.transform:
                 data['index'] = i
                 data = self.transform(data)

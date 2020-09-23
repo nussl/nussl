@@ -101,8 +101,11 @@ def test_dataset_base(benchmark_audio, monkeypatch):
         transforms.MagnitudeSpectrumApproximation(),
         transforms.ToSeparationModel()
     ])
-    dataloader = torch.utils.data.DataLoader(_dataset, shuffle=False, num_workers=2)
+
+    dataloader = torch.utils.data.DataLoader(_dataset, shuffle=False, num_workers=8)
     assert len(list(dataloader)) == len(_dataset)
+    for idx, batch in enumerate(dataloader):
+        assert torch.allclose(batch['mix_magnitude'][0], _dataset[idx]['mix_magnitude'])
 
 
 def test_dataset_base_filter(benchmark_audio, monkeypatch):
