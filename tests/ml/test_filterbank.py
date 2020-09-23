@@ -115,7 +115,7 @@ def test_stft_module(combo, one_item):
     decoded = representation(encoded, 'inverse')
     encoded = encoded.squeeze(0).permute(1, 0, 2)
 
-    assert (decoded - data).abs().max() < 1e-6
+    assert (decoded - data).abs().max() < 1e-5
 
     audio_signal = nussl.AudioSignal(
         audio_data_array=data.squeeze(0).numpy(), sample_rate=16000, stft_params=stft_params
