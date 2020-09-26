@@ -325,6 +325,7 @@ def test_bss_eval_scale(estimated_and_true_sources):
             save_scores(tmpdir, random_scores, f'random.json')
 
             check_aggregate(tmpdir)
+            check_associate_metrics(tmpdir)
 
 
 def save_scores(directory, scores, name):
@@ -350,7 +351,35 @@ def check_aggregate(directory):
 def check_associate_metrics(directory):
     json_files = glob.glob(f"{directory}/*.json")
     df = nussl.evaluation.aggregate_score_files(json_files)
-    dataset = nussl.datasets.OnTheFly(lambda x: x, 10)
+
+    n_sources = 2
+    duration = 3
+    sample_rate = 44100
+    min_freq, max_freq = 110, 1000
+
+    def make_mix(dataset, i):
+        sources = {}
+        freqs = []
+        for i in range(n_sources):
+            freq = np.random.randint(min_freq, max_freq)
+            freqs.append(freq)
+            dt = 1 / sample_rate
+            source_data = np.arange(0.0, duration, dt)
+            source_data = np.sin(2 * np.pi * freq * source_data)
+            source_signal = dataset._load_audio_from_array(
+                audio_data=source_data, sample_rate=sample_rate)
+            sources[f'sine{i}'] = source_signal * 1 / n_sources
+        mix = sum(sources.values())
+        output = {
+            'mix': mix,
+            'sources': sources,
+            'metadata': {
+                'frequencies': freqs    
+            }    
+        }
+        return output
+
+    dataset = nussl.datasets.OnTheFly(make_mix, 10)
 
     n_features = 257
     mi_config = nussl.ml.networks.builders.build_recurrent_mask_inference(
