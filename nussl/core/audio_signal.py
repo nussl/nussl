@@ -1426,7 +1426,7 @@ class AudioSignal(object):
         """
         Peak normalizes the audio signal.
         """
-        self.apply_gain(1 / self.audio_data.max())
+        self.apply_gain(1 / np.abs(self.audio_data).max())
 
     def apply_gain(self, value):
         """
@@ -1904,8 +1904,8 @@ class AudioSignal(object):
         try:
             effect_hook = getattr(self, effect, None)
             effect_hook(**kwargs)
-        except Exception:
-            raise AudioSignalException(f"Effect {effect} not found with parameters {kwargs}")
+        except Exception as e:
+            raise AudioSignalException(f"Error calling {effect} with parameters {kwargs}: `{e}`")
         
         return self
 

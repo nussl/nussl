@@ -2,6 +2,7 @@ import os
 import logging
 import copy
 import time
+from datetime import timedelta
 
 from ignite.engine import Events, Engine, EventEnum
 from ignite.handlers import Timer
@@ -302,11 +303,9 @@ def add_stdout_handler(trainer, validator=None):
     @trainer.on(ValidationEvents.VALIDATION_COMPLETED)
     def log_epoch_to_stdout(trainer):
         epoch_time = epoch_timer.value()
-        epoch_time = time.strftime(
-            "%H:%M:%S", time.gmtime(epoch_time))
+        epoch_time = timedelta(seconds=epoch_time)
         overall_time = overall_timer.value()
-        overall_time = time.strftime(
-            "%H:%M:%S", time.gmtime(overall_time))
+        overall_time = timedelta(seconds=overall_time)
 
         epoch_number = trainer.state.epoch
         total_epochs = trainer.state.max_epochs
@@ -365,10 +364,10 @@ def add_tensorboard_handler(tensorboard_folder, engine, every_iteration=False):
         every_iteration (bool, optional): Whether to also log the values at every 
           iteration.
     """
+    writer = SummaryWriter(tensorboard_folder)
 
     @engine.on(ValidationEvents.VALIDATION_COMPLETED)
     def log_to_tensorboard(engine):
-        writer = SummaryWriter(tensorboard_folder)
         for key in engine.state.epoch_history:
             writer.add_scalar(
                 key, engine.state.epoch_history[key][-1], engine.state.epoch)
@@ -376,7 +375,6 @@ def add_tensorboard_handler(tensorboard_folder, engine, every_iteration=False):
     if every_iteration:
         @engine.on(Events.ITERATION_COMPLETED)
         def log_iteration_to_tensorboard(engine):
-            writer = SummaryWriter(tensorboard_folder)
             for key in engine.state.iter_history:
                 writer.add_scalar(
                     key, engine.state.iter_history[key][-1], engine.state.iteration)
