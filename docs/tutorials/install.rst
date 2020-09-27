@@ -29,17 +29,44 @@ Those are in ``extra_requirements.txt``::
 
       pip install -r extra_requirements.txt
 
-To make use of `Scaper <https://github.com/justinsalamon/scaper>`_, you will also need 
-to install ``sox`` and ``ffmpeg``. You'll also need ``ffmpeg`` to make use of some of the
-functionality in ``nussl.play_utils``.
+Non-python dependencies
+-----------------------
 
-Finally, try to install ``tree`` for the tutorials. This is a useful command line tool 
+*nussl* has one non-python dependency:
+- FFmpeg: https://ffmpeg.org/
+
+If you are installing *nussl* on Windows, you will also need:
+- SoX: http://sox.sourceforge.net/
+
+On Linux/macOS SoX is replaced by [SoxBindings](https://github.com/pseeth/soxbindings) which is significantly 
+faster. On these platforms SoxBindings is installed automatically 
+when calling `pip install nussl` (see below).
+
+On macOS ffmpeg can be installed using `homebrew <https://brew.sh/>`_:
+
+>>> brew install ffmpeg
+
+On linux you can use your distribution's package manager, e.g. on Ubuntu (15.04 "Vivid Vervet" or newer):
+
+>>> sudo apt-get install ffmpeg
+
+NOTE: on earlier versions of Ubuntu `ffmpeg may point to a Libav binary <http://stackoverflow.com/a/9477756/2007700>`_
+which is not the correct binary. If you are using anaconda, you can install the correct version by calling:
+
+>>> conda install -c conda-forge ffmpeg
+
+Otherwise, you can `obtain a static binary from the ffmpeg website <https://ffmpeg.org/download.html>`_.
+
+On Windows you can use the provided installation binaries:
+
+- SoX: https://sourceforge.net/projects/sox/files/sox/
+- FFmpeg: https://ffmpeg.org/download.html#build-windows
+
+Try to install ``tree`` for the tutorials. This is a useful command line tool 
 that shows you the structure of a directory. Install it via a package manager::
 
       brew install tree # on macosx
       sudo apt-get install tree # on ubuntu
-
-.. _anaconda_env:
 
 pip install
 -----------

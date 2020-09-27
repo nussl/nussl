@@ -74,8 +74,10 @@ class ClusteringSeparationBase(MaskSeparationBase):
             self.clusterer = ClusterClass(n_clusters=num_sources, **kwargs)
         self.clustering_type = clustering_type
 
+        init = None
         if 'init' in kwargs and not fit_clusterer:
-            self.clusterer.cluster_centers_ = kwargs['init']
+            init = kwargs['init']
+            self.clusterer.cluster_centers_ = init
 
         self.percentile = percentile
         self.features = None
@@ -87,6 +89,14 @@ class ClusteringSeparationBase(MaskSeparationBase):
             mask_type=mask_type,
             mask_threshold=mask_threshold
         )
+
+        self.metadata.update({
+            'clustering_type': clustering_type,
+            'percentile': percentile,
+            'beta': beta,
+            'fit_clusterer': fit_clusterer,
+            'init': init
+        })
 
     def _preprocess_audio_signal(self):
         """

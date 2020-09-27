@@ -51,6 +51,12 @@ Playing and embedding audio
     :members:
     :autosummary:
 
+Checkpoint migration (backwards compatability)
+----------------------------------------------
+.. automodule:: nussl.core.migration
+    :members:
+    :autosummary:
+
 """
 
 from .audio_signal import AudioSignal, STFTParams

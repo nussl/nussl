@@ -1,5 +1,11 @@
 Changelog
 =========
+v1.1.3
+------
+- Fixed some bugs that happen because of a PyTorch Ignite update.
+- Fixed a bug in effects where the sample rate wouldn't propagate through some effects.
+- Added more metadata that can be saved along with a model, using an associate_metrics function.
+- Updated handlers for printing after each epoch during training and writing to tensorboard.
 
 v1.1.2
 ------

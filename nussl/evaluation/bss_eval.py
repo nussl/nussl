@@ -3,6 +3,7 @@ import museval
 
 from .evaluation_base import EvaluationBase
 
+
 def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
     """
     Helper for scale_bss_eval to avoid infinite recursion loop.
@@ -49,6 +50,7 @@ def _scale_bss_eval(references, estimate, idx, compute_sir_sar=True):
         si_sar = 10 * np.log10(signal / (e_artif ** 2).sum())
 
     return si_sdr, si_sir, si_sar, sd_sdr, snr, srr
+
 
 def scale_bss_eval(references, estimate, mixture, idx, 
                    compute_sir_sar=True):
@@ -106,7 +108,6 @@ def scale_bss_eval(references, estimate, mixture, idx,
     mix_metrics = _scale_bss_eval(
         references, mixture, idx, compute_sir_sar=False)
 
-
     mix_si_sdr = mix_metrics[0]
     mix_sd_sdr = mix_metrics[3]
     mix_snr = mix_metrics[4]
@@ -153,7 +154,8 @@ class BSSEvaluationBase(EvaluationBase):
           the sources was best.
         **kwargs (dict): Any additional arguments are passed on to evaluate_helper.
     """
-
+    # TODO: Populate score in evaluation_helper() using self.keys.
+    keys = ['SDR', 'ISR', 'SIR', 'SAR']
     def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
                  compute_permutation=False, best_permutation_key="SDR", **kwargs):
         super().__init__(true_sources_list, estimated_sources_list, source_labels=source_labels,
@@ -177,7 +179,7 @@ class BSSEvaluationBase(EvaluationBase):
             [x.audio_data for x in self.estimated_sources_list],
             axis=-1
         )
-        return references.transpose(1, 0, 2), estimates.transpose(1, 0, 2)
+        return references.transpose((1, 0, 2)), estimates.transpose((1, 0, 2))
 
 
 class BSSEvalV4(BSSEvaluationBase):
@@ -208,6 +210,13 @@ class BSSEvalV4(BSSEvaluationBase):
 
 
 class BSSEvalScale(BSSEvaluationBase):
+    # TODO: Populate score in evaluation_helper() using self.keys.
+    keys = [
+        'SI-SDR', 'SI-SIR', 'SI-SAR',
+        'SD-SDR', 'SNR', 'SRR',
+        'SI-SDRi', 'SD-SDRi', 'SNRi',
+        'MIX-SI-SDR', 'MIX-SD-SDR', 'MIX-SNR',
+    ]
     def __init__(self, true_sources_list, estimated_sources_list, source_labels=None,
                  compute_permutation=False, best_permutation_key="SI-SDR", **kwargs):
         super().__init__(true_sources_list, estimated_sources_list, source_labels=source_labels,
@@ -265,18 +274,18 @@ class BSSEvalScale(BSSEvaluationBase):
         Processing (ICASSP) (pp. 626-630). IEEE.
         """
 
-        sisdr, sisir, sisar, sdsdr, snr, srr, sisdri, sdsdri, snri, mix_sisdr, mix_sdsdr, mix_snr = \
-            [], [], [], [], [], [], [], [], [], [], [], []
+        sisdr, sisir, sisar, sdsdr, snr, srr = [], [], [], [], [], []
+        sisdri, sdsdri, snri, mix_sisdr, mix_sdsdr, mix_snr = [], [], [], [], [], []
         for j in range(references.shape[-1]):
-            cSISDR, cSISIR, cSISAR, cSDSDR, cSNR, cSRR, cSISDRi, cSDSDRi, cSNRi, cMIXSISDR, cMIXSDSDR, cMIXSNR = \
-                [], [], [], [], [], [], [], [], [], [], [], []
+            cSISDR, cSISIR, cSISAR, cSDSDR, cSNR, cSRR = [], [], [], [], [], []
+            cSISDRi, cSDSDRi, cSNRi, cMIXSISDR, cMIXSDSDR, cMIXSNR = [], [], [], [], [], []
             for ch in range(references.shape[-2]):
-                _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, _SISDRi, _SDSDRi, _SNRi, _MIXSISDR, _MIXSDSDR, _MIXSNR = (
-                    scale_bss_eval(
+                output = scale_bss_eval(
                         references[..., ch, :], estimates[..., ch, j], 
                         self.mixture[..., ch], j, compute_sir_sar=compute_sir_sar
                     )
-                )
+                _SISDR, _SISIR, _SISAR, _SDSDR, _SNR, _SRR, = output[:6]
+                _SISDRi, _SDSDRi, _SNRi, _MIXSISDR, _MIXSDSDR, _MIXSNR = output[6:]
             
                 cSISDR.append(_SISDR)
                 cSISIR.append(_SISIR)

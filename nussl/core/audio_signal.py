@@ -1822,7 +1822,7 @@ class AudioSignal(object):
             new_signal = self._apply_user_ordered_effects()
         else:
             new_signal = self._apply_sox_ffmpeg_ordered_effects()
-
+        new_signal.reset_effects_chain()
         if reset:
             self.reset_effects_chain()
         if overwrite:
@@ -1959,8 +1959,9 @@ class AudioSignal(object):
     def pitch_shift(self, n_semitones):
         """
         Add pitch shift effect to AudioSignal's effect chain. 
-        A positive shift will raise the pitch of the signal by `n_semitones` 
-        semitones.
+        A positive shift will change the pitch of the signal by `n_semitones`
+        semitones. If positive, pitch will get higher, if negative pitch will
+        get lower.
 
         This is a SoX effect. Please see:
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.pitch
@@ -1970,7 +1971,7 @@ class AudioSignal(object):
             This effect won't be applied until you call `apply_effect()`!
 
         Args: 
-            n_semitones (integer): The number of semitones to shift the audio. 
+            n_semitones (float): The number of semitones to shift the audio.
                 Positive values increases the frequency of the signal
         Returns:
             self: Initial AudioSignal with updated effects chain
