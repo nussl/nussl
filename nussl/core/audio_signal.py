@@ -1822,7 +1822,7 @@ class AudioSignal(object):
             new_signal = self._apply_user_ordered_effects()
         else:
             new_signal = self._apply_sox_ffmpeg_ordered_effects()
-
+        new_signal.reset_effects_chain()
         if reset:
             self.reset_effects_chain()
         if overwrite:
