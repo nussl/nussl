@@ -131,6 +131,7 @@ class SoXFilter(FilterFunction):
         if filter_ == "time_stretch":
             factor = filter_kwargs['factor']
             if abs(factor - 1) <=  .1:
+                filter_kwargs['factor'] = 1 / factor
                 self.func = lambda tfm: tfm.stretch(**filter_kwargs)
             else:
                 self.func = lambda tfm: tfm.tempo(**filter_kwargs)
