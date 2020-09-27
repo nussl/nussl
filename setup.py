@@ -45,9 +45,6 @@ setup(
             'vamp'
         ],
         'extras': extra_requirements,
-        'soxbindings': [
-            'soxbindings>=1.0.1'
-        ],
     }
 )
 

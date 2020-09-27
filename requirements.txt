@@ -17,4 +17,5 @@ gpytorch
 ffmpeg-python
 importlib_resources
 pyloudnorm
-sox==1.4.0
+sox
+soxbindings>=1.2.2 ; platform_system!='Windows'
