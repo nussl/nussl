@@ -42,6 +42,7 @@ class EvaluationBase(object):
                  compute_permutation=False, best_permutation_key=None, **kwargs):
         self.true_sources_list = self._verify_input_list(true_sources_list)
         self.estimated_sources_list = self._verify_input_list(estimated_sources_list)
+        self.keys = None
 
         _source_labels = []
         for i, x in enumerate(self.true_sources_list):

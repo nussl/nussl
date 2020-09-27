@@ -3,7 +3,7 @@ import torch
 from ..base import ClusteringSeparationBase, DeepMixin, SeparationException
 
 
-class DeepClustering(ClusteringSeparationBase, DeepMixin):
+class DeepClustering(DeepMixin, ClusteringSeparationBase):
     """
     Clusters the embedding produced by a deep model for every time-frequency point.
     This is the deep clustering source separation approach. It is flexible with
@@ -31,12 +31,12 @@ class DeepClustering(ClusteringSeparationBase, DeepMixin):
     """
     def __init__(self, input_audio_signal, num_sources, model_path=None,
                  device='cpu', extra_data=None, **kwargs):
+        super().__init__(input_audio_signal, num_sources, **kwargs)
         if model_path is not None:
             self.load_model(model_path, device=device)
         # audio channel dimension in a dpcl model
         self.channel_dim = -1
         self.extra_data = extra_data
-        super().__init__(input_audio_signal, num_sources, **kwargs)
 
     def forward(self):
         return self.extract_features()

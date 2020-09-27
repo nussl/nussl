@@ -325,6 +325,7 @@ def test_bss_eval_scale(estimated_and_true_sources):
             save_scores(tmpdir, random_scores, f'random.json')
 
             check_aggregate(tmpdir)
+            check_associate_metrics(tmpdir)
 
 
 def save_scores(directory, scores, name):
@@ -335,14 +336,76 @@ def save_scores(directory, scores, name):
 def check_aggregate(directory):
     json_files = glob.glob(f"{directory}/*.json")
     df = nussl.evaluation.aggregate_score_files(json_files)
-    report_card = nussl.evaluation.report_card(df, 'Testing notes', decs=5)
-    print(report_card)
+
+    nussl.separation.deep.DeepMaskEstimation(nussl.AudioSignal())
+
+    report_card = nussl.evaluation.report_card(df, 'Testing notes', decimals=5)
 
     assert 'Testing notes' in report_card
     report_card_overall = nussl.evaluation.report_card(
         df, 'Testing notes', report_each_source=False)
     print(report_card_overall)
     assert len(report_card_overall) < len(report_card)
+
+
+def check_associate_metrics(directory):
+    json_files = glob.glob(f"{directory}/*.json")
+    df = nussl.evaluation.aggregate_score_files(json_files)
+
+    n_sources = 2
+    duration = 3
+    sample_rate = 44100
+    min_freq, max_freq = 110, 1000
+
+    def make_mix(dataset, i):
+        sources = {}
+        freqs = []
+        for i in range(n_sources):
+            freq = np.random.randint(min_freq, max_freq)
+            freqs.append(freq)
+            dt = 1 / sample_rate
+            source_data = np.arange(0.0, duration, dt)
+            source_data = np.sin(2 * np.pi * freq * source_data)
+            source_signal = dataset._load_audio_from_array(
+                audio_data=source_data, sample_rate=sample_rate)
+            sources[f'sine{i}'] = source_signal * 1 / n_sources
+        mix = sum(sources.values())
+        output = {
+            'mix': mix,
+            'sources': sources,
+            'metadata': {
+                'frequencies': freqs    
+            }    
+        }
+        return output
+
+    dataset = nussl.datasets.OnTheFly(make_mix, 10)
+
+    n_features = 257
+    mi_config = nussl.ml.networks.builders.build_recurrent_mask_inference(
+        n_features, 50, 1, False, 0.0, 2, 'sigmoid',
+    )
+    model = nussl.ml.SeparationModel(mi_config)
+
+    model = nussl.evaluation.associate_metrics(model, df, dataset)
+
+    assert 'evaluation' in model.metadata.keys()
+
+    assert 'source' not in model.metadata['evaluation'].keys()
+    assert 'file' not in model.metadata['evaluation'].keys()
+
+    stats_keys = ['mean', 'median', 'std']
+    for metric in model.metadata['evaluation'].values():
+        assert all(s in metric.keys() for s in stats_keys)
+
+    assert 'test_dataset' in model.metadata.keys()
+
+    sm_keys = ['name', 'stft_params', 'sample_rate',
+               'num_channels', 'folder', 'transforms']
+
+    assert all(k in model.metadata['test_dataset'].keys() for k in sm_keys)
+
+
 
 def test_eval_permutation(estimated_and_true_sources):
     true_sources = estimated_and_true_sources['true'][:2]

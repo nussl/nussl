@@ -1,5 +1,6 @@
 import warnings
 from typing import Iterable
+import copy
 
 from torch.utils.data import Dataset
 
@@ -77,6 +78,14 @@ class BaseDataset(Dataset, Iterable):
         self.sample_rate = sample_rate
         self.num_channels = num_channels
         self.strict_sample_rate = strict_sample_rate
+        self.metadata = {
+            'name': self.__class__.__name__,
+            'stft_params': stft_params,
+            'sample_rate': sample_rate,
+            'num_channels': num_channels,
+            'folder': folder,
+            'transforms': copy.deepcopy(transform)
+        }
 
         if not isinstance(self.items, list):
             raise DataSetException("Output of self.get_items must be a list!")
@@ -131,7 +140,6 @@ class BaseDataset(Dataset, Iterable):
                 n_removed += 1
             pbar.set_description(f"Filtered {n_removed} items out of dataset")
         self.items = filtered_items
-
 
     @property
     def cache_populated(self):
@@ -208,7 +216,6 @@ class BaseDataset(Dataset, Iterable):
                 item after being put through the set of transforms (if any are
                 defined).
         """
-        
         if self.cache_populated:
             data = {'index': i}
             data = self.post_cache_transforms(data)
