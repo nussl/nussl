@@ -13,10 +13,12 @@ class SeparationBase(object):
 
     Parameters:
         input_audio_signal (AudioSignal). AudioSignal` object.
-                            This will always be a copy of the provided AudioSignal object.
+            This will always be a copy of the provided AudioSignal object.
     """
 
     def __init__(self, input_audio_signal):
+        self.metadata = {}
+        self._audio_signal = None
         self.audio_signal = input_audio_signal
 
     @property
@@ -76,7 +78,7 @@ class SeparationBase(object):
             else:
                 self._preprocess_audio_signal()
 
-    def run(self):
+    def run(self, *args, audio_signal=None, **kwargs):
         """
         Runs separation algorithm.
 
@@ -88,6 +90,21 @@ class SeparationBase(object):
     def make_audio_signals(self):
         """
         Makes :class:`audio_signal.AudioSignal` objects after separation algorithm is run
+
+        Raises:
+            NotImplementedError: Cannot call base class
+        """
+        raise NotImplementedError('Cannot call base class.')
+
+    def get_metadata(self, to_str=False, **kwargs):
+        """
+        Returns metadata associated with this separation algorithm.
+
+        Args:
+            to_str (bool): Whether to return the metadata as a string.
+
+        Returns:
+            Formatted metadata if `to_str` is True, else metadata dict.
 
         Raises:
             NotImplementedError: Cannot call base class

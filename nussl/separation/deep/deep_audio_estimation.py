@@ -1,7 +1,8 @@
 import torch
 from ..base import SeparationBase, DeepMixin, SeparationException
 
-class DeepAudioEstimation(SeparationBase, DeepMixin):
+
+class DeepAudioEstimation(DeepMixin, SeparationBase):
     """
     Separates an audio signal using a model that produces separated sources directly
     in the waveform domain. It expects that the model outputs a dictionary where one
@@ -21,9 +22,9 @@ class DeepAudioEstimation(SeparationBase, DeepMixin):
     """
     def __init__(self, input_audio_signal, model_path=None, device='cpu', 
                  extra_data=None, **kwargs):
+        super().__init__(input_audio_signal, **kwargs)
         if model_path is not None:
             self.load_model(model_path, device=device)
-        super().__init__(input_audio_signal, **kwargs)
         self.model_output = None
         self.extra_data = extra_data
         # audio channel dimension in an audio model

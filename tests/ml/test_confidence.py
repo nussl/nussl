@@ -71,6 +71,7 @@ def simple_model(simple_sine_data):
     output = ['embedding']
 
     config = {
+        'name': 'SimpleModel',
         'modules': modules,
         'connections': connections,
         'output': output

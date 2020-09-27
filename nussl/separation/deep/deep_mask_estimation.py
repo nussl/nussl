@@ -3,7 +3,8 @@ import torch
 from ..base import MaskSeparationBase, DeepMixin, SeparationException
 from ... import ml
 
-class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
+
+class DeepMaskEstimation(DeepMixin, MaskSeparationBase):
     """
     Separates an audio signal using the masks produced by a deep model for every 
     time-frequency point. It expects that the model outputs a dictionary where one
@@ -24,9 +25,9 @@ class DeepMaskEstimation(MaskSeparationBase, DeepMixin):
     """
     def __init__(self, input_audio_signal, model_path=None, device='cpu', 
                  extra_data=None, **kwargs):
+        super().__init__(input_audio_signal, **kwargs)
         if model_path is not None:
             self.load_model(model_path, device=device)
-        super().__init__(input_audio_signal, **kwargs)
         self.model_output = None
         self.extra_data = extra_data
         # audio channel dimension in a mask estimation model

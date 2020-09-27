@@ -99,7 +99,7 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
     with _close_temp_files(tmpfiles):
         curr_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
         out_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
-        
+
         tmpfiles.append(curr_tempfile)
         tmpfiles.append(out_tempfile)
         audio_signal.write_audio_to_file(curr_tempfile)
@@ -113,10 +113,10 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
          .overwrite_output()
          .run())
 
-        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
+        augmented_data = AudioSignal(path_to_input_file=out_tempfile.name).audio_data
 
-    augmented_signal.label = audio_signal.label
-    augmented_signal._effects_applied = audio_signal.effects_applied + filters
+    augmented_signal = audio_signal.make_copy_with_audio_data(augmented_data)
+    augmented_signal._effects_applied += filters
     return augmented_signal
 
 
@@ -162,13 +162,12 @@ def apply_effects_sox(audio_signal, filters):
     for filter_ in filters:
         tfm = filter_(tfm)
     augmented_data = tfm.build_array(
-        input_array=np.transpose(audio_data), 
+        input_array=audio_data.T,
         sample_rate_in=audio_signal.sample_rate
     ) 
-    
-    augmented_signal = AudioSignal(audio_data_array=np.transpose(augmented_data))
-    augmented_signal.label = audio_signal.label
-    augmented_signal._effects_applied = audio_signal.effects_applied + filters
+
+    augmented_signal = audio_signal.make_copy_with_audio_data(augmented_data)
+    augmented_signal._effects_applied += filters
     return augmented_signal
 
 
@@ -211,7 +210,7 @@ def pitch_shift(n_semitones, **kwargs):
     for details.
 
     Args: 
-        n_semitones (integer): The number of semitones to shift the audio. 
+        n_semitones (float): The number of semitones to shift the audio.
             Positive values increases the frequency of the signal
     Returns:
         filter (SoxFilter): A SoXFilter object, to be called on an pysndfx stream

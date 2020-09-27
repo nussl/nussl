@@ -19,6 +19,7 @@ def test_separation_base(mix_source_folder, monkeypatch):
 
     pytest.raises(NotImplementedError, separator.run)
     pytest.raises(NotImplementedError, separator.make_audio_signals)
+    pytest.raises(NotImplementedError, separator.get_metadata)
     pytest.raises(NotImplementedError, separator)
 
     def dummy_run(self):
