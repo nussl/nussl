@@ -1709,7 +1709,7 @@ class AudioSignal(object):
             sped up processing time by ~30% in our experiments.
 
         Args:
-            reset (bool): If True, clears out all effects in effect chains following applying the
+            reset (bool): If True, clears out all effects in effects chain following applying the
                 effects. Default=True
             overwrite (bool): If True, overwrites existing audio_data in AudioSignal. Default=False
                 Also clears out `stft_data`.
@@ -1895,7 +1895,7 @@ class AudioSignal(object):
             effect (str): Function name of desired effect hook of the AudioSignal
             **kwargs: Additional parameters for given effect. 
         Return:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -1928,9 +1928,17 @@ class AudioSignal(object):
         A factor greater than one will shorten the signal, a factor less then one
         will lengthen the signal, and a factor of 1 will not change the signal.
 
-        This is a SoX effect. Please see 
+        Note that the SoxFilter added to the effect chain will use `sox.transform.tempo`
+        unless .9 <= factor <= 1.1, then `sox.transform.stretch` will be used with
+        the passed factor of 1/factor, as `stretch` has better performance with factor in this range.
+        Because the stretch effect has the reverse effect than tempo, it is passed with the
+        inverse of factor for consistency.
+
+        This is a SoX effect. Please see
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.tempo
-        for details. 
+        and
+        https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.stretch
+        for details.
 
         Notes:
             This effect won't be applied until you call `apply_effect()`!
@@ -1938,7 +1946,7 @@ class AudioSignal(object):
         Args: 
             factor (float): Scaling factor for tempo change. Must be positive.
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -1965,7 +1973,7 @@ class AudioSignal(object):
             n_semitones (integer): The number of semitones to shift the audio. 
                 Positive values increases the frequency of the signal
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -1997,7 +2005,7 @@ class AudioSignal(object):
                 'k': kHz
             width (float): Band width in width_type units
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2031,7 +2039,7 @@ class AudioSignal(object):
                 'k': kHz
             width (float): Band width in width_type units
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2058,7 +2066,7 @@ class AudioSignal(object):
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2083,7 +2091,7 @@ class AudioSignal(object):
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2112,7 +2120,7 @@ class AudioSignal(object):
             in_gain (float): Proportion of input gain. Must be between 0 and 1
             out_gain (float): Proportion of output gain. Must be between 0 and 1
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2147,7 +2155,7 @@ class AudioSignal(object):
                 "triangular" or "t" for Triangular
                 "sinusoidal" of "s" for sinusoidal
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2182,7 +2190,7 @@ class AudioSignal(object):
             phase (float): swept wave percentage-shift for multi channel. Must be between 0 and 100.
             interp (str): Delay Line interpolation. Must be "linear" or "quadratic".
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2226,7 +2234,7 @@ class AudioSignal(object):
                 - "reproduction": Apply de-emphasis filter
                 - "production": Apply emphasis filter
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2269,7 +2277,7 @@ class AudioSignal(object):
                 Either "peak" for exact or "rms".
             mix (float): Proportion of compressed signal in output.
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.
@@ -2304,7 +2312,7 @@ class AudioSignal(object):
                     1, for Chebyshev type 1
                     2, for Chebyshev type 2
         Returns:
-            self: Initial AudioSignal with updated effect chains
+            self: Initial AudioSignal with updated effects chain
 
         See Also:
             * :func:`apply_effects`: Applies effects once they are in the effects chain.

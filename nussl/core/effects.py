@@ -182,11 +182,20 @@ def time_stretch(factor, **kwargs):
     tempo of the audio by factor. A factor greater than one will shorten the signal, 
     a factor less then one will lengthen the signal, and a factor of 1 will not change the signal.
 
+    Note that the returned SoxFilter will use `sox.transform.tempo`
+    unless .9 <= factor <= 1.1, then `sox.transform.stretch` will be used with
+    the passed factor of 1/factor, as `stretch` has better performance with factor in this range.
+    Because the stretch effect has the reverse effect than tempo, it is passed with the
+    inverse of factor for consistency.
+
     It is recommended that users use `AudioSignal.time_stretch` rather than this function.
 
-    This is a SoX effect. Please see 
+    This is a SoX effect. Please see
     https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.tempo
+    and
+    https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.stretch
     for details.
+
     Args: 
         factor (float): Scaling factor for tempo change. Must be positive.
     Returns:
