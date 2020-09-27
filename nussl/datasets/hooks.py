@@ -69,6 +69,8 @@ class MUSDB18(BaseDataset):
         self.musdb = musdb.DB(root=folder, is_wav=is_wav, download=download, 
                               subsets=subsets, split=split)
         super().__init__(folder, **kwargs)
+        self.metadata['subsets'] = subsets
+        self.metadata['split'] = split
 
     def get_items(self, folder):
         items = range(len(self.musdb))
@@ -400,6 +402,7 @@ class OnTheFly(BaseDataset):
         self.mix_closure = mix_closure
 
         super().__init__('none', **kwargs)
+        self.metadata['num_mixtures'] = num_mixtures
 
     def get_items(self, folder):
         return list(range(self.num_mixtures))
@@ -454,6 +457,7 @@ class FUSS(Scaper):
         folder = os.path.join(root, split)
         super().__init__(folder, sample_rate=16000, strict_sample_rate=True, 
                          **kwargs)
+        self.metadata['split'] = split
 
     def _get_info_from_item(self, item):
         path_to_item = os.path.join(self.folder, item)
@@ -536,3 +540,9 @@ class WHAM(MixSourceFolder):
 
         super().__init__(folder, mix_folder=mix_folder, source_folders=source_folders,
                          sample_rate=sample_rate, strict_sample_rate=True, **kwargs)
+        self.metadata.update({
+            'mix_folder': mix_folder,
+            'mode': mode,
+            'split': split,
+            'wav_folder': wav_folder
+        })

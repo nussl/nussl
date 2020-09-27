@@ -51,7 +51,9 @@ def test_transform_msa_psa(musdb_tracks):
     }
 
     msa = transforms.MagnitudeSpectrumApproximation()
+    assert isinstance(str(msa), str)
     psa = transforms.PhaseSensitiveSpectrumApproximation()
+    assert isinstance(str(psa), str)
 
     assert msa.__class__.__name__ in str(msa)
     assert psa.__class__.__name__ in str(psa)
@@ -126,6 +128,7 @@ def test_transform_sum_sources(musdb_tracks):
     for group in groups:
         _data = copy.deepcopy(data)
         tfm = transforms.SumSources([group])
+        assert isinstance(str(tfm), str)
         _data = tfm(_data)
         for g in group:
             assert g not in _data['sources']
@@ -174,6 +177,7 @@ def test_transform_compose(musdb_tracks):
         [['other', 'drums', 'bass']],
         group_names=['accompaniment']
     )
+    assert isinstance(str(tfm), str)
     com = transforms.Compose([tfm, msa])
     assert msa.__class__.__name__ in str(com)
     assert tfm.__class__.__name__ in str(com)
@@ -247,6 +251,7 @@ def test_transform_get_excerpt(musdb_tracks):
         }
 
         exc = transforms.GetExcerpt(excerpt_length=excerpt_length)
+        assert isinstance(str(exc), str)
         com = transforms.Compose([msa, tdl, exc])
 
         data = com(data)
@@ -266,6 +271,7 @@ def test_transform_get_excerpt(musdb_tracks):
         }
 
         exc = transforms.GetExcerpt(excerpt_length=excerpt_length)
+        assert isinstance(str(exc), str)
         com = transforms.Compose([msa, tdl])
 
         data = com(data)
@@ -365,6 +371,7 @@ def test_transforms_labels_to_one_hot(mix_source_folder, scaper_folder):
     item = dataset[0]
 
     tfm = transforms.LabelsToOneHot()
+    assert isinstance(str(tfm), str)
 
     one_hots = tfm(item)['one_hot_labels']
     assert np.allclose(one_hots, np.eye(2))
@@ -391,6 +398,7 @@ def test_transforms_magnitude_weights(mix_source_folder):
     item = dataset[0]
 
     tfm = transforms.MagnitudeWeights()
+    assert isinstance(str(tfm), str)
     pytest.raises(TransformException, tfm, {'sources': []})
 
     item_from_mix = tfm(item)
@@ -408,6 +416,7 @@ def test_transforms_index_sources(mix_source_folder):
 
     index = 1
     tfm = transforms.IndexSources('source_magnitudes', index)
+    assert isinstance(str(tfm), str)
 
     pytest.raises(TransformException, tfm, {'sources': []})
     pytest.raises(TransformException, tfm,
@@ -430,6 +439,7 @@ def test_transform_get_audio(mix_source_folder):
 
     index = 1
     tfm = transforms.GetAudio()
+    assert isinstance(str(tfm), str)
     pytest.raises(TransformException, tfm, {'sources': []})
 
     ga_output = tfm(item)
