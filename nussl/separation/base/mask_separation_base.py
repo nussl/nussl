@@ -46,6 +46,11 @@ class MaskSeparationBase(SeparationBase):
         self.mask_threshold = mask_threshold
         self.result_masks = []
 
+        self.metadata.update({
+            'mask_type': mask_type,
+            'mask_threshold': 'N/A' if self.mask_type == masks.SoftMask else mask_threshold
+        })
+
     @property
     def mask_type(self):
         """        

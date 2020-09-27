@@ -17,6 +17,7 @@ from .. import utils
 if hasattr(numcodecs, 'blosc'):
     numcodecs.blosc.use_threads = False
 
+
 def compute_ideal_binary_mask(source_magnitudes):
     ibm = (
             source_magnitudes == np.max(source_magnitudes, axis=-1, keepdims=True)
@@ -30,6 +31,7 @@ def compute_ideal_binary_mask(source_magnitudes):
 # Keys that correspond to the time-frequency representations after being passed through
 # the transforms here.
 time_frequency_keys = ['mix_magnitude', 'source_magnitudes', 'ideal_binary_mask', 'weights']
+
 
 class SumSources(object):
     """
@@ -56,10 +58,11 @@ class SumSources(object):
     label part will be used when grouping sources.
 
     Example:
-        >>> tfm = transforms.SumSources(
-        >>>     groupings=[['drums', 'bass', 'other]],
-        >>>     group_names=['accompaniment],
-        >>> )
+        >>> import nussl
+        >>> tfm = nussl.datasets.transforms.SumSources(
+                groupings=[['drums', 'bass', 'other]],
+                group_names=['accompaniment],
+            )
         >>> # data['sources'] is a dict containing keys: 
         >>> #   ['vocals', 'drums', 'bass', 'other]
         >>> data = tfm(data)
@@ -147,6 +150,9 @@ class LabelsToOneHot(object):
 
     def __init__(self, source_key='sources'):
         self.source_key = source_key
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(source_key = {self.source_key})'
 
     def __call__(self, data):
         if 'metadata' not in data:
@@ -278,6 +284,10 @@ class MagnitudeWeights(object):
     def __init__(self, mix_key='mix', mix_magnitude_key='mix_magnitude'):
         self.mix_magnitude_key = mix_magnitude_key
         self.mix_key = mix_key
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(mix_key = {self.mix_key}, ' \
+               f'mix_magnitude_key = {self.mix_magnitude_key})'
 
     def __call__(self, data):
         if self.mix_magnitude_key not in data and self.mix_key not in data:
@@ -412,7 +422,9 @@ class PhaseSensitiveSpectrumApproximation(object):
         return (
             f"{self.__class__.__name__}("
             f"mix_key = {self.mix_key}, "
-            f"source_key = {self.source_key}"
+            f"source_key = {self.source_key}, "
+            f"range_min = {self.range_min}, "
+            f"range_max = {self.range_max}"
             f")"
         )
 
@@ -471,6 +483,10 @@ class IndexSources(object):
         data[self.target_key] = data[self.target_key][..., self.index, None]
         return data
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}(target_key = {self.target_key}, ' \
+               f'index = {self.index})'
+
 
 class GetExcerpt(object):
     """
@@ -498,6 +514,10 @@ class GetExcerpt(object):
         self.excerpt_length = excerpt_length
         self.time_dim = time_dim
         self.time_frequency_keys = tf_keys if tf_keys else time_frequency_keys
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(excerpt_length = {self.excerpt_length}), ' \
+               f'time_dim = {self.time_dim}, tf_keys = {self.time_frequency_keys})'
 
     @staticmethod
     def _validate(data, key):
@@ -650,6 +670,7 @@ class Cache(object):
 
         return data
 
+
 class GetAudio(object):
     """
     Extracts the audio from each signal in `mix_key` and `source_key`. 
@@ -665,6 +686,10 @@ class GetAudio(object):
     def __init__(self, mix_key='mix', source_key='sources'):
         self.mix_key = mix_key
         self.source_key = source_key
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(mix_key = {self.mix_key}, ' \
+               f'source_key = {self.source_key})'
 
     def __call__(self, data):
         if self.mix_key not in data:
@@ -746,7 +771,8 @@ class ToSeparationModel(object):
         return data
 
     def __repr__(self):
-        return f"{self.__class__.__name__}()"
+        return f"{self.__class__.__name__}(swap_tf_dims = {self.swap_tf_dims})"
+
 
 class Compose(object):
     """Composes several transforms together. Inspired by torchvision implementation.

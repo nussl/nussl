@@ -197,6 +197,7 @@ class Closure(object):
             loss_output, *self.args, **self.kwargs)
         return loss_output
 
+
 class TrainClosure(Closure):
     """
     This closure takes an optimization step on a SeparationModel object given a
@@ -212,6 +213,13 @@ class TrainClosure(Closure):
         super().__init__(loss_dictionary, *args, **kwargs)
         self.optimizer = optimizer
         self.model = model
+
+        # Save about training metadata to model.info
+        self.model.metadata['optimizer'] = {
+            'name': type(optimizer).__name__,
+            'params': optimizer.defaults  # All of the settings are stored here.
+        }
+        self.model.metadata['loss_dictionary'] = loss_dictionary
 
     def _fire_event(self, engine, output, event):
         if engine is not None:
