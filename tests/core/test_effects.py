@@ -514,3 +514,10 @@ def test_order(mix_and_sources):
     sox_ffmpeg_order = ["time_stretch", "pitch_shift", "tremolo", "vibrato"]
     for effect, _filter in zip(signal_sf.effects_applied, sox_ffmpeg_order):
         assert effect.filter == _filter
+
+def test_kwargs():
+    kwargs = {"a":1, "b":2, "c":3}
+    filter_func = effects.time_stretch(1.3, **kwargs)
+    for key, value in kwargs.items():
+        assert filter_func.params[key] == value
+    assert filter_func.params["factor"] == 1.3
