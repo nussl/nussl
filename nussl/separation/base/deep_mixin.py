@@ -10,7 +10,8 @@ OMITTED_TRANSFORMS = (
     tfm.GetExcerpt,
     tfm.MagnitudeWeights,
     tfm.SumSources,
-    tfm.Cache
+    tfm.Cache,
+    tfm.IndexSources,
 )
 
 
