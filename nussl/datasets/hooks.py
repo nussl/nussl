@@ -161,7 +161,7 @@ class MixSourceFolder(BaseDataset):
         **kwargs: Any additional arguments that are passed up to BaseDataset 
             (see ``nussl.datasets.BaseDataset``).
     """
-    def __init__(self, folder, mix_folder='mix', source_folders=None, sample_rate=None,
+    def __init__(self, folder, mix_folder='mix', source_folders=None,
                  ext=None, make_mix=False, **kwargs):
         self.mix_folder = mix_folder
         self.source_folders = source_folders
