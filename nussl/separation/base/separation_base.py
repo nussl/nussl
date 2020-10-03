@@ -98,12 +98,12 @@ class SeparationBase(object):
         """
         try:
             import gradio
-        except:
+        except: # pragma: no cover
             raise ImportError(
                 "To use this functionality, you must install gradio: "
                 "pip install gradio.")
                 
-        def _separate(file_obj):
+        def _separate(file_obj): # pragma: no cover
             mix = AudioSignal(file_obj.name)
             self.audio_signal = mix
             estimates = self()
