@@ -96,9 +96,8 @@ class SeparationBase(object):
                 "To use this functionality, you must install gradio: "
                 "pip install gradio.")
                 
-        def _separate(audio):
-            sr, data = audio
-            mix = AudioSignal(audio_data_array=data, sample_rate=sr)
+        def _separate(file_obj):
+            mix = AudioSignal(file_obj.name)
             self.audio_signal = mix
             estimates = self()
             if add_residual:
@@ -108,10 +107,12 @@ class SeparationBase(object):
             html = play_utils.multitrack(estimates, ext='.mp3', display=False)
             
             return html
-        
+
+        audio_in = gradio.inputs.Audio(source="upload", type="file")
+
         gradio.Interface(
             fn=_separate, 
-            inputs="audio", 
+            inputs=audio_in, 
             outputs="html",
         ).launch(share=share)
 
