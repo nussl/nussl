@@ -94,7 +94,7 @@ class SeparationBase(object):
 
         Args:
             add_residual: Whether or not to add the residual signal.
-            source: Only "upload" works currently. "record" will work if gradio fixes it.
+            source: Either "upload" (upload a file to separate), or "microphone", record.
             share: Whether or not to create a public gradio link.
             kwargs: Keyword arguments to gradio.
 
