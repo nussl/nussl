@@ -84,6 +84,47 @@ algorithms, including:
 * Primitive Methods: Repetition (REPET, 2DFT), Harmonic/Percussive, Vocal melody extraction, Timbre clustering
 * Benchmark Methods: High Pass filter, Binary Masks, Ratio Masks, Weiner Filtering
 
+## Interaction
+
+nussl supports light interaction via [gradio](https://www.gradio.app/).
+To launch a web interface where you can upload audio and hear
+separations, simply do:
+
+```python
+import nussl
+
+# Make a dummy signal to instantiate object.
+dummy_signal = nussl.AudioSignal()
+
+# Create some separation object with desired config.
+# This will use the 2DFT algorithm, but since interaction
+# is implemented in the base separation object, it is
+# available to every algorithm.
+ft2d = nussl.separation.primitive.FT2D(dummy_signal)
+
+# Launch the Gradio interface. Use `share=True` to make
+# a public link that you can share! Warning - people with
+# access to the link will be running code on YOUR
+# machine.
+ft2d.interact()
+```
+
+Or all at once, using `share=True` to create a public link that you can
+give to others.
+
+```bash
+>>> import nussl
+>>> nussl.separation.primitive.HPSS(nussl.AudioSignal()).interact(share=True)
+Running locally at: http://127.0.0.1:7860/
+This share link will expire in 6 hours. If you need a permanent link, email support@gradio.app
+Running on External URL: https://22218.gradio.app
+```
+
+This will launch an interface that looks like this:
+
+<div align="center">
+<img src="docs/gradio-interface.gif">
+</div>
 
 ## Evaluation
 

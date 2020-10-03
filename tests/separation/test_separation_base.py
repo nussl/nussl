@@ -54,6 +54,31 @@ def test_separation_base(mix_source_folder, monkeypatch):
     separator(audio_signal=sources['s1'])
     assert separator.audio_signal == sources['s1']
 
+def test_separation_base_interact(mix_source_folder, monkeypatch):
+    dataset = datasets.MixSourceFolder(mix_source_folder)
+    item = dataset[0]
+    mix = item['mix']
+
+    def dummy_run(self):
+        return self.audio_signal
+
+    class DummyGradio():
+        def __init__(*args, **kwargs):
+            pass
+        def launch(self, *args, **kwargs):
+            pass
+
+    import gradio
+    
+    monkeypatch.setattr(separation.SeparationBase, 'make_audio_signals', dummy_run)
+    monkeypatch.setattr(separation.SeparationBase, 'run', dummy_run)
+    monkeypatch.setattr(gradio, 'Interface', DummyGradio)
+
+    separator = separation.SeparationBase(mix)
+    separator.interact()
+    separator.interact(add_residual=True)
+
+
 def test_mask_separation_base(mix_source_folder, monkeypatch):
     dataset = datasets.MixSourceFolder(mix_source_folder)
     item = dataset[0]
