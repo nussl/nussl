@@ -76,6 +76,7 @@ def test_separation_base_interact(mix_source_folder, monkeypatch):
 
     separator = separation.SeparationBase(mix)
     separator.interact()
+    separator.interact(add_residual=True)
 
 
 def test_mask_separation_base(mix_source_folder, monkeypatch):
