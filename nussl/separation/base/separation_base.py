@@ -78,7 +78,7 @@ class SeparationBase(object):
             else:
                 self._preprocess_audio_signal()
 
-    def interact(self, add_residual=False, source='upload', share=False):
+    def interact(self, add_residual=False, source='upload', label=None, share=False):
         """
         Uses gradio to create a small interactive interface
         for the separation algorithm. Fair warning, there
@@ -116,7 +116,9 @@ class SeparationBase(object):
             
             return html
 
-        audio_in = gradio.inputs.Audio(source=source, type="file")
+        if label is None: label = f"Separation via {type(self).__name__}"
+
+        audio_in = gradio.inputs.Audio(source=source, type="file", label=label)
 
         gradio.Interface(
             fn=_separate, 

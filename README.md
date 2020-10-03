@@ -97,8 +97,9 @@ import nussl
 dummy_signal = nussl.AudioSignal()
 
 # Create some separation object with desired config.
-# This will use the 2DFT algorithm, but every method
-# in nussl has interaction implemented.
+# This will use the 2DFT algorithm, but since interaction
+# is implemented in the base separation object, it is
+# available to every algorithm.
 ft2d = nussl.separation.primitive.FT2D(dummy_signal)
 
 # Launch the Gradio interface. Use `share=True` to make
@@ -115,6 +116,10 @@ import nussl
 nussl.separation.primitive.HPSS(
     nussl.AudioSignal()).interact()
 ```
+
+This will launch an interface that looks like this:
+
+![Gradio interface](docs/gradio-interface.gif)
 
 ## Evaluation
 
