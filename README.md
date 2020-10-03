@@ -119,7 +119,9 @@ nussl.separation.primitive.HPSS(
 
 This will launch an interface that looks like this:
 
-![Gradio interface](docs/gradio-interface.gif)
+<div align="center">
+<img src="docs/gradio-interface.gif">
+</div>
 
 ## Evaluation
 
