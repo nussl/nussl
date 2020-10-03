@@ -84,6 +84,14 @@ class SeparationBase(object):
         for the separation algorithm. Fair warning, there
         may be some race conditions with this...
 
+        When you call this from a notebook, the interface will be displayed
+        below the cell. When you call this from a regular Python script, you'll see a 
+        link print out (a localhost link and a gradio link if you
+        called this with sharing on). The sessions will last for the duration
+        of the notebook or the script.
+
+        To use this functionality, you must install gradio: `pip install gradio`.
+
         Args:
             add_residual: Whether or not to add the residual signal.
             source: Only "upload" works currently. "record" will work if gradio fixes it.

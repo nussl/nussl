@@ -109,12 +109,15 @@ ft2d = nussl.separation.primitive.FT2D(dummy_signal)
 ft2d.interact()
 ```
 
-Or all at once:
+Or all at once, using `share=True` to create a public link that you can
+give to others.
 
-```python
-import nussl
-nussl.separation.primitive.HPSS(
-    nussl.AudioSignal()).interact()
+```bash
+>>> import nussl
+>>> nussl.separation.primitive.HPSS(nussl.AudioSignal()).interact(share=True)
+Running locally at: http://127.0.0.1:7860/
+This share link will expire in 6 hours. If you need a permanent link, email support@gradio.app
+Running on External URL: https://22218.gradio.app
 ```
 
 This will launch an interface that looks like this:
