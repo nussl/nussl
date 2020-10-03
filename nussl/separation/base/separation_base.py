@@ -78,7 +78,7 @@ class SeparationBase(object):
             else:
                 self._preprocess_audio_signal()
 
-    def interact(self, add_residual=False, share=False):
+    def interact(self, add_residual=False, source='upload', share=False):
         """
         Uses gradio to create a small interactive interface
         for the separation algorithm. Fair warning, there
@@ -86,6 +86,7 @@ class SeparationBase(object):
 
         Args:
             add_residual: Whether or not to add the residual signal.
+            source: Only "upload" works currently. "record" will work if gradio fixes it.
             share: Whether or not to create a public gradio link.
             kwargs: Keyword arguments to gradio.
 
@@ -115,7 +116,7 @@ class SeparationBase(object):
             
             return html
 
-        audio_in = gradio.inputs.Audio(source="upload", type="file")
+        audio_in = gradio.inputs.Audio(source=source, type="file")
 
         gradio.Interface(
             fn=_separate, 
