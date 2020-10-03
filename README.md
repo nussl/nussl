@@ -108,6 +108,14 @@ ft2d = nussl.separation.primitive.FT2D(dummy_signal)
 ft2d.interact()
 ```
 
+Or all at once:
+
+```python
+import nussl
+nussl.separation.primitive.HPSS(
+    nussl.AudioSignal()).interact()
+```
+
 ## Evaluation
 
 nussl has many built in evaluation measures to determine how well your algorithm did, including

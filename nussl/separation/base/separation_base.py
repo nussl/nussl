@@ -88,6 +88,13 @@ class SeparationBase(object):
             add_residual: Whether or not to add the residual signal.
             share: Whether or not to create a public gradio link.
             kwargs: Keyword arguments to gradio.
+
+        Example:
+        
+            >>> import nussl
+            >>> nussl.separation.primitive.HPSS(
+            >>>     nussl.AudioSignal()).interact()
+
         """
         try:
             import gradio
