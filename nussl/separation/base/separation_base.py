@@ -3,7 +3,7 @@ import warnings
 
 import numpy as np
 
-from ... import AudioSignal
+from ... import AudioSignal, play_utils
 
 
 class SeparationBase(object):
@@ -77,6 +77,43 @@ class SeparationBase(object):
                 self.audio_signal.stft_data = np.array([[]])
             else:
                 self._preprocess_audio_signal()
+
+    def interact(self, add_residual=False, share=False):
+        """
+        Uses gradio to create a small interactive interface
+        for the separation algorithm. Fair warning, there
+        may be some race conditions with this...
+
+        Args:
+            add_residual: Whether or not to add the residual signal.
+            share: Whether or not to create a public gradio link.
+            kwargs: Keyword arguments to gradio.
+        """
+        try:
+            import gradio
+        except:
+            raise ImportError(
+                "To use this functionality, you must install gradio: "
+                "pip install gradio.")
+                
+        def _separate(audio):
+            sr, data = audio
+            mix = AudioSignal(audio_data_array=data, sample_rate=sr)
+            self.audio_signal = mix
+            estimates = self()
+            if add_residual:
+                estimates.append(mix - estimates[0])
+
+            estimates = {f'Estimate {i}': s for i, s in enumerate(estimates)}
+            html = play_utils.multitrack(estimates, ext='.mp3', display=False)
+            
+            return html
+        
+        gradio.Interface(
+            fn=_separate, 
+            inputs="audio", 
+            outputs="html",
+        ).launch(share=share)
 
     def run(self, *args, audio_signal=None, **kwargs):
         """
