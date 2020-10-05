@@ -106,6 +106,11 @@ class SafeModelLoader(object):
         if 'config' in model_dict:
             metadata['config'] = json.loads(model_dict['config'])
 
+        if 'transforms' in metadata:
+            if 'train_dataset' not in metadata:
+                metadata['train_dataset'] = {}
+            metadata['train_dataset']['transforms'] = metadata['transforms']
+
         return metadata
 
     def _load_eval(self, eval_dict):
