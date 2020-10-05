@@ -3,7 +3,7 @@ import warnings
 
 import numpy as np
 
-from ... import AudioSignal
+from ... import AudioSignal, play_utils
 
 
 class SeparationBase(object):
@@ -77,6 +77,62 @@ class SeparationBase(object):
                 self.audio_signal.stft_data = np.array([[]])
             else:
                 self._preprocess_audio_signal()
+
+    def interact(self, add_residual=False, source='upload', label=None, share=False):
+        """
+        Uses gradio to create a small interactive interface
+        for the separation algorithm. Fair warning, there
+        may be some race conditions with this...
+
+        When you call this from a notebook, the interface will be displayed
+        below the cell. When you call this from a regular Python script, you'll see a 
+        link print out (a localhost link and a gradio link if you
+        called this with sharing on). The sessions will last for the duration
+        of the notebook or the script.
+
+        To use this functionality, you must install gradio: `pip install gradio`.
+
+        Args:
+            add_residual: Whether or not to add the residual signal.
+            source: Either "upload" (upload a file to separate), or "microphone", record.
+            share: Whether or not to create a public gradio link.
+            kwargs: Keyword arguments to gradio.
+
+        Example:
+        
+            >>> import nussl
+            >>> nussl.separation.primitive.HPSS(
+            >>>     nussl.AudioSignal()).interact()
+
+        """
+        try:
+            import gradio
+        except: # pragma: no cover
+            raise ImportError(
+                "To use this functionality, you must install gradio: "
+                "pip install gradio.")
+                
+        def _separate(file_obj): # pragma: no cover
+            mix = AudioSignal(file_obj.name)
+            self.audio_signal = mix
+            estimates = self()
+            if add_residual:
+                estimates.append(mix - estimates[0])
+
+            estimates = {f'Estimate {i}': s for i, s in enumerate(estimates)}
+            html = play_utils.multitrack(estimates, ext='.mp3', display=False)
+            
+            return html
+
+        if label is None: label = f"Separation via {type(self).__name__}"
+
+        audio_in = gradio.inputs.Audio(source=source, type="file", label=label)
+
+        gradio.Interface(
+            fn=_separate, 
+            inputs=audio_in, 
+            outputs="html",
+        ).launch(share=share)
 
     def run(self, *args, audio_signal=None, **kwargs):
         """
