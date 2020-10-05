@@ -11,7 +11,7 @@ with open('extra_requirements.txt') as f:
 
 setup(
     name='nussl',
-    version='1.1.3rc3',
+    version='1.1.3rc4',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
