@@ -69,7 +69,14 @@ class SeparationModel(nn.Module):
             if 'class' in module:
                 if module['class'] in dir(modules): 
                     class_func = getattr(modules, module['class'])
-                    module_snapshot = inspect.getsource(class_func)
+                    try:
+                        module_snapshot = inspect.getsource(class_func)
+                    except TypeError: # pragma: no cover
+                        module_snapshot = (
+                            "No module snapshot could be found. Did you define "
+                            "your class in an interactive Python environment? "
+                            "See https://bugs.python.org/issue12920 for more details."
+                        )
                 else:
                     class_func = getattr(nn, module['class'])
                     module_snapshot = f'pytorch v{torch.__version__} builtin'
