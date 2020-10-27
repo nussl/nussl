@@ -5,12 +5,14 @@ except Exception:
     vamp_imported = False
 
 # Current nussl version
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 class ImportErrorClass(object):
     def __init__(self, lib, **kwargs):
         raise ImportError(
             f'Cannot import {type(self).__name__} because {lib} is not installed')
+
+import warnings
 
 try:
     import musdb
@@ -21,7 +23,6 @@ except RuntimeError:
 
 from .core import AudioSignal, STFTParams
 from .core import utils, efz_utils, play_utils, constants, mixing
-import warnings
 
 
 from . import core

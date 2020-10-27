@@ -1,4 +1,6 @@
 import warnings
+from typing import Iterable
+import copy
 
 from torch.utils.data import Dataset
 
@@ -7,7 +9,7 @@ from . import transforms as tfm
 import tqdm
 
 
-class BaseDataset(Dataset):
+class BaseDataset(Dataset, Iterable):
     """
     The BaseDataset class is the starting point for all dataset hooks
     in nussl. To subclass BaseDataset, you only have to implement two 
@@ -76,6 +78,14 @@ class BaseDataset(Dataset):
         self.sample_rate = sample_rate
         self.num_channels = num_channels
         self.strict_sample_rate = strict_sample_rate
+        self.metadata = {
+            'name': self.__class__.__name__,
+            'stft_params': stft_params,
+            'sample_rate': sample_rate,
+            'num_channels': num_channels,
+            'folder': folder,
+            'transforms': copy.deepcopy(transform)
+        }
 
         if not isinstance(self.items, list):
             raise DataSetException("Output of self.get_items must be a list!")
@@ -130,7 +140,6 @@ class BaseDataset(Dataset):
                 n_removed += 1
             pbar.set_description(f"Filtered {n_removed} items out of dataset")
         self.items = filtered_items
-
 
     @property
     def cache_populated(self):
@@ -216,7 +225,7 @@ class BaseDataset(Dataset):
             if not isinstance(data, dict):
                 raise DataSetException(
                     "The output of process_item must be a dictionary!")
-            
+
             if self.transform:
                 data['index'] = i
                 data = self.transform(data)
@@ -226,6 +235,19 @@ class BaseDataset(Dataset):
                         "The output of transform must be a dictionary!")
 
         return data
+
+    def __iter__(self):
+        """
+        Calls ``self.__getitem__`` from ``0`` to ``self.__len__()``.
+        Required when inheriting Iterable.
+
+        Yields:
+            dict: Dictionary with keys and values corresponding to the processed
+                item after being put through the set of transforms (if any are
+                defined).
+        """
+        for i in range(len(self)):
+            yield self[i]
 
     def process_item(self, item):
         """Each file returned by get_items is processed by this function. For example,

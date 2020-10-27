@@ -47,7 +47,7 @@ Aggregators
 
 """
 
-from .report_card import aggregate_score_files, report_card
+from .report_card import aggregate_score_files, report_card, associate_metrics
 from .evaluation_base import EvaluationBase
 from .bss_eval import BSSEvaluationBase, BSSEvalV4, BSSEvalScale, scale_bss_eval
 from .precision_recall_fscore import PrecisionRecallFScore

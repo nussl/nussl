@@ -89,6 +89,7 @@ def test_dataset_hook_wham(benchmark_audio):
     audio = nussl.AudioSignal(benchmark_audio['K0140.wav'])
     with tempfile.TemporaryDirectory() as tmpdir:
         for wav_folder in ['wav8k', 'wav16k']:
+            sr = 8000 if wav_folder == 'wav8k' else 16000
             for mode in ['min', 'max']:
                 for split in ['tr', 'cv', 'tt']:
                     for key, val in nussl.datasets.WHAM.MIX_TO_SOURCE_MAP.items():
@@ -96,6 +97,7 @@ def test_dataset_hook_wham(benchmark_audio):
                             tmpdir, wav_folder, mode, split)
                         mix_path = os.path.join(parent, key)
                         os.makedirs(mix_path, exist_ok=True)
+                        audio.resample(sr)
                         audio.write_audio_to_file(
                             os.path.join(mix_path, '0.wav'))
                         for x in val:

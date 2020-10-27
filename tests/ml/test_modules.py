@@ -147,7 +147,7 @@ def test_ml_embedding(one_item):
         num_frequencies, 50, 1, bidirectional=False, dropout=0.0
     )
 
-    activations = ['sigmoid', 'tanh', 'relu', 'softmax']
+    activations = ['sigmoid', 'tanh', 'relu', 'softmax', ['gated_tanh', 'sigmoid']]
     embedding_sizes = [1, 5, 10, 20, 100]
 
     for a in activations:
@@ -283,6 +283,7 @@ def test_ml_alias():
     outputs = ['split:0', 'split_zero']
 
     config = {
+        'name': 'AliasModel',
         'modules': modules, 
         'connections': connections,
         'output': outputs

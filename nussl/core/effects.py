@@ -113,10 +113,10 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
          .overwrite_output()
          .run())
 
-        augmented_signal = AudioSignal(path_to_input_file=out_tempfile.name)
+        augmented_data = AudioSignal(path_to_input_file=out_tempfile.name).audio_data
 
-    augmented_signal.label = audio_signal.label
-    augmented_signal._effects_applied = audio_signal.effects_applied + filters
+    augmented_signal = audio_signal.make_copy_with_audio_data(augmented_data)
+    augmented_signal._effects_applied += filters
     return augmented_signal
 
 
@@ -160,15 +160,12 @@ def apply_effects_sox(audio_signal, filters):
     for filter_ in filters:
         tfm = filter_(tfm)
     augmented_data = tfm.build_array(
-        input_array=np.transpose(audio_data), 
+        input_array=audio_data.T,
         sample_rate_in=audio_signal.sample_rate
-    )
+    ) 
 
-    augmented_signal = AudioSignal(
-        audio_data_array=np.transpose(augmented_data),
-        sample_rate=audio_signal.sample_rate)
-    augmented_signal.label = audio_signal.label
-    augmented_signal._effects_applied = audio_signal.effects_applied + filters
+    augmented_signal = audio_signal.make_copy_with_audio_data(augmented_data)
+    augmented_signal._effects_applied += filters
     return augmented_signal
 
 
@@ -189,6 +186,7 @@ def time_stretch(factor, **kwargs):
     for details.
     Args: 
         factor (float): Scaling factor for tempo change. Must be positive.
+        kwargs: Arugments passed to `sox.transform.tempo`
     Returns:
         filter (SoXFilter): A SoXFilter object, to be called on an pysndfx stream
     """
@@ -211,14 +209,12 @@ def pitch_shift(n_semitones, **kwargs):
     for details.
 
     Args: 
-        n_semitones (integer): The number of semitones to shift the audio. 
+        n_semitones (float): The number of semitones to shift the audio.
             Positive values increases the frequency of the signal
+        kwargs: Arugments passed to `sox.transform.pitch`
     Returns:
         filter (SoxFilter): A SoXFilter object, to be called on an pysndfx stream
     """
-    if not np.issubdtype(type(n_semitones), np.integer):
-        raise ValueError("shift must be an integer.")
-
     return SoXFilter("pitch_shift", n_semitones=n_semitones, **kwargs)
 
 
@@ -233,7 +229,7 @@ def _pass_arg_check(freq, poles, width_type, width):
         raise ValueError("width should be positive scalar")
 
 
-def low_pass(freq, poles=2, width_type="h", width=.707):
+def low_pass(freq, poles=2, width_type="h", width=.707, **kwargs):
     """
     Creates an FFmpegFilter object, which when called on an ffmpeg stream,
     applies a low pass filter to the audio signal.
@@ -253,19 +249,21 @@ def low_pass(freq, poles=2, width_type="h", width=.707):
             's': slope
             'k': kHz
         width (float): Band width in width_type units
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     _pass_arg_check(freq, poles, width_type, width)
 
     filter_ = FFmpegFilter("low_pass", ffmpeg_name="lowpass", f=freq, p=poles,
-                           t=width_type, w=width)
+                           t=width_type, w=width, **kwargs)
     filter_.params = {"freq": freq, "poles": poles,
-                      "width_type": width_type, "width": width}
+                      "width_type": width_type, "width": width, **kwargs}
+    
     return filter_
 
 
-def high_pass(freq, poles=2, width_type="h", width=.707):
+def high_pass(freq, poles=2, width_type="h", width=.707, **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a high pass filter to the audio signal.
@@ -285,19 +283,20 @@ def high_pass(freq, poles=2, width_type="h", width=.707):
             's': slope
             'k': kHz
         width (float): Band width in width_type units
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
     _pass_arg_check(freq, poles, width_type, width)
 
     filter_ = FFmpegFilter("high_pass", ffmpeg_name="highpass", f=freq, p=poles,
-                           t=width_type, w=width)
+                           t=width_type, w=width, **kwargs)
     filter_.params = {"freq": freq, "poles": poles,
-                      "width_type": width_type, "width": width}
+                      "width_type": width_type, "width": width, **kwargs}
     return filter_
 
 
-def tremolo(mod_freq, mod_depth):
+def tremolo(mod_freq, mod_depth, **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a tremolo filter to the audio signal
@@ -310,6 +309,7 @@ def tremolo(mod_freq, mod_depth):
     Args: 
         mod_freq (float): Modulation frequency. Must be between .1 and 20000.
         mod_depth (float): Modulation depth. Must be between 0 and 1.
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
@@ -319,12 +319,12 @@ def tremolo(mod_freq, mod_depth):
     if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
         raise ValueError("mod_depth should be positve scalar between 0 and 1.")
 
-    filter_ = FFmpegFilter("tremolo", f=mod_freq, d=mod_depth)
-    filter_.params = {"mod_freq": mod_freq, "mod_depth": mod_depth}
+    filter_ = FFmpegFilter("tremolo", f=mod_freq, d=mod_depth, **kwargs)
+    filter_.params = {"mod_freq": mod_freq, "mod_depth": mod_depth, **kwargs}
     return filter_
 
 
-def vibrato(mod_freq, mod_depth):
+def vibrato(mod_freq, mod_depth, **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a vibrato filter to the audio signal.
@@ -337,6 +337,7 @@ def vibrato(mod_freq, mod_depth):
     Args: 
         mod_freq (float): Modulation frequency. Must be between .1 and 20000.
         mod_depth (float): Modulation depth. Must be between 0 and 1.
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
@@ -346,13 +347,13 @@ def vibrato(mod_freq, mod_depth):
     if not np.issubdtype(type(mod_depth), np.number) or mod_depth < 0 or mod_depth > 1:
         raise ValueError("mod_depth should be positve scalar between 0 and 1.")
 
-    filter_ = FFmpegFilter("vibrato", f=mod_freq, d=mod_depth)
-    filter_.params = {"mod_freq": mod_freq, "mod_depth": mod_depth}
+    filter_ = FFmpegFilter("vibrato", f=mod_freq, d=mod_depth, **kwargs)
+    filter_.params = {"mod_freq": mod_freq, "mod_depth": mod_depth, **kwargs}
     return filter_
 
 
 def chorus(delays, decays, speeds, depths,
-           in_gain=.4, out_gain=.4):
+           in_gain=.4, out_gain=.4, **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a vibrato filter to the audio signal.
@@ -370,6 +371,7 @@ def chorus(delays, decays, speeds, depths,
         depths (list of float): depths. Must be between 0 and 1
         in_gain (float): Proportion of input gain. Must be between 0 and 1
         out_gain (float): Proportion of output gain. Must be between 0 and 1
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter: Resulting filter, to be called on a ffmpeg stream
     """
@@ -393,17 +395,18 @@ def chorus(delays, decays, speeds, depths,
     filter_ = FFmpegFilter("chorus", in_gain=in_gain,
                            out_gain=out_gain, delays=ffmpeg_delays,
                            speeds=ffmpeg_speeds, decays=ffmpeg_decays,
-                           depths=ffmpeg_depths)
+                           depths=ffmpeg_depths, **kwargs)
 
     filter_.params["delays"] = delays
     filter_.params["speeds"] = speeds
     filter_.params["decays"] = decays
     filter_.params["depths"] = depths
+    filter_.params.update(kwargs)
     return filter_
 
 
 def phaser(in_gain=.4, out_gain=.74, delay=3,
-           decay=.4, speed=.5, type_="triangular"):
+           decay=.4, speed=.5, type_="triangular", **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a phaser filter to the audio signal
@@ -422,6 +425,7 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
         type_ (str): modulation type. Either Triangular or Sinusoidal
             "triangular" or "t" for Triangular
             "sinusoidal" of "s" for sinusoidal
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
@@ -437,16 +441,15 @@ def phaser(in_gain=.4, out_gain=.74, delay=3,
         raise ValueError(f"_type must be one of the following:\n{allowed_mod_types}")
 
     # type is reserved word in python, kwarg dict is necessary
-    type_kwarg = {
-        "type": type_
-    }
+    type_kwarg = {"type": type_}
 
     filter_ = FFmpegFilter("phaser", ffmpeg_name="aphaser", in_gain=in_gain, out_gain=out_gain,
-                           delay=delay, speed=speed, decay=decay, **type_kwarg)
+                           delay=delay, speed=speed, decay=decay, **{**type_kwarg, **kwargs})
     
     filter_.params = copy.deepcopy(filter_.params)
     del filter_.params["type"]
     filter_.params["type_"] = type_
+    filter_.params.update(kwargs)
     return filter_
     
 
@@ -483,8 +486,8 @@ def _flanger_argcheck(delay, depth, regen, width,
         raise ValueError(error_text)
 
 
-def flanger(delay=0, depth=2, regen=0, width=71,
-            speed=.5, phase=25, shape="sinusoidal", interp="linear"):
+def flanger(delay=0, depth=2, regen=0, width=71, speed=.5,
+            phase=25, shape="sinusoidal", interp="linear", **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a flanger filter to the audio signal.
@@ -505,6 +508,7 @@ def flanger(delay=0, depth=2, regen=0, width=71,
         shape (str): Swept wave shape, Must be "triangular" or "sinusoidal".
         phase (float): swept wave percentage-shift for multi channel. Must be between 0 and 100.
         interp (str): Delay Line interpolation. Must be "linear" or "quadratic".
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
@@ -512,10 +516,10 @@ def flanger(delay=0, depth=2, regen=0, width=71,
     _flanger_argcheck(delay, depth, regen, width, speed, phase, shape, interp)
 
     return FFmpegFilter("flanger", delay=delay, depth=depth, regen=regen, width=width,
-                        speed=speed, phase=phase, shape=shape, interp=interp)
+                        speed=speed, phase=phase, shape=shape, interp=interp, **kwargs)
 
 
-def emphasis(level_in, level_out, type_="col", mode='production'):
+def emphasis(level_in, level_out, type_="col", mode='production', **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a emphasis filter to the audio signal. An emphasis filter boosts frequency ranges 
@@ -543,6 +547,7 @@ def emphasis(level_in, level_out, type_="col", mode='production'):
         mode (str): Filter mode. Must be one of the following:
             - "reproduction": Apply de-emphasis filter
             - "production": Apply emphasis filter
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpeg Filter): Resulting filter, to be called on a ffmpeg stream
     """
@@ -558,16 +563,15 @@ def emphasis(level_in, level_out, type_="col", mode='production'):
         raise ValueError(f"mode must be production or reproduction")
 
     # type is a reserved word in python, so kwarg dict is necessary
-    type_kwarg = {
-        'type': type_
-    }
+    type_kwarg = {'type': type_}
 
     filter_ = FFmpegFilter("emphasis", ffmpeg_name="aemphasis", level_in=level_in,
-                           level_out=level_out, mode=mode, **type_kwarg)
+                           level_out=level_out, mode=mode, **{**type_kwarg, **kwargs})
 
     filter_.params = copy.deepcopy(filter_.params)
     del filter_.params["type"]
     filter_.params["type_"] = type_
+    filter_.params.update(kwargs)
     return filter_
 
 
@@ -617,7 +621,7 @@ def _compressor_argcheck(level_in, mode, reduction_ratio,
 
 def compressor(level_in, mode="downward", reduction_ratio=2,
                attack=20, release=250, makeup=1, knee=2.8284, link="average",
-               detection="rms", mix=1, threshold=.125):
+               detection="rms", mix=1, threshold=.125, **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a compressor filter to the audio signal.
@@ -644,6 +648,7 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
         detection (str): Whether to process exact signal of the RMS of nearby signals. 
             Either "peak" for exact or "rms".
         mix (float): Proportion of compressed signal in output.
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter (FFmpegFilter): Resulting filter, to be called on a ffmpeg stream
     """
@@ -652,14 +657,16 @@ def compressor(level_in, mode="downward", reduction_ratio=2,
 
     filter_ = FFmpegFilter("compressor", ffmpeg_name="acompressor", level_in=level_in,
                            ratio=reduction_ratio, attack=attack, release=release, makeup=makeup,
-                           knee=knee, link=link, detection=detection, mix=mix, threshold=threshold)
+                           knee=knee, link=link, detection=detection, mix=mix, threshold=threshold,
+                           **kwargs)
     filter_.params = copy.deepcopy(filter_.params)
     del filter_.params["ratio"]
     filter_.params["reduction_ratio"] = reduction_ratio
+    filter_.params.update(**kwargs)
     return filter_
 
 
-def equalizer(bands):
+def equalizer(bands, **kwargs):
     """
     Creates a FFmpegFilter object, when called on an ffmpeg stream,
     applies a equalizer filter to the audio signal.
@@ -680,6 +687,7 @@ def equalizer(bands):
                 0, for Butterworth
                 1, for Chebyshev type 1
                 2, for Chebyshev type 2
+        kwargs: Arguments passed to `ffmpeg.filter`
     Returns:
         filter: Resulting filter, to be called on a ffmpeg stream
     """
@@ -704,6 +712,6 @@ def equalizer(bands):
         for band in bands
     ])
 
-    filter_ = FFmpegFilter("equalizer", ffmpeg_name="anequalizer", params=params)
-    filter_.params = {"bands": bands}
+    filter_ = FFmpegFilter("equalizer", ffmpeg_name="anequalizer", params=params, **kwargs)
+    filter_.params = {"bands": bands, **kwargs}
     return filter_

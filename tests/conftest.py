@@ -21,6 +21,7 @@ def _unzip(path_to_zip, target_path):
 
 
 fix_dir = os.path.expanduser('~/.nussl/tests/')
+os.makedirs(fix_dir, exist_ok=True)
 OVERWRITE_REGRESSION_DATA = False
 
 
@@ -104,6 +105,7 @@ def scaper_folder(toy_datasets):
     with tempfile.TemporaryDirectory() as tmp_dir:
         _dir = tmp_dir if fix_dir is None else fix_dir
         _dir = os.path.join(_dir, 'scaper')
+        os.makedirs(_dir, exist_ok=True)
         for i in range(n_mixtures):
             sc = scaper.Scaper(
                 duration, fg_path, fg_path, random_state=i)

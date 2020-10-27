@@ -72,7 +72,8 @@ def overfit_model(scaper_folder):
 
 def test_deep_mixin(overfit_model):
     model_path, item = overfit_model
-    deep_mixin = DeepMixin()
+    deep_mixin = separation.deep.DeepClustering(
+        item['mix'], 2, model_path, mask_type='binary')
     deep_mixin.load_model(model_path)
 
     deep_mixin.audio_signal = item['mix']
@@ -113,6 +114,31 @@ def test_deep_mixin(overfit_model):
     input_data = deep_mixin._get_input_data_for_model(dummy_data)
 
     assert 'one_hot' in input_data
+
+
+def test_deep_mixin_metadata(overfit_model):
+    model_path, item = overfit_model
+    deep_mixin = separation.deep.DeepClustering(
+        item['mix'], 2, model_path, mask_type='binary')
+    deep_mixin.load_model(model_path)
+
+    metadata = deep_mixin.metadata
+
+    deep_mixin.metadata = None
+    with pytest.raises(ValueError):
+        deep_mixin.get_metadata()
+
+    deep_mixin.metadata = metadata
+    assert type(deep_mixin.get_metadata()) == dict
+    assert type(deep_mixin.get_metadata(to_str=True)) == str
+
+    result = deep_mixin.get_metadata(for_upload=True)
+    keys = ['train_dataset', 'val_dataset']
+    for k in keys:
+        assert 'folder' not in result[k]
+    assert 'trainer.state.epoch_history' not in result
+    print(deep_mixin.get_metadata(to_str=True))
+
 
 def test_separation_deep_clustering(overfit_model):
     model_path, item = overfit_model

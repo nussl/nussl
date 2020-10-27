@@ -38,13 +38,14 @@ def test_create_engine(mix_source_folder):
 
     # dummy function for processing a batch through the model
     def train_batch(engine, data):
-        loss = np.random.rand()
+        loss = -engine.state.iteration
         return {'loss': loss}
 
     # building the training and validation engines and running them
     # the validation engine runs within the training engine run
     with tempfile.TemporaryDirectory() as tmpdir:
         _dir = fix_dir if fix_dir else tmpdir
+        # _dir = tmpdir
         trainer, validator = ml.train.create_train_and_validation_engines(
             train_batch, train_batch
         )
@@ -81,9 +82,9 @@ def test_create_engine(mix_source_folder):
 
         # try resuming
         model_path = os.path.join(
-            trainer.state.output_folder, 'checkpoints', 'best.model.pth')
+            trainer.state.output_folder, 'checkpoints', 'latest.model.pth')
         optimizer_path = os.path.join(
-            trainer.state.output_folder, 'checkpoints', 'best.optimizer.pth')
+            trainer.state.output_folder, 'checkpoints', 'latest.optimizer.pth')
 
         opt_state_dict = torch.load(
             optimizer_path, map_location=lambda storage, loc: storage)
@@ -93,10 +94,9 @@ def test_create_engine(mix_source_folder):
         optimizer.load_state_dict(opt_state_dict)
         model.load_state_dict(state_dict['state_dict'])
 
-        # make sure the cache got removed in saved transforms as it is not a portable
+        # make sure the cache got removed in saved transforms bc it's not a portable
         # transform
-
-        for t in state_dict['metadata']['transforms'].transforms:
+        for t in state_dict['metadata']['train_dataset']['transforms'].transforms:
             assert not isinstance(t, datasets.transforms.Cache)
 
         new_trainer, new_validator = (

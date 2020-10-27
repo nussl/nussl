@@ -1426,7 +1426,7 @@ class AudioSignal(object):
         """
         Peak normalizes the audio signal.
         """
-        self.apply_gain(1 / self.audio_data.max())
+        self.apply_gain(1 / np.abs(self.audio_data).max())
 
     def apply_gain(self, value):
         """
@@ -1822,7 +1822,7 @@ class AudioSignal(object):
             new_signal = self._apply_user_ordered_effects()
         else:
             new_signal = self._apply_sox_ffmpeg_ordered_effects()
-
+        new_signal.reset_effects_chain()
         if reset:
             self.reset_effects_chain()
         if overwrite:
@@ -1904,8 +1904,8 @@ class AudioSignal(object):
         try:
             effect_hook = getattr(self, effect, None)
             effect_hook(**kwargs)
-        except Exception:
-            raise AudioSignalException(f"Effect {effect} not found with parameters {kwargs}")
+        except Exception as e:
+            raise AudioSignalException(f"Error calling {effect} with parameters {kwargs}: `{e}`")
         
         return self
 
@@ -1922,7 +1922,7 @@ class AudioSignal(object):
         self._effects_chain = []
         return self
 
-    def time_stretch(self, factor):
+    def time_stretch(self, factor, **kwargs):
         """
         Adds a time stretch filter to the AudioSignal's effects chain.
         A factor greater than one will shorten the signal, a factor less then one
@@ -1937,6 +1937,7 @@ class AudioSignal(object):
 
         Args: 
             factor (float): Scaling factor for tempo change. Must be positive.
+            kwargs: Arugments passed to `sox.transform.tempo`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -1945,14 +1946,15 @@ class AudioSignal(object):
             * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._effects_chain.append(effects.time_stretch(factor))
+        self._effects_chain.append(effects.time_stretch(factor, **kwargs))
         return self
     
-    def pitch_shift(self, n_semitones):
+    def pitch_shift(self, n_semitones, **kwargs):
         """
         Add pitch shift effect to AudioSignal's effect chain. 
-        A positive shift will raise the pitch of the signal by `n_semitones` 
-        semitones.
+        A positive shift will change the pitch of the signal by `n_semitones`
+        semitones. If positive, pitch will get higher, if negative pitch will
+        get lower.
 
         This is a SoX effect. Please see:
         https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.pitch
@@ -1962,8 +1964,9 @@ class AudioSignal(object):
             This effect won't be applied until you call `apply_effect()`!
 
         Args: 
-            n_semitones (integer): The number of semitones to shift the audio. 
+            n_semitones (float): The number of semitones to shift the audio.
                 Positive values increases the frequency of the signal
+            kwargs: Arugments passed to `sox.transform.pitch`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -1972,10 +1975,10 @@ class AudioSignal(object):
             * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._effects_chain.append(effects.pitch_shift(n_semitones))
+        self._effects_chain.append(effects.pitch_shift(n_semitones, **kwargs))
         return self
     
-    def low_pass(self, freq, poles=2, width_type="h", width=0.707):
+    def low_pass(self, freq, poles=2, width_type="h", width=0.707, **kwargs):
         """
         Add low pass effect to AudioSignal's effect chain
 
@@ -1996,6 +1999,7 @@ class AudioSignal(object):
                 's': slope
                 'k': kHz
             width (float): Band width in width_type units
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2006,10 +2010,10 @@ class AudioSignal(object):
         """
         self._effects_chain.append(effects.low_pass(freq, poles=poles,
                                                     width_type=width_type,
-                                                    width=width))
+                                                    width=width, **kwargs))
         return self
     
-    def high_pass(self, freq, poles=2, width_type="h", width=0.707):
+    def high_pass(self, freq, poles=2, width_type="h", width=0.707, **kwargs):
         """
         Add high pass effect to AudioSignal's effect chain
 
@@ -2030,6 +2034,7 @@ class AudioSignal(object):
                 's': slope
                 'k': kHz
             width (float): Band width in width_type units
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2040,10 +2045,10 @@ class AudioSignal(object):
         """
         self._effects_chain.append(effects.high_pass(freq, poles=poles,
                                                      width_type=width_type,
-                                                     width=width))
+                                                     width=width, **kwargs))
         return self
 
-    def tremolo(self, mod_freq, mod_depth):
+    def tremolo(self, mod_freq, mod_depth, **kwargs):
         """
         Add tremolo effect to AudioSignal's effect chain
         
@@ -2057,6 +2062,7 @@ class AudioSignal(object):
         Args: 
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2065,10 +2071,10 @@ class AudioSignal(object):
             * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._effects_chain.append(effects.tremolo(mod_freq, mod_depth))
+        self._effects_chain.append(effects.tremolo(mod_freq, mod_depth, **kwargs))
         return self
     
-    def vibrato(self, mod_freq, mod_depth):
+    def vibrato(self, mod_freq, mod_depth, **kwargs):
         """
         Add vibrato effect to AudioSignal's effect chain.
 
@@ -2082,6 +2088,7 @@ class AudioSignal(object):
         Args: 
             mod_freq (float): Modulation frequency. Must be between .1 and 20000.
             mod_depth (float): Modulation depth. Must be between 0 and 1.
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2090,10 +2097,11 @@ class AudioSignal(object):
             * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._effects_chain.append(effects.vibrato(mod_freq, mod_depth))
+        self._effects_chain.append(effects.vibrato(mod_freq, mod_depth, **kwargs))
         return self
     
-    def chorus(self, delays, decays, speeds, depths, in_gain=0.4, out_gain=0.4):
+    def chorus(self, delays, decays, speeds,
+               depths, in_gain=0.4, out_gain=0.4, **kwargs):
         """
         Add chorus effect to AudioSignal's effect chain.
 
@@ -2111,6 +2119,7 @@ class AudioSignal(object):
             depths (list of float): depths. Must be between 0 and 1
             in_gain (float): Proportion of input gain. Must be between 0 and 1
             out_gain (float): Proportion of output gain. Must be between 0 and 1
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2122,11 +2131,12 @@ class AudioSignal(object):
         self._effects_chain.append(effects.chorus(delays, decays,
                                                   speeds, depths,
                                                   in_gain=in_gain,
-                                                  out_gain=out_gain))
+                                                  out_gain=out_gain,
+                                                  **kwargs))
         return self
         
     def phaser(self, in_gain=0.4, out_gain=0.74, delay=3, decay=0.4,
-               speed=0.5, type_="triangular"):
+               speed=0.5, type_="triangular", **kwargs):
         """
         Add phaser effect to AudioSignal's effect chain
 
@@ -2146,6 +2156,7 @@ class AudioSignal(object):
             type_ (str): modulation type. Either Triangular or Sinusoidal
                 "triangular" or "t" for Triangular
                 "sinusoidal" of "s" for sinusoidal
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2155,12 +2166,12 @@ class AudioSignal(object):
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
         fx = effects.phaser(in_gain=in_gain, out_gain=out_gain, delay=delay,
-                            decay=decay, speed=speed, type_=type_)
+                            decay=decay, speed=speed, type_=type_, **kwargs)
         self._effects_chain.append(fx)
         return self
     
-    def flanger(self, delay=0, depth=2, regen=0, width=71,
-                speed=0.5, phase=25, shape="sinusoidal", interp="linear"):
+    def flanger(self, delay=0, depth=2, regen=0, width=71, speed=0.5,
+                phase=25, shape="sinusoidal", interp="linear", **kwargs):
         """
         Add flanger effect to AudioSignal's effect chain
         This is a FFmpeg effect. Please see
@@ -2181,6 +2192,7 @@ class AudioSignal(object):
             shape (str): Swept wave shape, Must be "triangular" or "sinusoidal".
             phase (float): swept wave percentage-shift for multi channel. Must be between 0 and 100.
             interp (str): Delay Line interpolation. Must be "linear" or "quadratic".
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2190,11 +2202,12 @@ class AudioSignal(object):
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
         fx = effects.flanger(delay=delay, depth=depth, regen=regen, width=width,
-                             speed=speed, phase=phase, shape=shape, interp=interp)
+                             speed=speed, phase=phase, shape=shape, interp=interp,
+                             **kwargs)
         self._effects_chain.append(fx)
         return self
     
-    def emphasis(self, level_in, level_out, type_="col", mode='production'):
+    def emphasis(self, level_in, level_out, type_="col", mode='production', **kwargs):
         """
         Add emphasis effect to AudioSignal's effect chain. An emphasis filter boosts 
         frequency ranges the most susceptible to noise in a medium. When restoring
@@ -2225,6 +2238,7 @@ class AudioSignal(object):
             mode (str): Filter mode. Must be one of the following:
                 - "reproduction": Apply de-emphasis filter
                 - "production": Apply emphasis filter
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2234,12 +2248,13 @@ class AudioSignal(object):
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
         self._effects_chain.append(effects.emphasis(level_in, level_out,
-                                                    type_=type_, mode=mode))
+                                                    type_=type_, mode=mode,
+                                                    **kwargs))
         return self
     
     def compressor(self, level_in, mode="downward", reduction_ratio=2,
                    attack=20, release=250, makeup=1, knee=2.8284, link="average",
-                   detection="rms", mix=1, threshold=0.125):
+                   detection="rms", mix=1, threshold=0.125, **kwargs):
         """
         Add compressor effect to AudioSignal's effect chain
     
@@ -2268,6 +2283,7 @@ class AudioSignal(object):
             detection (str): Whether to process exact signal of the RMS of nearby signals. 
                 Either "peak" for exact or "rms".
             mix (float): Proportion of compressed signal in output.
+            kwargs: Arguments passed to `ffmpeg.filter`
         Returns:
             self: Initial AudioSignal with updated effect chains
 
@@ -2278,11 +2294,11 @@ class AudioSignal(object):
         """
         fx = effects.compressor(level_in, mode=mode, reduction_ratio=reduction_ratio,
                                 attack=attack, release=release, makeup=makeup, knee=knee, link=link,
-                                detection=detection, mix=mix, threshold=threshold)
+                                detection=detection, mix=mix, threshold=threshold, **kwargs)
         self._effects_chain.append(fx)
         return self
-    
-    def equalizer(self, bands):
+
+    def equalizer(self, bands, **kwargs):
         """
         Add eqaulizer effect to AudioSignal's effect chain
 
@@ -2311,7 +2327,7 @@ class AudioSignal(object):
             * :func:`make_effect`: Syntactic sugar for adding an effect to the chain by name.
             * :func:`reset_effects_chain`: Empties the effects chain without applying any effects.
         """
-        self._effects_chain.append(effects.equalizer(bands))
+        self._effects_chain.append(effects.equalizer(bands, **kwargs))
         return self
 
     ##################################################

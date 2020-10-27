@@ -102,6 +102,7 @@ def test_separation_model_init():
     pytest.raises(ValueError, SeparationModel, bad_config)
 
     bad_config = {
+        'name': 'BadModel',
         'modules': ['should be a dict'], 
         'connections': [],
         'output': []
@@ -109,13 +110,30 @@ def test_separation_model_init():
     pytest.raises(ValueError, SeparationModel, bad_config)
 
     bad_config = {
+        'name': 'BadModel',
         'modules': mi_config['modules'],
         'connections': {'should be a list'},
         'output': []
     }
     pytest.raises(ValueError, SeparationModel, bad_config)
 
+    no_name = {
+        'modules': mi_config['modules'],
+        'connections': mi_config['connections'],
+        'output': []
+    }
+    pytest.raises(ValueError, SeparationModel, no_name)
+
+    bad_name = {
+        'name': 12345,
+        'modules': mi_config['modules'],
+        'connections': mi_config['connections'],
+        'output': []
+    }
+    pytest.raises(ValueError, SeparationModel, bad_name)
+
     bad_config = {
+        'name': 'BadModel',
         'modules': mi_config['modules'],
         'connections': mi_config['connections'],
         'output': {'should be a list'}
@@ -375,7 +393,7 @@ def test_separation_model_save():
         loc = model.save(tmp.name)
         checkpoint = torch.load(loc)
 
-        assert checkpoint['nussl_version'] == nussl.__version__
+        assert checkpoint['metadata']['nussl_version'] == nussl.__version__
 
         new_model = SeparationModel(checkpoint['config'])
         new_model.load_state_dict(checkpoint['state_dict'])
@@ -399,4 +417,3 @@ def test_separation_model_repr_and_verbose(one_item):
     model = SeparationModel(end_to_end_real_config, verbose=True)
     print(model)
     model(one_item)
-            

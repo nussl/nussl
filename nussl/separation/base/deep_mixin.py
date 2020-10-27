@@ -1,13 +1,17 @@
 import torch
+import yaml
+import json
 
 from ...ml import SeparationModel
 from ...datasets import transforms as tfm
+from ...core.migration import SafeModelLoader
 
 OMITTED_TRANSFORMS = (
     tfm.GetExcerpt,
     tfm.MagnitudeWeights,
     tfm.SumSources,
-    tfm.Cache
+    tfm.Cache,
+    tfm.IndexSources,
 )
 
 
@@ -18,7 +22,7 @@ class DeepMixin:
         available.
 
         Args:
-            model_path (str): path to model saved as SeparatonModel.
+            model_path (str): path to model saved as SeparationModel.
             device (str or torch.Device): loads model on CPU or GPU. Defaults to
               'cuda'.
 
@@ -27,20 +31,21 @@ class DeepMixin:
             metadata (dict): metadata associated with model, used for making
             the input data into the model.
         """
-        model_dict = torch.load(model_path, map_location='cpu')
-        model = SeparationModel(model_dict['config'])
+        safe_loader = SafeModelLoader()
+        model_dict = safe_loader.load(model_path, 'cpu')
+        metadata = model_dict['metadata']
+
+        model = SeparationModel(metadata['config'])
         model.load_state_dict(model_dict['state_dict'])
         device = device if torch.cuda.is_available() else 'cpu'
 
         self.device = device
 
         model = model.to(device).eval()
-        metadata = model_dict['metadata'] if 'metadata' in model_dict else {}
         self.model = model
-        self.config = model_dict['config']
-        self.metadata = metadata
-        self.transform = self._get_transforms(
-            self.metadata['transforms'])
+        self.config = metadata['config']
+        self.metadata.update(metadata)
+        self.transform = self._get_transforms(metadata['train_dataset']['transforms'])
 
     @staticmethod
     def _get_transforms(loaded_tfm):
@@ -100,3 +105,42 @@ class DeepMixin:
                     data[key] = data[key].transpose(0, self.channel_dim)
         self.input_data = data
         return self.input_data
+
+    def get_metadata(self, to_str=False, **kwargs):
+        """
+        Gets the metadata associated with this model.
+        Args:
+            to_str (bool): If True, will return a string, else will return dict.
+            for_upload (bool): If True, will scrub metadata for uploading to EFZ.
+
+        Returns:
+            (str) or (dict) containing metadata.
+        """
+        for_upload = kwargs.get('for_upload', False)
+        truncate_loss = kwargs.get('truncate_loss', False)
+        metadata = getattr(self, 'metadata', None)
+
+        if metadata is None:
+            raise ValueError('Could not find associated metadata.')
+
+        if for_upload:
+            # remove paths
+            keys = ['train_dataset', 'val_dataset']
+            for k in keys:
+                if k in metadata:
+                    metadata[k].pop('folder')
+
+        if for_upload or truncate_loss:
+            if 'trainer.state.epoch_history' in metadata:
+                loss_history = metadata.pop('trainer.state.epoch_history')
+                metadata['final_loss'] = {k: float(v[-1]) for k, v in loss_history.items()}
+
+        if isinstance(metadata['config'], str):
+            metadata['config'] = json.loads(metadata['config'])
+        metadata['separation_class'] = type(self).__name__
+        metadata['model_name'] = metadata['config']['name']
+
+        if to_str:
+            return yaml.dump(metadata, indent=4)
+        else:
+            return metadata
