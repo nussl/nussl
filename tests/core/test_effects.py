@@ -41,19 +41,6 @@ def test_pitch_shift(mix_and_sources, check_against_regression_data):
     reg_path = path.join(REGRESSION_PATH, "pitch_shift.json")
     fx_regression(augmented.audio_data, reg_path, check_against_regression_data)
 
-def test_metadata(mix_and_sources):
-    shift = 1
-    factor = 1.05
-    signal, _ = mix_and_sources
-    # Resample to a weird sampling rate nobody uses
-    signal = deepcopy(signal)
-    signal.resample(13370)
-    signal.pitch_shift(shift).time_stretch(factor)
-
-    augmented = signal.apply_effects(overwrite=False)
-
-    assert augmented.sample_rate == signal.sample_rate
-    assert augmented.num_channels == augmented.num_channels
 
 def test_params(mix_and_sources):
     with pytest.raises(ValueError):
@@ -420,7 +407,7 @@ def test_one_at_a_time(mix_and_sources, check_against_regression_data):
 
 def test_hooks(mix_and_sources, check_against_regression_data):
     signal, _ = mix_and_sources
-    sr = signal.sample_rate
+
     signal = (
         signal
             .time_stretch(3)
@@ -450,16 +437,9 @@ def test_hooks(mix_and_sources, check_against_regression_data):
     assert len(augmented_signal.effects_applied) == 12
     assert len(augmented_signal.effects_chain) == 0
 
-<<<<<<< HEAD
-    assert signal.sample_rate == sr
-
-    reg_path = path.join(REGRESSION_PATH, "hooks.json")
-    fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
-=======
     # reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # fx_regression(augmented_signal.audio_data, reg_path, check_against_regression_data)
     order_check(augmented_signal.effects_applied)
->>>>>>> af7d0c50e01d107f4ef3305b89eb130d95d0a7cd
 
     augmented_signal.time_stretch(.7).apply_effects(overwrite=True, user_order=False)
 
@@ -496,11 +476,7 @@ def test_make_effect(mix_and_sources, check_against_regression_data):
                 't': 0
             }])
     )
-<<<<<<< HEAD
-
-=======
     print(signal.effects_chain)
->>>>>>> af7d0c50e01d107f4ef3305b89eb130d95d0a7cd
     augmented_signal = signal.apply_effects(user_order=False)
     # reg_path = path.join(REGRESSION_PATH, "hooks.json")
     # This should result in the same signal in test_hooks
