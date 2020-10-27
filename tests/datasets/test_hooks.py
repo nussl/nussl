@@ -167,7 +167,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         midi_dir = os.path.join(track_dir, "MIDI")
         os.mkdir(stems_dir)
         os.mkdir(midi_dir)
-    
+
         # Note: These aren't actually guitar and drums
         guitar_path1 = os.path.join(stems_dir, "S00.wav")
         guitar_path2 = os.path.join(stems_dir, "S02.wav")
@@ -201,7 +201,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         drums_signal = nussl.AudioSignal(path_to_input_file=drums_path)
         guitar_signal.truncate_seconds(2)
         drums_signal.truncate_seconds(2)
-        mix_signal = guitar_signal + drums_signal
+        mix_signal = guitar_signal * 3 + drums_signal
 
         mix_signal.write_audio_to_file(mix_path)
         drums_signal.write_audio_to_file(drums_path)
@@ -210,16 +210,16 @@ def test_dataset_hook_slakh(benchmark_audio):
         guitar_signal.write_audio_to_file(guitar_path2)
 
         # now that our fake slakh has been created, lets try some mixing
-        band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=True, max_tracks_per_src=1)
+        band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=True)
         assert len(band_slakh) == 1
         data = band_slakh[0]
         _mix_signal, _sources = data["mix"], data["sources"]
         assert np.allclose(mix_signal.audio_data, _mix_signal.audio_data)
         assert len(_sources) == 2
         assert np.allclose(_sources["drums"].audio_data, drums_signal.audio_data)
-        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data)
+        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data * 3)
         _midi_mix, _midi_sources = data["midi_mix"], data["midi_sources"]
-        assert len(_midi_mix.instruments) == 2
+        assert len(_midi_mix.instruments) == 4
         assert len(_midi_sources) == 2
         assert _midi_sources["guitar"][0].instruments[0].program == 30
         assert _midi_sources["drums"][0].instruments[0].program == 127
@@ -228,6 +228,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         data = band_slakh[0]
         _mix_signal, _sources = data["mix"], data["sources"]
         assert isinstance(_sources["guitar"], list)
+        assert isinstance(_sources["drums"], list)
         assert len(_sources) == 2
         assert len(_sources["guitar"]) == 3
         assert len(_sources["drums"]) == 1
@@ -235,25 +236,28 @@ def test_dataset_hook_slakh(benchmark_audio):
 
 
         with pytest.raises(DataSetException):
-            not_enough_instruments = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=True, min_acceptable_sources=3)
-        
+            not_enough_instruments = nussl.datasets.Slakh(
+                tmpdir,
+                band,
+                midi=True,
+                make_submix=True,
+                min_acceptable_sources=3
+            )
 
-        guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar, make_submix=True, min_acceptable_sources=1, max_tracks_per_src=1)
+        guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar, make_submix=True, min_acceptable_sources=1)
         data = guitar_slakh[0]
         _guitar_signal, _sources = data["mix"], data["sources"]
         assert len(_sources) == 1
-        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data)
-        assert np.allclose(_guitar_signal.audio_data, guitar_signal.audio_data)
+        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data * 3)
+        assert np.allclose(_guitar_signal.audio_data, guitar_signal.audio_data * 3)
 
         with pytest.raises(DataSetException):
             empty_slakh = nussl.datasets.Slakh(tmpdir, empty, min_acceptable_sources=1)
 
         with pytest.raises(ValueError):
             nussl.datasets.Slakh(tmpdir, band, min_acceptable_sources=0)
-        with pytest.raises(ValueError):
-            nussl.datasets.Slakh(tmpdir, band, max_tracks_per_src=0)
-        with pytest.raises(ValueError):
-            bad_slakh = nussl.datasets.Slakh(tmpdir, bad)
+        with pytest.raises(DataSetException):
+            nussl.datasets.Slakh(tmpdir, bad)
 
 
 def test_dataset_hook_fuss(scaper_folder):
