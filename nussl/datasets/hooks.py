@@ -638,7 +638,7 @@ class Slakh(BaseDataset):
         self.recipe = {}
         for key, l in recipe.items():
             for val in l:
-                if val in self.sources:
+                if val in self.recipe.keys():
                     raise ValueError(f"MIDI program number {val} found in multiple source types!")
                 self.recipe[val] = key
         self.program_key = program_key

@@ -162,6 +162,8 @@ def test_dataset_hook_slakh(benchmark_audio):
         metadata += "\n    program_num: 30"
         metadata += "\n  S04:" # this is an unsynthezied source
         metadata += "\n    program_num: 30"
+        metadata += "\n  S05:" # source not in any recipe
+        metadata += "\n    program_num: 0"
         metadata_path = os.path.join(track_dir, "metadata.yaml")
         metadata_file = open(metadata_path, "w")
         metadata_file.write(metadata)
@@ -269,7 +271,7 @@ def test_dataset_hook_slakh(benchmark_audio):
                 make_submix=True,
                 min_acceptable_sources=3
             )
-
+        # single source slakh
         guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar, make_submix=True, min_acceptable_sources=1)
         data = guitar_slakh[0]
         _guitar_signal, _sources = data["mix"], data["sources"]
@@ -277,12 +279,13 @@ def test_dataset_hook_slakh(benchmark_audio):
         assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data * 3)
         assert np.allclose(_guitar_signal.audio_data, guitar_signal.audio_data * 3)
 
+        # Error checking
         with pytest.raises(DataSetException):
             empty_slakh = nussl.datasets.Slakh(tmpdir, empty, min_acceptable_sources=1)
 
         with pytest.raises(ValueError):
             nussl.datasets.Slakh(tmpdir, band, min_acceptable_sources=0)
-        with pytest.raises(DataSetException):
+        with pytest.raises(ValueError):
             nussl.datasets.Slakh(tmpdir, bad)
 
 
