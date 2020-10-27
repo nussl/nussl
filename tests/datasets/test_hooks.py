@@ -160,6 +160,8 @@ def test_dataset_hook_slakh(benchmark_audio):
         metadata += "\n    program_num: 30"
         metadata += "\n  S03:"
         metadata += "\n    program_num: 30"
+        metadata += "\n  S04:" # this is an unsynthezied source
+        metadata += "\n    program_num: 30"
         metadata_path = os.path.join(track_dir, "metadata.yaml")
         metadata_file = open(metadata_path, "w")
         metadata_file.write(metadata)
@@ -190,6 +192,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         midi_1.write(os.path.join(midi_dir, "S01.mid"))
         midi_0.write(os.path.join(midi_dir, "S02.mid"))
         midi_0.write(os.path.join(midi_dir, "S03.mid"))
+        midi_0.write(os.path.join(midi_dir, "S04.mid"))
 
         midi_mix = PrettyMIDI()
         midi_mix.instruments += [guitar, drum]
@@ -205,6 +208,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         drums_signal.truncate_seconds(2)
         mix_signal = guitar_signal * 3 + drums_signal
 
+        # Save audio objects
         mix_signal.write_audio_to_file(mix_path)
         drums_signal.write_audio_to_file(drums_path)
         guitar_signal.write_audio_to_file(guitar_path1)
@@ -213,29 +217,49 @@ def test_dataset_hook_slakh(benchmark_audio):
 
         # now that our fake slakh has been created, lets try some mixing
         band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=True)
+        # Our dataset should only have one item
         assert len(band_slakh) == 1
         data = band_slakh[0]
         _mix_signal, _sources = data["mix"], data["sources"]
-        assert np.allclose(mix_signal.audio_data, _mix_signal.audio_data)
         assert len(_sources) == 2
+
+        # Checking audio
+        assert np.allclose(mix_signal.audio_data, _mix_signal.audio_data)
         assert np.allclose(_sources["drums"].audio_data, drums_signal.audio_data)
+        # Only three synthesized audio sources
         assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data * 3)
         _midi_mix, _midi_sources = data["midi_mix"], data["midi_sources"]
-        assert len(_midi_mix.instruments) == 4
+
+        # Checking midi
+        assert len(_midi_mix.instruments) == 5 # There are 4 guitar sources, but only 3 are synthesized
         assert len(_midi_sources) == 2
         assert _midi_sources["guitar"][0].instruments[0].program == 30
         assert _midi_sources["drums"][0].instruments[0].program == 127
+        # Order should be in numeric order on the metadata.yaml file
+        assert all(
+            [instrument.program == program_num
+             for instrument, program_num
+             in zip(_midi_mix.instruments, [30, 127, 30, 30, 30])
+            ]
+        )
 
-        band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=False)
+        # Checking non-submixing
+        band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=False, make_submix=False)
         data = band_slakh[0]
         _mix_signal, _sources = data["mix"], data["sources"]
         assert isinstance(_sources["guitar"], list)
         assert isinstance(_sources["drums"], list)
         assert len(_sources) == 2
-        assert len(_sources["guitar"]) == 3
+        assert len(_sources["guitar"]) == 4
         assert len(_sources["drums"]) == 1
+        assert np.allclose(_sources["guitar"][0].audio_data, guitar_signal.audio_data)
         assert np.allclose(sum(_sources["guitar"]).audio_data, 3 * guitar_signal.audio_data)
-
+        # Check the last guitar source is empty
+        audio_data = _sources["guitar"][-1].audio_data
+        assert np.allclose(audio_data, np.zeros_like(audio_data))
+        # Checking Lack of midi
+        assert data.get("midi_mix", None) is None
+        assert data.get("midi_sources", None) is None
 
         with pytest.raises(DataSetException):
             not_enough_instruments = nussl.datasets.Slakh(

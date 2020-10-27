@@ -129,11 +129,7 @@ class SoXFilter(FilterFunction):
     def __init__(self, filter_, **filter_kwargs):
         super().__init__(filter_, **filter_kwargs)
         if filter_ == "time_stretch":
-            factor = filter_kwargs['factor']
-            if abs(factor - 1) <=  .1:
-                self.func = lambda tfm: tfm.stretch(**filter_kwargs)
-            else:
-                self.func = lambda tfm: tfm.tempo(**filter_kwargs)
+            self.func = lambda tfm: tfm.tempo(**filter_kwargs)
         elif filter_ == "pitch_shift":
             self.func = lambda tfm: tfm.pitch(**filter_kwargs)
         else:

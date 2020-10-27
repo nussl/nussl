@@ -685,30 +685,38 @@ class Slakh(BaseDataset):
                                                       dtype=np.float32)))
 
 
-    def _find_source(self, path, stems_dict):
-        src_id = os.path.splitext(path)[0]
-        midi_num = stems_dict[src_id][self.program_key]
+    def _find_source(self, stem_dict):
+        midi_num = stem_dict[self.program_key]
         key = self.recipe.get(midi_num, None)
         return key
 
+    def _get_empty(self, num_frames):
+        return self._load_audio_from_array(np.zeros((1, num_frames), np.float32))
+
     def _get_mix_and_souces_audio(self, audio_dir, stems_dict):
-        num_frames = None
-        stempaths = sorted(os.listdir(audio_dir))
+        stempaths = {os.path.splitext(file)[0]:
+                     os.path.join(audio_dir, file)
+                     for file in os.listdir(audio_dir)}
+        num_frames = self._load_audio_file(
+            list(stempaths.values())[0]
+        ).signal_length
+
         sources = {}
         for source in self.sources:
             sources[source] = []
-        for path in stempaths:
-            source_cat = self._find_source(path, stems_dict)
-            # If the program number is not associated with a source
-            if source_cat is None:
-                continue
 
-            # Load the wav file
-            path = os.path.join(audio_dir, path)
-            src_wav = self._load_audio_file(path)
-            if num_frames is None:
-                num_frames = src_wav.signal_length
-            sources[source_cat].append(src_wav)
+        stems = sorted(list(stems_dict.keys()))
+        for stem in stems:
+            source_type = self._find_source(stems_dict[stem])
+            if source_type is None:
+                continue
+            stempath = stempaths.get(stem, None)
+            if stempath is None:
+                sources[source_type].append(self._get_empty(num_frames))
+            else:
+                sources[source_type].append(
+                    self._load_audio_file(stempath)
+                )
 
         if self.make_submix:
             self.submix(sources, num_frames)
@@ -719,20 +727,22 @@ class Slakh(BaseDataset):
 
     def _get_mix_and_sources_midi(self, midi_dir, stems_dict, midi_mix_path):
         sources = {}
-        midipaths = sorted(os.listdir(midi_dir))
+        midipaths = {os.path.splitext(file)[0]:
+                     os.path.join(midi_dir, file)
+                     for file in os.listdir(midi_dir)}
         for source in self.sources:
             sources[source] = []
         midi_mix = PrettyMIDI(midi_mix_path)
         midi_mix.instruments = []
-        for path in midipaths:
-            source_cat = self._find_source(path, stems_dict)
-            # If the program number is not associated with a source
-            if source_cat is None:
+        stems = sorted(list(stems_dict.keys()))
+        for stem in stems:
+            source_type = self._find_source(stems_dict[stem])
+            if source_type is None:
                 continue
-            path = os.path.join(midi_dir, path)
-            src_midi = PrettyMIDI(path)
-            sources[source_cat].append(src_midi)
-            midi_mix.instruments[0:0] = src_midi.instruments
+            midipath = midipaths.get(stem, None)
+            src_midi = PrettyMIDI(midipath)
+            sources[source_type].append(src_midi)
+            midi_mix.instruments.extend(src_midi.instruments)
         return midi_mix, sources
 
     def process_item(self, srcs_dir):
