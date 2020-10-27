@@ -606,6 +606,10 @@ class Slakh(BaseDataset):
     object found at self.items[i]["sources"][source][j]. The MIDI files will NOT be submixed when
     `make_submix=True`; only the audio signals are.
 
+    NOTE: If a MIDI object or audio file is specified by the `metadata.yaml` file, but is not
+    found in the midi/audio subfolders, then an empty PrettyMIDI/AudioSignal object will take its place.
+    TODO: Implement this.
+
     It is recommended that the user uses the LibYAML bindings for better performance when using the Slakh
     dataset. If it is installed on the user machine, it will be automatically used.
 
