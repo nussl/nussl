@@ -637,8 +637,9 @@ class Slakh(BaseDataset):
                  min_acceptable_sources=2, midi=False, make_submix=False, transform=None,
                  sample_rate=None, stft_params=None, num_channels=None, strict_sample_rate=True,
                  cache_populated=False):
+
+        recipe = Slakh.default_recipe() if recipe is None else recipe
         self.sources = list(recipe.keys())
-        recipe = Slakh.default_recipe if recipe is None else recipe
         self.recipe = {}
         for key, l in recipe.items():
             for val in l:
