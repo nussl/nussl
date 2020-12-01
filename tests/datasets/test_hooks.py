@@ -4,11 +4,12 @@ from pretty_midi import PrettyMIDI, Instrument, Note
 from nussl.core import constants
 import os
 import numpy as np
+import yaml
+from yaml import Dumper
 from nussl.datasets.base_dataset import DataSetException
 from nussl.datasets import transforms
 import tempfile
 import shutil
-
 
 
 def test_dataset_hook_musdb18(musdb_tracks):
@@ -119,7 +120,8 @@ def test_dataset_hook_wham(benchmark_audio):
                         root=tmpdir, mix_folder='mix_both', mode=mode,
                         split=split, sample_rate=sr)
                     output = wham[0]
-                    assert output['metadata']['labels'] == ['s1', 's2', 'noise']
+                    assert output['metadata']['labels'] == [
+                        's1', 's2', 'noise']
 
                     wham = nussl.datasets.WHAM(
                         root=tmpdir, mix_folder='mix_single', mode=mode,
@@ -139,47 +141,57 @@ def test_dataset_hook_wham(benchmark_audio):
         pytest.raises(DataSetException, nussl.datasets.WHAM,
                       tmpdir, sample_rate=44100)
 
+
 def test_dataset_hook_slakh(benchmark_audio):
-    # make a fake slakh directory. 
+    # make a fake slakh directory.
     band = {"guitar": [30, 31], "drums": [127]}
     only_guitar = {"guitar": [30, 31]}
     empty = {}
     bad = {"guitar": [30], "guitar_2": [30]}
     with tempfile.TemporaryDirectory() as tmpdir:
-        track_dir = os.path.join(tmpdir, "Track")
-        os.mkdir(track_dir)
+        train_track_dir = os.path.join(tmpdir, "Track00001")
+        # The test track doesn't contain any audio files.
+        test_track_dir = os.path.join(tmpdir, "Track02000")
+        os.mkdir(train_track_dir)
+        os.mkdir(test_track_dir)
         # Create Metadata file
-        metadata =    "audio_dir: stems"
-        metadata += "\nmidi_dir: MIDI"
-        metadata += "\nstems:"
-        metadata += "\n  S00:"
-        metadata += "\n    program_num: 30"
-        metadata += "\n  S01:"
-        metadata += "\n    program_num: 127"
-        metadata += "\n  S02:"
-        metadata += "\n    program_num: 30"
-        metadata += "\n  S03:"
-        metadata += "\n    program_num: 30"
-        metadata += "\n  S04:" # this is an unsynthezied source
-        metadata += "\n    program_num: 30"
-        metadata += "\n  S05:" # source not in any recipe
-        metadata += "\n    program_num: 0"
-        metadata_path = os.path.join(track_dir, "metadata.yaml")
+        metadata = yaml.dump({
+          'audio_dir': 'stems',
+          'midi_dir': 'MIDI',
+          'stems': {
+            'S00': {'program_num': 30},
+            'S01': {'program_num': 127},
+            'S02': {'program_num': 30},
+            'S03': {'program_num': 30},
+            'S04': {'program_num': 30},  # Not Synthesized
+            'S05': {'program_num': 0}  # out of recipe
+          }
+        }, Dumper=Dumper)
+
+        metadata_path = os.path.join(train_track_dir, "metadata.yaml")
         metadata_file = open(metadata_path, "w")
         metadata_file.write(metadata)
         metadata_file.close()
 
-        stems_dir = os.path.join(track_dir, "stems")
-        midi_dir = os.path.join(track_dir, "MIDI")
+        metadata_path = os.path.join(test_track_dir, "metadata.yaml")
+        metadata_file = open(metadata_path, "w")
+        metadata_file.write(metadata)
+        metadata_file.close()
+
+        stems_dir = os.path.join(train_track_dir, "stems")
+        midi_dir = os.path.join(train_track_dir, "MIDI")
         os.mkdir(stems_dir)
         os.mkdir(midi_dir)
+        os.mkdir(os.path.join(test_track_dir, "stems"))
+        test_midi_dir = os.path.join(test_track_dir, "MIDI")
+        os.mkdir(test_midi_dir)
 
         # Note: These aren't actually guitar and drums
         guitar_path1 = os.path.join(stems_dir, "S00.wav")
         guitar_path2 = os.path.join(stems_dir, "S02.wav")
         guitar_path3 = os.path.join(stems_dir, "S03.wav")
         drums_path = os.path.join(stems_dir, "S01.wav")
-        mix_path = os.path.join(track_dir, "mix.wav")
+        mix_path = os.path.join(train_track_dir, "mix.wav")
 
         # making midi objects
         midi_0 = PrettyMIDI()
@@ -190,15 +202,16 @@ def test_dataset_hook_slakh(benchmark_audio):
         drum.notes = [Note(40, 30, 0, 1)]
         midi_0.instruments.append(guitar)
         midi_1.instruments.append(drum)
-        midi_0.write(os.path.join(midi_dir, "S00.mid"))
         midi_1.write(os.path.join(midi_dir, "S01.mid"))
-        midi_0.write(os.path.join(midi_dir, "S02.mid"))
-        midi_0.write(os.path.join(midi_dir, "S03.mid"))
-        midi_0.write(os.path.join(midi_dir, "S04.mid"))
+        midi_1.write(os.path.join(test_midi_dir, "S01.mid"))
+        midi0_paths = ["S00.mid", "S02.mid", "S03.mid", "S04.mid"]
+        for m in midi0_paths:
+            midi_0.write(os.path.join(midi_dir, m))
+            midi_0.write(os.path.join(test_midi_dir, m))
 
         midi_mix = PrettyMIDI()
         midi_mix.instruments += [guitar, drum]
-        midi_mix.write(os.path.join(track_dir, "all_src.mid"))
+        midi_mix.write(os.path.join(train_track_dir, "all_src.mid"))
 
         # Move them within directory
         shutil.copy(benchmark_audio['K0140.wav'], guitar_path1)
@@ -218,7 +231,8 @@ def test_dataset_hook_slakh(benchmark_audio):
         guitar_signal.write_audio_to_file(guitar_path2)
 
         # now that our fake slakh has been created, lets try some mixing
-        band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=True, make_submix=True)
+        band_slakh = nussl.datasets.Slakh(
+            tmpdir, band, midi=True, make_submix=True)
         # Our dataset should only have one item
         assert len(band_slakh) == 1
         data = band_slakh[0]
@@ -227,13 +241,16 @@ def test_dataset_hook_slakh(benchmark_audio):
 
         # Checking audio
         assert np.allclose(mix_signal.audio_data, _mix_signal.audio_data)
-        assert np.allclose(_sources["drums"].audio_data, drums_signal.audio_data)
+        assert np.allclose(
+            _sources["drums"].audio_data, drums_signal.audio_data)
         # Only three synthesized audio sources
-        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data * 3)
+        assert np.allclose(
+            _sources["guitar"].audio_data, guitar_signal.audio_data * 3)
         _midi_mix, _midi_sources = data["midi_mix"], data["midi_sources"]
 
         # Checking midi
-        assert len(_midi_mix.instruments) == 5 # There are 4 guitar sources, but only 3 are synthesized
+        # There are 4 guitar sources, but only 3 are synthesized
+        assert len(_midi_mix.instruments) == 5
         assert len(_midi_sources) == 2
         assert _midi_sources["guitar"][0].instruments[0].program == 30
         assert _midi_sources["drums"][0].instruments[0].program == 127
@@ -242,11 +259,12 @@ def test_dataset_hook_slakh(benchmark_audio):
             [instrument.program == program_num
              for instrument, program_num
              in zip(_midi_mix.instruments, [30, 127, 30, 30, 30])
-            ]
+             ]
         )
 
         # Checking non-submixing
-        band_slakh = nussl.datasets.Slakh(tmpdir, band, midi=False, make_submix=False)
+        band_slakh = nussl.datasets.Slakh(
+            tmpdir, band, midi=False, make_submix=False)
         data = band_slakh[0]
         _mix_signal, _sources = data["mix"], data["sources"]
         assert isinstance(_sources["guitar"], list)
@@ -254,8 +272,10 @@ def test_dataset_hook_slakh(benchmark_audio):
         assert len(_sources) == 2
         assert len(_sources["guitar"]) == 4
         assert len(_sources["drums"]) == 1
-        assert np.allclose(_sources["guitar"][0].audio_data, guitar_signal.audio_data)
-        assert np.allclose(sum(_sources["guitar"]).audio_data, 3 * guitar_signal.audio_data)
+        assert np.allclose(_sources["guitar"]
+                           [0].audio_data, guitar_signal.audio_data)
+        assert np.allclose(
+            sum(_sources["guitar"]).audio_data, 3 * guitar_signal.audio_data)
         # Check the last guitar source is empty
         audio_data = _sources["guitar"][-1].audio_data
         assert np.allclose(audio_data, np.zeros_like(audio_data))
@@ -264,7 +284,7 @@ def test_dataset_hook_slakh(benchmark_audio):
         assert data.get("midi_sources", None) is None
 
         with pytest.raises(DataSetException):
-            not_enough_instruments = nussl.datasets.Slakh(
+            not_enough_instruments = nussl.datasets.Slakh(  # noqa
                 tmpdir,
                 band,
                 midi=True,
@@ -272,16 +292,26 @@ def test_dataset_hook_slakh(benchmark_audio):
                 min_acceptable_sources=3
             )
         # single source slakh
-        guitar_slakh = nussl.datasets.Slakh(tmpdir, only_guitar, make_submix=True, min_acceptable_sources=1)
+        guitar_slakh = nussl.datasets.Slakh(
+            tmpdir, only_guitar, make_submix=True, min_acceptable_sources=1)
         data = guitar_slakh[0]
         _guitar_signal, _sources = data["mix"], data["sources"]
         assert len(_sources) == 1
-        assert np.allclose(_sources["guitar"].audio_data, guitar_signal.audio_data * 3)
-        assert np.allclose(_guitar_signal.audio_data, guitar_signal.audio_data * 3)
+        assert np.allclose(
+            _sources["guitar"].audio_data, guitar_signal.audio_data * 3)
+        assert np.allclose(_guitar_signal.audio_data,
+                           guitar_signal.audio_data * 3)
+
+        # Different split
+        all_slakh = nussl.datasets.Slakh(
+            tmpdir, band, split='all'
+        )
+        assert len(all_slakh) == 2
 
         # Error checking
         with pytest.raises(DataSetException):
-            empty_slakh = nussl.datasets.Slakh(tmpdir, empty, min_acceptable_sources=1)
+            empty_slakh = nussl.datasets.Slakh(  # noqa
+                tmpdir, empty, min_acceptable_sources=1)
 
         with pytest.raises(ValueError):
             nussl.datasets.Slakh(tmpdir, band, min_acceptable_sources=0)
@@ -290,14 +320,15 @@ def test_dataset_hook_slakh(benchmark_audio):
 
 
 def test_dataset_hook_fuss(scaper_folder):
-    pytest.raises(DataSetException, nussl.datasets.FUSS, 'folder', 
-        split='bad split')
+    pytest.raises(DataSetException, nussl.datasets.FUSS, 'folder',
+                  split='bad split')
 
     with tempfile.TemporaryDirectory() as tmpdir:
         train_folder = os.path.join(tmpdir, 'train')
         shutil.copytree(scaper_folder, train_folder)
 
         fuss = nussl.datasets.FUSS(tmpdir)
+
 
 def test_dataset_hook_on_the_fly():
     def make_sine_wave(freq, sample_rate, duration):
@@ -310,6 +341,7 @@ def test_dataset_hook_on_the_fly():
     duration = 3
     sample_rate = 44100
     min_freq, max_freq = 110, 1000
+
     def make_mix(dataset, i):
         sources = {}
         freqs = []
@@ -325,8 +357,8 @@ def test_dataset_hook_on_the_fly():
             'mix': mix,
             'sources': sources,
             'metadata': {
-                'frequencies': freqs    
-            }    
+                'frequencies': freqs
+            }
         }
         return output
     dataset = nussl.datasets.OnTheFly(make_mix, 10)
@@ -338,12 +370,15 @@ def test_dataset_hook_on_the_fly():
 
     def bad_mix_closure(dataset, i):
         return 'not a dictionary'
-    pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_mix_closure, 10)
+    pytest.raises(DataSetException, nussl.datasets.OnTheFly,
+                  bad_mix_closure, 10)
 
     def bad_dict_closure(dataset, i):
         return {'key': 'no mix in this dict'}
-    pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_dict_closure, 10)
+    pytest.raises(DataSetException, nussl.datasets.OnTheFly,
+                  bad_dict_closure, 10)
 
     def bad_dict_sources_closure(dataset, i):
         return {'mix': 'no sources in this dict'}
-    pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_dict_sources_closure, 10)
+    pytest.raises(DataSetException, nussl.datasets.OnTheFly,
+                  bad_dict_sources_closure, 10)

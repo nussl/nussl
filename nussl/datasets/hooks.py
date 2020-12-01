@@ -608,13 +608,14 @@ class Slakh(BaseDataset):
 
     NOTE: If a MIDI object or audio file is specified by the `metadata.yaml` file, but is not
     found in the midi/audio subfolders, then an empty PrettyMIDI/AudioSignal object will take its place.
-    TODO: Implement this.
 
-    It is recommended that the user uses the LibYAML bindings for better performance when using the Slakh
-    dataset. If it is installed on the user machine, it will be automatically used.
+    It is HIGHLY recommended that the user uses the LibYAML bindings for significantly better
+    performance when using Slakh dataset. If it is installed, it will be automatically used.
 
     Args:
       root (str): Path to the root of the Slakh directory
+      split (str): Split of the slakh directory. Can either be 'train', 'val', 'test', or 'all'.
+        Uses the `Slakh2100-orig` split. Default='all'
       recipe (dict): Recipe for selecting and grouping sources in Slakh. Each key is a source type,
         and the value is a list of midi numbers that correspond with the source. For example,
         if you want a mix that only consists of bass and piano:
@@ -630,7 +631,7 @@ class Slakh(BaseDataset):
         `self.get_items()`. default=2
       make_submix (bool): If `True`, make submixes of each source. default=False.
     """
-    def __init__(self, root, recipe, program_key="program_num",
+    def __init__(self, root, recipe, split='train', program_key="program_num",
                  min_acceptable_sources=2, midi=False, make_submix=False, transform=None,
                  sample_rate=None, stft_params=None, num_channels=None, strict_sample_rate=True,
                  cache_populated=False):
@@ -648,6 +649,8 @@ class Slakh(BaseDataset):
         if min_acceptable_sources <= 0:
             raise ValueError("`min_acceptable_sources` should be positive!")
 
+        self.split = Slakh.get_split(split)
+
         self.min_acceptable_sources = min_acceptable_sources
 
         super().__init__(root, transform, sample_rate, stft_params, num_channels,
@@ -661,7 +664,10 @@ class Slakh(BaseDataset):
 
     def get_items(self, folder):
         # Remove tracks with less than `self.min_acceptable_sources`
-        def num_sources_acceptable(path):
+        def acceptable_source(path):
+            id_ = int(path[5:])
+            if id_ not in self.split:
+                return False
             path = os.path.join(folder, path)
             with open(os.path.join(path, 'metadata.yaml'), 'r') as file:
                 metadata = yaml.load(file, Loader=Loader)
@@ -672,7 +678,7 @@ class Slakh(BaseDataset):
             return len(sources) >= self.min_acceptable_sources
 
         trackpaths = [os.path.join(folder, f) for f in os.listdir(folder)
-                      if num_sources_acceptable(f)]
+                      if acceptable_source(f)]
 
         return trackpaths
 
@@ -765,3 +771,18 @@ class Slakh(BaseDataset):
             )
 
         return item
+
+    @staticmethod
+    def get_split(split_name):
+        splits = {
+            'train': range(1, 1501),
+            'val': range(1501, 1876),
+            'test': range(1876, 2101),
+            'all': range(1, 2101)
+        }
+        split = splits.get(split_name, None)
+        if split is None:
+            raise ValueError(f"`split`: {split_name} not a valid split."
+                f"`split` must be in {list(splits.keys())}")
+
+        return split
