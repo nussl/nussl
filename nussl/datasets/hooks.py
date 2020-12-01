@@ -625,17 +625,20 @@ class Slakh(BaseDataset):
         }
         For mappings between midi numbers and instrument types, please see:
         https://github.com/ethman/slakh-utils/blob/master/midi_inst_values/general_midi_inst_0based.txt
+        Default: None, which populates with a default recipe, containing the sources,
+        drums, guitar, piano, and bass.
       program_key (str): Key indictating midi number of an instrument. default="program_num"
       midi (bool): If True, return PrettyMIDI objects. default=False
       min_acceptable_sources (int): Number of sources a song must have in the recipe to be included in
         `self.get_items()`. default=2
       make_submix (bool): If `True`, make submixes of each source. default=False.
     """
-    def __init__(self, root, recipe, split='train', program_key="program_num",
+    def __init__(self, root, recipe=None, split='train', program_key="program_num",
                  min_acceptable_sources=2, midi=False, make_submix=False, transform=None,
                  sample_rate=None, stft_params=None, num_channels=None, strict_sample_rate=True,
                  cache_populated=False):
         self.sources = list(recipe.keys())
+        recipe = Slakh.default_recipe if recipe is None else recipe
         self.recipe = {}
         for key, l in recipe.items():
             for val in l:
@@ -786,3 +789,12 @@ class Slakh(BaseDataset):
                 f"`split` must be in {list(splits.keys())}")
 
         return split
+
+    @staticmethod
+    def default_recipe():
+        return {
+            'piano': range(8),
+            'guitar': range(24, 32),
+            'bass': range(32, 40),
+            'drums': [128]
+        }
