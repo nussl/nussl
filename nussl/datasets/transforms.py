@@ -9,6 +9,10 @@ import zarr
 import numcodecs
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+try:
+    from pretty_midi import PrettyMIDI
+except ImportError:
+    pass
 
 from .. import utils
 
@@ -774,6 +778,46 @@ class ToSeparationModel(object):
         return f"{self.__class__.__name__}(swap_tf_dims = {self.swap_tf_dims})"
 
 
+class ToPianoRool(object):
+    """
+    Replaces all keys that contain pretty_midi.PrettyMIDI objects with
+    a representative piano roll. This transform is useful for score informed
+    separation tasks, especially when using the ``Slakh`` dataset.
+
+    The piano roll will be np.ndarray with the shape (128, times.shape[0])
+
+    To create a piano roll aligned with an STFT of an audio, ensure that
+    ``fs=hop_length/sample_rate``.
+
+    This transform uses the same arguments as ``pretty_midi.PrettyMIDI.get_piano_roll``.
+
+    Args:
+        fs (int): Sampling frequency of the columns, i.e. each column is spaced
+          apart by 1./fs seconds.
+        times (np.ndarray): Times of the start of each column in the piano roll.
+          Default ``None`` which is ``np.arange(0, PrettyMIDI.get_end_time(), 1./fs)``.
+        pedal_threshold (int): Value of control change 64 (sustain pedal)
+          message that is less than this value is reflected as pedal-off.
+          Pedals will be reflected as elongation of notes in the piano roll.
+          If None, then CC64 message is ignored. Default is 64.
+    """
+    def __init__(self, fs=.1, times=None, pedal_threshold=64):
+        if "PrettyMIDI" not in globals():
+            raise TransformException("pretty_midi is not installed")
+        self.fs = fs
+        self.times = times
+        self.pedal_threshold = pedal_threshold
+
+    def __call__(self, data):
+        for key, value in data.items():
+            if isinstance(value, PrettyMIDI):
+                data[key] = value.get_piano_roll(
+                    fs=self.fs,
+                    times=self.times,
+                    pedal_threshold=self.pedal_threshold
+                )
+        return data
+
 class Compose(object):
     """Composes several transforms together. Inspired by torchvision implementation.
 
@@ -812,6 +856,4 @@ class TransformException(Exception):
     Exception class for errors when working with transforms in nussl.
     """
     pass
-
-
 
