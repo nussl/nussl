@@ -145,7 +145,7 @@ def test_dataset_hook_wham(benchmark_audio):
 def test_dataset_hook_slakh(benchmark_audio):
     # make a fake slakh directory.
     band = {"guitar": [30, 31], "drums": [127]}
-    recipe=only_guitar = {"guitar": [30, 31]}
+    only_guitar = {"guitar": [30, 31]}
     empty = {}
     bad = {"guitar": [30], "guitar_2": [30]}
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -309,7 +309,6 @@ def test_dataset_hook_slakh(benchmark_audio):
         assert len(all_slakh) == 2
 
         # default_recipe
-
         default_slakh = nussl.datasets.Slakh(
             tmpdir, min_acceptable_sources=1
         )
