@@ -16,7 +16,10 @@ except ImportError:
 from .. import musdb
 import numpy as np
 import jams
-from pretty_midi import PrettyMIDI
+try:
+    from pretty_midi import PrettyMIDI
+except ImportError:
+    pass
 
 from ..core import constants, utils
 from .base_dataset import BaseDataset, DataSetException
@@ -605,6 +608,10 @@ class Slakh(BaseDataset):
     representation of the MIDI file that was synthesized to become the AudioSignal
     object found at self.items[i]["sources"][source][j]. The MIDI files will NOT be submixed when
     `make_submix=True`; only the audio signals are.
+
+    NOTE: `pretty_midi` is not automatically installed by `nussl`, and must be manually installed
+      by the user. It may be installed with:
+    >>> pip install pretty_midi
 
     NOTE: If a MIDI object or audio file is specified by the `metadata.yaml` file, but is not
     found in the midi/audio subfolders, then an empty PrettyMIDI/AudioSignal object will take its place.

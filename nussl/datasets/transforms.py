@@ -802,8 +802,6 @@ class ToPianoRool(object):
           If None, then CC64 message is ignored. Default is 64.
     """
     def __init__(self, fs=.1, times=None, pedal_threshold=64):
-        if "PrettyMIDI" not in globals():
-            raise TransformException("pretty_midi is not installed")
         self.fs = fs
         self.times = times
         self.pedal_threshold = pedal_threshold
