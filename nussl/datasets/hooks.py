@@ -617,36 +617,37 @@ class Slakh(BaseDataset):
       split (str): Split of the slakh directory. Can either be 'train', 'val', 'test', or 'all'.
         Uses the `Slakh2100-orig` split. Default='all'
       recipe (dict): Recipe for selecting and grouping sources in Slakh. Each key is a source type,
-        and the value is a list of midi numbers that correspond with the source. For example,
-        if you want a mix that only consists of bass and piano:
-        recipe = {
-            "bass": [32, 33, 34, 35, 36, 37, 38, 39],
-            "piano": [0, 1, 2, 3, 4, 5, 6, 7]
-        }
+        and the value is a list of values of `class_key` that correspond with the source.
+        For example, if you want a mix that only consists of bass and piano, and `class_key="program_num"`:
+        >>> recipe = {
+        >>>     "bass": [32, 33, 34, 35, 36, 37, 38, 39],
+        >>>     "piano": [0, 1, 2, 3, 4, 5, 6, 7]
+        >>> }
         For mappings between midi numbers and instrument types, please see:
         https://github.com/ethman/slakh-utils/blob/master/midi_inst_values/general_midi_inst_0based.txt
         Default: None, which populates with a default recipe, containing the sources,
-        drums, guitar, piano, and bass.
-      program_key (str): Key indictating midi number of an instrument. default="program_num"
+        drums, guitar, piano, and bass. A recipe must be defined if `class_key="plugin_name"`
+      class_key (str): Metadata key to separate stems by. Can either be "inst_class", "program_num",
+        or "plugin_name". Default: "inst_class"
       midi (bool): If True, return PrettyMIDI objects. default=False
       min_acceptable_sources (int): Number of sources a song must have in the recipe to be included in
         `self.get_items()`. default=2
       make_submix (bool): If `True`, make submixes of each source. default=False.
     """
-    def __init__(self, root, recipe=None, split='train', program_key="program_num",
+    def __init__(self, root, recipe=None, split='train', class_key="inst_class",
                  min_acceptable_sources=2, midi=False, make_submix=False, transform=None,
                  sample_rate=None, stft_params=None, num_channels=None, strict_sample_rate=True,
                  cache_populated=False):
 
-        recipe = Slakh.default_recipe() if recipe is None else recipe
+        self.class_key = class_key
+        recipe = Slakh.default_recipe(class_key) if recipe is None else recipe
         self.sources = list(recipe.keys())
         self.recipe = {}
         for key, l in recipe.items():
             for val in l:
                 if val in self.recipe.keys():
-                    raise ValueError(f"MIDI program number {val} found in multiple source types!")
+                    raise ValueError(f"Identifier {val} found in multiple source types!")
                 self.recipe[val] = key
-        self.program_key = program_key
         self.midi = midi
         self.make_submix = make_submix
 
@@ -677,8 +678,8 @@ class Slakh(BaseDataset):
                 metadata = yaml.load(file, Loader=Loader)
             sources = set()
             for stem, data in metadata["stems"].items():
-                if data[self.program_key] in self.recipe.keys():
-                    sources.add(self.recipe[data[self.program_key]])
+                if data[self.class_key] in self.recipe.keys():
+                    sources.add(self.recipe[data[self.class_key]])
             return len(sources) >= self.min_acceptable_sources
 
         trackpaths = [os.path.join(folder, f) for f in os.listdir(folder)
@@ -696,7 +697,7 @@ class Slakh(BaseDataset):
 
 
     def _find_source(self, stem_dict):
-        midi_num = stem_dict[self.program_key]
+        midi_num = stem_dict[self.class_key]
         key = self.recipe.get(midi_num, None)
         return key
 
@@ -792,10 +793,24 @@ class Slakh(BaseDataset):
         return split
 
     @staticmethod
-    def default_recipe():
-        return {
-            'piano': range(8),
-            'guitar': range(24, 32),
-            'bass': range(32, 40),
-            'drums': [128]
-        }
+    def default_recipe(class_key):
+        if class_key == "program_num":
+            recipe = {
+                'piano': range(8),
+                'guitar': range(24, 32),
+                'bass': range(32, 40),
+                'drums': [128]
+            }
+        elif class_key == "inst_class":
+            recipe = {
+                'piano': ["Piano"],
+                'guitar': ["Guitar"],
+                'bass': ["Bass"],
+                'drums': ["Drums"]
+            }
+        elif class_key == "plugin_name":
+            raise ValueError("There is no default recipe for `class_key='plugin_name'`."
+                "A recipe must be defined.")
+        else:
+            raise ValueError(f"Invalid class_key: {class_key}")
+        return recipe
