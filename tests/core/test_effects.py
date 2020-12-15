@@ -1,5 +1,6 @@
 from copy import deepcopy
 import numpy as np
+import nussl
 import nussl.core.effects as effects
 from nussl.core.audio_signal import AudioSignalException
 import os
@@ -521,3 +522,26 @@ def test_kwargs():
     for key, value in kwargs.items():
         assert filter_func.params[key] == value
     assert filter_func.params["factor"] == 1.3
+
+def test_convolve(mix_and_sources, check_against_regression_data):
+    signal, _ = mix_and_sources
+
+    def _impulse(data):
+        data[:, 0] = 1
+        impulse = nussl.AudioSignal(
+            audio_data_array=data, 
+            sample_rate=signal.sample_rate
+        )
+        return impulse
+
+    # Identity
+    output = signal.convolve(_impulse(np.zeros((1, 100))))
+    assert output == signal
+
+    # Channel mismatch should raise errors
+    signal.audio_data = np.vstack([signal.audio_data, signal.audio_data])
+    pytest.raises(AudioSignalException, signal.convolve, _impulse(np.zeros((3, 100))))
+
+    # Multichannel identity
+    output = signal.convolve(_impulse(np.zeros((2, 100))))
+    assert output == signal
