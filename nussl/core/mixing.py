@@ -5,6 +5,7 @@ AudioSignal objects.
 import copy
 import numpy as np
 from . import AudioSignal
+from .constants import MIN_LOUDNESS, MAX_LOUDNESS
 import scipy
 import warnings
 
@@ -68,9 +69,6 @@ def convolve(signal, other, method='auto', normalize=True,
     convolved_signal.truncate_samples(signal.signal_length)
             
     return convolved_signal
-
-MIN_LOUDNESS = -70
-MAX_LOUDNESS = 10
 
 def mix_audio_signals(fg_signal, bg_signal, snr=10):
     """
