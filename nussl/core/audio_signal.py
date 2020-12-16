@@ -2330,63 +2330,27 @@ class AudioSignal(object):
         self._effects_chain.append(effects.equalizer(bands, **kwargs))
         return self
 
+    ##################################################
+    #                    Mixing
+    ##################################################
+
     def convolve(self, other, method='auto', normalize=True, 
              scale=True):
-        """
-        Convolves signal one with signal two. There are three
-        cases:
-        
-        1. s1 is multichannel and s2 is mono.
-        -> s1's channels will all be convolved with s2.
-        2. s1 is mono and s2 is multichannel.
-        -> s1 will be convolved with each channel of s2.
-        3. s1 and s2 are both multichannel.
-        -> each channel will be convolved with the matching 
-            channel. If they don't have the same number of
-            channels, an error will be thrown.
+        from . import mixing
+        return mixing.convolve(self, other, method=method, 
+            normalize=normalize, scale=scale)
 
-        Args:
-            other: AudioSignal with which to convolve the two signals.
-            method: A string indicating which method to use to calculate the convolution. Options are:
-                direct: The convolution is determined directly from sums, the definition of convolution.
-                fft: The Fourier Transform is used to perform the convolution by calling fftconvolve.
-                auto: Automatically chooses direct or Fourier method based on an estimate of which is faster (default).
-            normalize: Whether to apply a normalization factor which will prevent clipping. Defaults to True.
-            scale: Whether to scale the output convolved signal to have the same max as the input, so they are of roughly equal loudness.
-        """
-        if other is None: return self
-        output = []
-        factor = 1.0
-        if normalize: factor = np.sum(np.abs(other.audio_data) ** 2)
-        
-        if self.num_channels != 1 and other.num_channels != 1:
-            if self.num_channels != other.num_channels:
-                raise AudioSignalException(
-                    "If both signals are multichannel, they must have the " 
-                    "same number of channels!")
-            for s1_ch, s2_ch in zip(self.get_channels(), other.get_channels()):
-                convolved_ch = scipy.signal.convolve(
-                    s1_ch, s2_ch / factor, mode='full', method=method)
-                output.append(convolved_ch)
-        else:
-            for i, s1_ch in enumerate(self.get_channels()):
-                for j, s2_ch in enumerate(other.get_channels()):
-                    convolved_ch = scipy.signal.convolve(
-                        s1_ch, s2_ch / factor, mode='full', method=method)
-                    output.append(convolved_ch)
-        
-        output = np.array(output)
-        if scale:
-            max_output = np.abs(output).max()
-            max_input = np.abs(self.audio_data).max()
-            scale_factor = max_input / max_output
-            output *= scale_factor
-        
-        convolved_signal = self.make_copy_with_audio_data(
-            output, verbose=False)
-        convolved_signal.truncate_samples(self.signal_length)
-                
-        return convolved_signal
+    def mix(self, other, snr=10):
+        from . import mixing
+        return mixing.mix_audio_signals(self, other, snr=snr)
+
+    def pan(self, angle_in_degrees):
+        from . import mixing
+        return mixing.pan_audio_signal(self, angle_in_degrees)
+
+    def delay(self, delay_in_samples):
+        from . import mixing
+        return mixing.delay_audio_signal(self, delay_in_samples)
 
     ##################################################
     #              Operator overloading              #

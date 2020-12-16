@@ -3,11 +3,129 @@ Small collection of utilities for altering and remixing
 AudioSignal objects. 
 """
 import copy
-
 import numpy as np
-
 from . import AudioSignal
+import scipy
+import warnings
 
+def convolve(signal, other, method='auto', normalize=True, 
+             scale=True):
+    """
+    Convolves signal one with signal two. There are three
+    cases:
+    
+    1. s1 is multichannel and s2 is mono.
+    -> s1's channels will all be convolved with s2.
+    2. s1 is mono and s2 is multichannel.
+    -> s1 will be convolved with each channel of s2.
+    3. s1 and s2 are both multichannel.
+    -> each channel will be convolved with the matching 
+        channel. If they don't have the same number of
+        channels, an error will be thrown.
+
+    Args:
+        other: AudioSignal with which to convolve the two signals.
+        method: A string indicating which method to use to calculate the convolution. Options are:
+            direct: The convolution is determined directly from sums, the definition of convolution.
+            fft: The Fourier Transform is used to perform the convolution by calling fftconvolve.
+            auto: Automatically chooses direct or Fourier method based on an estimate of which is faster (default).
+        normalize: Whether to apply a normalization factor which will prevent clipping. Defaults to True.
+        scale: Whether to scale the output convolved signal to have the same max as the input, so they are of roughly equal loudness.
+    """
+    output = []
+    factor = 1.0
+
+    signal = copy.deepcopy(signal)
+    other = copy.deepcopy(other)
+
+    if normalize: factor = np.sum(np.abs(other.audio_data) ** 2)
+    
+    if signal.num_channels != 1 and other.num_channels != 1:
+        if signal.num_channels != other.num_channels:
+            raise RuntimeError(
+                "If both signals are multichannel, they must have the " 
+                "same number of channels!")
+        for s1_ch, s2_ch in zip(signal.get_channels(), other.get_channels()):
+            convolved_ch = scipy.signal.convolve(
+                s1_ch, s2_ch / factor, mode='full', method=method)
+            output.append(convolved_ch)
+    else:
+        for i, s1_ch in enumerate(signal.get_channels()):
+            for j, s2_ch in enumerate(other.get_channels()):
+                convolved_ch = scipy.signal.convolve(
+                    s1_ch, s2_ch / factor, mode='full', method=method)
+                output.append(convolved_ch)
+    
+    output = np.array(output)
+    if scale:
+        max_output = np.abs(output).max()
+        max_input = np.abs(signal.audio_data).max()
+        scale_factor = max_input / max_output
+        output *= scale_factor
+    
+    convolved_signal = signal.make_copy_with_audio_data(
+        output, verbose=False)
+    convolved_signal.truncate_samples(signal.signal_length)
+            
+    return convolved_signal
+
+MIN_LOUDNESS = -70
+MAX_LOUDNESS = 10
+
+def mix_audio_signals(fg_signal, bg_signal, snr=10):
+    """
+    Mixes noise with signal at specified 
+    signal-to-noise ratio. Returns the mix, and the altered foreground
+    and background sources.
+
+    Args:
+        fg_signal: AudioSignal object, will be the louder signal (or quieter if snr is negative).
+        bg_signal: AudioSignal object, will be the quieter signal (or louder if snr is negative).
+        snr: Signal-to-noise ratio in decibels to mix at.
+        inplace: Whether or not to do this operation in place.
+        return_sources: Whether to return the sources or return the mix.
+    """
+    fg_signal = copy.deepcopy(fg_signal)
+    bg_signal = copy.deepcopy(bg_signal)
+
+    pad_len = max(0, fg_signal.signal_length - bg_signal.signal_length)
+    bg_signal.zero_pad(0, pad_len)
+    bg_signal.truncate_samples(fg_signal.signal_length)
+
+    n_loudness = max(MIN_LOUDNESS, bg_signal.loudness())
+    loudness = max(MIN_LOUDNESS, fg_signal.loudness())
+    
+    if loudness - snr < MIN_LOUDNESS:
+        old_snr = snr
+        snr = loudness - MIN_LOUDNESS
+        warnings.warn(
+            f"SNR puts loudness below minimum ({MIN_LOUDNESS} dB), "
+            f"clipping SNR from {old_snr} to approx. {snr}. ",
+            UserWarning
+        )
+
+    if loudness - snr > MAX_LOUDNESS:
+        old_snr = snr
+        snr = loudness - MAX_LOUDNESS
+        warnings.warn(
+            f"SNR puts loudness above maximum ({MAX_LOUDNESS} dB), "
+            f"clipping SNR from {old_snr} to approx. {snr}. ",
+            UserWarning
+        )
+
+    t_loudness = loudness - snr
+    gain = np.mean(t_loudness - n_loudness)
+    gain = np.exp(gain * np.log(10) / 20)
+    bg_signal = bg_signal * gain
+    premix = fg_signal + bg_signal
+    
+    peak_gain = np.abs(premix.audio_data).max()
+    if peak_gain > 1:
+        fg_signal = fg_signal / peak_gain
+        bg_signal = bg_signal / peak_gain
+        premix = premix / peak_gain
+    
+    return premix, fg_signal, bg_signal
 
 def pan_audio_signal(audio_signal, angle_in_degrees):
     """
