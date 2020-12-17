@@ -32,6 +32,18 @@ def convolve(signal, other, method='auto', normalize=True,
             auto: Automatically chooses direct or Fourier method based on an estimate of which is faster (default).
         normalize: Whether to apply a normalization factor which will prevent clipping. Defaults to True.
         scale: Whether to scale the output convolved signal to have the same max as the input, so they are of roughly equal loudness.
+    
+    Example:
+
+    >>> import nussl
+    >>> path = nussl.efz_utils.download_audio_file('schoolboy_fascination_excerpt.wav')
+    >>> sig = nussl.AudioSignal(path)
+    >>> path = nussl.efz_utils.download_audio_file('h072_Bar_2txts.wav')
+    >>> ir = nussl.AudioSignal(path)
+    >>> convolved = nussl.mixing.convolve(sig, ir)
+    >>> # Or apply with fluent interface
+    >>> convolved = sig.convolve(ir) 
+    
     """
     output = []
     factor = 1.0
