@@ -237,12 +237,15 @@ os.makedirs(PLOT_DIRECTORY, exist_ok=True)
 def test_utils_visualize_spectrogram(music_mix_and_sources):
     mix, sources = music_mix_and_sources
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 9))
     plt.subplot(211)
     nussl.utils.visualize_spectrogram(mix)
 
     plt.subplot(212)
     nussl.utils.visualize_spectrogram(mix, do_mono=True)
+
+    plt.subplot(313)
+    nussl.utils.visualize_spectrogram(mix, y_axis='mel')
 
     OUTPUT = os.path.join(PLOT_DIRECTORY, 'viz_spectrogram.png')
     plt.tight_layout()
