@@ -394,11 +394,12 @@ def visualize_gradient_flow(named_parameters, n_bins=50):
 
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2)
 
-def visualize_spectrogram(audio_signal, ch=0, do_mono=False, x_axis='time', 
-                          y_axis='linear',  **kwargs):
+
+def visualize_spectrogram(audio_signal, ch=0, do_mono=False, x_axis='time',
+                          y_axis='linear', **kwargs):
     """
     Wrapper around `librosa.display.specshow` for usage with AudioSignals.
-    
+
     Args:
         audio_signal (AudioSignal): AudioSignal to plot
         ch (int, optional): Which channel to plot. Defaults to 0.
@@ -411,11 +412,21 @@ def visualize_spectrogram(audio_signal, ch=0, do_mono=False, x_axis='time',
 
     if do_mono:
         audio_signal = audio_signal.to_mono(overwrite=False)
-    
-    data = librosa.amplitude_to_db(np.abs(audio_signal.stft()), ref=np.max)
-    librosa.display.specshow(data[..., ch], x_axis=x_axis, y_axis=y_axis, 
-        sr=audio_signal.sample_rate, hop_length=audio_signal.stft_params.hop_length,
-        **kwargs)
+
+    if y_axis == 'mel':
+        # Monkey patch for https://github.com/librosa/librosa/issues/1240
+        data = librosa.feature.melspectrogram(audio_signal.get_channel(ch),
+                                              sr=audio_signal.sample_rate)
+        kwargs.update({'fmax': audio_signal.sample_rate / 2.})
+    else:
+        data = np.abs(audio_signal.stft())[..., ch]
+
+    data = librosa.amplitude_to_db(data, ref=np.max)
+    librosa.display.specshow(data, x_axis=x_axis, y_axis=y_axis,
+                             sr=audio_signal.sample_rate,
+                             hop_length=audio_signal.stft_params.hop_length,
+                             **kwargs)
+
 
 def visualize_waveform(audio_signal, ch=0, do_mono=False, x_axis='time', **kwargs):
     """
