@@ -1,5 +1,11 @@
 Changelog
 =========
+
+v1.1.4
+------
+- Added convolutional reverb functionality.
+- Added a function which mixes two signals at a specified SNR.
+
 v1.1.3
 ------
 - Fixed some bugs that happen because of a PyTorch Ignite update.

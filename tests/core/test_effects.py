@@ -1,5 +1,6 @@
 from copy import deepcopy
 import numpy as np
+import nussl
 import nussl.core.effects as effects
 from nussl.core.audio_signal import AudioSignalException
 import os

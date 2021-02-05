@@ -2331,6 +2331,28 @@ class AudioSignal(object):
         return self
 
     ##################################################
+    #                    Mixing
+    ##################################################
+
+    def convolve(self, other, method='auto', normalize=True, 
+             scale=True):
+        from . import mixing
+        return mixing.convolve(self, other, method=method, 
+            normalize=normalize, scale=scale)
+
+    def mix(self, other, snr=10):
+        from . import mixing
+        return mixing.mix_audio_signals(self, other, snr=snr)
+
+    def pan(self, angle_in_degrees):
+        from . import mixing
+        return mixing.pan_audio_signal(self, angle_in_degrees)
+
+    def delay(self, delay_in_samples):
+        from . import mixing
+        return mixing.delay_audio_signal(self, delay_in_samples)
+
+    ##################################################
     #              Operator overloading              #
     ##################################################
 

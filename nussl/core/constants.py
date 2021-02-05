@@ -102,3 +102,7 @@ STEM_TARGET_DICT = OrderedDict([
 # that use the level_in argument:
 LEVEL_MIN = .015625
 LEVEL_MAX = 64
+
+MIN_LOUDNESS = -70
+MAX_LOUDNESS = 10
+
