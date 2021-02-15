@@ -143,24 +143,6 @@ def create_train_and_validation_engines(train_func, val_func=None, device='cpu')
 
     return trainer, validator
 
-
-def _remove_cache_from_tfms(transforms):
-    transforms = copy.deepcopy(transforms)
-
-    if isinstance(transforms, datasets.transforms.Compose):
-        for t in transforms.transforms:
-            if isinstance(t, datasets.transforms.Cache):
-                transforms.transforms.remove(t)
-
-    return transforms
-
-
-def _prep_metadata(metadata):
-    metadata = copy.deepcopy(metadata)
-    metadata['transforms'] = _remove_cache_from_tfms(metadata['transforms'])
-    return metadata
-
-
 def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, trainer,
                                 val_data=None, validator=None, save_by_epoch=None):
     """
