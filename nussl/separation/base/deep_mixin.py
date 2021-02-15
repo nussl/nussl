@@ -67,19 +67,34 @@ class DeepMixin:
                 transform = None
         return transform
 
-    def _get_input_data_for_model(self, extra_data=None):
+    def modify_input_data(self, data, **kwargs):
+        """Add or modify input data to dictionary before passing 
+        it to the model. By default this just updates the data
+        dictionary with what is needed, but can be overridden
+        by classes inheriting this method to modify the data
+        dictionary as needed.
+
+        Parameters
+        ----------
+        data : dict,
+            The data dictionary before this function is called.
+        kwargs : keyword arguments, optional
+            Data dictionary after this function is called, by default None
+        """
+        return data.update(kwargs)
+
+    def _get_input_data_for_model(self, **kwargs):
         """
         Sets up the audio signal with the appropriate STFT parameters and runs it
         through the transform found in the metadata.
 
         Args:
-            extra_data: A dictionary containing any additional data that will 
-              be merged with the output dictionary.
+            kwargs: Any additional data that will 
+              be merged with the input dictionary.
         
         Returns:
             dict: Data dictionary to pass into the model.
         """
-        extra_data = {} if extra_data is None else extra_data
         if self.metadata['sample_rate'] is not None:
             if self.audio_signal.sample_rate != self.metadata['sample_rate']:
                 self.audio_signal.resample(self.metadata['sample_rate'])
@@ -88,8 +103,8 @@ class DeepMixin:
         self.audio_signal.stft()
 
         data = {'mix': self.audio_signal}
-        data.update(extra_data)
         data = self.transform(data)
+        data = self.modify_input_data(data, **kwargs)
 
         for key in data:
             if torch.is_tensor(data[key]):

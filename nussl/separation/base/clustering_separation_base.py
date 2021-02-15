@@ -173,7 +173,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
         responsibilities = responsibilities.reshape(shape[:-1] + (-1,))
         return responsibilities
 
-    def run(self, features=None):
+    def run(self, features=None, **kwargs):
         """
         Clusters the features using the chosen clustering algorithm.
         
@@ -190,7 +190,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
             list: List of Mask objects in self.result_masks.
         """
         if features is None:
-            features = self.extract_features()
+            features = self.extract_features(**kwargs)
 
         if features.shape[:-1] != self.stft.shape:
             raise SeparationException(

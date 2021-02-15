@@ -40,7 +40,7 @@ def test_ml_gaussian_mixture():
 
         for nb in range(predictions.shape[0]):
             ami = adjusted_mutual_info_score(labels[nb], predictions[nb])
-            assert ami == 1.0
+            assert np.allclose(ami, 1.0)
 
         # with random init, we compare ami with sklearn impl.
         # covariance_type = 'full' has some issues, i think due to init.
