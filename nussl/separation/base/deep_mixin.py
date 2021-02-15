@@ -104,7 +104,6 @@ class DeepMixin:
 
         data = {'mix': self.audio_signal}
         data = self.transform(data)
-        data = self.modify_input_data(data, **kwargs)
 
         for key in data:
             if torch.is_tensor(data[key]):
@@ -112,6 +111,8 @@ class DeepMixin:
                 if self.metadata['num_channels'] == 1:
                     # then each channel is processed indep
                     data[key] = data[key].transpose(0, self.channel_dim)
+        
+        data = self.modify_input_data(data, **kwargs)       
         self.input_data = data
         return self.input_data
 
