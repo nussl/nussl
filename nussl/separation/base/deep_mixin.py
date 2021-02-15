@@ -4,7 +4,6 @@ import json
 
 from ...ml import SeparationModel
 from ...datasets import transforms as tfm
-from ...core.migration import SafeModelLoader
 
 OMITTED_TRANSFORMS = (
     tfm.GetExcerpt,
@@ -31,16 +30,11 @@ class DeepMixin:
             metadata (dict): metadata associated with model, used for making
             the input data into the model.
         """
-        safe_loader = SafeModelLoader()
-        model_dict = safe_loader.load(model_path, 'cpu')
-        metadata = model_dict['metadata']
-
-        model = SeparationModel(metadata['config'])
-        model.load_state_dict(model_dict['state_dict'])
+        
         device = device if torch.cuda.is_available() else 'cpu'
 
         self.device = device
-
+        model, metadata = SeparationModel.load(model_path)
         model = model.to(device).eval()
         self.model = model
         self.config = metadata['config']

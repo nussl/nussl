@@ -233,45 +233,24 @@ def add_validate_and_checkpoint(output_folder, model, optimizer, train_data, tra
                 output_folder, 'checkpoints', 'best.model.pth'
             ))
 
-        metadata = {
-            'stft_params': train_data.stft_params,
-            'sample_rate': train_data.sample_rate,
-            'num_channels': train_data.num_channels,
-            'train_dataset': _prep_metadata(train_data.metadata),
-            'trainer.state_dict': {
-                'epoch': trainer.state.epoch,
-                'epoch_length': trainer.state.epoch_length,
-                'max_epochs': trainer.state.max_epochs,
-                'output': trainer.state.output,
-                'metrics': trainer.state.metrics,
-                'seed': trainer.state.seed,
-            },
-            'trainer.state.epoch_history': trainer.state.epoch_history,
-        }
-        try:
-            # Store metadata for validation set if it exists
-            metadata['val_dataset'] = _prep_metadata(val_data.metadata)
-        except:
-            pass
-
         if isinstance(model, nn.DataParallel):
             _model = model.module
         else:
             _model = model
 
-        _model.metadata.update(metadata)
-
         for _path in output_paths:
             os.makedirs(os.path.join(
                 output_folder, 'checkpoints'), exist_ok=True)
-            _model.save(_path)
+            _model.save(_path, train_data=train_data, val_data=val_data, 
+                        trainer=trainer)
             torch.save(optimizer.state_dict(),
                        _path.replace('model.pth', 'optimizer.pth'))
         
         if save_by_epoch is not None:
             if trainer.state.epoch % save_by_epoch == 0:
                 _path = output_paths[0].replace('latest', f'epoch{trainer.state.epoch}')
-                _model.save(_path)
+                _model.save(_path, train_data=train_data, val_data=val_data, 
+                            trainer=trainer)
 
         trainer.state.saved_model_path = output_paths[-1]
         trainer.state.output_folder = output_folder
