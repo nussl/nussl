@@ -274,8 +274,10 @@ class SeparationModel(nn.Module):
             }
             metadata.update(dataset_metadata)
 
-        if val_data is not None:
+        try:
             metadata['val_dataset'] = _prep_metadata(val_data.metadata)
+        except:
+            pass
         
         if trainer is not None:
             train_metadata = {
