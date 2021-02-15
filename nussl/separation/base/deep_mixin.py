@@ -81,7 +81,8 @@ class DeepMixin:
         kwargs : keyword arguments, optional
             Data dictionary after this function is called, by default None
         """
-        return data.update(kwargs)
+        data.update(kwargs)
+        return data
 
     def _get_input_data_for_model(self, **kwargs):
         """
