@@ -13,9 +13,6 @@ import torch
 from torch import nn
 import numpy as np
 
-from nussl import datasets
-
-
 class ValidationEvents(EventEnum):
     """
     Events based on validation running

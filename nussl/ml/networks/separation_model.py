@@ -11,6 +11,8 @@ from ... import __version__
 import copy
 
 def _remove_cache_from_tfms(transforms):
+    """Helper function to remove cache from transforms.
+    """
     from ... import datasets
     transforms = copy.deepcopy(transforms)
 
@@ -23,6 +25,8 @@ def _remove_cache_from_tfms(transforms):
 
 
 def _prep_metadata(metadata):
+    """Helper function for preparing metadata before saving a model.
+    """
     metadata = copy.deepcopy(metadata)
     if 'transforms' in metadata:
         metadata['transforms'] = _remove_cache_from_tfms(metadata['transforms'])
