@@ -1,5 +1,16 @@
 Changelog
 =========
+v1.1.5
+------
+- Added load function to SeparationModel.
+- Allow keyword arguments to pass transparently through a SeparationModel.
+- Added runtime arguments to DeepMixin, and a callback that can be implemented by a user
+  to modify an input data dictionary before it's passed to a SeparationModel.
+
+v1.1.4
+------
+- Fixed visualization of mel spectrogram.
+
 v1.1.3
 ------
 - Fixed some bugs that happen because of a PyTorch Ignite update.

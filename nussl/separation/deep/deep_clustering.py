@@ -20,8 +20,6 @@ class DeepClustering(DeepMixin, ClusteringSeparationBase):
           so that you can initialize a class and load the model later.  
           Defaults to None.
         device (str, optional): Device to put the model on. Defaults to 'cpu'.
-        extra_data (dict, optional): Any extra data that is to be passed at runtime
-          to the SeparationModel.
         **kwargs (dict): Keyword arguments for ClusteringSeparationBase and the 
           clustering object used for clustering (one of KMeans, GaussianMixture,
           MiniBatchKmeans).
@@ -30,19 +28,18 @@ class DeepClustering(DeepMixin, ClusteringSeparationBase):
         SeparationException: If 'embedding' isn't in the output of the model.
     """
     def __init__(self, input_audio_signal, num_sources, model_path=None,
-                 device='cpu', extra_data=None, **kwargs):
+                 device='cpu', **kwargs):
         super().__init__(input_audio_signal, num_sources, **kwargs)
         if model_path is not None:
             self.load_model(model_path, device=device)
         # audio channel dimension in a dpcl model
         self.channel_dim = -1
-        self.extra_data = extra_data
 
     def forward(self):
         return self.extract_features()
 
-    def extract_features(self):
-        input_data = self._get_input_data_for_model(self.extra_data)
+    def extract_features(self, **kwargs):
+        input_data = self._get_input_data_for_model(**kwargs)
         with torch.no_grad():
             output = self.model(input_data)
             if 'embedding' not in output:

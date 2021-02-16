@@ -2,6 +2,7 @@ import nussl
 import torch
 from torch import nn
 from nussl.ml.networks import SeparationModel, modules, builders
+from nussl import datasets
 import pytest
 import json
 import tempfile
@@ -94,7 +95,7 @@ split_config['output'].append('split:1')
 class MyModule(nn.Module):
     def __init__(self):
         super().__init__()
-    def forward(self, data, **kwargs):
+    def forward(self, data=None, **kwargs):
         return data
 
 def test_separation_model_init():
@@ -385,18 +386,46 @@ def test_separation_model_extra_modules(one_item):
                 one_item['mix_magnitude'], output['test']
             )
 
-
-def test_separation_model_save():
+def test_separation_model_save_and_load():
     model = SeparationModel(dpcl_config)
 
+    tfms = datasets.transforms.Compose([
+        datasets.transforms.PhaseSensitiveSpectrumApproximation(),
+        datasets.transforms.ToSeparationModel(),
+        datasets.transforms.Cache('tests/local/sep_model/cache')
+    ])
+
+    class DummyData:
+        def __init__(self):
+            self.stft_params = None
+            self.sample_rate = None
+            self.num_channels = None
+            self.metadata = {'transforms': tfms}
+
+    class DummyState:
+        def __init__(self):
+            self.epoch = 0
+            self.epoch_length = 100
+            self.max_epochs = 100
+            self.output = None
+            self.metrics = {}
+            self.seed = None
+            self.epoch_history = {}
+    
+    class DummyTrainer:
+        def __init__(self):
+            self.state = DummyState()
+
+    dummy_data = DummyData()
+    dummy_trainer = DummyTrainer()
+
     with tempfile.NamedTemporaryFile(suffix='.pth', delete=True) as tmp:
-        loc = model.save(tmp.name)
-        checkpoint = torch.load(loc)
 
-        assert checkpoint['metadata']['nussl_version'] == nussl.__version__
+        loc = model.save(tmp.name, train_data=dummy_data, 
+            val_data=dummy_data, trainer=dummy_trainer)
+        new_model, metadata = SeparationModel.load(tmp.name)
 
-        new_model = SeparationModel(checkpoint['config'])
-        new_model.load_state_dict(checkpoint['state_dict'])
+        assert metadata['nussl_version'] == nussl.__version__
 
         new_model_params = {}
         old_model_params = {}

@@ -8,7 +8,29 @@ import numpy as np
 
 from . import modules
 from ... import __version__
+import copy
 
+def _remove_cache_from_tfms(transforms):
+    """Helper function to remove cache from transforms.
+    """
+    from ... import datasets
+    transforms = copy.deepcopy(transforms)
+
+    if isinstance(transforms, datasets.transforms.Compose):
+        for t in transforms.transforms:
+            if isinstance(t, datasets.transforms.Cache):
+                transforms.transforms.remove(t)
+
+    return transforms
+
+
+def _prep_metadata(metadata):
+    """Helper function for preparing metadata before saving a model.
+    """
+    metadata = copy.deepcopy(metadata)
+    if 'transforms' in metadata:
+        metadata['transforms'] = _remove_cache_from_tfms(metadata['transforms'])
+    return metadata
 
 class SeparationModel(nn.Module):
     """
@@ -119,7 +141,7 @@ class SeparationModel(nn.Module):
         if not isinstance(config['name'], str):
             raise ValueError("config['name'] must be a string!")
 
-    def forward(self, data):
+    def forward(self, data=None, **kwargs):
         """
         Args:
             data: (dict) a dictionary containing the input data for the model. 
@@ -128,6 +150,9 @@ class SeparationModel(nn.Module):
         Returns:
 
         """
+        data = {} if data is None else data
+        data.update(kwargs)
+
         if not all(name in list(data) for name in list(self.input)):
             raise ValueError(
                 f'Not all keys present in data! Needs {", ".join(self.input)}')
@@ -150,6 +175,7 @@ class SeparationModel(nn.Module):
                                 kwargs[key] = val
                     else:
                         input_data.append(output[c] if c in output else data[c])
+            
             _output = layer(*input_data, **kwargs)
             added_keys = []
             if isinstance(_output, dict):
@@ -190,10 +216,6 @@ class SeparationModel(nn.Module):
                     for k in stats[o]: 
                         stats_desc += f"\n\t\t\t{k}: {stats[o][k]:.4f}"
 
-                min_max = ", ".join(
-                    [f'{k}: {(output[k].detach().min().item(), output[k].detach().max().item())}' 
-                    for k in added_keys]
-                )
                 print(
                     f"{connection[1]} -> {connection[0]} \n"
                     f"\tTook inputs: {input_desc} \n"
@@ -203,7 +225,21 @@ class SeparationModel(nn.Module):
                 
         return {o: output[o] for o in self.output_keys}
 
-    def save(self, location, metadata=None):
+    @staticmethod
+    def load(location):
+        # Circular import
+        from ...core.migration import SafeModelLoader
+
+        safe_loader = SafeModelLoader()
+        model_dict = safe_loader.load(location, 'cpu')
+        metadata = model_dict['metadata']
+
+        model = SeparationModel(metadata['config'])
+        model.load_state_dict(model_dict['state_dict'])
+        return model, metadata
+
+    def save(self, location, metadata=None, train_data=None, 
+             val_data=None, trainer=None):
         """
         Saves a SeparationModel into a location into a dictionary with the
         weights and model configuration.
@@ -211,6 +247,15 @@ class SeparationModel(nn.Module):
             location: (str) Where you want the model saved, as a path.
             metadata: (dict) Additional metadata to save along with the model. By default,
                 model config and nussl version is saved as metadata.
+            train_data: (BaseDataset) Dataset used for training. Metadata will be extracted
+                from this object if it is passed into the save function, and saved 
+                alongside the model.
+            val_data: (BaseDataset) Dataset used for validation. Metadata will be extracted
+                from this object if it is passed into the save function, and saved 
+                alongside the model.
+            trainer: (ignite.Engine) Engine used for training. Metadata will be extracted
+                from this object if it is passed into the save function, and saved alongside
+                the model.
 
         Returns:
             (str): where the model was saved.
@@ -223,6 +268,35 @@ class SeparationModel(nn.Module):
 
         metadata = metadata if metadata else {}
         metadata.update(self.metadata)
+
+        if train_data is not None:
+            dataset_metadata = {
+                'stft_params': train_data.stft_params,
+                'sample_rate': train_data.sample_rate,
+                'num_channels': train_data.num_channels,
+                'train_dataset': _prep_metadata(train_data.metadata),
+            }
+            metadata.update(dataset_metadata)
+
+        try:
+            metadata['val_dataset'] = _prep_metadata(val_data.metadata)
+        except:
+            pass
+        
+        if trainer is not None:
+            train_metadata = {
+                'trainer.state_dict': {
+                    'epoch': trainer.state.epoch,
+                    'epoch_length': trainer.state.epoch_length,
+                    'max_epochs': trainer.state.max_epochs,
+                    'output': trainer.state.output,
+                    'metrics': trainer.state.metrics,
+                    'seed': trainer.state.seed,
+                },
+                'trainer.state.epoch_history': trainer.state.epoch_history,
+            }
+            metadata.update(train_metadata)
+
         save_dict = {**save_dict, 'metadata': metadata}
         torch.save(save_dict, location)
         return location
