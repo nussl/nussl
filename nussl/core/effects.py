@@ -97,8 +97,8 @@ def apply_effects_ffmpeg(audio_signal, filters, silent=False):
         input_args['loglevel'] = 'quiet'
 
     with _close_temp_files(tmpfiles):
-        curr_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
-        out_tempfile = tempfile.NamedTemporaryFile(suffix=".flac")
+        curr_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
+        out_tempfile = tempfile.NamedTemporaryFile(suffix=".wav")
 
         tmpfiles.append(curr_tempfile)
         tmpfiles.append(out_tempfile)
