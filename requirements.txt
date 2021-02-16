@@ -16,6 +16,6 @@ termtables
 gpytorch
 ffmpeg-python
 importlib_resources
-pyloudnorm
 sox
+pyloudnorm
 soxbindings>=1.2.2 ; platform_system!='Windows'
