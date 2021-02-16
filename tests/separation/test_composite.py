@@ -68,7 +68,7 @@ def test_ensemble_clustering(
 
         reg_path = os.path.join(
             REGRESSION_PATH, f'ensemble_clustering_{name}.json')
-        check_against_regression_data(scores, reg_path)
+        check_against_regression_data(scores, reg_path, atol=1e-2)
 
     pytest.raises(SeparationException, composite.EnsembleClustering,
                   mix, 2, separators, extracted_feature='none of the above')

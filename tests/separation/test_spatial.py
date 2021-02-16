@@ -35,7 +35,7 @@ def test_spatial_clustering(mix_and_sources, check_against_regression_data):
     scores = evaluator.evaluate()
 
     reg_path = os.path.join(REGRESSION_PATH, 'spatial_clustering.json')
-    check_against_regression_data(scores, reg_path)
+    check_against_regression_data(scores, reg_path, atol=1e-1)
 
 
 def test_duet(mix_and_sources, check_against_regression_data):
@@ -67,7 +67,7 @@ def test_duet(mix_and_sources, check_against_regression_data):
     scores = evaluator.evaluate()
 
     reg_path = os.path.join(REGRESSION_PATH, 'duet.json')
-    check_against_regression_data(scores, reg_path)
+    check_against_regression_data(scores, reg_path, atol=1e-1)
 
 
 def test_projet(
