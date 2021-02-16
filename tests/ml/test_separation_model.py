@@ -95,7 +95,9 @@ split_config['output'].append('split:1')
 class MyModule(nn.Module):
     def __init__(self):
         super().__init__()
-    def forward(self, data=None, **kwargs):
+    def forward(self, data=None, flip=False, **kwargs):
+        if flip:
+            data = -data
         return data
 
 def test_separation_model_init():
@@ -365,7 +367,10 @@ def test_separation_model_extra_modules(one_item):
             'class': 'MyModule'
         }
         dpcl_config['connections'].append(
-            ('test', ('mix_magnitude', {'embedding': 'embedding'}))
+            ('test', ('mix_magnitude', {
+                'embedding': 'embedding', 
+                'flip': False
+            }))
         )
         dpcl_config['output'].append('test')
         with open(tmp.name, 'w') as f:
@@ -384,6 +389,14 @@ def test_separation_model_extra_modules(one_item):
 
             assert torch.allclose(
                 one_item['mix_magnitude'], output['test']
+            )
+
+            model = SeparationModel(config)
+            copy_one_item = copy.deepcopy(one_item)
+            output = model(copy_one_item, flip=True)
+
+            assert torch.allclose(
+                one_item['mix_magnitude'], -output['test']
             )
 
 def test_separation_model_save_and_load():
