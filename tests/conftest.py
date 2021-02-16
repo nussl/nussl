@@ -220,7 +220,7 @@ def one_item(scaper_folder):
 
 @pytest.fixture(scope="module")
 def check_against_regression_data():
-    def check(scores, path):
+    def check(scores, path, atol=1e-4):
         if not os.path.exists(path):
             with open(path, 'w') as f:
                 json.dump(scores, f, indent=4)
@@ -237,7 +237,7 @@ def check_against_regression_data():
                             assert np.allclose(
                                 scores[key][metric],
                                 reg_scores[key][metric],
-                                atol=1e-1
+                                atol=atol
                             )
     return check
 
