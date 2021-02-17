@@ -171,6 +171,8 @@ class SeparationModel(nn.Module):
                                 kwargs[key] = output[val]
                             elif val in data:
                                 kwargs[key] = data[val]
+                            elif key in data:
+                                kwargs[key] = data[key]
                             else:
                                 kwargs[key] = val
                     else:
@@ -280,7 +282,7 @@ class SeparationModel(nn.Module):
 
         try:
             metadata['val_dataset'] = _prep_metadata(val_data.metadata)
-        except:
+        except: # pragma: no cover
             pass
         
         if trainer is not None:
