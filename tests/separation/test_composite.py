@@ -93,6 +93,13 @@ def test_overlap_add():
         signal.peak_normalize()
         return signal
 
+    # Check the static methods
+    mix = random_noise(10, 2, 'random')
+    windows = composite.OverlapAdd.collect_windows(mix, 2, 1)
+    recombined = composite.OverlapAdd.overlap_and_add(windows, mix, 2, 1)
+
+    assert np.allclose(recombined.audio_data, mix.audio_data)
+
     class DoNothing(SeparationBase):
         def __init__(self, input_audio_signal):
             super().__init__(input_audio_signal)
