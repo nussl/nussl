@@ -70,7 +70,8 @@ class OverlapAdd(SeparationBase):
                 # (e.g. re-order signals in estimates['signals'], matching to previous set)
                 pass
             for i in range(len(signals)):
-                windowed_data = e['window'] * signals[i].audio_data
+                L = signals[i].signal_length
+                windowed_data = e['window'][:, :L] * signals[i].audio_data
                 audio_data[:, e['start_idx']:e['end_idx'], i] += windowed_data
                 
         self.audio = audio_data[:, hop_samples:-hop_samples, :]
