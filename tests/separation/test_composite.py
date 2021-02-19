@@ -116,6 +116,12 @@ def test_overlap_add():
 
     assert np.allclose(estimates[0].audio_data, mix.audio_data) 
 
+    overlap_add = composite.OverlapAdd(do_nothing, hop_length=10, 
+        find_permutation=True)
+    estimates = overlap_add()
+
+    assert np.allclose(estimates[0].audio_data, mix.audio_data) 
+
     for k in ['ones', 'random']:
         for dur in [1.5, 10, 30, 95, 101]:
             for ch in range(1, 3):
