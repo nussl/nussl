@@ -6,8 +6,11 @@ import warnings
 import matplotlib.pyplot as plt
 
 class OverlapAdd(SeparationBase):
-    def __init__(self, separation_object, window_length=15, find_permutation=False):
+    def __init__(self, separation_object, window_length=15, hop_length=None, find_permutation=False):
         """Apply overlap/add to a long audio file to separate it in chunks.
+        Note that if the hop length is not half the window length, COLA
+        may be violated (see https://en.wikipedia.org/wiki/Overlap%E2%80%93add_method 
+        for more).
 
         Parameters
         ----------
@@ -15,13 +18,19 @@ class OverlapAdd(SeparationBase):
             Separation object that overlap and add is applied to.
         window_length : int, optional
             Window length of overlap/add window, by default 15 seconds.
-            The hop length will be half the window length.
+        hop_length : int, optional
+            Hop length of overlap/add window, by default half the window length.
+            If the hop length is not half the window length, overlap and add
+            may have strange results. 
         find_permutation : bool, optional
             Whether or not to find the permutation between chunks before combining.
         """
         super().__init__(separation_object.audio_signal)
 
-        self.hop_length = window_length / 2
+        if hop_length is None:
+            hop_length = window_length / 2
+
+        self.hop_length = hop_length
         self.window_length = window_length
         self.separation_object = separation_object
         self.find_permutation = find_permutation
