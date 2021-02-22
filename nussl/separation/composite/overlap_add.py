@@ -12,18 +12,13 @@ class OverlapAdd(SeparationBase):
         may be violated (see https://en.wikipedia.org/wiki/Overlap%E2%80%93add_method 
         for more).
 
-        Parameters
-        ----------
-        separation_object : SeparationBase
-            Separation object that overlap and add is applied to.
-        window_length : int, optional
-            Window length of overlap/add window, by default 15 seconds.
-        hop_length : int, optional
-            Hop length of overlap/add window, by default half the window length.
-            If the hop length is not half the window length, overlap and add
-            may have strange results. 
-        find_permutation : bool, optional
-            Whether or not to find the permutation between chunks before combining.
+        Args:
+            separation_object (SeparationBase): Separation object that overlap and add is applied to.
+            window_length (int): Window length of overlap/add window, by default 15 seconds.
+            hop_length (int): Hop length of overlap/add window, by default half the window length.
+                If the hop length is not half the window length, overlap and add
+                may have strange results. 
+            find_permutation (bool): Whether or not to find the permutation between chunks before combining.
         """
         super().__init__(separation_object.audio_signal)
 
@@ -37,6 +32,18 @@ class OverlapAdd(SeparationBase):
 
     @staticmethod
     def collect_windows(audio_signal, window_length, hop_length):
+        """Function which collects overlapping windows from
+        an AudioSignal.
+
+        Args:
+            audio_signal (AudioSignal): AudioSignal that windows will be collected over.
+            window_length (float): Length of window in seconds.
+            hop_length (float): How much to shift for each window 
+                (overlap is window_length - hop_length) in seconds.
+
+        Returns:
+            list: List of audio signal objects.
+        """        
         win_samples = int(window_length * audio_signal.sample_rate)
         hop_samples = int(hop_length * audio_signal.sample_rate)
         audio_signal.zero_pad(hop_samples, hop_samples)
@@ -57,6 +64,20 @@ class OverlapAdd(SeparationBase):
 
     @staticmethod
     def overlap_and_add(windows, audio_signal, window_length, hop_length):
+        """Function which taes a list of windows and overlap adds them into a
+        signal the same length as `audio_signal`.
+
+        Args:
+            windows (list): List of audio signal objects containing each window, produced by
+                `OverlapAdd.collect_windows`.
+            audio_signal (AudioSignal): AudioSignal that windows were collected from.
+            window_length (float): Length of window in seconds.
+            hop_length (float): How much to shift for each window 
+                (overlap is window_length - hop_length) in seconds.
+
+        Returns:
+            [type]: [description]
+        """
         audio_data = np.zeros_like(audio_signal.audio_data)
         win_samples = int(window_length * audio_signal.sample_rate)
         hop_samples = int(hop_length * audio_signal.sample_rate)
@@ -77,11 +98,33 @@ class OverlapAdd(SeparationBase):
 
     @staticmethod
     def reorder_estimates(estimates, find_permutation):
+        """Re-orders estimates according to max signal correlation. 
+
+        Args:
+            estimates (list): List of lists containing audio signal estimates.
+            find_permutation (bool): Whether or not to permute the lists.
+
+        Returns:
+            list: List of lists of audio signals permuted for max signal correlation between
+                chunks if find_permutation was true.
+        """
         if not find_permutation:
             return estimates
         return estimates
 
     def process_windows(self, windows, *args, **kwargs):
+        """Process the list of windows. By default, the separation object is run
+        on each window in sequence, and each window produces estimates. This could
+        be overridden in a subclass for more sophisticated processing of
+        each window.
+
+        Args:
+            windows (list): List of audio signal objects containing each window, produced by
+                `OverlapAdd.collect_windows`.
+
+        Returns:
+            list: List of lists containing audio signal estimates.
+        """
         estimates = []
         for window in windows:
             self.separation_object.audio_signal = window

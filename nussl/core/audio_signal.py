@@ -1183,12 +1183,16 @@ class AudioSignal(object):
 
         Args:
             other (:class:`AudioSignal`): :class:`AudioSignal` to concatenate with the current one.
+
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
             
         """
         self._verify_audio(other)
 
         self.audio_data = np.concatenate((self.audio_data, other.audio_data),
                                          axis=constants.LEN_INDEX)
+        return self
 
     def truncate_samples(self, n_samples):
         """ Truncates the signal leaving only the first ``n_samples`` samples.
@@ -1201,6 +1205,9 @@ class AudioSignal(object):
 
         Args:
             n_samples: (int) number of samples that will be left.
+
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
 
         """
         if not self.active_region_is_default:
@@ -1219,6 +1226,9 @@ class AudioSignal(object):
 
         Args:
             n_seconds: (float) number of seconds to truncate :attr:`audio_data`.
+        
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
 
         """
         n_samples = int(n_seconds * self.sample_rate)
@@ -1233,6 +1243,9 @@ class AudioSignal(object):
         Args:
             before: (int) number of samples to remove at beginning of self.audio_data
             after: (int) number of samples to remove at end of self.audio_data
+        
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
 
         """
         if not self.active_region_is_default:
@@ -1253,6 +1266,9 @@ class AudioSignal(object):
         Args:
             before: (int) number of zeros to be put before the current contents of self.audio_data
             after: (int) number of zeros to be put after the current contents fo self.audio_data
+        
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
 
         """
         if not self.active_region_is_default:
@@ -1429,6 +1445,9 @@ class AudioSignal(object):
     def peak_normalize(self):
         """
         Peak normalizes the audio signal.
+
+        Returns:
+            (:class:`AudioSignal`): peak-normalized :class:`AudioSignal` (in-place).
         """
         self.apply_gain(1 / np.abs(self.audio_data).max())
         return self
