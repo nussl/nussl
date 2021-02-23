@@ -1,12 +1,10 @@
-from librosa.core import audio
 from .. import SeparationBase
 from ... import AudioSignal
 import numpy as np
-import warnings
-import matplotlib.pyplot as plt
+import tqdm
 
 class OverlapAdd(SeparationBase):
-    def __init__(self, separation_object, window_length=15, hop_length=None, find_permutation=False):
+    def __init__(self, separation_object, window_duration=15, hop_duration=None, find_permutation=False, verbose=False):
         """Apply overlap/add to a long audio file to separate it in chunks.
         Note that if the hop length is not half the window length, COLA
         may be violated (see https://en.wikipedia.org/wiki/Overlap%E2%80%93add_method 
@@ -14,39 +12,47 @@ class OverlapAdd(SeparationBase):
 
         Args:
             separation_object (SeparationBase): Separation object that overlap and add is applied to.
-            window_length (int): Window length of overlap/add window, by default 15 seconds.
-            hop_length (int): Hop length of overlap/add window, by default half the window length.
-                If the hop length is not half the window length, overlap and add
+            window_duration (int): Window duration of overlap/add window, by default 15 seconds.
+            hop_duration (int): Hop duration of overlap/add window, by default half the window duration.
+                If the hop duration is not half the window duration, overlap and add
                 may have strange results. 
             find_permutation (bool): Whether or not to find the permutation between chunks before combining.
+            verbose (bool): Whether or not to show a progress bar as file is being separated.
         """
-        super().__init__(separation_object.audio_signal)
+        if hop_duration is None:
+            hop_duration = window_duration / 2
 
-        if hop_length is None:
-            hop_length = window_length / 2
-
-        self.hop_length = hop_length
-        self.window_length = window_length
+        self.hop_duration = hop_duration
+        self.window_duration = window_duration
         self.separation_object = separation_object
         self.find_permutation = find_permutation
+        self.verbose = verbose
+
+        super().__init__(separation_object.audio_signal)
+
+    def _preprocess_audio_signal(self):
+        """If the audio signal of OverlapAdd is set, the separation object's audio signal
+        should also be set.
+        """
+        self.separation_object.audio_signal = self.audio_signal
 
     @staticmethod
-    def collect_windows(audio_signal, window_length, hop_length):
+    def collect_windows(audio_signal, window_duration, hop_duration):
         """Function which collects overlapping windows from
         an AudioSignal.
 
         Args:
             audio_signal (AudioSignal): AudioSignal that windows will be collected over.
-            window_length (float): Length of window in seconds.
-            hop_length (float): How much to shift for each window 
-                (overlap is window_length - hop_length) in seconds.
+            window_duration (float): Length of window in seconds.
+            hop_duration (float): How much to shift for each window 
+                (overlap is window_duration - hop_duration) in seconds.
 
         Returns:
             list: List of audio signal objects.
             tuple: Shape of signal after zero-padding.
         """        
-        win_samples = int(window_length * audio_signal.sample_rate)
-        hop_samples = int(hop_length * audio_signal.sample_rate)
+        win_samples = int(window_duration * audio_signal.sample_rate)
+        hop_samples = int(hop_duration * audio_signal.sample_rate)
         audio_signal.zero_pad(hop_samples, hop_samples)
         padded_signal_shape = audio_signal.audio_data.shape
         num_samples = audio_signal.signal_length
@@ -69,8 +75,8 @@ class OverlapAdd(SeparationBase):
         return windows, padded_signal_shape
 
     @staticmethod
-    def overlap_and_add(windows, padded_signal_shape, sample_rate, window_length, hop_length):
-        """Function which taes a list of windows and overlap adds them into a
+    def overlap_and_add(windows, padded_signal_shape, sample_rate, window_duration, hop_duration):
+        """Function which takes a list of windows and overlap adds them into a
         signal the same length as `audio_signal`.
 
         Args:
@@ -78,16 +84,16 @@ class OverlapAdd(SeparationBase):
                 `OverlapAdd.collect_windows`.
             padded_signal_shape (tuple): Shape of padded audio signal.
             sample_rate (float): Sample rate of audio signal.
-            window_length (float): Length of window in seconds.
-            hop_length (float): How much to shift for each window 
-                (overlap is window_length - hop_length) in seconds.
+            window_duration (float): Length of window in seconds.
+            hop_duration (float): How much to shift for each window 
+                (overlap is window_duration - hop_duration) in seconds.
 
         Returns:
             AudioSignal: overlap-and-added signal.
         """
         audio_data = np.zeros(padded_signal_shape)
-        win_samples = int(window_length * sample_rate)
-        hop_samples = int(hop_length * sample_rate)
+        win_samples = int(window_duration * sample_rate)
+        hop_samples = int(hop_duration * sample_rate)
         num_samples = padded_signal_shape[-1]
 
         win_starts = np.arange(0, num_samples - hop_samples, hop_samples)
@@ -103,15 +109,15 @@ class OverlapAdd(SeparationBase):
         return signal
 
     @staticmethod
-    def reorder_estimates(estimates, window_length, hop_length, sample_rate, 
+    def reorder_estimates(estimates, window_duration, hop_duration, sample_rate, 
                           find_permutation):
         """Re-orders estimates according to max signal correlation. 
 
         Args:
-            estimates (list): List of lists containing audio signal estimates.
-            window_length (float): Length of window in seconds.
-            hop_length (float): How much to shift for each window 
-                (overlap is window_length - hop_length) in seconds.
+            estimates (list): List of lists containing audio signal estimates as AudioSignal objects.
+            window_duration (float): Length of window in seconds.
+            hop_duration (float): How much to shift for each window 
+                (overlap is window_duration - hop_duration) in seconds.
             sample_rate (int): Sample rate.
             find_permutation (bool): Whether or not to permute the lists.
 
@@ -123,19 +129,28 @@ class OverlapAdd(SeparationBase):
             return estimates
 
         def _compute_reordering(x, y):
-            overlap_amount = window_length - hop_length
+            overlap_amount = window_duration - hop_duration
             overlap_amount = int(sample_rate * overlap_amount)
 
+            # Shape is (ch, samples, sources)
             x = x.mean(0) # to mono
             y = y.mean(0) # to mono
+            # Shape is (samples, sources)
             
+            # Take first half of x, last half of y.
             x = x[..., :overlap_amount, :]
             y = y[..., -overlap_amount:, :]
-
+            
+            # Zero-mean both sources.
             x -= x.mean(0, keepdims=True)
             y -= y.mean(0, keepdims=True)
 
+            # Compute cross-correlation between each source.
+            # (samples, sources, 1) * (samples, 1, sources) -> (samples, sources, sources)
+            # .sum(0) -> (sources, sources)
             correlations = (x[..., None] * y[..., None, :]).sum(0)
+
+            # argmax (sources, sources) matrix to find best permutation.
             reorder = np.argmax(correlations, axis=0)
             return reorder
 
@@ -168,7 +183,13 @@ class OverlapAdd(SeparationBase):
             list: List of lists containing audio signal estimates.
         """
         estimates = []
-        for window in windows:
+
+        pbar = range(len(windows))
+        if self.verbose:
+            pbar = tqdm.trange(len(windows))
+
+        for i in pbar:
+            window = windows[i]
             self.separation_object.audio_signal = window
             estimates_from_window = self.separation_object(*args, **kwargs)
             estimates.append(estimates_from_window)
@@ -177,15 +198,15 @@ class OverlapAdd(SeparationBase):
     def run(self, *args, **kwargs):
         audio_signal = self.separation_object.audio_signal
 
-        if audio_signal.signal_duration <= self.window_length:
+        if audio_signal.signal_duration <= self.window_duration:
             self.sources = self.separation_object()
             return self.sources
 
         windows, padded_signal_shape = self.collect_windows(
-            audio_signal, self.window_length, self.hop_length)
+            audio_signal, self.window_duration, self.hop_duration)
         estimates = self.process_windows(windows, *args, **kwargs)
         estimates = self.reorder_estimates(
-            estimates, self.window_length, self.hop_length, 
+            estimates, self.window_duration, self.hop_duration, 
             audio_signal.sample_rate, find_permutation=self.find_permutation)
 
         num_sources = len(estimates[0])
@@ -195,7 +216,7 @@ class OverlapAdd(SeparationBase):
             windows = [est[ns] for est in estimates]
             source = self.overlap_and_add(
                 windows, padded_signal_shape, audio_signal.sample_rate, 
-                self.window_length, self.hop_length)
+                self.window_duration, self.hop_duration)
             self.sources.append(source)
 
         return self.sources

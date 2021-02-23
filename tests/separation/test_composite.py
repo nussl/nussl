@@ -83,6 +83,7 @@ def test_ensemble_clustering(
 
 def test_overlap_add(random_noise):
     # Check the static methods
+    nussl.utils.seed(0)
     mix = random_noise(10, 2, 'random')
     windows, shape = composite.OverlapAdd.collect_windows(mix, 2, 1)
     recombined = composite.OverlapAdd.overlap_and_add(
@@ -113,7 +114,7 @@ def test_overlap_add(random_noise):
 
                 before_mix = copy.deepcopy(mix)
                 do_nothing = DoNothing(mix)
-                overlap_add = composite.OverlapAdd(do_nothing, window_length=1)
+                overlap_add = composite.OverlapAdd(do_nothing, window_duration=1)
                 estimates = overlap_add()
 
                 assert before_mix == mix
@@ -165,7 +166,7 @@ def test_overlap_add(random_noise):
     overlap_add = composite.OverlapAdd(
         random_reorder, 
         find_permutation=False,
-        window_length=1
+        window_duration=1
     )
     overlap_estimates = overlap_add()
     pytest.raises(AssertionError, test_permutations_allclose, estimates, overlap_estimates)
@@ -175,7 +176,8 @@ def test_overlap_add(random_noise):
     overlap_add = composite.OverlapAdd(
         random_reorder, 
         find_permutation=True,
-        window_length=1
+        verbose=True,
+        window_duration=1
     )
     overlap_estimates = overlap_add()
     test_permutations_allclose(estimates, overlap_estimates)
@@ -185,7 +187,7 @@ def test_overlap_add(random_noise):
     overlap_add = composite.OverlapAdd(
         random_reorder, 
         find_permutation=True,
-        window_length=1
+        window_duration=1
     )
     overlap_estimates = overlap_add()
     test_permutations_allclose(estimates, overlap_estimates)
