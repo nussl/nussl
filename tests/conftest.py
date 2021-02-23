@@ -155,6 +155,20 @@ def drum_and_vocals(musdb_tracks):
     item = dataset[0]
     return item['sources']['drums'], item['sources']['vocals']
 
+@pytest.fixture(scope="module")
+def random_noise():
+    def _random_noise(duration, ch, kind):
+        if kind == 'ones':
+            x = np.ones((int(ch), int(duration * 44100)))
+        elif kind == 'random':
+            x = np.random.randn(int(ch), int(duration * 44100))
+        signal = nussl.AudioSignal(
+            audio_data_array=x, 
+            sample_rate=44100
+        )
+        signal.peak_normalize()
+        return signal
+    return _random_noise
 
 @pytest.fixture(scope="module")
 def bad_scaper_folder(toy_datasets):
