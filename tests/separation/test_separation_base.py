@@ -79,7 +79,7 @@ def test_separation_base_interact(mix_source_folder, monkeypatch):
     separator.interact(add_residual=True)
 
 
-def test_mask_separation_base(mix_source_folder, monkeypatch):
+def test_mask_separation_base(mix_source_folder, random_noise):
     dataset = datasets.MixSourceFolder(mix_source_folder)
     item = dataset[0]
     mix = item['mix']
@@ -163,6 +163,21 @@ def test_mask_separation_base(mix_source_folder, monkeypatch):
     separator.result_masks = [ones_mask, zeros_mask]
 
     pytest.raises(SeparationException, separator.make_audio_signals)
+
+    class RandomMask(separation.MaskSeparationBase):
+        def run(self):
+            a = np.random.randn(*self.audio_signal.stft().shape) > 0
+            b = np.invert(a)
+
+            self.result_masks = [self.mask_type(a), self.mask_type(b)]
+            return self.result_masks
+
+    mix = random_noise(30, 2, 'random')
+    separator = RandomMask(mix, mask_type='binary')
+    estimates = separator()
+
+    for e in estimates:
+        assert e.audio_data.shape == mix.audio_data.shape
 
 def test_clustering_separation_base(scaper_folder, monkeypatch):
     dataset = datasets.Scaper(scaper_folder)

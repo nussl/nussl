@@ -1183,12 +1183,16 @@ class AudioSignal(object):
 
         Args:
             other (:class:`AudioSignal`): :class:`AudioSignal` to concatenate with the current one.
+
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
             
         """
         self._verify_audio(other)
 
         self.audio_data = np.concatenate((self.audio_data, other.audio_data),
                                          axis=constants.LEN_INDEX)
+        return self
 
     def truncate_samples(self, n_samples):
         """ Truncates the signal leaving only the first ``n_samples`` samples.
@@ -1202,6 +1206,9 @@ class AudioSignal(object):
         Args:
             n_samples: (int) number of samples that will be left.
 
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
+
         """
         if not self.active_region_is_default:
             raise AudioSignalException('Cannot truncate while active region is not set as default!')
@@ -1211,6 +1218,7 @@ class AudioSignal(object):
             n_samples = self.signal_length
 
         self.audio_data = self.audio_data[:, 0: n_samples]
+        return self
 
     def truncate_seconds(self, n_seconds):
         """ Truncates the signal leaving only the first n_seconds.
@@ -1218,10 +1226,14 @@ class AudioSignal(object):
 
         Args:
             n_seconds: (float) number of seconds to truncate :attr:`audio_data`.
+        
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
 
         """
         n_samples = int(n_seconds * self.sample_rate)
         self.truncate_samples(n_samples)
+        return self
 
     def crop_signal(self, before, after):
         """
@@ -1231,6 +1243,9 @@ class AudioSignal(object):
         Args:
             before: (int) number of samples to remove at beginning of self.audio_data
             after: (int) number of samples to remove at end of self.audio_data
+        
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
 
         """
         if not self.active_region_is_default:
@@ -1239,6 +1254,7 @@ class AudioSignal(object):
         num_samples = self.signal_length
         self.audio_data = self.audio_data[:, before:num_samples - after]
         self.set_active_region_to_default()
+        return self
 
     def zero_pad(self, before, after):
         """ Adds zeros before and after the signal to all channels.
@@ -1250,12 +1266,16 @@ class AudioSignal(object):
         Args:
             before: (int) number of zeros to be put before the current contents of self.audio_data
             after: (int) number of zeros to be put after the current contents fo self.audio_data
+        
+        Returns:
+            (:class:`AudioSignal`): modified :class:`AudioSignal` (in-place).
 
         """
         if not self.active_region_is_default:
             raise AudioSignalException('Cannot zero-pad while active region is not set as default!')
 
         self.audio_data = np.pad(self.audio_data, ((0, 0), (before, after)), 'constant')
+        return self
 
     def add(self, other):
         """Adds two audio signal objects.
@@ -1425,8 +1445,12 @@ class AudioSignal(object):
     def peak_normalize(self):
         """
         Peak normalizes the audio signal.
+
+        Returns:
+            (:class:`AudioSignal`): peak-normalized :class:`AudioSignal` (in-place).
         """
         self.apply_gain(1 / np.abs(self.audio_data).max())
+        return self
 
     def apply_gain(self, value):
         """
@@ -1471,6 +1495,7 @@ class AudioSignal(object):
         self.audio_data = np.array(resampled_signal)
         self.original_signal_length = self.signal_length
         self._sample_rate = new_sample_rate
+        return self
 
     ##################################################
     #              Channel Utilities

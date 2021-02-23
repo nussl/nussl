@@ -6,6 +6,7 @@ v1.1.5
 - Allow keyword arguments to pass transparently through a SeparationModel.
 - Added runtime arguments to DeepMixin, and a callback that can be implemented by a user
   to modify an input data dictionary before it's passed to a SeparationModel.
+- Added an OverlapAdd algorithm that can be used with any separation object.
 
 v1.1.4
 ------
