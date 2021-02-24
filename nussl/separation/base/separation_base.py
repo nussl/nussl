@@ -79,7 +79,8 @@ class SeparationBase(object):
                 self._preprocess_audio_signal()
 
     def interact(self, add_residual=False, source='upload', label=None, 
-                 share=False, ext='.wav', separate_fn=None, outputs="html", 
+                 ext='.wav', separate_fn=None, outputs="html", 
+                 inline=None, inbrowser=None, share=False, debug=False, auth=None,
                  **kwargs):
         """
         Uses gradio to create a small interactive interface
@@ -98,12 +99,16 @@ class SeparationBase(object):
             add_residual: Whether or not to add the residual signal.
             source: Either "upload" (upload a file to separate), or "microphone", record.
             label (str): Label of interface.
-            share: Whether or not to create a public gradio link.
             ext (str): Extension for audio file returned.
             separate_fn (function): Function that takes in a file object and then returns a matching
                 element for audio_out.
             outputs (str): Defaults to "html", the type of output interface for Gradio to display.
-            kwargs: Keyword arguments to Gradio.
+            inline (bool): whether to display in the interface inline on python notebooks.
+            inbrowser (bool): whether to automatically launch the interface in a new tab on the default browser.
+            share (bool): whether to create a publicly shareable link from your computer for the interface.
+            debug (bool): if True, and the interface was launched from Google Colab, prints the errors in the cell output.
+            auth (Tuple[str, str]): If provided, username and password required to access interface.
+            kwargs: Keyword arguments to gradio.Interface.
         
         Example:        
             >>> import nussl
@@ -141,7 +146,13 @@ class SeparationBase(object):
             inputs=audio_in, 
             outputs=outputs,
             **kwargs
-        ).launch(share=share)
+        ).launch(
+            inline=inline,
+            inbrowser=inbrowser,
+            debug=debug,
+            auth=auth,
+            share=share
+        )
 
     def run(self, *args, audio_signal=None, **kwargs):
         """
