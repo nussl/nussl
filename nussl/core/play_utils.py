@@ -50,6 +50,7 @@ def embed_audio(audio_signal, ext='.mp3', display=True):
     This will show a little audio player where you can play the audio inline in 
     the notebook.      
     """
+    ext = f'.{ext}' if not ext.startswith('.') else ext
     audio_signal = deepcopy(audio_signal)
     ffmpy, IPython = _check_imports()
     sr = audio_signal.sample_rate
