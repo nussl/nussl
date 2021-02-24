@@ -79,7 +79,7 @@ class SeparationBase(object):
                 self._preprocess_audio_signal()
 
     def interact(self, add_residual=False, source='upload', label=None, 
-                 share=False, ext='.wav', separate_fn=None, audio_out="html"):
+                 share=False, ext='.wav', separate_fn=None, outputs="html"):
         """
         Uses gradio to create a small interactive interface
         for the separation algorithm. Fair warning, there
@@ -101,7 +101,7 @@ class SeparationBase(object):
             ext (str): Extension for audio file returned.
             separate_fn (function): Function that takes in a file object and then returns a matching
                 element for audio_out.
-            audio_out (str): Defaults to "html", the type of output interface for Gradio to display.
+            outputs (str): Defaults to "html", the type of output interface for Gradio to display.
         
         Example:        
             >>> import nussl
@@ -137,7 +137,7 @@ class SeparationBase(object):
         gradio.Interface(
             fn=separate_fn, 
             inputs=audio_in, 
-            outputs=audio_out,
+            outputs=outputs,
         ).launch(share=share)
 
     def run(self, *args, audio_signal=None, **kwargs):
