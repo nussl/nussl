@@ -1,6 +1,6 @@
 Changelog
 =========
-v1.1.5
+v1.1.6
 ------
 - Added load function to SeparationModel.
 - Allow keyword arguments to pass transparently through a SeparationModel.
@@ -8,6 +8,10 @@ v1.1.5
   to modify an input data dictionary before it's passed to a SeparationModel.
 - Added an OverlapAdd algorithm that can be used with any separation object.
 - Adding argument to MelProjection so that it matches librosa mel filters.
+
+v1.1.5
+------
+- This version was skipped because of a failed PyPI release.
 
 v1.1.4
 ------
