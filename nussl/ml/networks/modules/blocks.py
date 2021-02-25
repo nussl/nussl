@@ -248,9 +248,10 @@ class MelProjection(nn.Module):
         clamp: (bool) Whether to clamp the output values of the transform between 0.0 and 1.0. Used for transforming
             a mask in and out of the mel-domain. Defaults to False.
         trainable: (bool) Whether the mel transform can be adjusted by the optimizer. Defaults to False.
+        normalize (bool): Whether or not to divide the mel filters by the sum of each column. Defaults to True.
     """
     def __init__(self, sample_rate, num_frequencies, num_mels, direction='forward',
-                 clamp=False, trainable=False):
+                 clamp=False, trainable=False, normalize=True):
         super(MelProjection, self).__init__()
         self.num_mels = num_mels
         if direction not in ['backward', 'forward']:
@@ -267,7 +268,8 @@ class MelProjection(nn.Module):
             self.add_module('transform', nn.Linear(*shape))
 
             mel_filters = librosa.filters.mel(sample_rate, 2 * (num_frequencies - 1), num_mels)
-            mel_filters = (mel_filters.T / (mel_filters.sum(axis=1) + 1e-8)).T
+            if normalize:
+                mel_filters = (mel_filters.T / (mel_filters.sum(axis=1) + 1e-8)).T
             filter_bank = (
                 mel_filters
                 if self.direction == 'forward'
