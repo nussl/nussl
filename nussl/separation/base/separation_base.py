@@ -78,7 +78,10 @@ class SeparationBase(object):
             else:
                 self._preprocess_audio_signal()
 
-    def interact(self, add_residual=False, source='upload', label=None, share=False):
+    def interact(self, add_residual=False, source='upload', label=None, 
+                 ext='.wav', separate_fn=None, outputs="html", 
+                 inline=None, inbrowser=None, share=False, debug=False, auth=None,
+                 **kwargs):
         """
         Uses gradio to create a small interactive interface
         for the separation algorithm. Fair warning, there
@@ -95,11 +98,19 @@ class SeparationBase(object):
         Args:
             add_residual: Whether or not to add the residual signal.
             source: Either "upload" (upload a file to separate), or "microphone", record.
-            share: Whether or not to create a public gradio link.
-            kwargs: Keyword arguments to gradio.
-
-        Example:
+            label (str): Label of interface.
+            ext (str): Extension for audio file returned.
+            separate_fn (function): Function that takes in a file object and then returns a matching
+                element for audio_out.
+            outputs (str): Defaults to "html", the type of output interface for Gradio to display.
+            inline (bool): whether to display in the interface inline on python notebooks.
+            inbrowser (bool): whether to automatically launch the interface in a new tab on the default browser.
+            share (bool): whether to create a publicly shareable link from your computer for the interface.
+            debug (bool): if True, and the interface was launched from Google Colab, prints the errors in the cell output.
+            auth (Tuple[str, str]): If provided, username and password required to access interface.
+            kwargs: Keyword arguments to gradio.Interface.
         
+        Example:        
             >>> import nussl
             >>> nussl.separation.primitive.HPSS(
             >>>     nussl.AudioSignal()).interact()
@@ -120,19 +131,28 @@ class SeparationBase(object):
                 estimates.append(mix - estimates[0])
 
             estimates = {f'Estimate {i}': s for i, s in enumerate(estimates)}
-            html = play_utils.multitrack(estimates, ext='.mp3', display=False)
+            html = play_utils.multitrack(estimates, ext=ext, display=False)
             
             return html
 
         if label is None: label = f"Separation via {type(self).__name__}"
 
         audio_in = gradio.inputs.Audio(source=source, type="file", label=label)
+        if separate_fn is None:
+            separate_fn = _separate
 
         gradio.Interface(
-            fn=_separate, 
+            fn=separate_fn, 
             inputs=audio_in, 
-            outputs="html",
-        ).launch(share=share)
+            outputs=outputs,
+            **kwargs
+        ).launch(
+            inline=inline,
+            inbrowser=inbrowser,
+            debug=debug,
+            auth=auth,
+            share=share
+        )
 
     def run(self, *args, audio_signal=None, **kwargs):
         """
