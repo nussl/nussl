@@ -4,8 +4,7 @@ matplotlib
 museval
 musdb
 pyyaml
-zarr==2.3.0
-numcodecs==0.6.2
+zarr
 ffmpy
 torch
 pytorch-ignite

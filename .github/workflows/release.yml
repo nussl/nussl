@@ -1,0 +1,30 @@
+on:
+  push:
+    branches:
+      - "master"
+name: Create Release
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Retrieve version
+        run: |
+          echo "::set-output name=TAG_NAME::$(grep -i -o -P '(?<=version=\")[^\"]+(?=\")' setup.py)"
+        id: version
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: v${{ steps.version.outputs.TAG_NAME }}
+          release_name: v${{ steps.version.outputs.TAG_NAME }}
+          body: Nothing
+          draft: false
+          prerelease: false
