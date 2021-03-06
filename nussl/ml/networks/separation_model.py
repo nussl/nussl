@@ -23,7 +23,6 @@ def _remove_cache_from_tfms(transforms):
 
     return transforms
 
-
 def _prep_metadata(metadata):
     """Helper function for preparing metadata before saving a model.
     """
@@ -85,6 +84,8 @@ class SeparationModel(nn.Module):
 
         module_dict = {}
         self.input = {}
+        self.exposed_module = None
+
         for module_key in config['modules']:
             module = config['modules'][module_key]
 
@@ -106,11 +107,20 @@ class SeparationModel(nn.Module):
 
                 if 'args' not in module:
                     module['args'] = {}
+
+                if 'expose_forward' in module:
+                    if module['expose_forward']:
+                        self.exposed_module = module_key
+                
                 module_dict[module_key] = class_func(**module['args'])
             else:
-                self.input[module_key] = module_key
+                self.input[module_key] = module_key            
 
         self.layers = nn.ModuleDict(module_dict)
+
+        for key in self.layers:
+            setattr(self, key, self.layers[key])
+
         self.connections = config['connections']
         self.output_keys = config['output']
         self.config = config
@@ -153,13 +163,17 @@ class SeparationModel(nn.Module):
         data = {} if data is None else data
         data.update(kwargs)
 
+        if self.exposed_module is not None:
+            layer = getattr(self, self.exposed_module)
+            return layer(**data)
+
         if not all(name in list(data) for name in list(self.input)):
             raise ValueError(
                 f'Not all keys present in data! Needs {", ".join(self.input)}')
         output = {}
 
         for connection in self.connections:
-            layer = self.layers[connection[0]]
+            layer = getattr(self, connection[0])
             input_data = []
             kwargs = {}
 

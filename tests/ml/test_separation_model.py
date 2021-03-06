@@ -455,6 +455,37 @@ def test_separation_model_save_and_load():
                 old_model_params[key]
             )
 
+def test_separation_model_expose():
+    class Model(nn.Module):
+        def __init__(self, x):
+            super().__init__()
+            self.x = x
+
+        def forward(self, y):
+            return self.x + y
+
+    nussl.ml.register_module(Model)
+
+    config = {
+        'modules': {
+            'model': {
+                'class': 'Model',
+                'args': {
+                    'x': 10
+                },
+                'expose_forward': True
+            }
+        },
+        'connections': [],
+        'output': [],
+        'name': 'Model',
+    }
+
+    separation_model = nussl.ml.SeparationModel(config)
+    assert separation_model(y=5) == 15
+
+
+
 def test_separation_model_repr_and_verbose(one_item):
     model = SeparationModel(end_to_end_real_config, verbose=True)
     print(model)
