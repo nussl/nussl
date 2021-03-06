@@ -292,7 +292,7 @@ class STFT(FilterBank):
         return data
     
     def _get_fft_basis(self):
-        fourier_basis = torch.rfft(
+        fourier_basis = torch.fft.rfft(
             torch.eye(self.filter_length), 
             1, onesided=True
         )
