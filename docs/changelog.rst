@@ -2,7 +2,7 @@ Changelog
 =========
 v1.1.8
 ------
-
+- Exposing window type in OverlapAdd.
 
 v1.1.7
 ------
