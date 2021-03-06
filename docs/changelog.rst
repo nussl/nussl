@@ -1,6 +1,10 @@
 Changelog
 =========
-v1.1.6
+v1.1.8
+------
+
+
+v1.1.7
 ------
 - Added load function to SeparationModel.
 - Allow keyword arguments to pass transparently through a SeparationModel.
