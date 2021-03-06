@@ -297,8 +297,8 @@ class STFT(FilterBank):
         )
         cutoff = 1 + self.filter_length // 2
         fourier_basis = torch.cat([
-            fourier_basis[:, :cutoff, 0],
-            fourier_basis[:, :cutoff, 1]
+            torch.real(fourier_basis[:, :cutoff]),
+            torch.imag(fourier_basis[:, :cutoff])
         ], dim=1)
         return fourier_basis.float()
     
