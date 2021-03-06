@@ -2,7 +2,8 @@ Changelog
 =========
 v1.1.8
 ------
-
+- Added an option to modules in SeparationModel where the forward pass is
+  made simpler.
 
 v1.1.7
 ------
