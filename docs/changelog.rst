@@ -2,7 +2,7 @@ Changelog
 =========
 v1.1.8
 ------
-
+- Updated torch.fft -> torch.fft.rfft so it works with PyTorch 1.8.
 
 v1.1.7
 ------

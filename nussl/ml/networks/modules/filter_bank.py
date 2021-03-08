@@ -292,14 +292,13 @@ class STFT(FilterBank):
         return data
     
     def _get_fft_basis(self):
-        fourier_basis = torch.rfft(
-            torch.eye(self.filter_length), 
-            1, onesided=True
+        fourier_basis = torch.fft.rfft(
+            torch.eye(self.filter_length)
         )
         cutoff = 1 + self.filter_length // 2
         fourier_basis = torch.cat([
-            fourier_basis[:, :cutoff, 0],
-            fourier_basis[:, :cutoff, 1]
+            torch.real(fourier_basis[:, :cutoff]),
+            torch.imag(fourier_basis[:, :cutoff])
         ], dim=1)
         return fourier_basis.float()
     
