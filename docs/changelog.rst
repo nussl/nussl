@@ -3,6 +3,7 @@ Changelog
 v1.1.8
 ------
 - Exposing window type in OverlapAdd.
+- Updated torch.fft -> torch.fft.rfft so it works with PyTorch 1.8.
 
 v1.1.7
 ------
