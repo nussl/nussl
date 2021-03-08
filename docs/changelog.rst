@@ -4,7 +4,7 @@ v1.1.8
 ------
 - Added an option to modules in SeparationModel where the forward pass is
   made simpler.
-
+- Updated torch.fft -> torch.fft.rfft so it works with PyTorch 1.8.
 
 v1.1.7
 ------
