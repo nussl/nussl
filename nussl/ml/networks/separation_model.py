@@ -114,7 +114,7 @@ class SeparationModel(nn.Module):
                 
                 module_dict[module_key] = class_func(**module['args'])
             else:
-                self.input[module_key] = module_key            
+                self.input[module_key] = module_key
 
         self.layers = nn.ModuleDict(module_dict)
 
