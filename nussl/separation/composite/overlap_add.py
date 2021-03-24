@@ -4,7 +4,8 @@ import numpy as np
 import tqdm
 
 class OverlapAdd(SeparationBase):
-    def __init__(self, separation_object, window_duration=15, hop_duration=None, find_permutation=False, verbose=False):
+    def __init__(self, separation_object, window_duration=15, hop_duration=None, window_type='hanning', 
+                 find_permutation=False, verbose=False):
         """Apply overlap/add to a long audio file to separate it in chunks.
         Note that if the hop length is not half the window length, COLA
         may be violated (see https://en.wikipedia.org/wiki/Overlap%E2%80%93add_method 
@@ -16,6 +17,8 @@ class OverlapAdd(SeparationBase):
             hop_duration (int): Hop duration of overlap/add window, by default half the window duration.
                 If the hop duration is not half the window duration, overlap and add
                 may have strange results. 
+            window_type (str): Type of window to apply to each segment before performing overlap and add. 
+                Note that options other than 'hanning' may not result in perfect overlap and add.
             find_permutation (bool): Whether or not to find the permutation between chunks before combining.
             verbose (bool): Whether or not to show a progress bar as file is being separated.
         """
@@ -26,6 +29,7 @@ class OverlapAdd(SeparationBase):
         self.window_duration = window_duration
         self.separation_object = separation_object
         self.find_permutation = find_permutation
+        self.window_type = window_type
         self.verbose = verbose
 
         super().__init__(separation_object.audio_signal)
@@ -75,7 +79,8 @@ class OverlapAdd(SeparationBase):
         return windows, padded_signal_shape
 
     @staticmethod
-    def overlap_and_add(windows, padded_signal_shape, sample_rate, window_duration, hop_duration):
+    def overlap_and_add(windows, padded_signal_shape, sample_rate, window_duration, 
+                        hop_duration, window_type='hanning'):
         """Function which takes a list of windows and overlap adds them into a
         signal the same length as `audio_signal`.
 
@@ -87,6 +92,7 @@ class OverlapAdd(SeparationBase):
             window_duration (float): Length of window in seconds.
             hop_duration (float): How much to shift for each window 
                 (overlap is window_duration - hop_duration) in seconds.
+            window_type (str): Type of window to apply to each segment before overlap and adding.
 
         Returns:
             AudioSignal: overlap-and-added signal.
@@ -97,7 +103,7 @@ class OverlapAdd(SeparationBase):
         num_samples = padded_signal_shape[-1]
 
         win_starts = np.arange(0, num_samples - hop_samples, hop_samples)
-        window = AudioSignal.get_window('hanning', win_samples)[None, :]
+        window = AudioSignal.get_window(window_type, win_samples)[None, :]
 
         for i, start_idx in enumerate(win_starts):
             end_idx = start_idx + win_samples
@@ -216,7 +222,8 @@ class OverlapAdd(SeparationBase):
             windows = [est[ns] for est in estimates]
             source = self.overlap_and_add(
                 windows, padded_signal_shape, audio_signal.sample_rate, 
-                self.window_duration, self.hop_duration)
+                self.window_duration, self.hop_duration, 
+                window_type=self.window_type)
             self.sources.append(source)
 
         return self.sources
