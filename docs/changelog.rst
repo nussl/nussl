@@ -1,5 +1,10 @@
 Changelog
 =========
+
+v1.1.9
+------
+- Adding option to clip the minimum value of SI-SDR loss.
+
 v1.1.8
 ------
 - Exposing window type in OverlapAdd.
