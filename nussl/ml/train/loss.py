@@ -3,14 +3,18 @@ from itertools import permutations, combinations
 import torch
 import torch.nn as nn
 
+
 class L1Loss(nn.L1Loss):
     DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
+
 
 class MSELoss(nn.MSELoss):
     DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
 
+
 class KLDivLoss(nn.KLDivLoss):
     DEFAULT_KEYS = {'estimates': 'input', 'source_magnitudes': 'target'}
+
 
 class SISDRLoss(nn.Module):
     """
@@ -31,15 +35,18 @@ class SISDRLoss(nn.Module):
           'sum', or none). Defaults to 'mean'.
         zero_mean (bool, optional): Zero mean the references and estimates before
           computing the loss. Defaults to True.
+        clip_min (float, optional): The minimum possible loss value. Helps network
+          to not focus on making already good examples better. Defaults to None.
     """
     DEFAULT_KEYS = {'audio': 'estimates', 'source_audio': 'references'}
 
     def __init__(self, scaling=True, return_scaling=False, reduction='mean', 
-                 zero_mean=True):
+                 zero_mean=True, clip_min=None):
         self.scaling = scaling
         self.reduction = reduction
         self.zero_mean = zero_mean
         self.return_scaling = return_scaling
+        self.clip_min = clip_min
         super().__init__()
 
     def forward(self, estimates, references):
@@ -48,6 +55,7 @@ class SISDRLoss(nn.Module):
         _shape = references.shape
         references = references.reshape(-1, _shape[-2], _shape[-1])
         estimates = estimates.reshape(-1, _shape[-2], _shape[-1])
+
         # samples now on axis 1
         if self.zero_mean:
             mean_reference = references.mean(dim=1, keepdim=True)
@@ -71,7 +79,10 @@ class SISDRLoss(nn.Module):
 
         signal = (e_true ** 2).sum(dim=1)
         noise = (e_res ** 2).sum(dim=1)
-        sdr = 10 * torch.log10(signal / noise + eps)        
+        sdr = -10 * torch.log10(signal / noise + eps)
+
+        if self.clip_min is not None:
+            sdr = torch.clamp(sdr, min=self.clip_min)
 
         if self.reduction == 'mean':
             sdr = sdr.mean()
@@ -79,8 +90,8 @@ class SISDRLoss(nn.Module):
             sdr = sdr.sum()
         if self.return_scaling:
             return scale
-        # go negative so it's a loss
-        return -sdr
+
+        return sdr
 
 
 class DeepClusteringLoss(nn.Module):
@@ -130,6 +141,7 @@ class DeepClusteringLoss(nn.Module):
             batch_size, -1).sum(dim=-1)
         loss = (vTv - 2 * vTy + yTy) / norm
         return loss.mean()
+
 
 class WhitenedKMeansLoss(nn.Module):
     """
@@ -191,6 +203,7 @@ class WhitenedKMeansLoss(nn.Module):
         D = (embedding_size + num_sources) * batch_size
         loss = D - 2 * trace
         return loss / batch_size
+
 
 class PermutationInvariantLoss(nn.Module):
     """

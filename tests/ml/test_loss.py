@@ -157,6 +157,11 @@ def test_sdr_loss():
         zero_mean=False, reduction='none', return_scaling=True)
     LossSDR(estimates, references)
 
+    clip_min = -30.0
+    LossSDR = ml.train.loss.SISDRLoss(reduction='none', clip_min=clip_min)
+    losses = LossSDR(references, references)
+    assert all(l >= clip_min for l in losses.flatten())
+
 def test_permutation_invariant_loss_sdr():
     n_batch = 40
     n_samples = 16000
