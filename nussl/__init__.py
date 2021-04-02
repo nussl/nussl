@@ -5,7 +5,7 @@ except Exception:
     vamp_imported = False
 
 # Current nussl version
-__version__ = '1.1.8'
+__version__ = '1.1.9'
 
 class ImportErrorClass(object):
     def __init__(self, lib, **kwargs):
