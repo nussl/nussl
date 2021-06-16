@@ -2,9 +2,8 @@ import pytest
 from nussl.datasets import transforms
 from nussl.datasets.transforms import TransformException
 import nussl
-from nussl import STFTParams, evaluation
+from nussl import evaluation
 import numpy as np
-from nussl.core.masks import BinaryMask, SoftMask
 import itertools
 import copy
 import torch
@@ -18,7 +17,7 @@ def separate_and_evaluate(mix, sources, mask_data):
     estimates = []
     mask_data = normalize_masks(mask_data)
     for i in range(mask_data.shape[-1]):
-        mask = SoftMask(mask_data[..., i])
+        mask = mask_data[..., i]
         estimate = mix.apply_mask(mask)
         estimate.istft()
         estimates.append(estimate)

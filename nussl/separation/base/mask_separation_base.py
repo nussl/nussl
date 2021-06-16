@@ -3,7 +3,6 @@ Base class for separation algorithms that make masks. Most algorithms in
 nussl are derived from MaskSeparationBase. 
 """
 
-from ...core import masks
 from . import SeparationBase
 from .separation_base import SeparationException
 
@@ -33,11 +32,6 @@ class MaskSeparationBase(SeparationBase):
         mask_threshold: (float) Value between [0.0, 1.0] to convert a soft mask 
           to a binary mask. See :attr:`mask_threshold` property for details.
     """
-    
-    MASKS = {
-        'binary': masks.BinaryMask,
-        'soft': masks.SoftMask
-    }
 
     def __init__(self, input_audio_signal, mask_type='soft', mask_threshold=0.5):
         super().__init__(input_audio_signal=input_audio_signal)
