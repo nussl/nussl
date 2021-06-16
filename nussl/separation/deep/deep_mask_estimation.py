@@ -1,10 +1,10 @@
 import torch
 
-from ..base import MaskSeparationBase, DeepMixin, SeparationException
+from ..base import SeparationBase, DeepMixin, SeparationException
 from ... import ml
 
 
-class DeepMaskEstimation(DeepMixin, MaskSeparationBase):
+class DeepMaskEstimation(DeepMixin, SeparationBase):
     """
     Separates an audio signal using the masks produced by a deep model for every 
     time-frequency point. It expects that the model outputs a dictionary where one
@@ -18,7 +18,7 @@ class DeepMaskEstimation(DeepMixin, MaskSeparationBase):
           so that you can initialize a class and load the model later.  
           Defaults to None.
         device (str, optional): Device to put the model on. Defaults to 'cpu'.
-        **kwargs (dict): Keyword arguments for MaskSeparationBase.
+        **kwargs (dict): Keyword arguments for SeparationBase.
     """
     def __init__(self, input_audio_signal, model_path=None, device='cpu', 
                  **kwargs):

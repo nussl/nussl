@@ -1,11 +1,11 @@
 import numpy as np
 from scipy.ndimage.filters import maximum_filter, minimum_filter, uniform_filter
 
-from .. import MaskSeparationBase, SeparationException
+from .. import SeparationBase, SeparationException
 from ..benchmark import HighLowPassFilter
 
 
-class FT2D(MaskSeparationBase):
+class FT2D(SeparationBase):
     """
     This separation method is based on using 2DFT image processing for source
     separation [1].

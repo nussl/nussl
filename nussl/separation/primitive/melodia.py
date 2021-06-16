@@ -2,7 +2,7 @@ import numpy as np
 from scipy.ndimage.filters import convolve
 from scipy.ndimage import maximum_filter, gaussian_filter
 
-from .. import MaskSeparationBase, SeparationException
+from .. import SeparationBase, SeparationException
 from ..benchmark import HighLowPassFilter
 from ... import AudioSignal
 from ... import vamp_imported
@@ -131,7 +131,7 @@ def _apply_vowel_filter(impulse_train, fs, t1=0.0075, t2=.013,
     
     return np.real(lip_out)
 
-class Melodia(MaskSeparationBase):
+class Melodia(SeparationBase):
     """
     Implements melody extraction using Melodia [1].
 
@@ -185,7 +185,7 @@ class Melodia(MaskSeparationBase):
     def __init__(self, input_audio_signal, high_pass_cutoff=100, minimum_frequency=55.0,
                  maximum_frequency=1760.0, voicing_tolerance=0.2, minimum_peak_salience=0.0,
                  compression=0.5, num_overtones=40, apply_vowel_filter=False, smooth_length=5, 
-                 add_lower_octave=False, mask_type='soft', mask_threshold=0.5):
+                 add_lower_octave=False):
         # lazy load vamp to check if it exists
         from ... import vamp_imported
 
@@ -196,11 +196,7 @@ class Melodia(MaskSeparationBase):
         if not vamp_imported or not melodia_installed:
             self._raise_vamp_melodia_error()
 
-        super().__init__(
-            input_audio_signal=input_audio_signal,
-            mask_type=mask_type,
-            mask_threshold=mask_threshold
-        )
+        super().__init__(input_audio_signal=input_audio_signal)
 
         self.high_pass_cutoff = high_pass_cutoff
         self.minimum_frequency = float(minimum_frequency)

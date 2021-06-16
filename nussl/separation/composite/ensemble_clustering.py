@@ -63,9 +63,9 @@ class EnsembleClustering(ClusteringSeparationBase):
           increases, the assignments become more binary (either 0 or 1). Defaults to 
           5.0, a value discovered through cross-validation.
 
-        mask_type (str, optional): Masking approach to use. Passed up to MaskSeparationBase.
+        mask_type (str, optional): Masking approach to use. Passed up to SeparationBase.
 
-        mask_threshold (float, optional): Threshold for masking. Passed up to MaskSeparationBase.
+        mask_threshold (float, optional): Threshold for masking. Passed up to SeparationBase.
 
         **kwargs (dict, optional): Additional keyword arguments that are passed to the clustering
           object (one of KMeans, GaussianMixture, or MiniBatchKMeans).
@@ -98,11 +98,10 @@ class EnsembleClustering(ClusteringSeparationBase):
     def __init__(self, input_audio_signal, num_sources, separators, weights=None, 
                  returns=None, num_cascades=1, extracted_feature='masks', 
                  clustering_type='KMeans', fit_clusterer=True, percentile=90,
-                 beta=5.0, mask_type='soft', mask_threshold=0.5, **kwargs):
+                 beta=5.0, **kwargs):
         super().__init__(
             input_audio_signal, num_sources, clustering_type=clustering_type, 
-            percentile=percentile, fit_clusterer=fit_clusterer, beta=beta, 
-            mask_type=mask_type, mask_threshold=mask_threshold, **kwargs)
+            percentile=percentile, fit_clusterer=fit_clusterer, beta=beta, **kwargs)
 
         self.separators = separators
         self.num_cascades = num_cascades

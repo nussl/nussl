@@ -1,13 +1,13 @@
 import numpy as np
 
 from ... import ml
-from . import SeparationException, MaskSeparationBase
+from . import SeparationException, SeparationBase
 
 
 ALLOWED_CLUSTERING_TYPES = ['KMeans', 'GaussianMixture', 'MiniBatchKMeans']
 
 
-class ClusteringSeparationBase(MaskSeparationBase):
+class ClusteringSeparationBase(SeparationBase):
     """
     A base class for any clustering-based separation approach. Subclasses 
     of this class must implement just one function to use it: `extract_features`.
@@ -43,9 +43,9 @@ class ClusteringSeparationBase(MaskSeparationBase):
           increases, the assignments become more binary (either 0 or 1). Defaults to 
           5.0, a value discovered through cross-validation.
 
-        mask_type (str, optional): Masking approach to use. Passed up to MaskSeparationBase.
+        mask_type (str, optional): Masking approach to use. Passed up to SeparationBase.
 
-        mask_threshold (float, optional): Threshold for masking. Passed up to MaskSeparationBase.
+        mask_threshold (float, optional): Threshold for masking. Passed up to SeparationBase.
 
         **kwargs (dict, optional): Additional keyword arguments that are passed to the clustering
           object (one of KMeans, GaussianMixture, or MiniBatchKMeans).
@@ -56,8 +56,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
           shape of the AudioSignal.
     """
     def __init__(self, input_audio_signal, num_sources, clustering_type='KMeans', 
-                 fit_clusterer=True, percentile=90, beta=5.0, mask_type='soft',
-                 mask_threshold=0.5, **kwargs):
+                 fit_clusterer=True, percentile=90, beta=5.0, **kwargs):
 
         if clustering_type not in dir(ml.cluster):
             raise SeparationException(
@@ -85,9 +84,7 @@ class ClusteringSeparationBase(MaskSeparationBase):
         self.fit_clusterer = fit_clusterer
 
         super(ClusteringSeparationBase, self).__init__(
-            input_audio_signal=input_audio_signal,
-            mask_type=mask_type,
-            mask_threshold=mask_threshold
+            input_audio_signal=input_audio_signal
         )
 
         self.metadata.update({

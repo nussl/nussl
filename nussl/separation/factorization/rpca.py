@@ -1,10 +1,10 @@
 import numpy as np
 
-from .. import MaskSeparationBase
+from .. import SeparationBase
 from ..benchmark import HighLowPassFilter
 
 
-class RPCA(MaskSeparationBase):
+class RPCA(SeparationBase):
     """
     Implements foreground/background separation using RPCA.
 
@@ -26,11 +26,8 @@ class RPCA(MaskSeparationBase):
     """
 
     def __init__(self, input_audio_signal, high_pass_cutoff=100, num_iterations=100, 
-                 epsilon=1e-7, mask_type='soft', mask_threshold=0.5):
-        super().__init__(
-            input_audio_signal=input_audio_signal, 
-            mask_type=mask_type,
-            mask_threshold=mask_threshold)
+                 epsilon=1e-7):
+        super().__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff = high_pass_cutoff
 
         self.epsilon = epsilon
