@@ -8,6 +8,7 @@ on:
     branches: 
       - master
       - staging
+      - nussl-v2.0
 
 jobs:
   build:
