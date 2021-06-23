@@ -1,4 +1,4 @@
-from nussl import separation, datasets, AudioSignal, core, evaluation
+from nussl import separation, datasets, AudioSignal, evaluation
 import pytest 
 import numpy as np
 from nussl.separation.base import SeparationException
@@ -78,106 +78,6 @@ def test_separation_base_interact(mix_source_folder, monkeypatch):
     separator.interact()
     separator.interact(add_residual=True)
 
-
-def test_mask_separation_base(mix_source_folder, random_noise):
-    dataset = datasets.MixSourceFolder(mix_source_folder)
-    item = dataset[0]
-    mix = item['mix']
-    sources = item['sources']
-
-    class DummyMask(core.masks.MaskBase):
-        @staticmethod
-        def _validate_mask(mask_):
-            pass
-        pass
-
-    separator = separation.MaskSeparationBase(mix)
-    assert separator.mask_type == core.masks.SoftMask
-    assert separator.mask_threshold == 0.5
-
-    separator = separation.MaskSeparationBase(mix, 
-        mask_type=core.masks.SoftMask(mask_shape=(100, 10)))
-    assert separator.mask_type == core.masks.SoftMask
-
-    separator = separation.MaskSeparationBase(mix, mask_type='binary')
-    assert separator.mask_type == core.masks.BinaryMask
-
-    separator = separation.MaskSeparationBase(mix, 
-        mask_type=core.masks.BinaryMask(mask_shape=(100, 10)))
-    assert separator.mask_type == core.masks.BinaryMask
-
-    pytest.raises(ValueError, separation.MaskSeparationBase, mix, mask_type=None)
-    pytest.raises(ValueError, separation.MaskSeparationBase, mix, 
-        mask_type='invalid')
-    pytest.raises(ValueError, separation.MaskSeparationBase, mix, 
-        mask_type=DummyMask(mask_shape=(100, 10)))
-
-    separator = separation.MaskSeparationBase(mix, mask_threshold=0.2)
-    assert separator.mask_threshold == 0.2
-
-    pytest.raises(ValueError, separation.MaskSeparationBase, mix, 
-        mask_threshold=1.5)
-    pytest.raises(ValueError, separation.MaskSeparationBase, mix, 
-        mask_threshold='not a float')
-
-    separator = separation.MaskSeparationBase(mix)
-    ones_mask = separator.ones_mask(mix.stft().shape)
-    masked = mix.apply_mask(ones_mask)
-    masked.istft()
-
-    assert np.allclose(masked.audio_data, mix.audio_data, atol=1e-6)
-
-    separator = separation.MaskSeparationBase(mix, mask_type='binary')
-    ones_mask = separator.ones_mask(mix.stft().shape)
-    masked = mix.apply_mask(ones_mask)
-    masked.istft()
-
-    assert np.allclose(masked.audio_data, mix.audio_data, atol=1e-6)
-
-    separator = separation.MaskSeparationBase(mix)
-    zeros_mask = separator.zeros_mask(mix.stft().shape)
-    masked_zeros = mix.apply_mask(zeros_mask)
-    masked_zeros.istft()
-
-    assert np.allclose(masked_zeros.audio_data, np.zeros(masked_zeros.audio_data.shape), 
-        atol=1e-6)
-
-    separator = separation.MaskSeparationBase(mix, mask_type='binary')
-    ones_mask = separator.ones_mask(mix.stft().shape)
-    zeros_mask = separator.zeros_mask(mix.stft().shape)
-    masked_ones = mix.apply_mask(ones_mask)
-    masked_ones.istft()
-
-    assert np.allclose(masked_ones.audio_data, mix.audio_data, atol=1e-6)
-
-    pytest.raises(SeparationException, separator.make_audio_signals)
-
-    separator = separation.MaskSeparationBase(mix, mask_type='binary')
-    separator.result_masks = [ones_mask, zeros_mask]
-    estimates = separator.make_audio_signals()
-
-    for e, s in zip(estimates, [masked_ones, masked_zeros]):
-        assert e == s
-
-    separator = separation.MaskSeparationBase(mix, mask_type='soft')
-    separator.result_masks = [ones_mask, zeros_mask]
-
-    pytest.raises(SeparationException, separator.make_audio_signals)
-
-    class RandomMask(separation.MaskSeparationBase):
-        def run(self):
-            a = np.random.randn(*self.audio_signal.stft().shape) > 0
-            b = np.invert(a)
-
-            self.result_masks = [self.mask_type(a), self.mask_type(b)]
-            return self.result_masks
-
-    mix = random_noise(30, 2, 'random')
-    separator = RandomMask(mix, mask_type='binary')
-    estimates = separator()
-
-    for e in estimates:
-        assert e.audio_data.shape == mix.audio_data.shape
 
 def test_clustering_separation_base(scaper_folder, monkeypatch):
     dataset = datasets.Scaper(scaper_folder)

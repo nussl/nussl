@@ -1,7 +1,5 @@
 import nussl
 import numpy as np
-from nussl.separation.base import MaskSeparationBase, SeparationBase
-from nussl.core.masks import BinaryMask, SoftMask, MaskBase
 import pytest
 
 import torch
@@ -147,8 +145,7 @@ def test_utils_audio_signals_to_musdb_track(musdb_tracks):
             audio_data_array=stems[v.stem_id],
             sample_rate=track.rate
         )
-        mask_data = np.random.rand(*mixture.stft_data.shape)
-        soft_mask = SoftMask(mask_data)
+        soft_mask = np.random.rand(*mixture.stft_data.shape)
 
         _source = mixture.apply_mask(soft_mask)
         _source.istft(truncate_to_length=mixture.signal_length)

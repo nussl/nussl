@@ -1099,8 +1099,7 @@ class AudioSignal(object):
         signal is then applied to construct the masked STFT.
         
         Args:
-            mask (:obj:`MaskBase`-derived object): A ``MaskBase``-derived object 
-                containing a mask.
+            mask (:obj:`np.ndarray`): A numpy array of the mask
             overwrite (bool): If ``True``, this will alter ``stft_data`` in self. 
                 If ``False``, this function will create a new ``AudioSignal`` object 
                 with the mask applied.
@@ -1110,9 +1109,6 @@ class AudioSignal(object):
             iff ``overwrite`` is False.
 
         """
-        if not isinstance(mask, masks.MaskBase):
-            raise AudioSignalException(f'Expected MaskBase-derived object, given {type(mask)}')
-
         if self.stft_data is None:
             raise AudioSignalException('There is no STFT data to apply a mask to!')
 
@@ -1124,7 +1120,7 @@ class AudioSignal(object):
                 )
 
         magnitude, phase = np.abs(self.stft_data), np.angle(self.stft_data)
-        masked_abs = magnitude * mask.mask
+        masked_abs = magnitude * mask
         masked_stft = masked_abs * np.exp(1j * phase)
 
         if overwrite:

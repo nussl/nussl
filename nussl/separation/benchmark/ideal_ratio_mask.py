@@ -1,8 +1,8 @@
-from ..base import MaskSeparationBase, SeparationException
+from ..base import SeparationBase, SeparationException
 from ...datasets import transforms
 
 
-class IdealRatioMask(MaskSeparationBase):
+class IdealRatioMask(SeparationBase):
     """
     Implements an ideal ratio mask (IRM) that is computed by using the known
     ground truth performance. This is one of the upper baselines.

@@ -1,8 +1,8 @@
-from ..base import MaskSeparationBase, SeparationException
+from ..base import SeparationBase, SeparationException
 from ...datasets import transforms
 
 
-class IdealBinaryMask(MaskSeparationBase):
+class IdealBinaryMask(SeparationBase):
     """
     Implements an ideal binary mask (IBM) that is computed by using the known
     ground truth performance. This is one of the upper baselines.
@@ -21,9 +21,7 @@ class IdealBinaryMask(MaskSeparationBase):
             raise SeparationException("sources must be a list or a dict!")
 
         self.sources = sources
-        super().__init__(
-            input_audio_signal=input_audio_signal, mask_type=mask_type,
-            mask_threshold=mask_threshold)
+        super().__init__(input_audio_signal=input_audio_signal)
 
     def run(self):
         # Set up dictionary to pass to the transform.    

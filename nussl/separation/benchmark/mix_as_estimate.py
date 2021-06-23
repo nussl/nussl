@@ -1,5 +1,6 @@
 from ..base import SeparationBase
 
+
 class MixAsEstimate(SeparationBase):
     """
     This algorithm does nothing but scale the mix by the number of sources. This can

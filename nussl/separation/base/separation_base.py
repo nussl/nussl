@@ -154,6 +154,15 @@ class SeparationBase(object):
             share=share
         )
 
+    def get_masks(self, *args, **kwargs):
+        """
+        Returns the masks after separation algorithm has been run.
+
+        Raises:
+            NotImplementedError: Cannot call base class
+        """
+        raise NotImplementedError('Cannot call base class.')
+
     def run(self, *args, audio_signal=None, **kwargs):
         """
         Runs separation algorithm.

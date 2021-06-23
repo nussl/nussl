@@ -1,10 +1,10 @@
 import numpy as np
 import librosa
 
-from .. import MaskSeparationBase
+from .. import SeparationBase
 
 
-class HPSS(MaskSeparationBase):
+class HPSS(SeparationBase):
     """
     Implements harmonic/percussive source separation based on [1]. This is a 
     wrapper around the librosa implementation.
@@ -30,13 +30,8 @@ class HPSS(MaskSeparationBase):
         mask_threshold (float, optional): Masking threshold. Defaults to 0.5.
 
     """
-    def __init__(self, input_audio_signal, kernel_size=31, mask_type='soft',
-                 mask_threshold=0.5):
-        super().__init__(
-            input_audio_signal=input_audio_signal, 
-            mask_type=mask_type,
-            mask_threshold=mask_threshold
-        )
+    def __init__(self, input_audio_signal, kernel_size=31):
+        super().__init__(input_audio_signal=input_audio_signal)
 
         self.kernel_size = kernel_size
 

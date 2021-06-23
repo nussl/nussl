@@ -1,12 +1,12 @@
 import numpy as np
 import scipy.fftpack as scifft
 
-from .. import MaskSeparationBase, SeparationException
+from .. import SeparationBase, SeparationException
 from ..benchmark import HighLowPassFilter
 from ...core import constants
 
 
-class Repet(MaskSeparationBase):
+class Repet(SeparationBase):
     """Implements the original REpeating Pattern Extraction Technique algorithm 
     using the beat spectrum.
 
@@ -47,13 +47,9 @@ class Repet(MaskSeparationBase):
     """
 
     def __init__(self, input_audio_signal, min_period=None, max_period=None,
-                 period=None, high_pass_cutoff=100.0, mask_type='soft',
-                 mask_threshold=0.5):
+                 period=None, high_pass_cutoff=100.0):
 
-        super().__init__(
-            input_audio_signal=input_audio_signal,
-            mask_type=mask_type,
-            mask_threshold=mask_threshold)
+        super().__init__(input_audio_signal=input_audio_signal)
 
         # Check input parameters
         if (min_period or max_period) and period:

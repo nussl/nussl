@@ -90,7 +90,7 @@ These methods are based on primitive spatial cues.
 
 from .base import (
     SeparationBase, 
-    MaskSeparationBase,
+    SeparationBase,
     ClusteringSeparationBase,
     SeparationException,
     NMFMixin,

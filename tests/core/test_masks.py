@@ -114,11 +114,10 @@ def test_binary_mask():
 
 
 def test_mask_get_channels():
-    mask_data = np.random.rand(1025, 400, 2)
-    soft_mask = SoftMask(mask_data)
-    for ch in range(mask_data.shape[-1]):
-        _mask_ch = soft_mask.get_channel(ch)
-        assert np.allclose(_mask_ch, mask_data[..., ch])
+    soft_mask = np.random.rand(1025, 400, 2)
+    for ch in range(soft_mask.shape[-1]):
+        _mask_ch = soft_mask[..., ch]
+        assert np.allclose(_mask_ch, soft_mask[..., ch])
 
     pytest.raises(ValueError, soft_mask.get_channel, 2)
     pytest.raises(ValueError, soft_mask.get_channel, -1)
@@ -186,8 +185,7 @@ def test_masks_sum_to_mix(benchmark_audio):
             estimates = []
 
             for i in range(num_sources):
-                mask = SoftMask(random_masks[..., i])
-                estimate = signal.apply_mask(mask)
+                estimate = signal.apply_mask(random_masks[..., i])
                 estimate.istft()
                 estimates.append(estimate)
 

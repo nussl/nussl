@@ -42,12 +42,11 @@ def test_nmf_mixin(
     reconstruction = nmf.inverse_transform(
         components, mix_activations)
 
-    mask_data = (
+    mask = (
             reconstruction /
             np.maximum(reconstruction, np.abs(mix.stft()))
     )
 
-    mask = nussl.core.masks.SoftMask(mask_data)
     drum_est = mix.apply_mask(mask)
     drum_est.istft()
     vocals_est = mix - drum_est

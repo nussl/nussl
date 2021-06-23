@@ -1,9 +1,9 @@
 import numpy as np
 
-from .. import MaskSeparationBase
+from .. import SeparationBase
 
 
-class HighLowPassFilter(MaskSeparationBase):
+class HighLowPassFilter(SeparationBase):
     """
     Implements a super simple separation algorithm that just masks everything below
     the specified hz. It does this by zeroing out the associated FFT bins via a mask to
@@ -15,8 +15,8 @@ class HighLowPassFilter(MaskSeparationBase):
         mask_type (str, optional): Mask type. Defaults to 'binary'.
     """
 
-    def __init__(self, input_audio_signal, high_pass_cutoff_hz, mask_type='binary'):
-        super().__init__(input_audio_signal=input_audio_signal, mask_type=mask_type)
+    def __init__(self, input_audio_signal, high_pass_cutoff_hz):
+        super().__init__(input_audio_signal=input_audio_signal)
         self.high_pass_cutoff_hz = high_pass_cutoff_hz
 
     def run(self):
@@ -26,7 +26,7 @@ class HighLowPassFilter(MaskSeparationBase):
         ).argmin()
 
         # Make masks
-        low_pass_mask = self.ones_mask(self.stft.shape)
+        low_pass_mask = np.ones_like(self.stft.shape)
         low_pass_mask.mask[closest_freq_bin:, ...] = 0
         high_pass_mask = low_pass_mask.invert_mask()
         self.result_masks = [low_pass_mask, high_pass_mask]

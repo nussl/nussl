@@ -1,12 +1,12 @@
 import numpy as np
 
-from .. import MaskSeparationBase
+from .. import SeparationBase
 from ..benchmark import HighLowPassFilter
 from ...core import utils
 from ...core import constants
 
 
-class RepetSim(MaskSeparationBase):
+class RepetSim(SeparationBase):
     """
     Implements the REpeating Pattern Extraction Technique algorithm using 
     the Similarity Matrix (REPET-SIM).
@@ -39,11 +39,8 @@ class RepetSim(MaskSeparationBase):
 
     def __init__(self, input_audio_signal, similarity_threshold=0, 
                  min_distance_between_frames=1, max_repeating_frames=100, 
-                 high_pass_cutoff=100, mask_type='soft', mask_threshold=0.5):
-        super().__init__(
-            input_audio_signal=input_audio_signal, 
-            mask_type=mask_type,
-            mask_threshold=mask_threshold)
+                 high_pass_cutoff=100):
+        super().__init__(input_audio_signal=input_audio_signal)
 
         self.high_pass_cutoff = high_pass_cutoff
         self.similarity_threshold = similarity_threshold

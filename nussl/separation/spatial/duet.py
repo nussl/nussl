@@ -1,12 +1,12 @@
 import numpy as np
 from scipy import signal
 
-from .. import MaskSeparationBase
+from .. import SeparationBase
 from ...core import utils
 from ...core import constants
 
 
-class Duet(MaskSeparationBase):
+class Duet(SeparationBase):
     """
     The DUET algorithm was originally proposed by S.Rickard and F.Dietrich for DOA 
     estimation and further developed for BSS and demixing by A. Jourjine, S.Rickard, 
@@ -106,10 +106,8 @@ class Duet(MaskSeparationBase):
                  attenuation_min=-3, attenuation_max=3, num_attenuation_bins=50,
                  delay_min=-3, delay_max=3, num_delay_bins=50,
                  peak_threshold=0.0, attenuation_min_distance=5, delay_min_distance=5, 
-                 p=1, q=0, mask_type='binary'):
-        super().__init__(
-            input_audio_signal=input_audio_signal,
-            mask_type=mask_type)
+                 p=1, q=0):
+        super().__init__(input_audio_signal=input_audio_signal)
 
         self.num_sources = num_sources
         self.attenuation_min = attenuation_min

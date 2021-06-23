@@ -1,10 +1,10 @@
 import numpy as np
 import norbert
 
-from ..base import MaskSeparationBase, SeparationException
+from ..base import SeparationBase, SeparationException
 
 
-class WienerFilter(MaskSeparationBase):
+class WienerFilter(SeparationBase):
     """
     Implements a multichannel Wiener filter that is computed by using some
     source estimates. When using the estimates produced by IdealRatioMask or 
@@ -20,8 +20,7 @@ class WienerFilter(MaskSeparationBase):
         kwargs (dict): Additional keyword arguments to `norbert.wiener`.
     """
 
-    def __init__(self, input_audio_signal, estimates, iterations=1, mask_type='soft',  
-                 mask_threshold=.5, **kwargs):
+    def __init__(self, input_audio_signal, estimates, iterations=1, **kwargs):
         if not isinstance(estimates, list):
             raise SeparationException("estimates must be a list!")
 
@@ -29,10 +28,7 @@ class WienerFilter(MaskSeparationBase):
         self.iterations = iterations
         self.kwargs = kwargs
 
-        super().__init__(
-            input_audio_signal=input_audio_signal, 
-            mask_type=mask_type,
-            mask_threshold=mask_threshold)
+        super().__init__(input_audio_signal=input_audio_signal)
 
     def run(self):
         source_magnitudes = np.stack([
