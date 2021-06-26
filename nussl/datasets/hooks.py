@@ -6,9 +6,20 @@ labeled dictionaries for ease of use. Transforms can be applied to these dataset
 in machine learning pipelines.
 """
 import os
+import yaml
+from itertools import chain
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 from .. import musdb
+import numpy as np
 import jams
+try:
+    from pretty_midi import PrettyMIDI
+except ImportError:
+    pass
 
 from ..core import constants, utils
 from .base_dataset import BaseDataset, DataSetException
@@ -540,9 +551,273 @@ class WHAM(MixSourceFolder):
 
         super().__init__(folder, mix_folder=mix_folder, source_folders=source_folders,
                          sample_rate=sample_rate, strict_sample_rate=True, **kwargs)
+
         self.metadata.update({
             'mix_folder': mix_folder,
             'mode': mode,
             'split': split,
             'wav_folder': wav_folder
         })
+
+
+class Slakh(BaseDataset):
+    """
+    Hook for the Slakh dataset. Returns a subset of sources from slakh according to a preprovided recipe.
+    Slakh is expected to have the following directory structure:
+
+    folder:
+        Track00001:
+            stems:
+                S01.wav
+                S02.wav
+                ...
+            MIDI:
+                S01.mid
+                S02.mid
+                ...
+            all_src.mid
+            mix.wav
+            metadata.yaml
+        Track00002:
+            ...
+
+    Items returned from this hook will be a dictionary with the keys "mix" and "sources".
+    "mix" will contain an AudioSignal which is a mix of all audio signals found in "sources".
+    "sources" will contain a dictionary, where each key is the name of a source found in `recipe`,
+    a user defined grouping of MIDI synthesized sounds in Slakh.
+    If `make_submix=False` then the value of item["sources"]["source"] is a
+    list of AudioSignals categorized "source". For example, where `dataset` is a `Slakh` Object:
+
+    >>> item = dataset[0]
+    >>> type(item["sources"]["piano"])
+    <class 'list'>
+    >>> type(item["sources"]["piano"][0])
+    <class 'nussl.core.audio_signal.AudioSignal'>
+
+    If `make_submix=True`, then each value will be a submix of stems categorized as a source.
+
+    >>> type(item["sources"]["piano"])
+    <class 'nussl.core.audio_signal.AudioSignal'>
+
+    If `midi=True`, then the returned dictionary will contain two more keys, "midi_mix" and
+    "midi_sources". The key "midi_mix" will contain a PrettyMIDI object containing the instruments
+    of all PrettyMIDI objects in "midi_sources". See http://craffel.github.io/pretty-midi/
+    for more information about PrettyMIDI objects, and how they represent MIDI files.
+    The key "midi_sources" will be a dictionary structured similarly to "sources" when `make_submix=False`,
+    where the PrettyMIDI object found at self.items[i]["midi_sources"][source][j] will be the
+    representation of the MIDI file that was synthesized to become the AudioSignal
+    object found at self.items[i]["sources"][source][j]. The MIDI files will NOT be submixed when
+    `make_submix=True`; only the audio signals are.
+
+    NOTE: `pretty_midi` is not automatically installed by `nussl`, and must be manually installed
+      by the user. It may be installed with:
+    >>> pip install pretty_midi
+
+    NOTE: If a MIDI object or audio file is specified by the `metadata.yaml` file, but is not
+    found in the midi/audio subfolders, then an empty PrettyMIDI/AudioSignal object will take its place.
+
+    It is HIGHLY recommended that the user uses the LibYAML bindings for significantly better
+    performance when using Slakh dataset. If it is installed, it will be automatically used.
+
+    Args:
+      root (str): Path to the root of the Slakh directory
+      split (str): Split of the slakh directory. Can either be 'train', 'val', 'test', or 'all'.
+        Uses the `Slakh2100-orig` split. Default='all'
+      recipe (dict): Recipe for selecting and grouping sources in Slakh. Each key is a source type,
+        and the value is a list of values of `class_key` that correspond with the source.
+        For example, if you want a mix that only consists of bass and piano, and `class_key="program_num"`:
+        >>> recipe = {
+        >>>     "bass": [32, 33, 34, 35, 36, 37, 38, 39],
+        >>>     "piano": [0, 1, 2, 3, 4, 5, 6, 7]
+        >>> }
+        For mappings between midi numbers and instrument types, please see:
+        https://github.com/ethman/slakh-utils/blob/master/midi_inst_values/general_midi_inst_0based.txt
+        Default: None, which populates with a default recipe, containing the sources,
+        drums, guitar, piano, and bass. A recipe must be defined if `class_key="plugin_name"`
+      class_key (str): Metadata key to separate stems by. Can either be "inst_class", "program_num",
+        or "plugin_name". Default: "inst_class"
+      midi (bool): If True, return PrettyMIDI objects. default=False
+      min_acceptable_sources (int): Number of sources a song must have in the recipe to be included in
+        `self.get_items()`. default=2
+      make_submix (bool): If `True`, make submixes of each source. default=False.
+    """
+    def __init__(self, root, recipe=None, split='train', class_key="inst_class",
+                 min_acceptable_sources=2, midi=False, make_submix=False, transform=None,
+                 sample_rate=None, stft_params=None, num_channels=None, strict_sample_rate=True,
+                 cache_populated=False):
+
+        self.class_key = class_key
+        recipe = Slakh.default_recipe(class_key) if recipe is None else recipe
+        self.sources = list(recipe.keys())
+        self.recipe = {}
+        for key, l in recipe.items():
+            for val in l:
+                if val in self.recipe.keys():
+                    raise ValueError(f"Identifier {val} found in multiple source types!")
+                self.recipe[val] = key
+        self.midi = midi
+        self.make_submix = make_submix
+
+        if min_acceptable_sources <= 0:
+            raise ValueError("`min_acceptable_sources` should be positive!")
+
+        self.split = Slakh.get_split(split)
+
+        self.min_acceptable_sources = min_acceptable_sources
+
+        super().__init__(root, transform, sample_rate, stft_params, num_channels,
+            strict_sample_rate, cache_populated)
+
+        if not self.items:
+            raise DataSetException(
+                f"No Slakh tracks were found with the recipe: {recipe} "
+                + f"and minimum acceptable instruments of {min_acceptable_sources}."
+            )
+
+    def get_items(self, folder):
+        # Remove tracks with less than `self.min_acceptable_sources`
+        def acceptable_source(path):
+            id_ = int(path[5:])
+            if id_ not in self.split:
+                return False
+            path = os.path.join(folder, path)
+            with open(os.path.join(path, 'metadata.yaml'), 'r') as file:
+                metadata = yaml.load(file, Loader=Loader)
+            sources = set()
+            for stem, data in metadata["stems"].items():
+                if data[self.class_key] in self.recipe.keys():
+                    sources.add(self.recipe[data[self.class_key]])
+            return len(sources) >= self.min_acceptable_sources
+
+        trackpaths = [os.path.join(folder, f) for f in os.listdir(folder)
+                      if acceptable_source(f)]
+
+        return trackpaths
+
+
+    def submix(self, sources, num_frames):
+        for source, values in sources.items():
+            sources[source] = (
+                sum(values) if values else
+                self._load_audio_from_array(np.zeros((1, num_frames),
+                                                      dtype=np.float32)))
+
+
+    def _find_source(self, stem_dict):
+        midi_num = stem_dict[self.class_key]
+        key = self.recipe.get(midi_num, None)
+        return key
+
+    def _get_empty(self, num_frames):
+        return self._load_audio_from_array(np.zeros((1, num_frames), np.float32))
+
+    def _get_mix_and_souces_audio(self, audio_dir, stems_dict):
+        stempaths = {os.path.splitext(file)[0]:
+                     os.path.join(audio_dir, file)
+                     for file in os.listdir(audio_dir)}
+        num_frames = self._load_audio_file(
+            list(stempaths.values())[0]
+        ).signal_length
+
+        sources = {}
+        for source in self.sources:
+            sources[source] = []
+
+        stems = sorted(list(stems_dict.keys()))
+        for stem in stems:
+            source_type = self._find_source(stems_dict[stem])
+            if source_type is None:
+                continue
+            stempath = stempaths.get(stem, None)
+            if stempath is None:
+                sources[source_type].append(self._get_empty(num_frames))
+            else:
+                sources[source_type].append(
+                    self._load_audio_file(stempath)
+                )
+
+        if self.make_submix:
+            self.submix(sources, num_frames)
+            mix = sum([signal for signal in sources.values()])
+        else:
+            mix = sum([sum(signals) for signals in sources.values() if signals])
+        return mix, sources
+
+    def _get_mix_and_sources_midi(self, midi_dir, stems_dict, midi_mix_path):
+        sources = {}
+        midipaths = {os.path.splitext(file)[0]:
+                     os.path.join(midi_dir, file)
+                     for file in os.listdir(midi_dir)}
+        for source in self.sources:
+            sources[source] = []
+        midi_mix = PrettyMIDI(midi_mix_path)
+        midi_mix.instruments = []
+        stems = sorted(list(stems_dict.keys()))
+        for stem in stems:
+            source_type = self._find_source(stems_dict[stem])
+            if source_type is None:
+                continue
+            midipath = midipaths.get(stem, None)
+            src_midi = PrettyMIDI(midipath)
+            sources[source_type].append(src_midi)
+            midi_mix.instruments.extend(src_midi.instruments)
+        return midi_mix, sources
+
+    def process_item(self, srcs_dir):
+        # Use the file's metadata and the submix recipe to gather all the
+        # sources together.
+        src_metadata = yaml.load(open(os.path.join(srcs_dir, 'metadata.yaml'), 'r'), Loader=Loader)
+        _, audio_dir = os.path.split(src_metadata["audio_dir"])
+        _, midi_dir = os.path.split(src_metadata["midi_dir"])
+
+        item = {}
+        item['mix'], item['sources'] = self._get_mix_and_souces_audio(
+            os.path.join(srcs_dir, audio_dir),
+            src_metadata['stems']
+        )
+        if self.midi:
+            item['midi_mix'], item['midi_sources'] = self._get_mix_and_sources_midi(
+                os.path.join(srcs_dir, midi_dir),
+                src_metadata['stems'],
+                os.path.join(srcs_dir, "all_src.mid")
+            )
+
+        return item
+
+    @staticmethod
+    def get_split(split_name):
+        splits = {
+            'train': range(1, 1501),
+            'val': range(1501, 1876),
+            'test': range(1876, 2101),
+            'all': range(1, 2101)
+        }
+        split = splits.get(split_name, None)
+        if split is None:
+            raise ValueError(f"`split`: {split_name} not a valid split."
+                f"`split` must be in {list(splits.keys())}")
+
+        return split
+
+    @staticmethod
+    def default_recipe(class_key):
+        if class_key == "program_num":
+            recipe = {
+                'piano': range(8),
+                'guitar': range(24, 32),
+                'bass': range(32, 40),
+                'drums': [128]
+            }
+        elif class_key == "inst_class":
+            recipe = {
+                'piano': ["Piano"],
+                'guitar': ["Guitar"],
+                'bass': ["Bass"],
+                'drums': ["Drums"]
+            }
+        elif class_key == "plugin_name":
+            raise ValueError("There is no default recipe for `class_key='plugin_name'`."
+                "A recipe must be defined.")
+        else:
+            raise ValueError(f"Invalid class_key: {class_key}")
+        return recipe
