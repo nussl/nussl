@@ -6,11 +6,13 @@ labeled dictionaries for ease of use. Transforms can be applied to these dataset
 in machine learning pipelines.
 """
 import os
+import tqdm
+from typing import List
 
 from .. import musdb
 import jams
 
-from ..core import constants, utils
+from ..core import constants, utils, AudioSignal
 from .base_dataset import BaseDataset, DataSetException
 
 
@@ -211,6 +213,7 @@ class MixSourceFolder(BaseDataset):
             }
         }
         return output
+
 
 class Scaper(BaseDataset):
     """
@@ -416,6 +419,154 @@ class OnTheFly(BaseDataset):
                 "output of mix_closure must be a dict containing "
                 "'mix', 'sources' as keys!")
         return output
+
+
+class SalientExcerptMixSourceFolder(OnTheFly):
+    # TODO: docs!
+    """
+    This dataset expects your data to be formatted in the following way:
+
+    .. code-block:: none
+
+        data/
+            mix/
+                [file0].wav
+                [file1].wav
+                [file2].wav
+                ...
+            [label0]/
+                [file0].wav
+                [file1].wav
+                [file2].wav
+                ...
+            [label1]/
+                [file0].wav
+                [file1].wav
+                [file2].wav
+                ...
+            [label2]/
+                [file0].wav
+                [file1].wav
+                [file2].wav
+                ...
+            ...
+
+    Note that the the filenames match between the mix folder and each source folder.
+    The source folder names can be whatever you want. Given a file in the
+    ``self.mix_folder`` folder, this dataset will look up the corresponding files
+    with the same name in the source folders. These are the source audio files.
+    The sum of the sources should equal the mixture. Each source will be labeled
+    according to the folder name it comes from.
+
+    Getting an item from this dataset with no transforms returns the
+    following dictionary:
+
+    .. code-block:: none
+
+        {
+            'mix': [AudioSignal object containing mix audio],
+            'source': {
+                '[label0]': [AudioSignal object containing label0 audio],
+                '[label1]': [AudioSignal object containing label1 audio],
+                '[label2]': [AudioSignal object containing label2 audio],
+                '[label3]': [AudioSignal object containing label3 audio],
+                ...
+            }
+            'metadata': {
+                'labels': ['label0', 'label1', 'label2', 'label3']
+            }
+        }
+
+
+    Args:
+        folder (str, optional): Location that should be processed to produce the
+            list of files. Defaults to None.
+        mix_folder (str, optional): Folder to look in for mixtures. Defaults to 'mix'.
+        source_folders (list, optional): List of folders to look in for sources.
+            Path is defined relative to folder. If None, all folders other than
+            mix_folder are treated as the source folders. Defaults to None.
+        ext (list, optional): Audio extensions to look for in mix_folder.
+            Defaults to ['.wav', '.flac', '.mp3'].
+        **kwargs: Any additional arguments that are passed up to BaseDataset
+            (see ``nussl.datasets.BaseDataset``).
+    """
+    def __init__(self,
+                 folder: str,
+                 salient_src: str,
+                 mix_folder: str = 'mix',
+                 source_folders: List[str] = None,
+                 ext: List[str] = None,
+                 make_mix: bool = False,
+                 sample_rate: int = None,
+                 threshold_db: float = -60.0,
+                 segment_dur: float = 4.0,
+                 hop_ratio: float = 0.5,
+                 verbose: bool = False,
+                 **kwargs):
+
+        self.threshold_db = threshold_db
+        self.segment_dur = segment_dur
+        self.hop_ratio = hop_ratio
+        self.sample_rate = sample_rate
+        self.salient_src = salient_src
+        self.folder = folder
+        self.verbose = verbose
+
+        self.mix_src = MixSourceFolder(
+            folder, mix_folder, source_folders, ext, make_mix, **kwargs
+        )
+
+        self.metadata = self._populate_metadata()
+        self.offset = 0.0
+
+        super(SalientExcerptMixSourceFolder, self).__init__(
+            self._get_mix,
+            len(self.metadata),
+            **kwargs
+        )
+
+    def _populate_metadata(self):
+        """Makes a metadata dict of salient start times for each source."""
+
+        if self.verbose:
+            # TODO: logging.info()
+            print(f'Preprocessing data at {self.folder}.')
+
+        # TODO: Balanced dataset!
+        items = self.mix_src.get_items(self.folder)
+        metadata = []
+        for item in tqdm.tqdm(items, disable=not self.verbose):
+            mix, sources = self.mix_src.get_mix_and_sources(item)
+            target_src = sources[self.salient_src]
+            target_audio = target_src.audio_data
+            salient_starts = utils.find_salient_starts(target_audio,
+                                                       self.segment_dur,
+                                                       self.hop_ratio,
+                                                       self.sample_rate,
+                                                       self.threshold_db)
+            for start in salient_starts:
+                metadata.append({
+                    'mixsrc_item': item,
+                    'start': start
+                })
+        return metadata
+
+    def _load_audio_file(self, path_to_audio_file, **kwargs):
+        """Overloads parent class loader to just load a specific segment."""
+        audio_signal = AudioSignal(path_to_audio_file,
+                                   offset=self.offset,
+                                   duration=self.segment_dur,
+                                   **kwargs)
+        self._setup_audio_signal(audio_signal)
+        return audio_signal
+
+    def _get_mix(self, item):
+        """OnTheFly closure. Gets called for every iteration to build a batch."""
+        item = self.metadata[item]
+        mixsrc_item = item['mixsrc_item']
+        self.offset = item['start']  # TODO: is rewriting this attribute threadsafe?
+        return self.mix_src.process_item(mixsrc_item)
+
 
 class FUSS(Scaper):
     """

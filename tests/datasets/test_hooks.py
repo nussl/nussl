@@ -52,6 +52,14 @@ def test_dataset_hook_mix_source_folder(mix_source_folder):
         assert k.split('::')[0] in data['metadata']['labels']
 
 
+
+def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
+    """"""
+    # TODO: Write tests!
+
+    # tests go here!
+
+
 def test_dataset_hook_scaper_folder(scaper_folder):
     dataset = nussl.datasets.Scaper(scaper_folder)
     data = dataset[0]
