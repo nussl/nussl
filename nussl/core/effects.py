@@ -129,7 +129,13 @@ class SoXFilter(FilterFunction):
     def __init__(self, filter_, **filter_kwargs):
         super().__init__(filter_, **filter_kwargs)
         if filter_ == "time_stretch":
-            self.func = lambda tfm: tfm.tempo(**filter_kwargs)
+            factor = filter_kwargs['factor']
+            if abs(factor - 1) <=  .1:
+                filter_kwargs['factor'] = 1 / factor
+                self.func = lambda tfm: tfm.stretch(**filter_kwargs)
+            else:
+                self.func = lambda tfm: tfm.tempo(**filter_kwargs)
+
         elif filter_ == "pitch_shift":
             self.func = lambda tfm: tfm.pitch(**filter_kwargs)
         else:
@@ -175,11 +181,20 @@ def time_stretch(factor, **kwargs):
     tempo of the audio by factor. A factor greater than one will shorten the signal, 
     a factor less then one will lengthen the signal, and a factor of 1 will not change the signal.
 
+    Note that the returned SoxFilter will use `sox.transform.tempo`
+    unless .9 <= factor <= 1.1, then `sox.transform.stretch` will be used with
+    the passed factor of 1/factor, as `stretch` has better performance with factor in this range.
+    Because the stretch effect has the reverse effect than tempo, it is passed with the
+    inverse of factor for consistency.
+
     It is recommended that users use `AudioSignal.time_stretch` rather than this function.
 
-    This is a SoX effect. Please see 
+    This is a SoX effect. Please see
     https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.tempo
+    and
+    https://pysox.readthedocs.io/en/latest/_modules/sox/transform.html#Transformer.stretch
     for details.
+
     Args: 
         factor (float): Scaling factor for tempo change. Must be positive.
         kwargs: Arugments passed to `sox.transform.tempo`
