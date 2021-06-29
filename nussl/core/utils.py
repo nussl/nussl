@@ -218,9 +218,7 @@ def find_salient_starts(audio, duration_sec, hop_ratio, sr, threshold_db=-60.0):
     threshold = np.power(10.0, threshold_db / 20.0)
     rms = librosa.feature.rms(audio, frame_length=dur, hop_length=hop_dur)[0, :]
     loud = np.squeeze(np.argwhere(rms > threshold))
-    fr = lambda t: np.atleast_1d(librosa.frames_to_samples(t,
-                                                           hop_length=hop_dur))
-    return fr(loud)
+    return np.atleast_1d(librosa.frames_to_samples(loud, hop_length=hop_dur))
 
 
 def musdb_track_to_audio_signals(track):

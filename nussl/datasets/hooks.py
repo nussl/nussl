@@ -12,7 +12,7 @@ from typing import List
 from .. import musdb
 import jams
 
-from ..core import constants, utils, AudioSignal
+from ..core import constants, utils
 from .base_dataset import BaseDataset, DataSetException
 
 
@@ -189,22 +189,22 @@ class MixSourceFolder(BaseDataset):
         ])
         return items
 
-    def get_mix_and_sources(self, item):
+    def get_mix_and_sources(self, item, **kwargs):
         sources = {}
         for k in self.source_folders:
             source_path = os.path.join(self.folder, k, item)
             if os.path.exists(source_path):
-                sources[k] = self._load_audio_file(source_path)
+                sources[k] = self._load_audio_file(source_path, **kwargs)
         
         if self.make_mix:
             mix = sum(list(sources.values()))
         else:
             mix_path = os.path.join(self.folder, self.mix_folder, item)
-            mix = self._load_audio_file(mix_path)
+            mix = self._load_audio_file(mix_path, **kwargs)
         return mix, sources
 
-    def process_item(self, item):
-        mix, sources = self.get_mix_and_sources(item)
+    def process_item(self, item, **kwargs):
+        mix, sources = self.get_mix_and_sources(item, **kwargs)
         output = {
             'mix': mix,
             'sources': sources,
@@ -411,7 +411,7 @@ class OnTheFly(BaseDataset):
         return list(range(self.num_mixtures))
     
     def process_item(self, item):
-        output = self.mix_closure(self, item)
+        output = self.mix_closure(item)
         if not isinstance(output, dict):
             raise DataSetException("output of mix_closure must be a dict!")
         if 'mix' not in output or 'sources' not in output:
@@ -503,7 +503,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                  hop_ratio: float = 0.5,
                  verbose: bool = False,
                  **kwargs):
-
+        assert sample_rate is not None, f"Please provide a sample rate for the dataset."
         self.threshold_db = threshold_db
         self.segment_dur = segment_dur
         self.hop_ratio = hop_ratio
@@ -516,12 +516,14 @@ class SalientExcerptMixSourceFolder(OnTheFly):
             folder, mix_folder, source_folders, ext, make_mix, **kwargs
         )
 
-        self.metadata = self._populate_metadata()
+        self.song_metadata = self._populate_metadata()
         self.offset = 0.0
+
 
         super(SalientExcerptMixSourceFolder, self).__init__(
             self._get_mix,
-            len(self.metadata),
+            len(self.song_metadata),
+            sample_rate=sample_rate,
             **kwargs
         )
 
@@ -551,21 +553,12 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                 })
         return metadata
 
-    def _load_audio_file(self, path_to_audio_file, **kwargs):
-        """Overloads parent class loader to just load a specific segment."""
-        audio_signal = AudioSignal(path_to_audio_file,
-                                   offset=self.offset,
-                                   duration=self.segment_dur,
-                                   **kwargs)
-        self._setup_audio_signal(audio_signal)
-        return audio_signal
-
     def _get_mix(self, item):
         """OnTheFly closure. Gets called for every iteration to build a batch."""
-        item = self.metadata[item]
+        item = self.song_metadata[item]
         mixsrc_item = item['mixsrc_item']
-        self.offset = item['start']  # TODO: is rewriting this attribute threadsafe?
-        return self.mix_src.process_item(mixsrc_item)
+        offset = item['start']
+        return self.mix_src.process_item(mixsrc_item, offset=offset/self.sample_rate, duration=self.segment_dur)
 
 
 class FUSS(Scaper):
