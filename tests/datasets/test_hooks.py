@@ -52,12 +52,21 @@ def test_dataset_hook_mix_source_folder(mix_source_folder):
         assert k.split('::')[0] in data['metadata']['labels']
 
 
-
-def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
+def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder: str, salient_src: str):
     """"""
-    # TODO: Write tests!
+    dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder, salient_src, sample_rate=44_100,
+                                                           segment_dur=3.0)
+    data = dataset[0]
 
-    # tests go here!
+    # check that samples do add up to the original source
+    _sources = [data['sources'][k] for k in data['sources']]
+    assert np.allclose(sum(_sources).audio_data, data['mix'].audio_data)
+
+    # check that the duration are all the same length
+    _durations = [len(elem) for elem in _sources]
+    assert np.all(_durations + [len(data['mix'])] == _durations[0])
+    # and that all of the durations are 3 seconds long
+    assert _durations[0]//44_100 == 3
 
 
 def test_dataset_hook_scaper_folder(scaper_folder):
