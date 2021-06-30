@@ -8,6 +8,7 @@ in machine learning pipelines.
 import os
 import tqdm
 from typing import List
+import numpy as np
 
 from .. import musdb
 import jams
@@ -502,6 +503,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                  segment_dur: float = 4.0,
                  hop_ratio: float = 0.5,
                  verbose: bool = False,
+                 padding_mode: int = 0,
                  **kwargs):
         assert sample_rate is not None, f"Please provide a sample rate for the dataset."
         self.threshold_db = threshold_db
@@ -511,11 +513,11 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         self.salient_src = salient_src
         self.folder = folder
         self.verbose = verbose
+        self.padding_mode = padding_mode
 
         self.mix_src = MixSourceFolder(
             folder, mix_folder, source_folders, ext, make_mix, **kwargs
         )
-
         self.song_metadata = self._populate_metadata()
         self.offset = 0.0
 
@@ -541,6 +543,14 @@ class SalientExcerptMixSourceFolder(OnTheFly):
             mix, sources = self.mix_src.get_mix_and_sources(item)
             target_src = sources[self.salient_src]
             target_audio = target_src.audio_data
+            if len(target_audio)/self.sample_rate < self.segment_dur:
+                if self.padding_mode == 0:
+                    # padd the signal with 0s
+                    target_audio = np.pad(target_audio, (0, self.sample_rate*self.segment_dur-len(target_audio)),
+                                          'constant')
+                elif self.padding_mode == 1:
+                    # omit the current item
+                    continue
             salient_starts = utils.find_salient_starts(target_audio,
                                                        self.segment_dur,
                                                        self.hop_ratio,
@@ -557,6 +567,8 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         """OnTheFly closure. Gets called for every iteration to build a batch."""
         item = self.song_metadata[item]
         mixsrc_item = item['mixsrc_item']
+        # Note that the offset here is really the onset, but the parameter is passed as a kwarg to what is ultimately
+        # the AudioSignal which takes the onset as the parameter "offset"
         offset = item['start']
         return self.mix_src.process_item(mixsrc_item, offset=offset/self.sample_rate, duration=self.segment_dur)
 

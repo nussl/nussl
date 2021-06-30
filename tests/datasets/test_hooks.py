@@ -7,6 +7,7 @@ from nussl.datasets.base_dataset import DataSetException
 from nussl.datasets import transforms
 import tempfile
 import shutil
+import librosa
 
 
 def test_dataset_hook_musdb18(musdb_tracks):
@@ -52,10 +53,11 @@ def test_dataset_hook_mix_source_folder(mix_source_folder):
         assert k.split('::')[0] in data['metadata']['labels']
 
 
-def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder: str, salient_src: str):
+def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     """"""
-    dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder, salient_src, sample_rate=44_100,
-                                                           segment_dur=3.0)
+    salient_src = ['s0', 's1']
+    dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder, salient_src[0], sample_rate=100,
+                                                           segment_dur=1)
     data = dataset[0]
 
     # check that samples do add up to the original source
@@ -64,9 +66,21 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder: str, 
 
     # check that the duration are all the same length
     _durations = [len(elem) for elem in _sources]
-    assert np.all(_durations + [len(data['mix'])] == _durations[0])
+    assert np.all(np.array(_durations + [len(data['mix'])]) == _durations[0]), f"source durations do not match." \
+                                                                               f"Source durations: {_durations + [len(data['mix'])]}"
     # and that all of the durations are 3 seconds long
-    assert _durations[0]//44_100 == 3
+    assert _durations[0] // 44_100 == 3.0, f"source duration does not match the target length:" \
+                                           f" duration={_durations[0] / 44_100}, Target={3.0}"
+
+    # check that the RMS is greater than threshold for the target segment, use default param values
+    audio = data['sources'][salient_src].audio_data
+    dur = int(44_100 * 3.0)
+    hop_dur = int(dur * 0.5)
+    threshold = np.power(10.0, -60 / 20.0)
+    rms = librosa.feature.rms(audio, frame_length=dur, hop_length=hop_dur)[0, :]
+    loud = np.squeeze(np.argwhere(rms > threshold))
+    # the number of items in loud should be the same as the length of the rms
+    assert len(loud) == len(rms), "The source is not a valid salient source"
 
 
 def test_dataset_hook_scaper_folder(scaper_folder):
@@ -154,15 +168,17 @@ def test_dataset_hook_wham(benchmark_audio):
         pytest.raises(DataSetException, nussl.datasets.WHAM,
                       tmpdir, sample_rate=44100)
 
+
 def test_dataset_hook_fuss(scaper_folder):
-    pytest.raises(DataSetException, nussl.datasets.FUSS, 'folder', 
-        split='bad split')
+    pytest.raises(DataSetException, nussl.datasets.FUSS, 'folder',
+                  split='bad split')
 
     with tempfile.TemporaryDirectory() as tmpdir:
         train_folder = os.path.join(tmpdir, 'train')
         shutil.copytree(scaper_folder, train_folder)
 
         fuss = nussl.datasets.FUSS(tmpdir)
+
 
 def test_dataset_hook_on_the_fly():
     def make_sine_wave(freq, sample_rate, duration):
@@ -175,6 +191,7 @@ def test_dataset_hook_on_the_fly():
     duration = 3
     sample_rate = 44100
     min_freq, max_freq = 110, 1000
+
     def make_mix(dataset, i):
         sources = {}
         freqs = []
@@ -190,10 +207,11 @@ def test_dataset_hook_on_the_fly():
             'mix': mix,
             'sources': sources,
             'metadata': {
-                'frequencies': freqs    
-            }    
+                'frequencies': freqs
+            }
         }
         return output
+
     dataset = nussl.datasets.OnTheFly(make_mix, 10)
     assert len(dataset) == 10
 
@@ -203,12 +221,15 @@ def test_dataset_hook_on_the_fly():
 
     def bad_mix_closure(dataset, i):
         return 'not a dictionary'
+
     pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_mix_closure, 10)
 
     def bad_dict_closure(dataset, i):
         return {'key': 'no mix in this dict'}
+
     pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_dict_closure, 10)
 
     def bad_dict_sources_closure(dataset, i):
         return {'mix': 'no sources in this dict'}
+
     pytest.raises(DataSetException, nussl.datasets.OnTheFly, bad_dict_sources_closure, 10)
