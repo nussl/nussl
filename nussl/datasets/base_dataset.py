@@ -278,7 +278,16 @@ class BaseDataset(Dataset, Iterable):
         Returns:
             AudioSignal: loaded AudioSignal object of path_to_audio_file
         """
-        audio_signal = AudioSignal(path_to_audio_file, **kwargs)
+        # Allow for the Salient dataset object to have a padded signal if the duration of the read file is too short
+        if "padding_mode" in kwargs:
+            duration, sample_rate, padding_mode = kwargs['duration'], kwargs['sample_rate'], kwargs['padding_mode']
+            del kwargs['duration'], kwargs['sample_rate'], kwargs['padding_mode']
+            audio_signal = AudioSignal(path_to_audio_file, **kwargs)
+            # pad the signal with zeros up to the desired segment length
+            if padding_mode == 1:
+                audio_signal = audio_signal.zero_pad(0, duration*sample_rate-len(audio_signal))
+        else:
+            audio_signal = AudioSignal(path_to_audio_file, **kwargs)
         self._setup_audio_signal(audio_signal)
         return audio_signal
     

@@ -542,15 +542,14 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         for item in tqdm.tqdm(items, disable=not self.verbose):
             mix, sources = self.mix_src.get_mix_and_sources(item)
             target_src = sources[self.salient_src]
-            target_audio = target_src.audio_data
-            if len(target_audio)/self.sample_rate < self.segment_dur:
+            if len(target_src) / self.sample_rate < self.segment_dur:
                 if self.padding_mode == 0:
                     # padd the signal with 0s
-                    target_audio = np.pad(target_audio, (0, self.sample_rate*self.segment_dur-len(target_audio)),
-                                          'constant')
+                    target_src = target_src.zero_pad(0, self.sample_rate*self.segment_dur-len(target_src))
                 elif self.padding_mode == 1:
                     # omit the current item
                     continue
+            target_audio = target_src.audio_data
             salient_starts = utils.find_salient_starts(target_audio,
                                                        self.segment_dur,
                                                        self.hop_ratio,
@@ -570,7 +569,9 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         # Note that the offset here is really the onset, but the parameter is passed as a kwarg to what is ultimately
         # the AudioSignal which takes the onset as the parameter "offset"
         offset = item['start']
-        return self.mix_src.process_item(mixsrc_item, offset=offset/self.sample_rate, duration=self.segment_dur)
+        print(f"offset: {offset}")
+        return self.mix_src.process_item(mixsrc_item, offset=offset/self.sample_rate, duration=self.segment_dur,
+                                         sample_rate=self.sample_rate, padding_mode=self.padding_mode)
 
 
 class FUSS(Scaper):

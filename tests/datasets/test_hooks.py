@@ -57,7 +57,7 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     """"""
     salient_src = ['s0', 's1']
     dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder, salient_src[0], sample_rate=100,
-                                                           segment_dur=1)
+                                                           segment_dur=1, verbose=True)
     data = dataset[0]
 
     # check that samples do add up to the original source
