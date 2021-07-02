@@ -285,6 +285,7 @@ class BaseDataset(Dataset, Iterable):
             audio_signal = AudioSignal(path_to_audio_file, **kwargs)
             # pad the signal with zeros up to the desired segment length
             if padding_mode == 0:
+
                 audio_signal = audio_signal.zero_pad(0, duration*sample_rate-len(audio_signal))
         else:
             audio_signal = AudioSignal(path_to_audio_file, **kwargs)

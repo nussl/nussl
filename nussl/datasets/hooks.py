@@ -542,17 +542,17 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         for item in tqdm.tqdm(items, disable=not self.verbose):
             mix, sources = self.mix_src.get_mix_and_sources(item)
             target_src = sources[self.salient_src]
-            if len(target_src) / self.sample_rate < self.segment_dur:
-                if self.padding_mode == 1:
-                    # omit the current item
-                    continue
+            # Todo: Repair omission code
+            # if len(target_src) / self.sample_rate < self.segment_dur:
+            #     if self.padding_mode == 1:
+            #         # omit the current item
+            #         continue
             target_audio = target_src.audio_data
             salient_starts = utils.find_salient_starts(target_audio,
                                                        self.segment_dur,
                                                        self.hop_ratio,
                                                        self.sample_rate,
                                                        self.threshold_db)
-            print("Target audio shape: ", target_audio.shape, "\nsalient_starts", salient_starts)
             for start in salient_starts:
                 metadata.append({
                     'mixsrc_item': item,
@@ -567,7 +567,6 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         # Note that the offset here is really the onset, but the parameter is passed as a kwarg to what is ultimately
         # the AudioSignal which takes the onset as the parameter "offset"
         offset = item['start']
-        print(f"offset: {offset}")
         return self.mix_src.process_item(mixsrc_item, offset=offset/self.sample_rate, duration=self.segment_dur,
                                          sample_rate=self.sample_rate, padding_mode=self.padding_mode)
 

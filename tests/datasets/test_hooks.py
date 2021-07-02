@@ -56,6 +56,7 @@ def test_dataset_hook_mix_source_folder(mix_source_folder):
 def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     """"""
     salient_src = ['s0', 's1']
+
     dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder, salient_src[0], sample_rate=44_100,
                                                            segment_dur=1, verbose=True)
     data = dataset[0]
@@ -82,6 +83,7 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     loud = np.squeeze(np.argwhere(rms > threshold))
     # the number of items in loud should be the same as the length of the rms
     assert len(loud) == len(rms), "The source is not a valid salient source"
+
 
 
 def test_dataset_hook_scaper_folder(scaper_folder):
