@@ -412,7 +412,7 @@ class OnTheFly(BaseDataset):
         return list(range(self.num_mixtures))
     
     def process_item(self, item):
-        output = self.mix_closure(item)
+        output = self.mix_closure(self, item)
         if not isinstance(output, dict):
             raise DataSetException("output of mix_closure must be a dict!")
         if 'mix' not in output or 'sources' not in output:
@@ -560,8 +560,9 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                 })
         return metadata
 
-    def _get_mix(self, item):
-        """OnTheFly closure. Gets called for every iteration to build a batch."""
+    def _get_mix(self, placeholder, item):
+        """OnTheFly closure. Gets called for every iteration to build a batch. A placeholder param is necessary since
+        OnTheFly will pass itself as well as the item to this function"""
         item = self.song_metadata[item]
         mixsrc_item = item['mixsrc_item']
         # Note that the offset here is really the onset, but the parameter is passed as a kwarg to what is ultimately

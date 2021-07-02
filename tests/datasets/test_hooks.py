@@ -73,18 +73,6 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     assert _durations[0] // 44_100 == 1.0, f"source duration does not match the target length:" \
                                            f" duration={_durations[0] / 44_100}, Target={1.0}"
 
-    # check that the RMS is greater than threshold for the target segment, use default param values
-    audio = data['sources'][salient_src[0]].audio_data
-    audio = np.squeeze(audio) if audio.shape[0] == 1 else audio
-    dur = int(44_100 * 1.0)
-    hop_dur = int(dur * 0.5)
-    threshold = np.power(10.0, -60 / 20.0)
-    rms = librosa.feature.rms(audio, frame_length=dur, hop_length=hop_dur)[0, :]
-    loud = np.squeeze(np.argwhere(rms > threshold))
-    # the number of items in loud should be the same as the length of the rms
-    assert len(loud) == len(rms), "The source is not a valid salient source"
-
-
 
 def test_dataset_hook_scaper_folder(scaper_folder):
     dataset = nussl.datasets.Scaper(scaper_folder)
