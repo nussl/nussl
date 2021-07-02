@@ -425,7 +425,9 @@ class OnTheFly(BaseDataset):
 class SalientExcerptMixSourceFolder(OnTheFly):
     # TODO: docs!
     """
-    This dataset expects your data to be formatted in the following way:
+    Given a dataset in the expected format, this class identifies and partitions the folder into a dataset containing
+    segment_dur second audio clips that contain a desired salient source.
+    Expected format:
 
     .. code-block:: none
 
@@ -478,27 +480,37 @@ class SalientExcerptMixSourceFolder(OnTheFly):
             }
         }
 
-
     Args:
-        folder (str, optional): Location that should be processed to produce the
-            list of files. Defaults to None.
+        folder (str): Location that should be processed to produce the
+            list of files.
+        salient_src (str): The name of the source that will be used to identify salient samples in the dataset.
+            e.g. ('drums')
+        sample_rate (int): the sampling rate for the audio files.
         mix_folder (str, optional): Folder to look in for mixtures. Defaults to 'mix'.
         source_folders (list, optional): List of folders to look in for sources.
             Path is defined relative to folder. If None, all folders other than
             mix_folder are treated as the source folders. Defaults to None.
         ext (list, optional): Audio extensions to look for in mix_folder.
             Defaults to ['.wav', '.flac', '.mp3'].
+        threshold_db (float, optional): the minimum relative loudness of the salient source measured in decibels
+            relative to the rms of the salient source. Defaults to -60.0.
+        segment_dur (float, optional): the duration of the desired audio clips in seconds. Defaults to 4.0.
+        hop_ratio (float, optional): size of the hops to use when computing the RMS. Defaults to 0.5.
+        verbose (bool, optional): suppress progress bar and logging for the dataset preprocessing. Defaults to False.
+        padding_mode (int, optional): Flag representing how padding should be handled for clips shorter than the desired
+            duration. [zero padding, same padding, leave as is, omit sample] are represented by [0,1,2,3] respectively.
+            Currently only zero_padding is implemented. Defaults to 0.
         **kwargs: Any additional arguments that are passed up to BaseDataset
             (see ``nussl.datasets.BaseDataset``).
     """
     def __init__(self,
                  folder: str,
                  salient_src: str,
+                 sample_rate: int,
                  mix_folder: str = 'mix',
                  source_folders: List[str] = None,
                  ext: List[str] = None,
                  make_mix: bool = False,
-                 sample_rate: int = None,
                  threshold_db: float = -60.0,
                  segment_dur: float = 4.0,
                  hop_ratio: float = 0.5,
