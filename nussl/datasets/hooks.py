@@ -479,7 +479,6 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                 'labels': ['label0', 'label1', 'label2', 'label3']
             }
         }
-
     Args:
         folder (str): Location that should be processed to produce the
             list of files.
