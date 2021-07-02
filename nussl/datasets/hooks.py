@@ -543,10 +543,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
             mix, sources = self.mix_src.get_mix_and_sources(item)
             target_src = sources[self.salient_src]
             if len(target_src) / self.sample_rate < self.segment_dur:
-                if self.padding_mode == 0:
-                    # padd the signal with 0s
-                    target_src = target_src.zero_pad(0, self.sample_rate*self.segment_dur-len(target_src))
-                elif self.padding_mode == 1:
+                if self.padding_mode == 1:
                     # omit the current item
                     continue
             target_audio = target_src.audio_data
@@ -555,6 +552,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                                                        self.hop_ratio,
                                                        self.sample_rate,
                                                        self.threshold_db)
+            print("Target audio shape: ", target_audio.shape, "\nsalient_starts", salient_starts)
             for start in salient_starts:
                 metadata.append({
                     'mixsrc_item': item,
