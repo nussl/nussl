@@ -9,12 +9,14 @@ import os
 import tqdm
 from typing import List
 import numpy as np
+import logging
 
 from .. import musdb
 import jams
 
 from ..core import constants, utils
 from .base_dataset import BaseDataset, DataSetException
+from .. import AudioSignal
 
 
 class MUSDB18(BaseDataset):
@@ -423,62 +425,11 @@ class OnTheFly(BaseDataset):
 
 
 class SalientExcerptMixSourceFolder(OnTheFly):
-    # TODO: docs!
     """
     Given a dataset in the expected format, this class identifies and partitions the folder into a dataset containing
-    segment_dur second audio clips that contain a desired salient source.
-    Expected format:
+    segment_dur second audio clips that contain a desired salient source. See MixSourceFolder for more details on
+    expected directory structure.
 
-    .. code-block:: none
-
-        data/
-            mix/
-                [file0].wav
-                [file1].wav
-                [file2].wav
-                ...
-            [label0]/
-                [file0].wav
-                [file1].wav
-                [file2].wav
-                ...
-            [label1]/
-                [file0].wav
-                [file1].wav
-                [file2].wav
-                ...
-            [label2]/
-                [file0].wav
-                [file1].wav
-                [file2].wav
-                ...
-            ...
-
-    Note that the the filenames match between the mix folder and each source folder.
-    The source folder names can be whatever you want. Given a file in the
-    ``self.mix_folder`` folder, this dataset will look up the corresponding files
-    with the same name in the source folders. These are the source audio files.
-    The sum of the sources should equal the mixture. Each source will be labeled
-    according to the folder name it comes from.
-
-    Getting an item from this dataset with no transforms returns the
-    following dictionary:
-
-    .. code-block:: none
-
-        {
-            'mix': [AudioSignal object containing mix audio],
-            'source': {
-                '[label0]': [AudioSignal object containing label0 audio],
-                '[label1]': [AudioSignal object containing label1 audio],
-                '[label2]': [AudioSignal object containing label2 audio],
-                '[label3]': [AudioSignal object containing label3 audio],
-                ...
-            }
-            'metadata': {
-                'labels': ['label0', 'label1', 'label2', 'label3']
-            }
-        }
     Args:
         folder (str): Location that should be processed to produce the
             list of files.
@@ -545,7 +496,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
 
         if self.verbose:
             # TODO: logging.info()
-            print(f'Preprocessing data at {self.folder}.')
+            logging.info(f'Preprocessing data at {self.folder}.')
 
         # TODO: Balanced dataset!
         items = self.mix_src.get_items(self.folder)
@@ -553,11 +504,6 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         for item in tqdm.tqdm(items, disable=not self.verbose):
             mix, sources = self.mix_src.get_mix_and_sources(item)
             target_src = sources[self.salient_src]
-            # Todo: Repair omission code
-            # if len(target_src) / self.sample_rate < self.segment_dur:
-            #     if self.padding_mode == 1:
-            #         # omit the current item
-            #         continue
             target_audio = target_src.audio_data
             salient_starts = utils.find_salient_starts(target_audio,
                                                        self.segment_dur,
@@ -576,11 +522,24 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         OnTheFly will pass itself as well as the item to this function"""
         item = self.song_metadata[item]
         mixsrc_item = item['mixsrc_item']
-        # Note that the offset here is really the onset, but the parameter is passed as a kwarg to what is ultimately
-        # the AudioSignal which takes the onset as the parameter "offset"
-        offset = item['start']
-        return self.mix_src.process_item(mixsrc_item, offset=offset/self.sample_rate, duration=self.segment_dur,
-                                         sample_rate=self.sample_rate, padding_mode=self.padding_mode)
+        # Note that the onset needs to be passed to the AudioSignal class as the kwarg offset.
+        onset = item['start']
+        salient_excerpt = self.mix_src.process_item(mixsrc_item, offset=onset/self.sample_rate,
+                                                    duration=self.segment_dur)
+        return self._pad_output(salient_excerpt)
+
+    def _pad_output(self, excerpt):
+        """Pads all audio signals in a dict of any depth and leaves all other leaves the same"""
+        if type(excerpt) is AudioSignal and len(excerpt) < self.segment_dur * self.sample_rate:
+            if self.padding_mode == 0:
+                return excerpt.zero_pad(0, self.segment_dur * self.sample_rate - len(excerpt))
+        elif type(excerpt) is list:
+            for i in range(len(excerpt)):
+                excerpt[i] = self._pad_output(excerpt[i])
+        elif type(excerpt) is dict:
+            for key, value in excerpt.items():
+                excerpt[key] = self._pad_output(value)
+        return excerpt
 
 
 class FUSS(Scaper):

@@ -7,7 +7,6 @@ from nussl.datasets.base_dataset import DataSetException
 from nussl.datasets import transforms
 import tempfile
 import shutil
-import librosa
 
 
 def test_dataset_hook_musdb18(musdb_tracks):
@@ -67,11 +66,12 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
 
     # check that the duration are all the same length
     _durations = [len(elem) for elem in _sources]
-    assert np.all(np.array(_durations + [len(data['mix'])]) == _durations[0]), f"source durations do not match." \
-                                                                               f"Source durations: {_durations + [len(data['mix'])]}"
-    # and that all of the durations are 3 seconds long
-    assert _durations[0] // 44_100 == 1.0, f"source duration does not match the target length:" \
-                                           f" duration={_durations[0] / 44_100}, Target={1.0}"
+    if not np.all(np.array(_durations + [len(data['mix'])]) == _durations[0]):
+        raise Exception(f"source durations do not match. Source durations: {_durations + [len(data['mix'])]}")
+    # and that all of the durations are 1 second long
+    if not _durations[0] // 44_100 == 1.0:
+        raise Exception(f"source duration does not match the target length: duration={_durations[0] / 44_100},"
+                        f" Target={1.0}")
 
 
 def test_dataset_hook_scaper_folder(scaper_folder):
