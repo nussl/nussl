@@ -56,9 +56,15 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     """"""
     salient_src = ['s0', 's1']
 
-    dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder, salient_src[0], sample_rate=44_100,
-                                                           segment_dur=1, verbose=True)
+    dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder,
+                                                           salient_src[0],
+                                                           segment_dur=1.0,
+                                                           verbose=True)
     data = dataset[0]
+    print("data: ", data)
+    print("sources: ", data['sources'])
+
+
 
     # check that samples do add up to the original source
     _sources = [data['sources'][k] for k in data['sources']]
@@ -66,12 +72,15 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
 
     # check that the duration are all the same length
     _durations = [len(elem) for elem in _sources]
+    print("durations: ", _durations)
     if not np.all(np.array(_durations + [len(data['mix'])]) == _durations[0]):
-        raise Exception(f"source durations do not match. Source durations: {_durations + [len(data['mix'])]}")
+        raise Exception(f"source durations do not match. Source "
+                        f"durations: {_durations + [len(data['mix'])]}")
+
     # and that all of the durations are 1 second long
-    if not _durations[0] // 44_100 == 1.0:
-        raise Exception(f"source duration does not match the target length: duration={_durations[0] / 44_100},"
-                        f" Target={1.0}")
+    if not _durations[0] // 8000 == 1.0:
+        raise Exception(f"source duration does not match the target length:"
+                        f" duration={_durations[0] / 8000}, Target={1.0}")
 
 
 def test_dataset_hook_scaper_folder(scaper_folder):

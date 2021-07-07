@@ -63,7 +63,7 @@ class MUSDB18(BaseDataset):
     DATASET_HASHES = {
         "musdb": "56777516ad56fe6a8590badf877e6be013ff932c010e0fbdb0aba03ef878d4cd",
     }
-    
+
     def __init__(self, folder=None, is_wav=False, download=False,
                  subsets=None, split=None, **kwargs):
         subsets = ['train', 'test'] if subsets is None else subsets
@@ -71,7 +71,7 @@ class MUSDB18(BaseDataset):
             folder = os.path.join(
                 constants.DEFAULT_DOWNLOAD_DIRECTORY, 'musdb18'
             )
-        self.musdb = musdb.DB(root=folder, is_wav=is_wav, download=download, 
+        self.musdb = musdb.DB(root=folder, is_wav=is_wav, download=download,
                               subsets=subsets, split=split)
         super().__init__(folder, **kwargs)
         self.metadata['subsets'] = subsets
@@ -87,7 +87,7 @@ class MUSDB18(BaseDataset):
         self._setup_audio_signal(mix)
         for source in list(sources.values()):
             self._setup_audio_signal(source)
-        
+
         output = {
             'mix': mix,
             'sources': sources,
@@ -166,6 +166,7 @@ class MixSourceFolder(BaseDataset):
         **kwargs: Any additional arguments that are passed up to BaseDataset 
             (see ``nussl.datasets.BaseDataset``).
     """
+
     def __init__(self, folder, mix_folder='mix', source_folders=None,
                  ext=None, make_mix=False, **kwargs):
         self.mix_folder = mix_folder
@@ -179,7 +180,7 @@ class MixSourceFolder(BaseDataset):
             self.source_folders = sorted([
                 f for f in os.listdir(folder)
                 if os.path.isdir(os.path.join(folder, f))
-                and f != self.mix_folder
+                   and f != self.mix_folder
             ])
 
         if self.make_mix:
@@ -198,7 +199,7 @@ class MixSourceFolder(BaseDataset):
             source_path = os.path.join(self.folder, k, item)
             if os.path.exists(source_path):
                 sources[k] = self._load_audio_file(source_path, **kwargs)
-        
+
         if self.make_mix:
             mix = sum(list(sources.values()))
         else:
@@ -307,6 +308,7 @@ class Scaper(BaseDataset):
     Raises:
         DataSetException: if Scaper dataset wasn't saved with isolated event audio.
     """
+
     def get_items(self, folder):
         items = sorted([
             x for x in os.listdir(folder)
@@ -349,6 +351,7 @@ class Scaper(BaseDataset):
             }
         }
         return output
+
 
 class OnTheFly(BaseDataset):
     """
@@ -403,6 +406,7 @@ class OnTheFly(BaseDataset):
           epoch.
         kwargs: Keyword arguments to BaseDataset.
     """
+
     def __init__(self, mix_closure, num_mixtures, **kwargs):
         self.num_mixtures = num_mixtures
         self.mix_closure = mix_closure
@@ -412,7 +416,7 @@ class OnTheFly(BaseDataset):
 
     def get_items(self, folder):
         return list(range(self.num_mixtures))
-    
+
     def process_item(self, item):
         output = self.mix_closure(self, item)
         if not isinstance(output, dict):
@@ -426,37 +430,41 @@ class OnTheFly(BaseDataset):
 
 class SalientExcerptMixSourceFolder(OnTheFly):
     """
-    Given a dataset in the expected format, this class identifies and partitions the folder into a dataset containing
-    segment_dur second audio clips that contain a desired salient source. See MixSourceFolder for more details on
-    expected directory structure.
+    Given a dataset in the expected format, this class identifies and
+    partitions the folder into a dataset containing segment_dur second audio
+    clips that contain a desired salient source. See MixSourceFolder for more
+    details on expected directory structure.
 
     Args:
         folder (str): Location that should be processed to produce the
             list of files.
-        salient_src (str): The name of the source that will be used to identify salient samples in the dataset.
-            e.g. ('drums')
-        sample_rate (int): the sampling rate for the audio files.
-        mix_folder (str, optional): Folder to look in for mixtures. Defaults to 'mix'.
+        salient_src (str): The name of the source that will be used to identify
+         salient samples in the dataset. e.g. ('drums')
+        sample_rate (int, optional): the sampling rate for the audio files.
+        mix_folder (str, optional): Folder to look in for mixtures.
+         Defaults to 'mix'.
         source_folders (list, optional): List of folders to look in for sources.
             Path is defined relative to folder. If None, all folders other than
             mix_folder are treated as the source folders. Defaults to None.
         ext (list, optional): Audio extensions to look for in mix_folder.
             Defaults to ['.wav', '.flac', '.mp3'].
-        threshold_db (float, optional): the minimum relative loudness of the salient source measured in decibels
-            relative to the rms of the salient source. Defaults to -60.0.
-        segment_dur (float, optional): the duration of the desired audio clips in seconds. Defaults to 4.0.
-        hop_ratio (float, optional): size of the hops to use when computing the RMS. Defaults to 0.5.
-        verbose (bool, optional): suppress progress bar and logging for the dataset preprocessing. Defaults to False.
-        padding_mode (int, optional): Flag representing how padding should be handled for clips shorter than the desired
-            duration. [zero padding, same padding, leave as is, omit sample] are represented by [0,1,2,3] respectively.
-            Currently only zero_padding is implemented. Defaults to 0.
+        threshold_db (float, optional): the minimum relative loudness of the
+         salient source measured in decibels relative to the rms of the salient
+         source. Defaults to -60.0.
+        segment_dur (float, optional): the duration of the desired audio clips
+         in seconds. Defaults to 4.0.
+        hop_ratio (float, optional): size of the hops to use when computing
+         the RMS. Defaults to 0.5.
+        verbose (bool, optional): suppress progress bar and logging for the
+         dataset preprocessing. Defaults to False.
         **kwargs: Any additional arguments that are passed up to BaseDataset
             (see ``nussl.datasets.BaseDataset``).
     """
+
     def __init__(self,
                  folder: str,
                  salient_src: str,
-                 sample_rate: int,
+                 sample_rate: int = None,
                  mix_folder: str = 'mix',
                  source_folders: List[str] = None,
                  ext: List[str] = None,
@@ -465,9 +473,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                  segment_dur: float = 4.0,
                  hop_ratio: float = 0.5,
                  verbose: bool = False,
-                 padding_mode: int = 0,
                  **kwargs):
-        assert sample_rate is not None, f"Please provide a sample rate for the dataset."
         self.threshold_db = threshold_db
         self.segment_dur = segment_dur
         self.hop_ratio = hop_ratio
@@ -475,7 +481,6 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         self.salient_src = salient_src
         self.folder = folder
         self.verbose = verbose
-        self.padding_mode = padding_mode
 
         self.mix_src = MixSourceFolder(
             folder, mix_folder, source_folders, ext, make_mix, **kwargs
@@ -483,11 +488,9 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         self.song_metadata = self._populate_metadata()
         self.offset = 0.0
 
-
         super(SalientExcerptMixSourceFolder, self).__init__(
             self._get_mix,
             len(self.song_metadata),
-            sample_rate=sample_rate,
             **kwargs
         )
 
@@ -495,7 +498,6 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         """Makes a metadata dict of salient start times for each source."""
 
         if self.verbose:
-            # TODO: logging.info()
             logging.info(f'Preprocessing data at {self.folder}.')
 
         # TODO: Balanced dataset!
@@ -508,38 +510,28 @@ class SalientExcerptMixSourceFolder(OnTheFly):
             salient_starts = utils.find_salient_starts(target_audio,
                                                        self.segment_dur,
                                                        self.hop_ratio,
-                                                       self.sample_rate,
+                                                       mix.sample_rate,
                                                        self.threshold_db)
             for start in salient_starts:
-                metadata.append({
-                    'mixsrc_item': item,
-                    'start': start
-                })
+                if (start + self.segment_dur * mix.sample_rate) <= len(mix):
+                    metadata.append({
+                        'mixsrc_item': item,
+                        'start': start/mix.sample_rate
+                    })
         return metadata
 
     def _get_mix(self, placeholder, item):
-        """OnTheFly closure. Gets called for every iteration to build a batch. A placeholder param is necessary since
-        OnTheFly will pass itself as well as the item to this function"""
+        """OnTheFly closure. Gets called for every iteration to build a batch.
+        A placeholder param is necessary since OnTheFly will pass itself as
+        well as the item to this function"""
         item = self.song_metadata[item]
         mixsrc_item = item['mixsrc_item']
-        # Note that the onset needs to be passed to the AudioSignal class as the kwarg offset.
+        # Note that the onset needs to be passed to the AudioSignal
+        # class as the kwarg offset.
         onset = item['start']
-        salient_excerpt = self.mix_src.process_item(mixsrc_item, offset=onset/self.sample_rate,
-                                                    duration=self.segment_dur)
-        return self._pad_output(salient_excerpt)
-
-    def _pad_output(self, excerpt):
-        """Pads all audio signals in a dict of any depth and leaves all other leaves the same"""
-        if type(excerpt) is AudioSignal and len(excerpt) < self.segment_dur * self.sample_rate:
-            if self.padding_mode == 0:
-                return excerpt.zero_pad(0, self.segment_dur * self.sample_rate - len(excerpt))
-        elif type(excerpt) is list:
-            for i in range(len(excerpt)):
-                excerpt[i] = self._pad_output(excerpt[i])
-        elif type(excerpt) is dict:
-            for key, value in excerpt.items():
-                excerpt[key] = self._pad_output(value)
-        return excerpt
+        return self.mix_src.process_item(mixsrc_item,
+                                         offset=onset,
+                                         duration=self.segment_dur)
 
 
 class FUSS(Scaper):
@@ -573,14 +565,15 @@ class FUSS(Scaper):
         split (str): Either the ``train``, ``validation``, or ``eval`` split. 
         kwargs: Additional keyword arguments to BaseDataset.
     """
+
     def __init__(self, root, split='train', **kwargs):
         if split not in ['train', 'validation', 'eval']:
             raise DataSetException(
                 f"split '{split}' not one of the accepted splits: "
                 f"'train', 'validation', 'eval'.")
-        
+
         folder = os.path.join(root, split)
-        super().__init__(folder, sample_rate=16000, strict_sample_rate=True, 
+        super().__init__(folder, sample_rate=16000, strict_sample_rate=True,
                          **kwargs)
         self.metadata['split'] = split
 
@@ -597,7 +590,8 @@ class FUSS(Scaper):
             self.folder, item_base_name + mix_path.split(item_base_name)[-1])
         for i, source_path in enumerate(source_paths):
             source_paths[i] = os.path.join(
-                self.folder, item_base_name + source_path.split(item_base_name)[-1])
+                self.folder,
+                item_base_name + source_path.split(item_base_name)[-1])
 
         return jam, ann, mix_path, source_paths
 
@@ -639,11 +633,11 @@ class WHAM(MixSourceFolder):
     }
 
     DATASET_HASHES = {
-        "wav8k": "acd49e0dae066e16040c983d71cc5a8adb903abff6e5cbb92b3785a1997b7547", 
+        "wav8k": "acd49e0dae066e16040c983d71cc5a8adb903abff6e5cbb92b3785a1997b7547",
         "wav16k": "5691d6a35382f2408a99594f21d820b58371b5ea061841db37d548c0b8d6ec7f"
     }
 
-    def __init__(self, root, mix_folder='mix_clean', mode='min', split='tr', 
+    def __init__(self, root, mix_folder='mix_clean', mode='min', split='tr',
                  sample_rate=8000, **kwargs):
         if mix_folder not in self.MIX_TO_SOURCE_MAP.keys():
             raise DataSetException(
@@ -663,8 +657,10 @@ class WHAM(MixSourceFolder):
         folder = os.path.join(root, wav_folder, mode, split)
         source_folders = self.MIX_TO_SOURCE_MAP[mix_folder]
 
-        super().__init__(folder, mix_folder=mix_folder, source_folders=source_folders,
-                         sample_rate=sample_rate, strict_sample_rate=True, **kwargs)
+        super().__init__(folder, mix_folder=mix_folder,
+                         source_folders=source_folders,
+                         sample_rate=sample_rate, strict_sample_rate=True,
+                         **kwargs)
         self.metadata.update({
             'mix_folder': mix_folder,
             'mode': mode,
