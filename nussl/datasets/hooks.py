@@ -473,6 +473,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                  segment_dur: float = 4.0,
                  hop_ratio: float = 0.5,
                  verbose: bool = False,
+                 balance: bool = False,
                  **kwargs):
         self.threshold_db = threshold_db
         self.segment_dur = segment_dur
@@ -481,6 +482,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         self.salient_src = salient_src
         self.folder = folder
         self.verbose = verbose
+        self.balance = balance
 
         self.mix_src = MixSourceFolder(
             folder, mix_folder, source_folders, ext, make_mix, **kwargs
@@ -500,8 +502,8 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         if self.verbose:
             logging.info(f'Preprocessing data at {self.folder}.')
 
-        # TODO: Balanced dataset!
         items = self.mix_src.get_items(self.folder)
+        balanced_samples = []
         metadata = []
         for item in tqdm.tqdm(items, disable=not self.verbose):
             mix, sources = self.mix_src.get_mix_and_sources(item)
@@ -512,12 +514,43 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                                                        self.hop_ratio,
                                                        mix.sample_rate,
                                                        self.threshold_db)
+            # this is a fairly cheap operation, no need to embed it within a
+            # conditional
+            balanced_samples.append((len(salient_starts), item,
+                                     salient_starts, mix.sample_rate))
             for start in salient_starts:
                 if (start + self.segment_dur * mix.sample_rate) <= len(mix):
                     metadata.append({
                         'mixsrc_item': item,
-                        'start': start/mix.sample_rate
+                        'start': start / mix.sample_rate
                     })
+        # if the balance flag is set then balance the metadata
+        metadata = self._balance_set(balanced_samples) if self.balance \
+            else metadata
+        return metadata
+
+    @staticmethod
+    def _balance_set(sample_counts):
+        """
+        Balance the dataset to contain at least the average number of audio
+        samples
+        Args:
+            sample_counts: counts of the salient samples per audio files
+        Returns:
+        """
+        # TODO: Verify the method of balancing, option 1: oversample until
+        #  everything matches the max or option 2: oversample some under sample
+        #  others
+        avg_length = np.mean([elem[0] for elem in sample_counts])
+        metadata = []
+        for count, song, starts, sample_rate in sample_counts:
+            circular_iterator = 0
+            while circular_iterator <= avg_length:
+                metadata.append({
+                    'mixsrc_item': song,
+                    'start': starts[circular_iterator % count] / sample_rate
+                })
+                circular_iterator += 1
         return metadata
 
     def _get_mix(self, placeholder, item):

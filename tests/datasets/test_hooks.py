@@ -59,12 +59,9 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder,
                                                            salient_src[0],
                                                            segment_dur=1.0,
-                                                           verbose=True)
+                                                           verbose=True,
+                                                           balance=True)
     data = dataset[0]
-    print("data: ", data)
-    print("sources: ", data['sources'])
-
-
 
     # check that samples do add up to the original source
     _sources = [data['sources'][k] for k in data['sources']]
@@ -72,7 +69,6 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
 
     # check that the duration are all the same length
     _durations = [len(elem) for elem in _sources]
-    print("durations: ", _durations)
     if not np.all(np.array(_durations + [len(data['mix'])]) == _durations[0]):
         raise Exception(f"source durations do not match. Source "
                         f"durations: {_durations + [len(data['mix'])]}")
