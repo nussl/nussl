@@ -16,7 +16,6 @@ import jams
 
 from ..core import constants, utils
 from .base_dataset import BaseDataset, DataSetException
-from .. import AudioSignal
 
 
 class MUSDB18(BaseDataset):
@@ -473,7 +472,7 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                  segment_dur: float = 4.0,
                  hop_ratio: float = 0.5,
                  verbose: bool = False,
-                 balance: bool = False,
+                 balance_mode: str = 'none',
                  **kwargs):
         self.threshold_db = threshold_db
         self.segment_dur = segment_dur
@@ -482,7 +481,18 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         self.salient_src = salient_src
         self.folder = folder
         self.verbose = verbose
-        self.balance = balance
+
+        if balance_mode.lower() not in ['none', 'mean', 'min', 'max']:
+            raise DataSetException(f"balance_mode must be one of "
+                                   f"{['none', 'mean', 'min', 'max']}")
+        if balance_mode.lower() == 'mean':
+            self.balance_mode = np.mean
+        elif balance_mode.lower() == 'max':
+            self.balance_mode = np.max
+        elif balance_mode.lower() == 'min':
+            self.balance_mode = np.min
+        else:
+            self.balance_mode = balance_mode
 
         self.mix_src = MixSourceFolder(
             folder, mix_folder, source_folders, ext, make_mix, **kwargs
@@ -503,7 +513,6 @@ class SalientExcerptMixSourceFolder(OnTheFly):
             logging.info(f'Preprocessing data at {self.folder}.')
 
         items = self.mix_src.get_items(self.folder)
-        balanced_samples = []
         metadata = []
         for item in tqdm.tqdm(items, disable=not self.verbose):
             mix, sources = self.mix_src.get_mix_and_sources(item)
@@ -514,10 +523,6 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                                                        self.hop_ratio,
                                                        mix.sample_rate,
                                                        self.threshold_db)
-            # this is a fairly cheap operation, no need to embed it within a
-            # conditional
-            balanced_samples.append((len(salient_starts), item,
-                                     salient_starts, mix.sample_rate))
             for start in salient_starts:
                 if (start + self.segment_dur * mix.sample_rate) <= len(mix):
                     metadata.append({
@@ -525,33 +530,43 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                         'start': start / mix.sample_rate
                     })
         # if the balance flag is set then balance the metadata
-        metadata = self._balance_set(balanced_samples) if self.balance \
-            else metadata
+        metadata = self._balance_set(metadata, self.balance_mode) \
+            if self.balance_mode != "none" else metadata
         return metadata
 
     @staticmethod
-    def _balance_set(sample_counts):
+    def _balance_set(metadata, balance_function):
         """
         Balance the dataset to contain at least the average number of audio
         samples
         Args:
-            sample_counts: counts of the salient samples per audio files
+            metadata: list of dicts of songs and their starts
+            balance_function: the function to apply when balancing the dataset
         Returns:
         """
-        # TODO: Verify the method of balancing, option 1: oversample until
-        #  everything matches the max or option 2: oversample some under sample
-        #  others
-        avg_length = np.mean([elem[0] for elem in sample_counts])
-        metadata = []
-        for count, song, starts, sample_rate in sample_counts:
-            circular_iterator = 0
-            while circular_iterator <= avg_length:
-                metadata.append({
-                    'mixsrc_item': song,
-                    'start': starts[circular_iterator % count] / sample_rate
-                })
-                circular_iterator += 1
-        return metadata
+        # count the occurrences of each song and where in the list they start
+        # counts_starts = {song : (occurrences, start index)}
+        counts_starts = {}
+        for i in range(len(metadata)):
+            if metadata[i]['mixsrc_item'] in counts_starts:
+                counts_starts[metadata[i]['mixsrc_item']][0] += 1
+            else:
+                counts_starts[metadata[i]['mixsrc_item']] = [1, i]
+        balance_target = int(balance_function([value[0] for value in
+                                              counts_starts.values()]))
+
+        metadata = np.asarray(metadata)
+        balanced_metadata = []
+        for occurences, start in counts_starts.values():
+            # want to use all samples if possible, and want an even chance
+            # later segments will be included as well
+            samples = np.random.choice(occurences, occurences, replace=False)
+            if occurences < balance_target:
+                samples = np.tile(samples, int(np.ceil(balance_target /
+                                                       occurences)))
+            balanced_metadata += \
+                metadata[start + samples[:balance_target]].tolist()
+        return balanced_metadata
 
     def _get_mix(self, placeholder, item):
         """OnTheFly closure. Gets called for every iteration to build a batch.

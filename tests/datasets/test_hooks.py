@@ -7,6 +7,7 @@ from nussl.datasets.base_dataset import DataSetException
 from nussl.datasets import transforms
 import tempfile
 import shutil
+from collections import defaultdict
 
 
 def test_dataset_hook_musdb18(musdb_tracks):
@@ -59,8 +60,7 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     dataset = nussl.datasets.SalientExcerptMixSourceFolder(mix_source_folder,
                                                            salient_src[0],
                                                            segment_dur=1.0,
-                                                           verbose=True,
-                                                           balance=True)
+                                                           verbose=True)
     data = dataset[0]
 
     # check that samples do add up to the original source
@@ -70,13 +70,33 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
     # check that the duration are all the same length
     _durations = [len(elem) for elem in _sources]
     if not np.all(np.array(_durations + [len(data['mix'])]) == _durations[0]):
-        raise Exception(f"source durations do not match. Source "
-                        f"durations: {_durations + [len(data['mix'])]}")
+        raise DataSetException(f"source durations do not match. Source "
+                               f"durations: {_durations + [len(data['mix'])]}")
 
     # and that all of the durations are 1 second long
     if not _durations[0] // 8000 == 1.0:
-        raise Exception(f"source duration does not match the target length:"
-                        f" duration={_durations[0] / 8000}, Target={1.0}")
+        raise DataSetException(f"source duration does not match the target "
+                               f"length: duration={_durations[0] / 8000}, "
+                               f"Target={1.0}")
+
+    # ensure that all modes for balancing the dataset result in the same
+    # number of segments for all entries
+    balancing_modes = ['min', 'max', 'mean']
+    for mode in balancing_modes:
+        dataset = nussl.datasets.SalientExcerptMixSourceFolder(
+            mix_source_folder,
+            salient_src[0],
+            segment_dur=1.0,
+            verbose=True,
+            balance_mode=mode)
+        occurrences = defaultdict(int)
+        for data in dataset:
+            occurrences[data['mix'].file_name] += 1
+        if not np.all(np.array([size for size in occurrences.values()]) ==
+                      occurrences[data['mix'].file_name]):
+            raise DataSetException(f"The dataset was not balanced correctly:\n"
+                                   f"lengths: {np.array(occurrences.values())}"
+                                   f", mode: {mode}")
 
 
 def test_dataset_hook_scaper_folder(scaper_folder):
