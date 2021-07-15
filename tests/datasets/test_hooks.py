@@ -98,6 +98,14 @@ def test_dataset_hook_salient_excerpt_mix_source_folder(mix_source_folder):
                                    f"lengths: {np.array(occurrences.values())}"
                                    f", mode: {mode}")
 
+    with pytest.raises(DataSetException):
+        dataset = nussl.datasets.SalientExcerptMixSourceFolder(
+            mix_source_folder,
+            salient_src[0],
+            segment_dur=1.0,
+            verbose=True,
+            balance_mode='')
+
 
 def test_dataset_hook_scaper_folder(scaper_folder):
     dataset = nussl.datasets.Scaper(scaper_folder)
