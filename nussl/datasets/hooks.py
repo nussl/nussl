@@ -436,28 +436,29 @@ class SalientExcerptMixSourceFolder(OnTheFly):
 
     Args:
         folder (str): Location that should be processed to produce the
-            list of files.
+          list of files.
         salient_src (str): The name of the source that will be used to identify
-         salient samples in the dataset. e.g. ('drums')
-        sample_rate (int, optional): the sampling rate for the audio files.
+          salient samples in the dataset. e.g. ('drums')
+        sample_rate (int, optional): The sampling rate for the audio files.
         mix_folder (str, optional): Folder to look in for mixtures.
-         Defaults to 'mix'.
-        source_folders (list, optional): List of folders to look in for sources.
-            Path is defined relative to folder. If None, all folders other than
-            mix_folder are treated as the source folders. Defaults to None.
+          Defaults to 'mix'.
+        source_folders (list, optional): List of folders to look in for
+          sources. Path is defined relative to folder. If None, all folders
+          other than mix_folder are treated as the source folders.
+          Defaults to None.
         ext (list, optional): Audio extensions to look for in mix_folder.
-            Defaults to ['.wav', '.flac', '.mp3'].
-        threshold_db (float, optional): the minimum relative loudness of the
-         salient source measured in decibels relative to the rms of the salient
-         source. Defaults to -60.0.
-        segment_dur (float, optional): the duration of the desired audio clips
-         in seconds. Defaults to 4.0.
-        hop_ratio (float, optional): size of the hops to use when computing
-         the RMS. Defaults to 0.5.
-        verbose (bool, optional): suppress progress bar and logging for the
-         dataset preprocessing. Defaults to False.
+          Defaults to ['.wav', '.flac', '.mp3'].
+        threshold_db (float, optional): The minimum relative loudness of the
+          salient source measured in decibels relative to the RMS of the
+          salient source. Defaults to -60.0.
+        segment_dur (float, optional): The duration of the desired audio clips
+          in seconds. Defaults to 4.0.
+        hop_ratio (float, optional): The size of the hops to use when computing
+          the RMS and segment window. Defaults to 0.5.
+        verbose (bool, optional): If set to True, enables logging and progress
+          bar. Defaults to False.
         **kwargs: Any additional arguments that are passed up to BaseDataset
-            (see ``nussl.datasets.BaseDataset``).
+          (see ``nussl.datasets.BaseDataset``).
     """
 
     def __init__(self,
@@ -497,12 +498,13 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         self.mix_src = MixSourceFolder(
             folder, mix_folder, source_folders, ext, make_mix, **kwargs
         )
-        self.song_metadata = self._populate_metadata()
+        self.rng = np.random.default_rng(0)
+        self.audio_metadata = self._populate_metadata()
         self.offset = 0.0
 
         super(SalientExcerptMixSourceFolder, self).__init__(
             self._get_mix,
-            len(self.song_metadata),
+            len(self.audio_metadata),
             **kwargs
         )
 
@@ -529,23 +531,21 @@ class SalientExcerptMixSourceFolder(OnTheFly):
                         'mixsrc_item': item,
                         'start': start / mix.sample_rate
                     })
-        # if the balance flag is set then balance the metadata
         metadata = self._balance_set(metadata, self.balance_mode) \
             if self.balance_mode != "none" else metadata
         return metadata
 
-    @staticmethod
-    def _balance_set(metadata, balance_function):
+    def _balance_set(self, metadata, balance_function):
         """
         Balance the dataset to contain at least the average number of audio
         samples
         Args:
-            metadata: list of dicts of songs and their starts
+            metadata: list of dicts of audio files and their starts
             balance_function: the function to apply when balancing the dataset
         Returns:
         """
-        # count the occurrences of each song and where in the list they start
-        # counts_starts = {song : (occurrences, start index)}
+        # Count the occurrences of each audio file and where in the list
+        # they start. counts_starts = {filename : (occurrences, start index)}
         counts_starts = {}
         for i in range(len(metadata)):
             if metadata[i]['mixsrc_item'] in counts_starts:
@@ -558,9 +558,9 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         metadata = np.asarray(metadata)
         balanced_metadata = []
         for occurences, start in counts_starts.values():
-            # want to use all samples if possible, and want an even chance
-            # later segments will be included as well
-            samples = np.random.choice(occurences, occurences, replace=False)
+            # We'd like all segments in a file to have equal probability of
+            # occurring in the dataset.
+            samples = self.rng.choice(occurences, occurences, replace=False)
             if occurences < balance_target:
                 samples = np.tile(samples, int(np.ceil(balance_target /
                                                        occurences)))
@@ -572,13 +572,13 @@ class SalientExcerptMixSourceFolder(OnTheFly):
         """OnTheFly closure. Gets called for every iteration to build a batch.
         A placeholder param is necessary since OnTheFly will pass itself as
         well as the item to this function"""
-        item = self.song_metadata[item]
+        item = self.audio_metadata[item]
         mixsrc_item = item['mixsrc_item']
-        # Note that the onset needs to be passed to the AudioSignal
-        # class as the kwarg offset.
-        onset = item['start']
+        # Note that the segment start needs to be passed to the AudioSignal
+        # class as the kwarg "offset".
+        start = item['start']
         return self.mix_src.process_item(mixsrc_item,
-                                         offset=onset,
+                                         offset=start,
                                          duration=self.segment_dur)
 
 
