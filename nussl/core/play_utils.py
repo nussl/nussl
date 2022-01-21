@@ -13,6 +13,7 @@ import importlib_resources as pkg_resources
 from . import templates
 from .utils import _close_temp_files
 
+import os
 multitrack_template = pkg_resources.read_text(templates, 'multitrack.html')
 
 
@@ -67,7 +68,7 @@ def embed_audio(audio_signal, ext='.mp3', display=True):
             tmpfiles.append(tmp_wav)
             ff = ffmpy.FFmpeg(
                 inputs={tmp_wav.name: None},
-                outputs={tmp_converted.name: '-write_xing 0 -codec:a libmp3lame -b:a 128k -y'})
+                outputs={tmp_converted.name: '-write_xing 0 -codec:a libmp3lame -b:a 128k -y -hide_banner -loglevel error'})
             ff.run()
         else:
             tmp_converted = tmp_wav
