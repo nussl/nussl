@@ -5,7 +5,7 @@ museval
 musdb
 pyyaml
 zarr
-ffmpy
+stempeg
 torch
 pytorch-ignite
 tensorboard

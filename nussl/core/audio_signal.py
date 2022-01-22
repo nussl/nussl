@@ -1689,8 +1689,8 @@ class AudioSignal(object):
     def embed_audio(self, ext='.mp3', display=True):
         """
         Embeds the audio signal into a notebook, using `nussl.play_utils.embed_audio`.
-        
-        Write a numpy array to a temporary mp3 file using ffmpy, then embeds the mp3 
+
+        Write a numpy array to a temporary mp3 file using stempeg, then embeds the mp3
         into the notebook.
 
         Args:

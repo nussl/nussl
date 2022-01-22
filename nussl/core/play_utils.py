@@ -19,26 +19,28 @@ multitrack_template = pkg_resources.read_text(templates, 'multitrack.html')
 
 def _check_imports():
     try:
-        import ffmpy
+        import stempeg
     except:
-        ffmpy = False
+        stempeg = False
 
     try:
         import IPython
     except:
         raise ImportError('IPython must be installed in order to use this function!')
-    return ffmpy, IPython
+    return stempeg, IPython
 
 
-def embed_audio(audio_signal, ext='.mp3', display=True):
+def embed_audio(audio_signal, ext=".mp3", output_sr=44100.0, display=True):
     """
-    Write a numpy array to a temporary mp3 file using ffmpy, then embeds the mp3
+    Write a numpy array to a temporary mp3 file using stempeg, then embeds the mp3
     into the notebook.
 
     Args:
         audio_signal (AudioSignal): AudioSignal object containing the data.
         ext (str): What extension to use when embedding. '.mp3' is more lightweight 
           leading to smaller notebook sizes. Defaults to '.mp3'.
+        output_sr (float): Sampling rate to use when writing the audio. Defaults to 44100.0 as many
+          browser do not support arbitrary sampling rates.
         display (bool): Whether or not to display the object immediately, or to return
           the html object for display later by the end user. Defaults to True.
 
@@ -53,24 +55,25 @@ def embed_audio(audio_signal, ext='.mp3', display=True):
     """
     ext = f'.{ext}' if not ext.startswith('.') else ext
     audio_signal = deepcopy(audio_signal)
-    ffmpy, IPython = _check_imports()
+    stempeg, IPython = _check_imports()
     sr = audio_signal.sample_rate
     tmpfiles = []
 
     with _close_temp_files(tmpfiles):
-        tmp_wav = NamedTemporaryFile(
-            mode='w+', suffix='.wav', delete=False)
-        tmpfiles.append(tmp_wav)
-        audio_signal.write_audio_to_file(tmp_wav.name)
-        if ext != '.wav' and ffmpy:
-            tmp_converted = NamedTemporaryFile(
-                mode='w+', suffix=ext, delete=False)
-            tmpfiles.append(tmp_wav)
-            ff = ffmpy.FFmpeg(
-                inputs={tmp_wav.name: None},
-                outputs={tmp_converted.name: '-write_xing 0 -codec:a libmp3lame -b:a 128k -y -hide_banner -loglevel error'})
-            ff.run()
+        if ext != ".wav" and stempeg:
+            tmp_converted = NamedTemporaryFile(mode="w+", suffix=ext, delete=False)
+            stempeg.write_audio(
+                path=tmp_converted.name,
+                data=audio_signal.audio_data.T,
+                sample_rate=sr,
+                output_sample_rate=output_sr,
+                bitrate=(160000 if ext == ".mp3" else None),
+            )
+            print(tmp_converted.name)
         else:
+            tmp_wav = NamedTemporaryFile(mode="w+", suffix=".wav", delete=False)
+            tmpfiles.append(tmp_wav)
+            audio_signal.write_audio_to_file(tmp_wav.name)
             tmp_converted = tmp_wav
 
         audio_element = IPython.display.Audio(data=tmp_converted.name, rate=sr)
@@ -95,7 +98,7 @@ def multitrack(audio_signals, names=None, ext='.mp3', display=True):
         display (bool): Whether or not to display the object immediately, or to return
           the html object for display later by the end user.
     """
-    ffmpy, IPython = _check_imports()
+    stempeg, IPython = _check_imports()
     div_id = ''.join(random.choice(string.ascii_uppercase) for _ in range(20))
     _names = None
 
