@@ -69,7 +69,6 @@ def embed_audio(audio_signal, ext=".mp3", output_sr=44100.0, display=True):
                 output_sample_rate=output_sr,
                 bitrate=(160000 if ext == ".mp3" else None),
             )
-            print(tmp_converted.name)
         else:
             tmp_wav = NamedTemporaryFile(mode="w+", suffix=".wav", delete=False)
             tmpfiles.append(tmp_wav)
