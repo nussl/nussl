@@ -8,7 +8,7 @@ nbsphinx
 pytest
 pytest-cov
 IPython
-ffmpy
+stempeg
 scaper
 tqdm
 termtables
