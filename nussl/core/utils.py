@@ -415,7 +415,7 @@ def visualize_spectrogram(audio_signal, ch=0, do_mono=False, x_axis='time',
 
     if y_axis == 'mel':
         # Monkey patch for https://github.com/librosa/librosa/issues/1240
-        data = librosa.feature.melspectrogram(audio_signal.get_channel(ch),
+        data = librosa.feature.melspectrogram(y-audio_signal.get_channel(ch),
                                               sr=audio_signal.sample_rate)
         kwargs.update({'fmax': audio_signal.sample_rate / 2.})
     else:
