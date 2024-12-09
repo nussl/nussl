@@ -12,8 +12,12 @@
 
 </div>
 
+
 --------------------------------------------------------------------------------
 
+> [!CAUTION]
+**NUSSL IS DEPRECATED** <br />
+There will be no further any updates, bug fixes, or answers for open issues. We're leaving the code here as is for reference and educational purposes.
 
 
 nussl (pronounced ["nuzzle"](http://www.thefreedictionary.com/nuzzle)) is a flexible, object oriented
