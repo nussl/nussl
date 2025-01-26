@@ -446,7 +446,7 @@ def visualize_waveform(audio_signal, ch=0, do_mono=False, x_axis='time', **kwarg
         audio_signal = audio_signal.to_mono(overwrite=False)
     
     data = np.asfortranarray(audio_signal.audio_data[ch])
-    librosa.display.waveplot(data, sr=audio_signal.sample_rate, x_axis=x_axis, **kwargs)
+    librosa.display.waveshow(data, sr=audio_signal.sample_rate, axis=x_axis, **kwargs)
     plt.ylabel('Amplitude')
 
 def visualize_sources_as_waveform(audio_signals, ch=0, do_mono=False, x_axis='time', 

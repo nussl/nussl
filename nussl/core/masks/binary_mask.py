@@ -87,7 +87,7 @@ class BinaryMask(MaskBase):
     def _validate_mask(mask_):
         assert isinstance(mask_, np.ndarray), 'Mask must be a numpy array!'
 
-        if mask_.dtype == np.bool:
+        if mask_.dtype == bool:
             # This is perfect, do nothing here
             return mask_
         elif mask_.dtype.kind in np.typecodes['AllInteger']:
