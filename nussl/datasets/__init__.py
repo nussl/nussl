@@ -59,6 +59,7 @@ from .hooks import (
     Scaper, 
     WHAM, 
     FUSS, 
-    OnTheFly
+    OnTheFly,
+    SalientExcerptMixSourceFolder
 )
 from . import transforms

@@ -211,6 +211,19 @@ def _format(string):
     return ''.join(list(filter(str.isalnum, string))).lower()
 
 
+def find_salient_starts(audio, duration_sec, hop_ratio, sr, threshold_db=-60.0):
+    """Finds frames in the audio where the RMS is above a dB threshold."""
+    dur = int(sr * duration_sec)
+    hop_dur = int(dur * hop_ratio)
+    threshold = np.power(10.0, threshold_db / 20.0)
+    # adjust the shape of a mono track
+    if audio.shape[0] == 1:
+        audio = np.squeeze(audio)
+    rms = librosa.feature.rms(audio, frame_length=dur, hop_length=hop_dur)[0, :]
+    loud = np.squeeze(np.argwhere(rms > threshold))
+    return np.atleast_1d(librosa.frames_to_samples(loud, hop_length=hop_dur))
+
+
 def musdb_track_to_audio_signals(track):
     """
     Converts a musdb track to a dictionary of AudioSignal objects.
