@@ -37,7 +37,7 @@ class Mock(MagicMock):
 MOCK_MODULES = [
     'matplotlib.pyplot',
     'vamp',
-    'ffmpy',
+    'stempeg',
     'norbert',
     'zarr',
     'numcodecs',

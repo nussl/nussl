@@ -19,11 +19,11 @@ def test_jupyter_embed_audio(benchmark_audio):
         s1.embed_audio()
 
 
-def test_jupyter_no_ffmpy(benchmark_audio, monkeypatch):
+def test_jupyter_no_stempeg(benchmark_audio, monkeypatch):
     import_orig = builtins.__import__
 
     def mocked_import(name, globals_, locals_, fromlist, level):
-        if name == 'ffmpy':
+        if name == 'stempeg':
             raise ImportError()
         return import_orig(name, globals_, locals_, fromlist, level)
 
