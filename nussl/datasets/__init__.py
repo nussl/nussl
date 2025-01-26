@@ -59,6 +59,7 @@ from .hooks import (
     Scaper, 
     WHAM, 
     FUSS, 
-    OnTheFly
+    OnTheFly,
+    Slakh
 )
 from . import transforms

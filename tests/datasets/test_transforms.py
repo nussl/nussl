@@ -10,6 +10,7 @@ import copy
 import torch
 import tempfile
 import os
+from pretty_midi import PrettyMIDI, Instrument, Note
 
 stft_tol = 1e-6
 
@@ -460,3 +461,35 @@ def test_transform_get_audio(mix_source_folder):
     assert np.allclose(
         ga_output['mix_audio'], item['mix'].audio_data)
 
+
+def test_transform_to_piano_roll():
+    item = {
+        'midi': PrettyMIDI()
+    }
+    instrument = Instrument(37)
+    instrument.notes = [
+        Note(127, 64, .51, .75),
+        Note(127, 43, 1, 2)
+    ]
+    item['midi'].instruments.append(instrument)
+
+    # `fs = 1`, only the long note gets registered
+    tfm = transforms.ToPianoRool(fs=1)
+    transformed = tfm(item.copy())
+    actual = np.zeros((128, 2))
+    actual[43, 1] = 127
+    assert np.allclose(
+        transformed['midi'],
+        actual
+    )
+
+    # `fs = 4`, both notes get registered
+    tfm = transforms.ToPianoRool(fs=4)
+    transformed = tfm(item.copy())
+    actual = np.zeros((128, 8))
+    actual[43, 4:] = 127
+    actual[64, 2] = 127
+    assert np.allclose(
+        transformed['midi'],
+        actual
+    )
